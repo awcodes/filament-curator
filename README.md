@@ -1,5 +1,9 @@
 # Filament Curator
 
+> This package is still in development
+
+> This package currently does not work with Spatie Media Library.
+
 A port of the Statamic Bard field for Filament Admin/Forms.
 
 Please star these awesome repos and/or sponsors all of these peoples hard work:
