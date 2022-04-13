@@ -106,12 +106,15 @@
             x-cloak
             class="relative w-full h-full mt-auto cursor-pointer md:mb-auto">
             <div @class([
-                'w-full mx-auto p-2 space-y-2 bg-white rounded-xl flex flex-col cursor-default h-full filament-curator-media-picker-modal-window',
+                'w-full mx-auto space-y-2 bg-white rounded-xl flex flex-col cursor-default h-full filament-curator-media-picker-modal-window',
                 'dark:bg-gray-800' => config('filament.dark_mode'),
             ])>
                 <div id="filament-curator-media-modal-heading"
-                    class="flex items-center justify-between px-4 py-1 filament-curator-media-picker-modal-header">
-                    <h3>{{ __('Media Picker') }}</h3>
+                    @class([
+                        'flex items-center justify-between py-2 pl-4 pr-2 border-b border-gray-300 filament-curator-media-picker-modal-header',
+                        'dark:border-gray-700' => config('filament.dark_mode'),
+                    ])>
+                    <h3 class="font-bold">{{ __('Media Picker') }}</h3>
                     <div
                         class="flex items-center space-x-1 rtl:space-x-reverse group filament-forms-text-input-component">
                         <label for="media-search-input"
@@ -131,15 +134,11 @@
                     </div>
                 </div>
 
-                <x-filament::hr />
-
                 <div class="flex-1 space-y-2 overflow-hidden filament-curator-media-picker-modal-content">
-                    <div class="h-full px-4 py-2 space-y-4">
-                        <!-- Tabs -->
+                    <div class="h-full p-4 space-y-4">
                         <div class="flex flex-col h-full"
                             wire:ignore
                             x-on:new-media-added.window="$nextTick(() => selectTab($id('tab', 1)))">
-                            <!-- Tab List -->
                             <ul x-ref="tablist"
                                 x-on:keydown.right.prevent.stop="$focus.wrap().next()"
                                 x-on:keydown.home.prevent.stop="$focus.first()"
@@ -148,8 +147,7 @@
                                 x-on:keydown.end.prevent.stop="$focus.last()"
                                 x-on:keydown.page-down.prevent.stop="$focus.last()"
                                 role="tablist"
-                                class="flex items-stretch -mb-px">
-                                <!-- Tab -->
+                                class="flex items-stretch -mb-px text-sm">
                                 <li>
                                     <button :id="$id('tab', whichChild($el . parentElement, $refs . tablist))"
                                         x-on:click="selectTab($el.id)"
@@ -157,11 +155,10 @@
                                         type="button"
                                         x-bind:tabindex="isTabSelected($el.id) ? 0 : -1"
                                         x-bind:aria-selected="isTabSelected($el.id)"
-                                        x-bind:class="isTabSelected($el.id) ? 'border-gray-700 bg-gray-600' : 'border-transparent'"
+                                        x-bind:class="isTabSelected($el.id) ? 'border-gray-300 dark:border-gray-700 bg-gray-200 dark:bg-gray-700' : 'border-transparent'"
                                         class="inline-flex px-4 py-2 border-t border-l border-r rounded-t-md"
                                         role="tab">Media Library</button>
                                 </li>
-
                                 <li>
                                     <button :id="$id('tab', whichChild($el . parentElement, $refs . tablist))"
                                         x-on:click="selectTab($el.id); $dispatch('clear-selected');"
@@ -169,27 +166,25 @@
                                         type="button"
                                         x-bind:tabindex="isTabSelected($el.id) ? 0 : -1"
                                         x-bind:aria-selected="isTabSelected($el.id)"
-                                        x-bind:class="isTabSelected($el.id) ? 'border-gray-700 bg-gray-600' : 'border-transparent'"
+                                        x-bind:class="isTabSelected($el.id) ? 'border-gray-300 dark:border-gray-700 bg-gray-200 dark:bg-gray-700' : 'border-transparent'"
                                         class="inline-flex px-4 py-2 border-t border-l border-r rounded-t-md"
                                         role="tab">Upload Media</button>
                                 </li>
                             </ul>
 
-                            <!-- Panels -->
                             <div role="tabpanels"
-                                class="flex-1 h-full overflow-hidden border border-gray-700 rounded-b-md">
-                                <!-- Panel -->
+                                class="flex-1 h-full overflow-hidden border border-gray-300 dark:border-gray-700 rounded-b-md">
                                 <section x-show="isTabSelected($id('tab', whichChild($el, $el.parentElement)))"
                                     x-bind:aria-labelledby="$id('tab', whichChild($el, $el.parentElement))"
                                     role="tabpanel"
                                     class="h-full overflow-hidden">
                                     <div class="relative flex w-full h-full overflow-hidden">
-                                        <div class="relative flex-1 h-full p-6 overflow-scroll">
+                                        <div class="relative flex-1 h-full p-4 overflow-scroll">
 
                                             {{-- Loading Indicator --}}
                                             <div x-show="isFetching"
                                                 style="display: none;"
-                                                class="absolute inset-0 z-10 flex items-center justify-center bg-gray-900 bg-opacity-70">
+                                                class="absolute inset-0 z-10 flex items-center justify-center bg-gray-300 dark:bg-gray-900 bg-opacity-70">
                                                 <svg class="w-12 h-12 text-white animate-spin"
                                                     xmlns="http://www.w3.org/2000/svg"
                                                     fill="none"
@@ -210,13 +205,13 @@
 
                                             {{-- File List --}}
                                             <ul
-                                                class="grid grid-cols-3 gap-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
+                                                class="grid grid-cols-3 gap-4 sm:grid-cols-4 md:grid-cols-6 2xl:grid-cols-8">
                                                 <template x-for="file in files">
                                                     <li x-bind:key="file.id"
                                                         class="relative aspect-square">
                                                         <button type="button"
                                                             x-on:click.prevent="setSelected(file.id)"
-                                                            class="bg-gray-700 focus:outline focus:outline-offset-1 focus:outline-3 focus:outline-primary-500 focus:shadow-lg"
+                                                            class="block bg-gray-700 focus:outline focus:outline-offset-1 focus:outline-3 focus:outline-primary-500 focus:shadow-lg"
                                                             x-bind:class="{'outline outline-offset-1 outline-3 outline-primary-500 shadow-lg': selected && selected.id === file.id}">
                                                             <img x-bind:src="file.thumbnail_url"
                                                                 x-bind:alt="file.alt"
@@ -254,18 +249,20 @@
                                         </div>
 
                                         {{-- Edit Form --}}
-                                        <div
-                                            class="w-full h-full max-w-sm overflow-scroll bg-gray-300 dark:bg-gray-900">
-                                            <x-filament::form wire:submit.prevent="update"
+                                        <div @class([
+                                            'hidden w-full h-full max-w-xs overflow-scroll bg-gray-200 lg:!block ',
+                                            'dark:bg-gray-900' => config('filament.dark_mode'),
+                                        ])>
+                                            <form wire:submit.prevent="update"
                                                 x-show="selected"
-                                                class="p-4 space-y-6">
+                                                class="p-4">
 
-                                                <x-filament::modal.heading class="mb-4">
+                                                <h4 class="mb-4 font-bold">
                                                     Edit Media
-                                                </x-filament::modal.heading>
+                                                </h4>
 
                                                 <div
-                                                    class="mb-4 overflow-hidden bg-gray-700 border border-gray-600 rounded">
+                                                    class="mb-4 overflow-hidden bg-gray-300 border border-gray-300 rounded dark:bg-gray-700 dark:border-gray-700">
                                                     <img x-bind:src="selected?.medium_url"
                                                         x-bind:alt="selected?.alt"
                                                         x-bind:width="selected?.width"
@@ -312,17 +309,16 @@
 
                                                 </div>
 
-                                            </x-filament::form>
+                                            </form>
                                         </div>
                                         {{-- End Edit Form --}}
-
                                     </div>
                                 </section>
 
                                 <section x-show="isTabSelected($id('tab', whichChild($el, $el.parentElement)))"
                                     x-bind:aria-labelledby="$id('tab', whichChild($el, $el.parentElement))"
                                     role="tabpanel"
-                                    class="p-4">
+                                    class="h-full p-4 overflow-y-scroll md:p-6">
                                     @livewire('create-media-form')
                                 </section>
                             </div>
@@ -330,9 +326,10 @@
                     </div>
                 </div>
 
-                <x-filament::hr />
-
-                <div class="flex items-center justify-end px-4 py-2 filament-curator-media-picker-modal-footer">
+                <div @class([
+                    'flex items-center justify-end p-3 filament-curator-media-picker-modal-footer border-t border-gray-300',
+                    'dark:border-gray-700' => config('filament.dark_mode'),
+                ])>
                     <x-filament::button type="button"
                         color="success"
                         x-bind:disabled="!selected"

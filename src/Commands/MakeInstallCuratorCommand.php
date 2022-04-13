@@ -72,7 +72,9 @@ class MakeInstallCuratorCommand extends Command
     protected function install(bool $fresh = false)
     {
         $this->call('vendor:publish', [
-            '--provider' => 'FilamentCurator\FilamentCuratorServiceProvider',
+            '--tag' => 'filament-curator-assets',
+            '--tag' => 'filament-curator-config',
+            '--tag' => 'filament-curator-migrations',
         ]);
 
         $this->info('Core Package config published.');

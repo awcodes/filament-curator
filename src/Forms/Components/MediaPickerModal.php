@@ -42,7 +42,7 @@ class MediaPickerModal extends Component implements HasForms
         return [
             TextInput::make('alt')
                 ->label('Alt Text')
-                ->helperText('<a href="https://www.w3.org/WAI/tutorials/images/decision-tree" target="_blank" rel="noopener" class="underline text-primary-500 hover:text-primary-600 focus:text-primary-600">Learn how to describe the purpose of the image</a>. Leave empty if the image is purely decorative.'),
+                ->helperText('<span class="block -mt-1 text-xs"><a href="https://www.w3.org/WAI/tutorials/images/decision-tree" target="_blank" rel="noopener" class="underline text-primary-500 hover:text-primary-600 focus:text-primary-600">Learn how to describe the purpose of the image</a>. Leave empty if the image is purely decorative.</span>'),
             TextInput::make('title'),
             Textarea::make('caption')
                 ->rows(2),

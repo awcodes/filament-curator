@@ -12,12 +12,12 @@
         class="w-full">
 
         <div wire:ignore>
-            <x-filament-curator::button x-show="!state"
+            <x-filament::button x-show="!state"
                 type="button"
                 :outlined="true"
                 x-on:click="$dispatch('open-modal', {id: 'filament-curator-media-picker', fieldId: '{{ $getStatePath() }}'})">
                 Add Media
-            </x-filament-curator::button>
+            </x-filament::button>
         </div>
 
         <div x-show="state"
