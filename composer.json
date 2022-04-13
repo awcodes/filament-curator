@@ -1,0 +1,49 @@
+{
+    "name": "awcodes/filament-curator",
+    "type": "project",
+    "description": "A media picker plugin for Filament Admin.",
+    "keywords": [
+        "framework",
+        "laravel",
+        "filament"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Adam Weston",
+            "email": "awcodes1@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.0.2",
+        "filament/filament": "^2.0",
+        "spatie/laravel-package-tools": "^1.9.2",
+        "cloudinary-labs/cloudinary-laravel": "^1.0",
+        "intervention/image": "^2.7"
+    },
+    "autoload": {
+        "psr-4": {
+            "FilamentCurator\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "FilamentCurator\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "FilamentCurator\\FilamentCuratorServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
