@@ -4,7 +4,7 @@
 
 > This package currently does not work with Spatie Media Library.
 
-A port of the Statamic Bard field for Filament Admin/Forms.
+A media picker plugin for Filament Admin.
 
 Please star these awesome repos and/or sponsors all of these peoples hard work:
 
