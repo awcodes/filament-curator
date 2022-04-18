@@ -333,7 +333,7 @@
                     <x-filament::button type="button"
                         color="success"
                         x-bind:disabled="!selected"
-                        x-on:click="$dispatch('close-modal', {id: 'filament-curator-media-picker', media: selected, fieldId: fieldId})">
+                        x-on:click="$dispatch('insert-media', {id: 'filament-curator-media-picker', media: selected, fieldId: fieldId}); $dispatch('close-modal', {id: 'filament-curator-media-picker', media: selected, fieldId: fieldId})">
                         Use Selected Image
                     </x-filament::button>
                 </div>

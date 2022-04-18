@@ -54,7 +54,7 @@ class MediaResource extends Resource
                             })
                             ->schema([
                                 ViewField::make('preview')
-                                    ->view('trov::components.media-preview')
+                                    ->view('filament-curator::components.media-preview')
                                     ->disableLabel()
                                     ->afterStateHydrated(function ($component, $state, $record) {
                                         $component->state($record);
