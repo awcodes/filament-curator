@@ -60,10 +60,10 @@ class CreateMediaForm extends Component implements HasForms
                             Forms\Components\TextInput::make('alt')
                                 ->helperText('<span class="block -mt-1 text-xs"><a href="https://www.w3.org/WAI/tutorials/images/decision-tree" target="_blank" rel="noopener" class="underline text-primary-500 hover:text-primary-600 focus:text-primary-600">Learn how to describe the purpose of the image</a>. Leave empty if the image is purely decorative.</span>'),
                             Forms\Components\TextInput::make('title'),
-                            Forms\Components\Textarea::make('caption')
-                                ->rows(2),
-                            Forms\Components\Textarea::make('description')
-                                ->rows(2),
+                            // Forms\Components\Textarea::make('caption')
+                            //     ->rows(2),
+                            // Forms\Components\Textarea::make('description')
+                            //     ->rows(2),
                         ])
                         ->columnSpan(['md' => 1]),
                 ])

@@ -6,11 +6,11 @@
 
 A media picker plugin for Filament Admin.
 
-Please star these awesome repos and/or sponsors all of these peoples hard work:
+Please star these awesome repos and/or sponsor all of these peoples hard work:
 
--   [Filament](https://github.com/laravel-filament/filament)
--   [Spatie Laravel Package Tools](https://github.com/spatie/laravel-package-tools)
--   [Filament Shield](https://github.com/bezhanSalleh/filament-shield) (for the install command inspiration)
+- [Filament](https://github.com/laravel-filament/filament)
+- [Spatie Laravel Package Tools](https://github.com/spatie/laravel-package-tools)
+- [Filament Shield](https://github.com/bezhanSalleh/filament-shield) (for the install command inspiration)
 
 ## Installation
 

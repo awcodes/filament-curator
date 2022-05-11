@@ -27,7 +27,7 @@
                 x-bind:alt="state?.alt"
                 x-bind:width="state?.width"
                 x-bind:height="state?.height"
-                class="object-cover h-full" />
+                class="object-cover w-full h-full checkered" />
             <button type="button"
                 x-on:click="state = null"
                 class="absolute flex items-center justify-center w-10 h-10 text-white rounded-full top-4 left-4 !bg-black/75">

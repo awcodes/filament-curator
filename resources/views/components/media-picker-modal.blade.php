@@ -149,24 +149,28 @@
                                 role="tablist"
                                 class="flex items-stretch -mb-px text-sm">
                                 <li>
-                                    <button :id="$id('tab', whichChild($el . parentElement, $refs . tablist))"
+                                    <button :id="$id('tab', whichChild($el.parentElement, $refs.tablist))"
                                         x-on:click="selectTab($el.id)"
                                         x-on:focus="selectTab($el.id)"
                                         type="button"
                                         x-bind:tabindex="isTabSelected($el.id) ? 0 : -1"
                                         x-bind:aria-selected="isTabSelected($el.id)"
-                                        x-bind:class="isTabSelected($el.id) ? 'border-gray-300 dark:border-gray-700 bg-gray-200 dark:bg-gray-700' : 'border-transparent'"
+                                        x-bind:class="isTabSelected($el.id) ?
+                                            'border-gray-300 dark:border-gray-700 bg-gray-200 dark:bg-gray-700' :
+                                            'border-transparent'"
                                         class="inline-flex px-4 py-2 border-t border-l border-r rounded-t-md"
                                         role="tab">Media Library</button>
                                 </li>
                                 <li>
-                                    <button :id="$id('tab', whichChild($el . parentElement, $refs . tablist))"
+                                    <button :id="$id('tab', whichChild($el.parentElement, $refs.tablist))"
                                         x-on:click="selectTab($el.id); $dispatch('clear-selected');"
                                         x-on:focus="selectTab($el.id)"
                                         type="button"
                                         x-bind:tabindex="isTabSelected($el.id) ? 0 : -1"
                                         x-bind:aria-selected="isTabSelected($el.id)"
-                                        x-bind:class="isTabSelected($el.id) ? 'border-gray-300 dark:border-gray-700 bg-gray-200 dark:bg-gray-700' : 'border-transparent'"
+                                        x-bind:class="isTabSelected($el.id) ?
+                                            'border-gray-300 dark:border-gray-700 bg-gray-200 dark:bg-gray-700' :
+                                            'border-transparent'"
                                         class="inline-flex px-4 py-2 border-t border-l border-r rounded-t-md"
                                         role="tab">Upload Media</button>
                                 </li>
@@ -212,12 +216,15 @@
                                                         <button type="button"
                                                             x-on:click.prevent="setSelected(file.id)"
                                                             class="block bg-gray-700 focus:outline focus:outline-offset-1 focus:outline-3 focus:outline-primary-500 focus:shadow-lg"
-                                                            x-bind:class="{'outline outline-offset-1 outline-3 outline-primary-500 shadow-lg': selected && selected.id === file.id}">
+                                                            x-bind:class="{
+                                                                'outline outline-offset-1 outline-3 outline-primary-500 shadow-lg': selected &&
+                                                                    selected.id === file.id
+                                                            }">
                                                             <img x-bind:src="file.thumbnail_url"
                                                                 x-bind:alt="file.alt"
                                                                 width="300"
                                                                 height="300"
-                                                                class="block object-cover h-full" />
+                                                                class="block object-cover h-full checkered" />
                                                         </button>
                                                         <button x-on:click="setSelected(null)"
                                                             style="display: none;"
@@ -267,7 +274,7 @@
                                                         x-bind:alt="selected?.alt"
                                                         x-bind:width="selected?.width"
                                                         x-bind:height="selected?.height"
-                                                        class="block object-cover h-full" />
+                                                        class="block object-cover h-full checkered" />
                                                 </div>
 
                                                 {{ $this->form }}

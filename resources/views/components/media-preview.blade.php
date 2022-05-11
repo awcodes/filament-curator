@@ -14,6 +14,6 @@
             x-bind:srcset="`${state?.large_url} 1024w, ${state?.medium_url} 640w`"
             sizes="(max-width: 1200px) 100vw, 1024px"
             loading="lazy"
-            class="overflow-hidden border border-gray-300 rounded dark:border-black" />
+            class="overflow-hidden border border-gray-300 rounded dark:border-black checkered" />
     </div>
 </x-forms::field-wrapper>
