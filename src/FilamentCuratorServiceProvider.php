@@ -29,7 +29,6 @@ class FilamentCuratorServiceProvider extends PluginServiceProvider
         $package
             ->name('filament-curator')
             ->hasConfigFile()
-            ->hasAssets()
             ->hasViews()
             ->hasRoute("web")
             ->hasCommands([
