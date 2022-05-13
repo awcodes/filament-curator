@@ -13,7 +13,7 @@ class CreateMediaForm extends Component implements HasForms
 {
     use InteractsWithForms;
 
-    public ?Media $media;
+    public $data;
 
     public $public_id;
     public $filename;
@@ -34,9 +34,9 @@ class CreateMediaForm extends Component implements HasForms
         $this->form->fill();
     }
 
-    protected function getFormModel(): string
+    protected function getFormStatePath(): string
     {
-        return Media::class;
+        return 'data';
     }
 
     protected function getFormSchema(): array
@@ -47,8 +47,11 @@ class CreateMediaForm extends Component implements HasForms
                     MediaUpload::make('filename')
                         ->label('File')
                         ->preserveFilenames(config('filament-curator.preserve_file_names'))
-                        ->maxWidth(5000)
-                        ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'application/pdf'])
+                        ->maxWidth(config('filament-curator.max_width'))
+                        ->minSize(config('filament-curator.min_size'))
+                        ->maxSize(config('filament-curator.max_size'))
+                        ->rules(config('filament-curator.rules'))
+                        ->acceptedFileTypes(config('filament-curator.accepted_file_types'))
                         ->directory(config('filament-curator.directory', 'images'))
                         ->disk(config('filament-curator.disk', 'public'))
                         ->required()
@@ -58,12 +61,13 @@ class CreateMediaForm extends Component implements HasForms
                     Forms\Components\Group::make()
                         ->schema([
                             Forms\Components\TextInput::make('alt')
+                                ->label('Alt Text')
                                 ->helperText('<span class="block -mt-1 text-xs"><a href="https://www.w3.org/WAI/tutorials/images/decision-tree" target="_blank" rel="noopener" class="underline text-primary-500 hover:text-primary-600 focus:text-primary-600">Learn how to describe the purpose of the image</a>. Leave empty if the image is purely decorative.</span>'),
                             Forms\Components\TextInput::make('title'),
-                            // Forms\Components\Textarea::make('caption')
-                            //     ->rows(2),
-                            // Forms\Components\Textarea::make('description')
-                            //     ->rows(2),
+                            Forms\Components\Textarea::make('caption')
+                                ->rows(2),
+                            Forms\Components\Textarea::make('description')
+                                ->rows(2),
                         ])
                         ->columnSpan(['md' => 1]),
                 ])
@@ -74,7 +78,7 @@ class CreateMediaForm extends Component implements HasForms
     public function create(): void
     {
         $media = Media::create($this->form->getState());
-        $this->form->fill();
+        $this->form->fill([]);
         $this->dispatchBrowserEvent('new-media-added', ['media' => $media]);
     }
 

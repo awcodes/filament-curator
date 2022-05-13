@@ -46,7 +46,7 @@ class RegenerateThumbnails extends Command
                 /**
                  * Generate new sizes
                  */
-                $image = Image::make(Storage::disk($this->defineDisk($item->disk))->path($item->filename));
+                $image = Image::make(Storage::disk($item->disk)->path($item->filename));
 
                 if ($mediaSize['width'] == $mediaSize['height']) {
                     $image->fit($mediaSize['width']);
@@ -59,17 +59,12 @@ class RegenerateThumbnails extends Command
                 }
 
                 $image->encode(null, $mediaSize['quality']);
-                Storage::disk($this->defineDisk($item->disk))->put($pathinfo['dirname'] . '/' . $pathinfo['filename'] . '-' . $name . '.' . $item->ext, $image);
+                Storage::disk($item->disk)->put($pathinfo['dirname'] . '/' . $pathinfo['filename'] . '-' . $name . '.' . $item->ext, $image);
             }
 
             $this->info("Regenerated {$item->filename} thumbnails.");
         });
 
         return 0;
-    }
-
-    public function defineDisk($disk): string
-    {
-        return $disk == 'cloudinary' ? 'public' : $disk;
     }
 }

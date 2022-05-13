@@ -3,7 +3,6 @@
 namespace FilamentCurator;
 
 use Livewire\Livewire;
-use FilamentCurator\Models\Media;
 use Filament\Facades\Filament;
 use FilamentCurator\Observers\MediaObserver;
 use Filament\PluginServiceProvider;
@@ -45,7 +44,5 @@ class FilamentCuratorServiceProvider extends PluginServiceProvider
 
         Livewire::component('media-picker-modal', Forms\Components\MediaPickerModal::class);
         Livewire::component('create-media-form', Forms\Components\CreateMediaForm::class);
-
-        Media::observe(MediaObserver::class);
     }
 }

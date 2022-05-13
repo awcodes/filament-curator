@@ -3,6 +3,7 @@
 namespace FilamentCurator\Models;
 
 use Cloudinary\Cloudinary;
+use Illuminate\Support\Arr;
 use Cloudinary\Transformation\Format;
 use Cloudinary\Transformation\Resize;
 use Intervention\Image\Facades\Image;
@@ -17,6 +18,28 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Media extends Model
 {
     use HasFactory;
+
+    protected static function booted()
+    {
+        static::creating(function (Media $media) {
+            foreach ($media->filename as $k => $v) {
+                $media->{$k} = $v;
+            }
+        });
+
+        static::created(function (Media $media) {
+            $media->refresh();
+            self::generateThumbs($media);
+        });
+
+        static::deleted(function (Media $media) {
+            $pathinfo = pathinfo($media->filename);
+            foreach (config('filament-curator.sizes') as $name => $data) {
+                Storage::disk($media->disk)->delete($pathinfo['dirname'] . '/' . $pathinfo['filename'] . '-' . $name . '.' . $media->ext);
+            }
+            Storage::disk($media->disk)->delete($media->filename);
+        });
+    }
 
     protected $fillable = [
         'public_id',
@@ -48,47 +71,37 @@ class Media extends Model
 
     public function getUrlAttribute()
     {
-        if ($this->disk == 'cloudinary') {
-            return (string) (new Cloudinary())->image($this->public_id)
-                ->delivery(Delivery::format(Format::auto()))
-                ->delivery(Delivery::quality(Quality::auto()));
-        } else {
-            return Storage::disk($this->disk)->url($this->filename);
-        }
+        return Storage::disk($this->disk)->url($this->filename);
     }
 
     public function getThumbnailUrlAttribute()
     {
-        return $this->getUrlForSize('thumbnail');
+        return $this->getSizeUrl('thumbnail');
     }
 
     public function getMediumUrlAttribute()
     {
-        return $this->getUrlForSize('medium');
+        return $this->getSizeUrl('medium');
     }
 
     public function getlargeUrlAttribute()
     {
-        return $this->getUrlForSize('large');
+        return $this->getSizeUrl('large');
+    }
+
+    public function getSizeUrl(string $size): string
+    {
+        $sizes = config('filament-curator.sizes');
+        if (Arr::exists($sizes, $size)) {
+            return $this->getUrlForSize($size);
+        }
+
+        return 'Size does not exist in config.';
     }
 
     public function getUrlForSize(string $size = 'large')
     {
-        if ($this->disk == 'cloudinary') {
-            $sizes = config('filament-curator.sizes');
-            return (string) (new Cloudinary())->image($this->public_id)
-                ->resize(
-                    Resize::fill()
-                        ->width($sizes[$size]['width'])
-                        ->height($sizes[$size]['height'])
-                        ->gravity(Gravity::focusOn(FocusOn::faces()))
-                )
-                ->delivery(Delivery::format(Format::auto()))
-                ->delivery(Delivery::quality(Quality::auto()));
-        } else {
-            $pathinfo = pathinfo($this->filename);
-            return Storage::disk($this->disk)->url($this->public_id . '-' . $size . '.' . $this->ext);
-        }
+        return Storage::disk($this->disk)->url($this->public_id . '-' . $size . '.' . $this->ext);
     }
 
     public function sizeForHumans(int $precision = 1): string
@@ -100,5 +113,26 @@ class Media extends Model
         }
 
         return round($this->size, $precision) . ' ' . $units[$i];
+    }
+
+    private static function generateThumbs(Media $media): void
+    {
+        $pathinfo = pathinfo($media->filename);
+        foreach (config('filament-curator.sizes') as $name => $mediaSize) {
+            $image = Image::make(Storage::disk($media->disk)->path($media->filename));
+
+            if ($mediaSize['width'] == $mediaSize['height']) {
+                $image->fit($mediaSize['width']);
+            } else {
+                $image->resize($mediaSize['width'], $mediaSize['height'], function ($constraint) use ($mediaSize) {
+                    if (!$mediaSize['height']) {
+                        $constraint->aspectRatio();
+                    }
+                });
+            }
+
+            $image->encode(null, $mediaSize['quality']);
+            Storage::disk($media->disk)->put($pathinfo['dirname'] . '/' . $pathinfo['filename'] . '-' . $name . '.' . $media->ext, $image);
+        }
     }
 }

@@ -19,7 +19,6 @@
         "php": "^8.0.2",
         "filament/filament": "^2.0",
         "spatie/laravel-package-tools": "^1.9.2",
-        "cloudinary-labs/cloudinary-laravel": "^1.0",
         "intervention/image": "^2.7"
     },
     "autoload": {

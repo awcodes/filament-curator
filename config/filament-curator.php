@@ -2,8 +2,13 @@
 
 return [
     'disk' => 'public',
-    'directory' => 'trov',
-    'preserve_file_names' => true,
+    'directory' => 'media',
+    'preserve_file_names' => false,
+    'accepted_file_types' => ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'application/pdf'],
+    'max_width' => 5000,
+    'min_size' => null,
+    'max_size' => 5000,
+    'rules' => [],
     'sizes' => [
         'thumbnail' => ['width' => 200, 'height' => 200, 'quality' => 60],
         'medium' => ['width' => 640, 'height' => null, 'quality' => 60],
