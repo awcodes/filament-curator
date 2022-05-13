@@ -63,9 +63,9 @@ If a size doesn't exist in your config, then it will return the full size image 
 ```php
 // Assuming a relationship on a Meta model for ogImage...
 
-$meta->ogImage->size_url('thumbnail');
-$meta->ogImage->size_url('medium');
-$meta->ogImage->size_url('large');
+$meta->ogImage->getSizeUrl('thumbnail');
+$meta->ogImage->getSizeUrl('medium');
+$meta->ogImage->getSizeUrl('large');
 ```
 
 If you need additional functionality you can extend Curator's Media model with your own.
