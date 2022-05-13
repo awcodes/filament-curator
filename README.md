@@ -20,32 +20,19 @@ Install the package via composer.
 composer require awcodes/filament-curator
 ```
 
-Install Filament Curator into your app. This will publish the necessary migration, model and resources.
+Install Filament Curator into your app. This will publish the necessary migration and Filament resources.
 
 ```bash
 php artisan curator:install
 ```
 
-## Config
+## Image Sizes
 
-Curator currently has the following options that will be applied to all media uploaded through the media upload form.
+By default Curator will generate image sizes for each uploaded image based on the sizes setting in the config file. If you want to disable image sizes completely then set the sizes key to an empty array.
 
-- disk: 'public'
-- directory: 'trov',
-- preserve_file_names: true,
-- sizes
-  - thumbnail:
-    - width: 200
-    - height: 200
-    - quality: 60
-  - medium:
-    - width: 640
-    - height: null
-    - quality: 60
-  - large:
-    - width: 1024
-    - height: null
-    - quality: 60
+```php
+'sizes' => [],
+```
 
 ## Usage
 
@@ -71,12 +58,25 @@ public function ogImage(): HasOne
 
 To retrieve different sizes urls, Curator's Media model comes with a helper that takes in a size and returns the url for you. Sizes are based on your config settings.
 
+If a size doesn't exist in your config, then it will return the full size image url.
+
 ```php
 // Assuming a relationship on a Meta model for ogImage...
 
 $meta->ogImage->size_url('thumbnail');
 $meta->ogImage->size_url('medium');
 $meta->ogImage->size_url('large');
+```
+
+If you need additional functionality you can extend Curator's Media model with your own.
+
+```php
+use FilamentCurator\Models\Media as CuratorMedia;
+
+class Media extends CuratorMedia
+{
+    // ... custom methods and properties
+}
 ```
 
 ## Versioning

@@ -96,7 +96,7 @@ class Media extends Model
             return $this->getUrlForSize($size);
         }
 
-        return 'Size does not exist in config.';
+        return Storage::disk($this->disk)->url($this->filename);
     }
 
     public function getUrlForSize(string $size = 'large')
