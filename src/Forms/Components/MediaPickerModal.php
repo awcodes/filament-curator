@@ -2,7 +2,6 @@
 
 namespace FilamentCurator\Forms\Components;
 
-use FilamentCurator\Models\Media;
 use Livewire\Component;
 use Filament\Facades\Filament;
 use Filament\Forms\Contracts\HasForms;
@@ -20,7 +19,7 @@ class MediaPickerModal extends Component implements HasForms
     public function updatedSelected($value)
     {
         if ($value) {
-            $item = Media::firstWhere('id', $value['id']);
+            $item = resolve(config('filament-curator.model'))->firstWhere('id', $value['id']);
             if ($item) {
                 $this->data = [
                     'alt' => $item->alt,
@@ -53,14 +52,14 @@ class MediaPickerModal extends Component implements HasForms
 
     public function update(): void
     {
-        $item = Media::where('id', $this->selected['id'])->first();
+        $item = resolve(config('filament-curator.model'))->where('id', $this->selected['id'])->first();
         Filament::notify('success', 'Item updated successfully.');
         $item->update($this->data);
     }
 
     public function destroy(): void
     {
-        $item = Media::where('id', $this->selected['id'])->first();
+        $item = resolve(config('filament-curator.model'))->where('id', $this->selected['id'])->first();
         $this->data = null;
         $this->selected = null;
         $this->dispatchBrowserEvent('remove-media', ['media' => $item]);

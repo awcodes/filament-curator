@@ -77,7 +77,7 @@ class CreateMediaForm extends Component implements HasForms
 
     public function create(): void
     {
-        $media = Media::create($this->form->getState());
+        $media = resolve(config('filament-curator.model'))->create($this->form->getState());
         $this->form->fill([]);
         $this->dispatchBrowserEvent('new-media-added', ['media' => $media]);
     }

@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'model' => \FilamentCurator\Models\Media::class,
     'disk' => 'public',
     'directory' => 'media',
     'preserve_file_names' => false,

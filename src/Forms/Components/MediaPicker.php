@@ -13,8 +13,8 @@ class MediaPicker extends Field
     {
         parent::setUp();
 
-        $this->afterStateHydrated(function (MediaPicker $component, Media $media, $state): void {
-            $item = $media->where('id', $state)->first();
+        $this->afterStateHydrated(function (MediaPicker $component, $state): void {
+            $item = resolve(config('filament-curator.model'))->where('id', $state)->first();
             if ($item instanceof Media) {
                 $component->state($item);
             }
