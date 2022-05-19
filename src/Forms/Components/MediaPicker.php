@@ -9,19 +9,8 @@ class MediaPicker extends Field
 {
     protected string $view = 'filament-curator::components.media-picker';
 
-    protected function setUp(): void
+    public function getCurrentItem($state)
     {
-        parent::setUp();
-
-        $this->afterStateHydrated(function (MediaPicker $component, $state): void {
-            $item = resolve(config('filament-curator.model'))->where('id', $state)->first();
-            if ($item instanceof Media) {
-                $component->state($item);
-            }
-        });
-
-        $this->dehydrateStateUsing(function ($state): ?int {
-            return isset($state['id']) ? $state['id'] : null;
-        });
+        return resolve(config('filament-curator.model'))->where('id', $state)->first();
     }
 }
