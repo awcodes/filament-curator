@@ -8,7 +8,7 @@
     :state-path="$getStatePath()">
 
     <div x-data="{ state: $wire.entangle('{{ $getStatePath() }}') }"
-        x-on:close-modal.window="$event.detail.fieldId == '{{ $getStatePath() }}' ? state = $event.detail.media : null"
+        x-on:close-modal.window="$event.detail.fieldId == '{{ $getStatePath() }}' ? state = $event.detail.media.id : null"
         class="w-full">
 
         @if (!$getState())

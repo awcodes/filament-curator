@@ -103,12 +103,6 @@ class MakeInstallCuratorCommand extends Command
             $this->info('Database migrated.');
         }
 
-        (new Filesystem())->ensureDirectoryExists(lang_path());
-        (new Filesystem())->copyDirectory(__DIR__ . '/../../resources/lang', lang_path('/vendor/filament-curator'));
-
-        (new Filesystem())->ensureDirectoryExists(lang_path());
-        (new Filesystem())->copyDirectory(__DIR__ . '/../../resources/views', resource_path('/views/vendor/filament-curator'));
-
         $this->call('curator:publish');
 
         $this->info('Published Filament Curator\'s translations, views & Resource.');
