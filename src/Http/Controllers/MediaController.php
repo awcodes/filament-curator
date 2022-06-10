@@ -7,9 +7,14 @@ use Illuminate\Routing\Controller;
 
 class MediaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $files = resolve(config('filament-curator.model'))->latest()->paginate(25);
+        $files = resolve(config('filament-curator.model'))->where('id', '<>',  $request->media_id)->latest()->paginate(25);
+
+        if ($request->has('media_id') && !$request->has('page')) {
+            $selected = resolve(config('filament-curator.model'))->where('id', $request->media_id)->first();
+            $files->prepend($selected);
+        }
 
         return response()->json($files, 200);
     }
@@ -20,7 +25,7 @@ class MediaController extends Controller
             ->orWhere('alt', 'like', '%' . $request->q . '%')
             ->orWhere('caption', 'like', '%' . $request->q . '%')
             ->orWhere('description', 'like', '%' . $request->q . '%')
-            ->paginate(25);
+            ->paginate(50);
 
         return response()->json($files, 200);
     }

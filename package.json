@@ -17,6 +17,6 @@
   "license": "MIT",
   "devDependencies": {
     "laravel-mix": "^6.0.43",
-    "tailwindcss": "^3.0.23"
+    "tailwindcss": "^3.1"
   }
 }

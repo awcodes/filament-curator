@@ -26,6 +26,15 @@ Install Filament Curator into your app. This will publish the necessary migratio
 php artisan curator:install
 ```
 
+If you are using a custom Filament Admin Theme, be sure to add this package to your `tailwind.config.js` file.
+
+```js
+content: [
+    ...
+    "./vendor/awcodes/filament-curator/**/*.blade.php",
+],
+```
+
 ## Image Sizes
 
 By default Curator will generate image sizes for each uploaded image based on the sizes setting in the config file. If you want to disable image sizes completely then set the sizes key to an empty array.

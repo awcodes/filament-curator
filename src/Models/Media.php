@@ -67,6 +67,7 @@ class Media extends Model
         'thumbnail_url',
         'medium_url',
         'large_url',
+        'size_for_humans',
     ];
 
     public function getUrlAttribute()
@@ -102,6 +103,11 @@ class Media extends Model
     public function getUrlForSize(string $size = 'large')
     {
         return Storage::disk($this->disk)->url($this->public_id . '-' . $size . '.' . $this->ext);
+    }
+
+    public function getSizeForHumansAttribute()
+    {
+        return $this->sizeForHumans();
     }
 
     public function sizeForHumans(int $precision = 1): string

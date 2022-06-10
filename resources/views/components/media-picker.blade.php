@@ -9,14 +9,13 @@
 
     <div x-data="{ state: $wire.entangle('{{ $getStatePath() }}') }"
         x-on:close-modal.window="$event.detail.fieldId == '{{ $getStatePath() }}' ? state = $event.detail.media.id : null"
-        class="w-full">
-
+        class="w-full filament-curator">
         @if (!$getState())
             <div>
                 <x-filament::button type="button"
                     :outlined="true"
                     x-on:click="$dispatch('open-modal', {id: 'filament-curator-media-picker', fieldId: '{{ $getStatePath() }}'})">
-                    Add Media
+                    {{ __('Add Media') }}
                 </x-filament::button>
             </div>
         @else
@@ -24,15 +23,27 @@
                 $currentItem = $getCurrentItem($getState());
             @endphp
             <div
-                class="relative block w-full h-64 overflow-hidden transition duration-75 border border-gray-300 rounded-lg shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                class="relative block w-full h-64 overflow-hidden transition duration-75 border border-gray-300 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 dark:text-white">
                 <img src="{{ $currentItem['url'] }}"
                     alt="{{ $currentItem['alt'] }}"
                     class="object-cover w-full h-full checkered" />
-                <button type="button"
-                    x-on:click="state = null"
-                    class="absolute flex items-center justify-center w-10 h-10 text-white rounded-full top-4 left-4 !bg-black/75">
-                    <x-heroicon-s-x class="w-6 h-6" />
-                </button>
+                <div class="absolute top-0 right-0 flex bg-gray-900 divide-x divide-gray-700 rounded-bl-lg shadow-md">
+                    <button type="button"
+                        x-on:click="$dispatch('open-modal', {id: 'filament-curator-media-picker', fieldId: '{{ $getStatePath() }}', mediaId: {{ $currentItem['id'] }} })"
+                        class="flex items-center justify-center flex-none w-10 h-10 transition text-primary-600 hover:text-primary-500 dark:text-primary-500 dark:hover:text-primary-400">
+                        <x-heroicon-s-pencil class="w-4 h-4" />
+                    </button>
+                    <button type="button"
+                        x-on:click="state = null"
+                        class="flex items-center justify-center flex-none w-10 h-10 transition text-danger-600 hover:text-danger-500 dark:text-danger-500 dark:hover:text-danger-400">
+                        <x-heroicon-s-trash class="w-4 h-4" />
+                    </button>
+                </div>
+                <div
+                    class="absolute inset-x-0 bottom-0 flex items-center justify-between px-4 pt-10 pb-4 text-xs text-white bg-gradient-to-t from-black/80 to-transparent">
+                    <p class="truncate">{{ $currentItem['filename'] }}</p>
+                    <p>{{ $currentItem['size_for_humans'] }}</p>
+                </div>
             </div>
         @endif
     </div>
