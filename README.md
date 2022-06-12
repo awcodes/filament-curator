@@ -48,7 +48,7 @@ By default Curator will generate image sizes for each uploaded image based on th
 Include the MediaPicker button in your forms to trigger the modal and either select an existing image or upload a new one.
 
 ```php
-use FilamentCurator\Forms\MediaPicker;
+use FilamentCurator\Forms\Components\MediaPicker;
 
 MediaPicker::make(string $fieldName)
     ->label(string $customLabel)
