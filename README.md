@@ -10,7 +10,7 @@ A media picker plugin for Filament Admin.
 
 ![Upload View](./images/upload-view.png)
 
-![Button](./images/button.png)
+![Field View](./images/field-view.png)
 
 ## Installation
 
@@ -41,6 +41,14 @@ By default Curator will generate image sizes for each uploaded image based on th
 
 ```php
 'sizes' => [],
+```
+
+## Cloud Providers Table Display
+
+By default in the Media Resource table the disk icon is set to display a cloud if the disk is either 'Cloudinary' or 's3'. If you would like to extend or change this you can do so in the `filament-curator.php` config file.
+
+```php
+'cloud_disks' => ['cloudinary', 's3', 'your_cloud_provider'];
 ```
 
 ## Usage
