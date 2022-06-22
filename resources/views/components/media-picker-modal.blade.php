@@ -236,12 +236,20 @@
                                                         class="relative aspect-square">
                                                         <button type="button"
                                                             x-on:click.prevent="setSelected(file.id)"
-                                                            class="block overflow-hidden bg-gray-700 rounded-sm">
-                                                            <img x-bind:src="file.thumbnail_url"
-                                                                x-bind:alt="file.alt"
-                                                                width="300"
-                                                                height="300"
-                                                                class="block w-full h-full checkered" />
+                                                            class="block w-full h-full overflow-hidden bg-gray-700 rounded-sm">
+                                                            <template x-if="file.type.includes('image')">
+                                                                <img x-bind:src="file.thumbnail_url"
+                                                                    x-bind:alt="file.alt"
+                                                                    width="300"
+                                                                    height="300"
+                                                                    class="block w-full h-full checkered" />
+                                                            </template>
+                                                            <template x-if="!file.type.includes('image')">
+                                                                <x-filament-curator::document-image icon-size="lg">
+                                                                    <x-slot name="label"><span
+                                                                            x-text="file.filename"></span></x-slot>
+                                                                </x-filament-curator::document-image>
+                                                            </template>
                                                         </button>
                                                         <button x-on:click="setSelected(null)"
                                                             style="display: none;"
@@ -290,11 +298,19 @@
 
                                                 <div
                                                     class="flex justify-center mb-4 overflow-hidden border border-gray-300 rounded dark:border-gray-700 checkered">
-                                                    <img x-bind:src="selected?.medium_url"
-                                                        x-bind:alt="selected?.alt"
-                                                        x-bind:width="selected?.width"
-                                                        x-bind:height="selected?.height"
-                                                        class="block object-cover h-full" />
+                                                    <template x-if="selected?.type.includes('image')">
+                                                        <img x-bind:src="selected?.medium_url"
+                                                            x-bind:alt="selected?.alt"
+                                                            x-bind:width="selected?.width"
+                                                            x-bind:height="selected?.height"
+                                                            class="block object-cover h-full" />
+                                                    </template>
+                                                    <template x-if="!selected?.type.includes('image')">
+                                                        <x-filament-curator::document-image icon-size="lg">
+                                                            <x-slot name="label"><span
+                                                                    x-text="selected?.filename"></span></x-slot>
+                                                        </x-filament-curator::document-image>
+                                                    </template>
                                                 </div>
 
                                                 {{ $this->form }}
