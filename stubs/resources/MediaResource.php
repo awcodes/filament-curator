@@ -2,23 +2,25 @@
 
 namespace App\Filament\Resources\Curator;
 
-use FilamentCurator\Models\Media;
-use Filament\Resources\Table;
 use Filament\Resources\Form;
+use Filament\Resources\Table;
 use Filament\Resources\Resource;
-use FilamentCurator\Forms\Components\MediaUpload;
+use FilamentCurator\Models\Media;
 use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Textarea;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\ViewField;
-use Filament\Tables\Columns\ImageColumn;
 use Filament\Forms\Components\Placeholder;
-use Filament\Tables\Columns\IconColumn;
+use FilamentCurator\Forms\Components\MediaUpload;
+use FilamentCurator\Tables\Columns\ThumbnailColumn;
 use App\Filament\Resources\Curator\MediaResource\Pages\EditMedia;
 use App\Filament\Resources\Curator\MediaResource\Pages\ListMedia;
 use App\Filament\Resources\Curator\MediaResource\Pages\CreateMedia;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\EditAction;
 
 class MediaResource extends Resource
 {
@@ -41,7 +43,7 @@ class MediaResource extends Resource
                                     ->preserveFilenames(config('filament-curator.preserve_file_names'))
                                     ->disableLabel()
                                     ->maxWidth(5000)
-                                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'application/pdf'])
+                                    ->acceptedFileTypes(config('filament-curator.accepted_file_types'))
                                     ->directory(config('filament-curator.directory', 'images'))
                                     ->disk(config('filament-curator.disk', 'public'))
                                     ->required()
@@ -117,29 +119,34 @@ class MediaResource extends Resource
     {
         return $table
             ->columns([
-                ImageColumn::make('thumbnail_url'),
+                ThumbnailColumn::make('thumbnail_url')->size(40),
                 TextColumn::make('public_id')
                     ->searchable()
+                    ->sortable(),
+                TextColumn::make('ext')
                     ->sortable(),
                 IconColumn::make('disk')
                     ->options([
                         'heroicon-o-server',
                         'heroicon-o-cloud' => function ($state): bool {
-                            return in_array($state, ['cloudinary', 's3']);
+                            return in_array($state, config('filament-curator.cloud_disks'));
                         },
                     ])
                     ->colors([
                         'secondary', 'success' => function ($state): bool {
-                            return in_array($state, ['cloudinary', 's3']);
+                            return in_array($state, config('filament-curator.cloud_disks'));
                         },
                     ]),
                 TextColumn::make('updated_at')
-                    ->label('Date')
                     ->date()
                     ->sortable(),
             ])
             ->filters([
                 //
+            ])
+            ->actions([
+                EditAction::make()->iconButton(),
+                DeleteAction::make()->iconButton(),
             ]);
     }
 

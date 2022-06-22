@@ -3,7 +3,8 @@
 namespace App\Filament\Resources\Curator\MediaResource\Pages;
 
 use App\Filament\Resources\Curator\MediaResource;
-use Filament\Pages\Actions\ButtonAction;
+use Filament\Pages\Actions\Action;
+use Filament\Pages\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditMedia extends EditRecord
@@ -12,14 +13,10 @@ class EditMedia extends EditRecord
 
     public function getActions(): array
     {
-        return array_merge(parent::getActions(), [
-            ButtonAction::make('view')->color('gray')->url($this->record->url)->openUrlInNewTab(),
-            ButtonAction::make('save')->action('saveFormFromAction'),
-        ]);
-    }
-
-    public function saveFormFromAction(): void
-    {
-        $this->save();
+        return [
+            Action::make('save')->action('save'),
+            Action::make('view')->color('secondary')->url($this->record->url)->openUrlInNewTab(),
+            DeleteAction::make(),
+        ];
     }
 }

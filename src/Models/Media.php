@@ -29,7 +29,9 @@ class Media extends Model
 
         static::created(function (Media $media) {
             $media->refresh();
-            self::generateThumbs($media);
+            if (str($media->type)->contains("image")) {
+                self::generateThumbs($media);
+            }
         });
 
         static::deleted(function (Media $media) {
@@ -112,20 +114,23 @@ class Media extends Model
 
     public function sizeForHumans(int $precision = 1): string
     {
-        $units = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'];
-
-        for ($i = 0; $this->size > 1024; $i++) {
-            $this->size /= 1024;
+        $units = ["B", "KiB", "MiB", "GiB", "TiB", "PiB"];
+        $size = $this->size;
+        for ($i = 0; $size > 1024; $i++) {
+            $size /= 1024;
         }
 
-        return round($this->size, $precision) . ' ' . $units[$i];
+        return round($size, $precision) . " " . $units[$i];
     }
 
     private static function generateThumbs(Media $media): void
     {
         $pathinfo = pathinfo($media->filename);
         foreach (config('filament-curator.sizes') as $name => $mediaSize) {
-            $image = Image::make(Storage::disk($media->disk)->path($media->filename));
+
+            $image = Image::make(
+                Storage::disk($media->disk)->url($media->filename)
+            );
 
             if ($mediaSize['width'] == $mediaSize['height']) {
                 $image->fit($mediaSize['width']);
@@ -138,7 +143,11 @@ class Media extends Model
             }
 
             $image->encode(null, $mediaSize['quality']);
-            Storage::disk($media->disk)->put($pathinfo['dirname'] . '/' . $pathinfo['filename'] . '-' . $name . '.' . $media->ext, $image);
+
+            Storage::disk($media->disk)->put(
+                "{$pathinfo["dirname"]}/{$pathinfo["filename"]}-{$name}.{$media->ext}",
+                $image->stream()
+            );
         }
     }
 }

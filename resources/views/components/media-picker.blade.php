@@ -24,9 +24,16 @@
             @endphp
             <div
                 class="relative block w-full h-64 overflow-hidden transition duration-75 border border-gray-300 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 dark:text-white">
-                <img src="{{ $currentItem['url'] }}"
-                    alt="{{ $currentItem['alt'] }}"
-                    class="object-cover w-full h-full checkered" />
+
+                @if (str($currentItem['type'])->contains('image'))
+                    <img src="{{ $currentItem['url'] }}"
+                        alt="{{ $currentItem['alt'] }}"
+                        class="object-cover w-full h-full checkered" />
+                @else
+                    <x-filament-curator::document-image label="{{ $currentItem['filename'] }}"
+                        icon-size="xl" />
+                @endif
+
                 <div class="absolute top-0 right-0 flex bg-gray-900 divide-x divide-gray-700 rounded-bl-lg shadow-md">
                     <button type="button"
                         x-on:click="$dispatch('open-modal', {id: 'filament-curator-media-picker', fieldId: '{{ $getStatePath() }}', mediaId: {{ $currentItem['id'] }} })"
