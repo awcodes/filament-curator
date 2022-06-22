@@ -119,9 +119,11 @@ class MediaResource extends Resource
     {
         return $table
             ->columns([
-                ThumbnailColumn::make('thumbnail_url'),
+                ThumbnailColumn::make('thumbnail_url')->size(40),
                 TextColumn::make('public_id')
                     ->searchable()
+                    ->sortable(),
+                TextColumn::make('ext')
                     ->sortable(),
                 IconColumn::make('disk')
                     ->options([
@@ -136,7 +138,6 @@ class MediaResource extends Resource
                         },
                     ]),
                 TextColumn::make('updated_at')
-                    ->label('Date')
                     ->date()
                     ->sortable(),
             ])

@@ -127,7 +127,10 @@ class Media extends Model
     {
         $pathinfo = pathinfo($media->filename);
         foreach (config('filament-curator.sizes') as $name => $mediaSize) {
-            $image = Image::make(Storage::disk($media->disk)->path($media->filename));
+
+            $image = Image::make(
+                Storage::disk($media->disk)->url($media->filename)
+            );
 
             if ($mediaSize['width'] == $mediaSize['height']) {
                 $image->fit($mediaSize['width']);
@@ -140,7 +143,11 @@ class Media extends Model
             }
 
             $image->encode(null, $mediaSize['quality']);
-            Storage::disk($media->disk)->put($pathinfo['dirname'] . '/' . $pathinfo['filename'] . '-' . $name . '.' . $media->ext, $image);
+
+            Storage::disk($media->disk)->put(
+                "{$pathinfo["dirname"]}/{$pathinfo["filename"]}-{$name}.{$media->ext}",
+                $image->stream()
+            );
         }
     }
 }
