@@ -14,6 +14,7 @@ use Cloudinary\Transformation\Delivery;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use stdClass;
 
 class Media extends Model
 {
@@ -22,8 +23,10 @@ class Media extends Model
     protected static function booted()
     {
         static::creating(function (Media $media) {
-            foreach ($media->filename as $k => $v) {
-                $media->{$k} = $v;
+            if (is_array($media->filename) || $media->filename instanceof stdClass) {
+                foreach ($media->filename as $k => $v) {
+                    $media->{$k} = $v;
+                }
             }
         });
 
