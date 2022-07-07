@@ -5,8 +5,7 @@ namespace FilamentCurator\Forms\Components;
 use Livewire\Component;
 use Filament\Facades\Filament;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\TextInput;
+use Filament\Forms;
 use Filament\Forms\Concerns\InteractsWithForms;
 
 class MediaPickerModal extends Component implements HasForms
@@ -39,13 +38,18 @@ class MediaPickerModal extends Component implements HasForms
     protected function getFormSchema(): array
     {
         return [
-            TextInput::make('alt')
-                ->label('Alt Text')
-                ->helperText('<span class="block -mt-1 text-xs"><a href="https://www.w3.org/WAI/tutorials/images/decision-tree" target="_blank" rel="noopener" class="underline text-primary-500 hover:text-primary-600 focus:text-primary-600">Learn how to describe the purpose of the image</a>. Leave empty if the image is purely decorative.</span>'),
-            TextInput::make('title'),
-            Textarea::make('caption')
+            Forms\Components\TextInput::make('alt')
+                ->label(__('filament-curator::media-form.labels.alt'))
+                ->extraInputAttributes(['aria-describedby' => "edit-alt-helper"]),
+            Forms\Components\View::make('filament-curator::alt-helper')
+                ->extraAttributes(['id' => 'edit-alt-helper']),
+            Forms\Components\TextInput::make('title')
+                ->label(__('filament-curator::media-form.labels.title')),
+            Forms\Components\Textarea::make('caption')
+                ->label(__('filament-curator::media-form.labels.caption'))
                 ->rows(2),
-            Textarea::make('description')
+            Forms\Components\Textarea::make('description')
+                ->label(__('filament-curator::media-form.labels.description'))
                 ->rows(2),
         ];
     }
@@ -53,7 +57,7 @@ class MediaPickerModal extends Component implements HasForms
     public function update(): void
     {
         $item = resolve(config('filament-curator.model'))->where('id', $this->selected['id'])->first();
-        Filament::notify('success', 'Item updated successfully.');
+        Filament::notify('success', __('filament-curator::media-form.notices.success'));
         $item->update($this->data);
     }
 

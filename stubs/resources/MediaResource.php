@@ -6,21 +6,22 @@ use Filament\Resources\Form;
 use Filament\Resources\Table;
 use Filament\Resources\Resource;
 use FilamentCurator\Models\Media;
+use Filament\Forms\Components\View;
 use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Textarea;
+use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\ViewField;
+use Filament\Tables\Actions\DeleteAction;
 use Filament\Forms\Components\Placeholder;
 use FilamentCurator\Forms\Components\MediaUpload;
 use FilamentCurator\Tables\Columns\ThumbnailColumn;
 use App\Filament\Resources\Curator\MediaResource\Pages\EditMedia;
 use App\Filament\Resources\Curator\MediaResource\Pages\ListMedia;
 use App\Filament\Resources\Curator\MediaResource\Pages\CreateMedia;
-use Filament\Tables\Actions\DeleteAction;
-use Filament\Tables\Actions\EditAction;
 
 class MediaResource extends Resource
 {
@@ -34,7 +35,7 @@ class MediaResource extends Resource
             ->schema([
                 Group::make()
                     ->schema([
-                        Section::make('File')
+                        Section::make(__('filament-curator::resource.labels.file'))
                             ->hidden(function ($livewire) {
                                 return $livewire instanceof EditMedia;
                             })
@@ -50,7 +51,7 @@ class MediaResource extends Resource
                                     ->maxFiles(1)
                                     ->panelAspectRatio('24:9')
                             ]),
-                        Section::make('Preview')
+                        Section::make(__('filament-curator::resource.labels.preview'))
                             ->hidden(function ($livewire) {
                                 return $livewire instanceof CreateMedia;
                             })
@@ -65,28 +66,28 @@ class MediaResource extends Resource
                         Section::make('Details')
                             ->schema([
                                 Placeholder::make('uploaded_on')
-                                    ->label('Uploaded on')
+                                    ->label(__('filament-curator::resource.labels.uploaded_on'))
                                     ->content(fn ($record): string => $record ? $record->created_at->format('F j, Y') : '-'),
                                 Placeholder::make('file_type')
-                                    ->label('File Type')
+                                    ->label(__('filament-curator::resource.labels.file_type'))
                                     ->content(fn ($record): string => $record ? $record->type : '-'),
                                 Placeholder::make('file_size')
-                                    ->label('File Size')
+                                    ->label(__('filament-curator::resource.labels.file_size'))
                                     ->content(fn ($record): string => $record ? $record->sizeForHumans() : '-'),
                                 Placeholder::make('dimensions')
-                                    ->label('Dimensions')
+                                    ->label(__('filament-curator::resource.labels.dimensions'))
                                     ->content(fn ($record): string => $record ? $record->width . ' x ' . $record->height : '-'),
                                 Placeholder::make('disk')
-                                    ->label('Disk')
+                                    ->label(__('filament-curator::resource.labels.disk'))
                                     ->content(fn ($record): string => $record ? $record->disk : '-'),
                                 Placeholder::make('directory')
-                                    ->label('Directory')
+                                    ->label(__('filament-curator::resource.labels.directory'))
                                     ->content(fn ($record): string => $record ? $record->directory : '-'),
                                 Placeholder::make('public_id')
-                                    ->label('Public Id')
+                                    ->label(__('filament-curator::resource.labels.public_id'))
                                     ->content(fn ($record): string => $record ? $record->public_id : '-')->columnSpan(['lg' => 4]),
                                 Placeholder::make('file_url')
-                                    ->label('File URL')
+                                    ->label(__('filament-curator::resource.labels.file_url'))
                                     ->content(fn ($record): string => $record ? $record->url : '-')->columnSpan(['lg' => 4]),
                             ])->columns(['lg' => 4]),
                     ])
@@ -99,13 +100,19 @@ class MediaResource extends Resource
                         Section::make('Meta')
                             ->schema([
                                 TextInput::make('alt')
-                                    ->helperText('<span class="block -mt-1 text-xs"><a href="https://www.w3.org/WAI/tutorials/images/decision-tree" target="_blank" rel="noopener" class="underline text-primary-500 hover:text-primary-600 focus:text-primary-600">Learn how to describe the purpose of the image</a>. Leave empty if the image is purely decorative.</span>'),
-                                TextInput::make('title'),
+                                    ->label(__('filament-curator::media-form.labels.alt'))
+                                    ->extraInputAttributes(['aria-describedby' => "resource-alt-helper"]),
+                                View::make('filament-curator::alt-helper')
+                                    ->extraAttributes(['id' => 'resource-alt-helper']),
+                                TextInput::make('title')
+                                    ->label(__('filament-curator::media-form.labels.title')),
                                 Textarea::make('caption')
+                                    ->label(__('filament-curator::media-form.labels.caption'))
                                     ->rows(2),
                                 Textarea::make('description')
+                                    ->label(__('filament-curator::media-form.labels.description'))
                                     ->rows(2),
-                            ])
+                                ])
                     ])->columnSpan([
                         'lg' => 'full',
                         'xl' => 1,
@@ -121,11 +128,14 @@ class MediaResource extends Resource
             ->columns([
                 ThumbnailColumn::make('thumbnail_url')->size(40),
                 TextColumn::make('public_id')
+                    ->label(__('filament-curator::resource.labels.public_id'))
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('ext')
+                    ->label(__('filament-curator::resource.labels.ext'))
                     ->sortable(),
                 IconColumn::make('disk')
+                    ->label(__('filament-curator::resource.labels.disk'))
                     ->options([
                         'heroicon-o-server',
                         'heroicon-o-cloud' => function ($state): bool {
@@ -138,6 +148,7 @@ class MediaResource extends Resource
                         },
                     ]),
                 TextColumn::make('updated_at')
+                    ->label(__('filament-curator::resource.labels.updated_at'))
                     ->date()
                     ->sortable(),
             ])
