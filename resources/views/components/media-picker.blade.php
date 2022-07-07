@@ -15,7 +15,7 @@
                 <x-filament::button type="button"
                     :outlined="true"
                     x-on:click="$dispatch('open-modal', {id: 'filament-curator-media-picker', fieldId: '{{ $getStatePath() }}'})">
-                    {{ __('Add Media') }}
+                    {{ $getButtonLabel() }}
                 </x-filament::button>
             </div>
         @else

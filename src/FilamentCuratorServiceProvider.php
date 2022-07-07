@@ -30,6 +30,7 @@ class FilamentCuratorServiceProvider extends PluginServiceProvider
             ->hasConfigFile()
             ->hasViews()
             ->hasRoute("web")
+            ->hasTranslations()
             ->hasCommands([
                 RegenerateThumbnails::class,
                 MakeInstallCuratorCommand::class,

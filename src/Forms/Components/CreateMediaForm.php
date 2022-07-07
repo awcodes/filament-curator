@@ -45,7 +45,7 @@ class CreateMediaForm extends Component implements HasForms
             Forms\Components\Group::make()
                 ->schema([
                     MediaUpload::make('filename')
-                        ->label('File')
+                        ->label(__('filament-curator::media-form.labels.file'))
                         ->preserveFilenames(config('filament-curator.preserve_file_names'))
                         ->maxWidth(config('filament-curator.max_width'))
                         ->minSize(config('filament-curator.min_size'))
@@ -61,12 +61,17 @@ class CreateMediaForm extends Component implements HasForms
                     Forms\Components\Group::make()
                         ->schema([
                             Forms\Components\TextInput::make('alt')
-                                ->label('Alt Text')
-                                ->helperText('<span class="block -mt-1 text-xs"><a href="https://www.w3.org/WAI/tutorials/images/decision-tree" target="_blank" rel="noopener" class="underline text-primary-500 hover:text-primary-600 focus:text-primary-600">Learn how to describe the purpose of the image</a>. Leave empty if the image is purely decorative.</span>'),
-                            Forms\Components\TextInput::make('title'),
+                                ->label(__('filament-curator::media-form.labels.alt'))
+                                ->extraInputAttributes(['aria-describedby' => "create-alt-helper"]),
+                            Forms\Components\View::make('filament-curator::alt-helper')
+                                ->extraAttributes(['id' => 'create-alt-helper']),
+                            Forms\Components\TextInput::make('title')
+                                ->label(__('filament-curator::media-form.labels.title')),
                             Forms\Components\Textarea::make('caption')
+                                ->label(__('filament-curator::media-form.labels.caption'))
                                 ->rows(2),
                             Forms\Components\Textarea::make('description')
+                                ->label(__('filament-curator::media-form.labels.description'))
                                 ->rows(2),
                         ])
                         ->columnSpan(['md' => 1]),

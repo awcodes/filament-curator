@@ -130,12 +130,12 @@
                         'flex items-center justify-between py-2 pl-4 pr-2 border-b border-gray-300 filament-curator-media-picker-modal-header',
                         'dark:border-gray-700' => config('filament.dark_mode'),
                     ])>
-                    <h3 class="font-bold">{{ __('Media Picker') }}</h3>
+                    <h3 class="font-bold">{{ __('filament-curator::media-picker-modal.heading') }}</h3>
                     <div
                         class="flex items-center space-x-1 rtl:space-x-reverse group filament-forms-text-input-component">
                         <label for="media-search-input"
                             class="sr-only">
-                            {{ __('Search') }}
+                            {{ __('filament-curator::media-picker-modal.search_label') }}
                         </label>
 
                         <div class="flex-1">
@@ -174,7 +174,9 @@
                                             'border-gray-300 dark:border-gray-700 bg-gray-200 dark:bg-gray-700' :
                                             'border-transparent'"
                                         class="inline-flex px-4 py-2 border-t border-l border-r rounded-t-md"
-                                        role="tab">{{ __('Upload Media') }}</button>
+                                        role="tab">
+                                            {{ __('filament-curator::media-picker-modal.upload_tab') }}
+                                        </button>
                                 </li>
                                 <li>
                                     <button :id="$id('tab', whichChild($el.parentElement, $refs.tablist))"
@@ -187,7 +189,9 @@
                                             'border-gray-300 dark:border-gray-700 bg-gray-200 dark:bg-gray-700' :
                                             'border-transparent'"
                                         class="inline-flex px-4 py-2 border-t border-l border-r rounded-t-md"
-                                        role="tab">{{ __('Media Library') }}</button>
+                                        role="tab">
+                                            {{ __('filament-curator::media-picker-modal.media_library_tab') }}
+                                        </button>
                                 </li>
                             </ul>
 
@@ -259,7 +263,9 @@
                                                                 class="flex items-center justify-center w-8 h-8 text-white rounded-full bg-primary-500 drop-shadow">
                                                                 <x-heroicon-s-check class="w-5 h-5" />
                                                             </div>
-                                                            <span class="sr-only">{{ __('Deselect') }}</span>
+                                                            <span class="sr-only">
+                                                                {{ __('filament-curator::media-picker-modal.deselect') }}
+                                                            </span>
                                                         </button>
                                                     </li>
                                                 </template>
@@ -270,13 +276,13 @@
                                                     <button type="button"
                                                         x-on:click.prevent="loadMoreFiles()"
                                                         class="absolute inset-0 flex items-center justify-center !bg-gray-700 focus:outline focus:outline-offset-1 focus:outline-2 focus:outline-primary-500 focus:shadow-lg">
-                                                        {{ __('Load More') }}
+                                                        {{ __('filament-curator::media-picker-modal.load_more') }}
                                                     </button>
                                                 </li>
                                                 <li x-show="files.length === 0"
                                                     style="display: none;"
                                                     class="col-span-3 sm:col-span-4 md:col-span-6 lg:col-span-8">
-                                                    {{ __('No Files in the library or nothing found for your search.') }}
+                                                    {{ __('filament-curator::media-picker-modal.empty_results') }}
                                                 </li>
                                             </ul>
                                             {{-- End File List --}}
@@ -293,7 +299,7 @@
                                                 class="p-4">
 
                                                 <h4 class="mb-4 font-bold">
-                                                    {{ __('Edit Media') }}
+                                                    {{ __('filament-curator::media-picker-modal.edit_media') }}
                                                 </h4>
 
                                                 <div
@@ -335,19 +341,19 @@
                                                                 </path>
                                                             </svg>
                                                         </span>
-                                                        <span>{{ __('Save') }}</span>
+                                                        <span>{{ __('filament-curator::media-picker-modal.edit_save') }}</span>
                                                     </x-filament::button>
 
                                                     <x-filament::button type="button"
                                                         color="danger"
                                                         wire:click.prevent="destroy">
-                                                        {{ __('Delete') }}
+                                                        {{ __('filament-curator::media-picker-modal.edit_delete') }}
                                                     </x-filament::button>
 
                                                     <x-filament::button type="button"
                                                         color="secondary"
                                                         x-on:click="selected = null">
-                                                        {{ __('Cancel') }}
+                                                        {{ __('filament-curator::media-picker-modal.edit_cancel') }}
                                                     </x-filament::button>
 
                                                 </div>
@@ -370,7 +376,7 @@
                         x-bind:disabled="!selected"
                         x-on:click="$dispatch('insert-media', {id: 'filament-curator-media-picker', media: selected, fieldId: fieldId}); $dispatch('close-modal', {id: 'filament-curator-media-picker', media: selected, fieldId: fieldId})"
                         class="inline-flex items-center justify-center gap-1 px-4 text-sm font-medium text-white transition-colors border border-transparent rounded-lg shadow focus:outline-none focus:ring-offset-2 focus:ring-2 focus:ring-inset filament-button h-9 focus:ring-white bg-success-600 hover:enabled:bg-success-500 focus:bg-success-700 focus:ring-offset-success-700 disabled:opacity-70">
-                        {{ __('Use Selected Image') }}
+                        {{ __('filament-curator::media-picker-modal.use_selected_image') }}
                     </button>
                 </div>
             </div>
