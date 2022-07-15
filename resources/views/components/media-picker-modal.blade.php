@@ -201,7 +201,7 @@
                                     x-bind:aria-labelledby="$id('tab', whichChild($el, $el.parentElement))"
                                     role="tabpanel"
                                     class="h-full p-4 overflow-y-scroll md:p-6">
-                                    @livewire('create-media-form')
+                                    @livewire('filament-curator-create-media-form')
                                 </section>
                                 <section x-show="isTabSelected($id('tab', whichChild($el, $el.parentElement)))"
                                     x-bind:aria-labelledby="$id('tab', whichChild($el, $el.parentElement))"

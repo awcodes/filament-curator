@@ -57,7 +57,7 @@
 
     @once
         @push('modals')
-            @livewire('media-picker-modal')
+            @livewire('filament-curator-media-picker-modal')
         @endpush
     @endonce
 </x-forms::field-wrapper>
