@@ -54,6 +54,7 @@ class CreateMediaForm extends Component implements HasForms
                         ->acceptedFileTypes(config('filament-curator.accepted_file_types'))
                         ->directory(config('filament-curator.directory', 'images'))
                         ->disk(config('filament-curator.disk', 'public'))
+                        ->visibility(config('filament-curator.visibility', 'public'))
                         ->required()
                         ->maxFiles(1)
                         ->panelAspectRatio('16:9')
