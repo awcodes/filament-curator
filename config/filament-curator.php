@@ -4,6 +4,7 @@ return [
     'model' => \FilamentCurator\Models\Media::class,
     'disk' => 'public',
     'directory' => 'media',
+    'visibility' => 'public',
     'preserve_file_names' => false,
     'accepted_file_types' => ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'application/pdf'],
     'max_width' => 5000,
