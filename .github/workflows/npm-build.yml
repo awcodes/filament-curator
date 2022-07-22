@@ -20,7 +20,7 @@ jobs:
         run: npm ci
 
       - name: Build Assests
-        run: npm run production
+        run: npm run build
 
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v4
