@@ -96,6 +96,17 @@ class Media extends CuratorMedia
 }
 ```
 
+## Themeing
+
+If you are using a custom theme for Filament you will need to add this plugin's views to your Tailwind CSS config.
+
+```js
+content: [
+    ...
+    "./vendor/awcodes/filament-curator/resources/views/**/*.blade.php",
+],
+```
+
 ## Versioning
 
 This projects follow the [Semantic Versioning](https://semver.org/) guidelines.
