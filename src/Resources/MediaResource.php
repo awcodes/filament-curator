@@ -1,11 +1,10 @@
 <?php
 
-namespace App\Filament\Resources\Curator;
+namespace FilamentCurator\Resources;
 
 use Filament\Resources\Form;
 use Filament\Resources\Table;
 use Filament\Resources\Resource;
-use FilamentCurator\Models\Media;
 use Filament\Forms\Components\View;
 use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Section;
@@ -19,15 +18,20 @@ use Filament\Tables\Actions\DeleteAction;
 use Filament\Forms\Components\Placeholder;
 use FilamentCurator\Forms\Components\MediaUpload;
 use FilamentCurator\Tables\Columns\ThumbnailColumn;
-use App\Filament\Resources\Curator\MediaResource\Pages\EditMedia;
-use App\Filament\Resources\Curator\MediaResource\Pages\ListMedia;
-use App\Filament\Resources\Curator\MediaResource\Pages\CreateMedia;
+use FilamentCurator\Resources\MediaResource\Pages\EditMedia;
+use FilamentCurator\Resources\MediaResource\Pages\ListMedia;
+use FilamentCurator\Resources\MediaResource\Pages\CreateMedia;
 
 class MediaResource extends Resource
 {
-    protected static ?string $model = Media::class;
+    protected static ?string $model = '';
 
     protected static ?string $navigationIcon = 'heroicon-o-photograph';
+
+    public static function getModel(): string
+    {
+        return config('filament-curator.model');
+    }
 
     public static function form(Form $form): Form
     {
