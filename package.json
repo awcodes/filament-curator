@@ -1,8 +1,8 @@
 {
   "private": true,
   "scripts": {
-    "dev": "npx tailwindcss -i resources/css/plugin.css -o resources/dist/filament-curator.css --watch",
-    "build": "npx tailwindcss -i resources/css/plugin.css -o resources/dist/filament-curator.css --minify"
+    "dev": "npx tailwindcss -i resources/css/plugin.css -o resources/dist/filament-curator.css --postcss --watch",
+    "build": "npx tailwindcss -i resources/css/plugin.css -o resources/dist/filament-curator.css --postcss --minify"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.7",
