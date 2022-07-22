@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Resources\Curator\MediaResource\Pages;
+namespace FilamentCurator\Resources\MediaResource\Pages;
 
-use App\Filament\Resources\Curator\MediaResource;
+use FilamentCurator\Resources\MediaResource;
 use Filament\Pages\Actions\Action;
 use Filament\Pages\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
@@ -15,7 +15,7 @@ class EditMedia extends EditRecord
     {
         return [
             Action::make('save')->action('save'),
-            Action::make('view')->color('secondary')->url($this->record->url)->openUrlInNewTab(),
+            Action::make('preview')->color('secondary')->url($this->record->url)->openUrlInNewTab(),
             DeleteAction::make(),
         ];
     }

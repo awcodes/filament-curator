@@ -26,15 +26,6 @@ Install Filament Curator into your app. This will publish the necessary migratio
 php artisan curator:install
 ```
 
-If you are using a custom Filament Admin Theme, be sure to add this package to your `tailwind.config.js` file.
-
-```js
-content: [
-    ...
-    "./vendor/awcodes/filament-curator/**/*.blade.php",
-],
-```
-
 ## Image Sizes
 
 By default Curator will generate image sizes for each uploaded image based on the sizes setting in the config file. If you want to disable image sizes completely then set the sizes key to an empty array.
@@ -85,12 +76,27 @@ $meta->ogImage->getSizeUrl('medium');
 $meta->ogImage->getSizeUrl('large');
 ```
 
-If you need additional functionality you can extend Curator's Media model with your own.
+## Custom Media Model
+
+If you need additional functionality you can extend Curator's Media model with your own and updating the 'model' setting in the config file with your model.
 
 ```php
 use FilamentCurator\Models\Media as CuratorMedia;
 
 class Media extends CuratorMedia
+{
+    // ... custom methods and properties
+}
+```
+
+## Custom Media Resources
+
+If you need addtional functionality from your resources you can extend Curator's Resources and views with your own and updating the 'media_resource' setting in the config file with your own resources.
+
+```php
+use FilamentCurator\Resrouces\MediaResource as CuratorMediaResource;
+
+class MediaResource extends CuratorMediaResource
 {
     // ... custom methods and properties
 }

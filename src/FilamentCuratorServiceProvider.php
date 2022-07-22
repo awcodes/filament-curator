@@ -34,14 +34,19 @@ class FilamentCuratorServiceProvider extends PluginServiceProvider
             ->hasCommands([
                 RegenerateThumbnails::class,
                 MakeInstallCuratorCommand::class,
-                MakePublishCuratorCommand::class,
             ])
             ->hasMigrations(['create_media_table']);
+
+
     }
 
     public function boot()
     {
         parent::boot();
+
+        $this->resources = [
+            config('filament-curator.media_resource'),
+        ];
 
         Livewire::component('filament-curator-media-picker-modal', Forms\Components\MediaPickerModal::class);
         Livewire::component('filament-curator-create-media-form', Forms\Components\CreateMediaForm::class);

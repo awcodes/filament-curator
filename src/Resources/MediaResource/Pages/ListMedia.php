@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Resources\Curator\MediaResource\Pages;
+namespace FilamentCurator\Resources\MediaResource\Pages;
 
-use App\Filament\Resources\Curator\MediaResource;
+use FilamentCurator\Resources\MediaResource;
 use Filament\Resources\Pages\ListRecords;
 
 class ListMedia extends ListRecords

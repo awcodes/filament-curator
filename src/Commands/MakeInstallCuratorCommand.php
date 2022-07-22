@@ -21,15 +21,6 @@ class MakeInstallCuratorCommand extends Command
 
     public function handle(): int
     {
-        $this->alert('The Following operations will be performed.');
-        $this->info('- Publish core package config');
-        $this->info('- Publish core package migration');
-        $this->warn('  - On fresh applications database will be migrated');
-        $this->warn('  - You can also force this behavior by supplying the --fresh option');
-        $this->info('- Publish Filament Resource');
-
-        $confirmed = $this->confirm('Do you wish to continue?', true);
-
         if ($this->CheckIfAlreadyInstalled() && !$this->option('fresh')) {
             $this->comment('Seems you have already installed the Core package!');
             $this->comment('You should run `curator:install --fresh` instead to refresh the Core package tables and setup.');
@@ -102,10 +93,6 @@ class MakeInstallCuratorCommand extends Command
             $this->call('migrate');
             $this->info('Database migrated.');
         }
-
-        $this->call('curator:publish');
-
-        $this->info('Published Filament Curator\'s translations, views & Resource.');
 
         $this->info('Filament Curator is now installed.');
     }
