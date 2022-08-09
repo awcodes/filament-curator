@@ -23,6 +23,13 @@ class FilamentCuratorServiceProvider extends PluginServiceProvider
         'filament-curator-styles' => __DIR__ . '/../resources/dist/filament-curator.css',
     ];
 
+    protected function getResources(): array
+    {
+        return [
+            config('filament-curator.media_resource'),
+        ];
+    }
+
     public function configurePackage(Package $package): void
     {
         $package
@@ -36,17 +43,11 @@ class FilamentCuratorServiceProvider extends PluginServiceProvider
                 MakeInstallCuratorCommand::class,
             ])
             ->hasMigrations(['create_media_table']);
-
-
     }
 
-    public function boot()
+    public function boot(): void
     {
         parent::boot();
-
-        $this->resources = [
-            config('filament-curator.media_resource'),
-        ];
 
         Livewire::component('filament-curator-media-picker-modal', Forms\Components\MediaPickerModal::class);
         Livewire::component('filament-curator-create-media-form', Forms\Components\CreateMediaForm::class);
