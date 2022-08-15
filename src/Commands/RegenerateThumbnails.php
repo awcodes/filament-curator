@@ -2,10 +2,12 @@
 
 namespace FilamentCurator\Commands;
 
-use FilamentCurator\Models\Media;
+use FilamentCurator\Thumbnails;
 use Illuminate\Console\Command;
+use FilamentCurator\Models\Media;
 use Intervention\Image\Facades\Image;
 use Illuminate\Support\Facades\Storage;
+use FilamentCurator\Facades\CuratorThumbnails;
 
 class RegenerateThumbnails extends Command
 {
@@ -32,39 +34,29 @@ class RegenerateThumbnails extends Command
     {
         $media = Media::all();
 
-        $this->info('Regenerating...');
+        if ($media->isNotEmpty()) {
+            $this->info('Regenerating...');
 
-        $media->map(function ($item) {
-            $pathinfo = pathinfo($item->filename);
+            $progress = $this->output->createProgressBar(count($media));
 
-            foreach (config('filament-curator.sizes') as $name => $mediaSize) {
-                /**
-                 * Delete existing sizes
-                 */
-                Storage::disk($item->disk)->delete($pathinfo['dirname'] . '/' . $pathinfo['filename'] . '-' . $name . '.' . $item->ext);
+            $progress->start();
 
-                /**
-                 * Generate new sizes
-                 */
-                $image = Image::make(Storage::disk($item->disk)->path($item->filename));
+            $this->newLine();
 
-                if ($mediaSize['width'] == $mediaSize['height']) {
-                    $image->fit($mediaSize['width']);
-                } else {
-                    $image->resize($mediaSize['width'], $mediaSize['height'], function ($constraint) use ($mediaSize) {
-                        if (!$mediaSize['height']) {
-                            $constraint->aspectRatio();
-                        }
-                    });
+            foreach ($media as $item) {
+                if (is_generateable($item->ext)) {
+                    CuratorThumbnails::destroy($item);
+                    CuratorThumbnails::generate($item);
                 }
 
-                $image->encode(null, $mediaSize['quality']);
-                Storage::disk($item->disk)->put($pathinfo['dirname'] . '/' . $pathinfo['filename'] . '-' . $name . '.' . $item->ext, $image);
+                $progress->advance();
             }
 
-            $this->info("Regenerated {$item->filename} thumbnails.");
-        });
+            $progress->finish();
+        } else {
+            $this->comment('Nothing to regenerate.');
+        }
 
-        return 0;
+        return self::SUCCESS;
     }
 }

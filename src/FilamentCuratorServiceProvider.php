@@ -40,10 +40,19 @@ class FilamentCuratorServiceProvider extends PluginServiceProvider
             ->hasRoute("web")
             ->hasTranslations()
             ->hasCommands([
-                RegenerateThumbnails::class,
                 InstallCommand::class,
+                RegenerateThumbnails::class,
             ])
             ->hasMigrations(['create_media_table']);
+    }
+
+    public function packageRegistered(): void
+    {
+        parent::packageRegistered();
+
+        $this->app->singleton('curator-thumbnails', function (): CuratorThumbnails {
+            return new CuratorThumbnails();
+        });
     }
 
     public function boot(): void

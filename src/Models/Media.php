@@ -2,19 +2,12 @@
 
 namespace FilamentCurator\Models;
 
-use Cloudinary\Cloudinary;
+use stdClass;
 use Illuminate\Support\Arr;
-use Cloudinary\Transformation\Format;
-use Cloudinary\Transformation\Resize;
-use Intervention\Image\Facades\Image;
-use Cloudinary\Transformation\FocusOn;
-use Cloudinary\Transformation\Gravity;
-use Cloudinary\Transformation\Quality;
-use Cloudinary\Transformation\Delivery;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
+use FilamentCurator\Facades\CuratorThumbnails;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use stdClass;
 
 class Media extends Model
 {
@@ -32,16 +25,11 @@ class Media extends Model
 
         static::created(function (Media $media) {
             $media->refresh();
-            if (str($media->type)->contains("image")) {
-                self::generateThumbs($media);
-            }
+            CuratorThumbnails::generate($media);
         });
 
         static::deleted(function (Media $media) {
-            $pathinfo = pathinfo($media->filename);
-            foreach (config('filament-curator.sizes') as $name => $data) {
-                Storage::disk($media->disk)->delete($pathinfo['dirname'] . '/' . $pathinfo['filename'] . '-' . $name . '.' . $media->ext);
-            }
+            CuratorThumbnails::destroy($media);
             Storage::disk($media->disk)->delete($media->filename);
         });
     }
@@ -73,24 +61,30 @@ class Media extends Model
         'medium_url',
         'large_url',
         'size_for_humans',
+        'hasSizes',
     ];
 
-    public function getUrlAttribute()
+    public function getHasSizesAttribute(): bool
+    {
+        return CuratorThumbnails::hasSizes($this->ext);
+    }
+
+    public function getUrlAttribute(): string
     {
         return Storage::disk($this->disk)->url($this->filename);
     }
 
-    public function getThumbnailUrlAttribute()
+    public function getThumbnailUrlAttribute(): string
     {
         return $this->getSizeUrl('thumbnail');
     }
 
-    public function getMediumUrlAttribute()
+    public function getMediumUrlAttribute(): string
     {
         return $this->getSizeUrl('medium');
     }
 
-    public function getlargeUrlAttribute()
+    public function getlargeUrlAttribute(): string
     {
         return $this->getSizeUrl('large');
     }
@@ -98,19 +92,19 @@ class Media extends Model
     public function getSizeUrl(string $size): string
     {
         $sizes = config('filament-curator.sizes');
-        if (Arr::exists($sizes, $size)) {
+        if (Arr::exists($sizes, $size) && $this->has_sizes) {
             return $this->getUrlForSize($size);
         }
 
         return Storage::disk($this->disk)->url($this->filename);
     }
 
-    public function getUrlForSize(string $size = 'large')
+    public function getUrlForSize(string $size = 'large'): string
     {
         return Storage::disk($this->disk)->url($this->public_id . '-' . $size . '.' . $this->ext);
     }
 
-    public function getSizeForHumansAttribute()
+    public function getSizeForHumansAttribute(): string
     {
         return $this->sizeForHumans();
     }
@@ -124,33 +118,5 @@ class Media extends Model
         }
 
         return round($size, $precision) . " " . $units[$i];
-    }
-
-    private static function generateThumbs(Media $media): void
-    {
-        $pathinfo = pathinfo($media->filename);
-        foreach (config('filament-curator.sizes') as $name => $mediaSize) {
-
-            $image = Image::make(
-                Storage::disk($media->disk)->url($media->filename)
-            );
-
-            if ($mediaSize['width'] == $mediaSize['height']) {
-                $image->fit($mediaSize['width']);
-            } else {
-                $image->resize($mediaSize['width'], $mediaSize['height'], function ($constraint) use ($mediaSize) {
-                    if (!$mediaSize['height']) {
-                        $constraint->aspectRatio();
-                    }
-                });
-            }
-
-            $image->encode(null, $mediaSize['quality']);
-
-            Storage::disk($media->disk)->put(
-                "{$pathinfo["dirname"]}/{$pathinfo["filename"]}-{$name}.{$media->ext}",
-                $image->stream()
-            );
-        }
     }
 }
