@@ -9,6 +9,7 @@ use Intervention\Image\Facades\Image;
 use Illuminate\Support\Facades\Storage;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\BaseFileUpload;
+use FilamentCurator\Facades\CuratorThumbnails;
 
 class MediaUpload extends FileUpload
 {
@@ -22,7 +23,7 @@ class MediaUpload extends FileUpload
 
             $storeMethod = $component->getVisibility() === 'public' ? 'storePubliclyAs' : 'storeAs';
 
-            if (Str::contains($file->getMimeType(), 'image')) {
+            if (CuratorThumbnails::hasSizes($file->getClientOriginalExtension())) {
                 $image = Image::make($file->getRealPath());
                 $width = $image->getWidth();
                 $height = $image->getHeight();
