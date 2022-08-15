@@ -8,31 +8,26 @@ use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
 
-class MakeInstallCuratorCommand extends Command
+class InstallCommand extends Command
 {
-    use Concerns\CanManipulateFiles;
     use Concerns\CanBackupAFile;
 
     public $signature = 'curator:install {--F|fresh}';
 
-    public $description = "One Command to Rule them All 🔥";
+    public $description = "Installs Filament Curator into your project.";
 
     public function handle(): int
     {
-        $this->alert('The Following operations will be performed:');
-        $this->info('- Publish core package config');
-        $this->info('- Publish core package migrations');
-        $this->warn('  - On fresh applications database will be migrated');
-        $this->warn('  - You can also force this behavior by supplying the --fresh option');
-        $this->info('- Publishes Resources & Pages');
+        $this->warn('This will install Filament Curator into your project.');
 
         $confirmed = $this->confirm('Do you wish to continue?', true);
 
         if ($this->CheckIfAlreadyInstalled() && !$this->option('fresh')) {
-            $this->comment('Seems you have already installed the Core package!');
-            $this->comment('You should run `curator:install --fresh` instead to refresh the Core package tables and setup.');
+            $this->comment('Seems you have already installed Filament Curator!');
+            $this->comment('You should run `curator:install --fresh` instead to re-install Filament Curator.');
 
             if ($this->confirm('Run `curator:install --fresh` instead?', false)) {
                 $this->install(true);
@@ -72,11 +67,8 @@ class MakeInstallCuratorCommand extends Command
     protected function install(bool $fresh = false)
     {
         $this->call('vendor:publish', [
-            '--tag' => 'filament-curator-config',
             '--tag' => 'filament-curator-migrations',
         ]);
-
-        $this->info('Core Package config published.');
 
         if ($fresh) {
             try {
@@ -89,20 +81,20 @@ class MakeInstallCuratorCommand extends Command
             }
 
             $this->call('migrate');
-            $this->info('Database migrations freshed up.');
+            $this->info('Database migrations refreshed.');
 
-            (new Filesystem())->ensureDirectoryExists(config_path());
+            File::ensureDirectoryExists(config_path());
 
             if ($this->isBackupPossible(config_path('filament-curator.php'), config_path('filament-curator.php.bak'))) {
                 $this->info('Config backup created.');
             }
 
-            (new Filesystem())->copy(__DIR__ . '/../../config/filament-curator.php', config_path('filament-curator.php'));
+            File::copy(__DIR__ . '/../../config/filament-curator.php', config_path('filament-curator.php'));
         } else {
             $this->call('migrate');
             $this->info('Database migrated.');
         }
 
-        $this->info('Filament Curator is now installed.');
+        $this->info('Filament Curator successfully installed.');
     }
 }
