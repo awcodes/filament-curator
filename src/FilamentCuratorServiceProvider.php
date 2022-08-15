@@ -8,6 +8,7 @@ use FilamentCurator\Observers\MediaObserver;
 use Filament\PluginServiceProvider;
 use Illuminate\Support\Facades\File;
 use Filament\Navigation\UserMenuItem;
+use FilamentCurator\Commands\InstallCommand;
 use FilamentCurator\Commands\MakeInstallCuratorCommand;
 use FilamentCurator\Commands\MakePublishCuratorCommand;
 use Spatie\LaravelPackageTools\Package;
@@ -40,7 +41,7 @@ class FilamentCuratorServiceProvider extends PluginServiceProvider
             ->hasTranslations()
             ->hasCommands([
                 RegenerateThumbnails::class,
-                MakeInstallCuratorCommand::class,
+                InstallCommand::class,
             ])
             ->hasMigrations(['create_media_table']);
     }

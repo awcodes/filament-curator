@@ -20,6 +20,12 @@ Install the package via composer.
 composer require awcodes/filament-curator
 ```
 
+(optional) Publish the config.
+
+```bash
+php artisan vendor:publish --tag=filament-curator-config
+```
+
 Install Filament Curator into your app. This will publish the necessary migration and Filament resources.
 
 ```bash
