@@ -40,6 +40,13 @@ By default Curator will generate image sizes for each uploaded image based on th
 'sizes' => [],
 ```
 
+### Regenerating Image Sizes
+If you need to regenerate all of your image sizes, for instance you add or remove a size from your config you can do so with the following Artisan command.
+
+```bash
+php artisan curator:regenerate-thumbnails
+```
+
 ## Cloud Providers Table Display
 
 By default in the Media Resource table the disk icon is set to display a cloud if the disk is either 'Cloudinary' or 's3'. If you would like to extend or change this you can do so in the `filament-curator.php` config file.
