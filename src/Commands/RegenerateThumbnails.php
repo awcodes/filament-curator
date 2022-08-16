@@ -44,7 +44,7 @@ class RegenerateThumbnails extends Command
             $this->newLine();
 
             foreach ($media as $item) {
-                if (is_generateable($item->ext)) {
+                if (CuratorThumbnails::hasSizes($item->ext)) {
                     CuratorThumbnails::destroy($item);
                     CuratorThumbnails::generate($item);
                 }

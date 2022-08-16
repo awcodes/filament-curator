@@ -23,7 +23,7 @@ class MediaUpload extends FileUpload
 
             $storeMethod = $component->getVisibility() === 'public' ? 'storePubliclyAs' : 'storeAs';
 
-            if (CuratorThumbnails::hasSizes($file->getClientOriginalExtension())) {
+            if (CuratorThumbnails::isResizable($file->getClientOriginalExtension())) {
                 $image = Image::make($file->getRealPath());
                 $width = $image->getWidth();
                 $height = $image->getHeight();
