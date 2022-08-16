@@ -6,11 +6,11 @@ A media picker plugin for Filament Admin.
 
 :bangbang: This package does not work with Spatie Media Library since it requires it's own media model.
 
-![Gallery View](./images/gallery-view-new.png)
+![Gallery View](./images/curator-gallery-dark.jpg)
 
-![Upload View](./images/upload-view-new.png)
+![Upload View](./images/curator-upload-dark.jpg)
 
-![Field View](./images/field-view-new.png)
+![Field View](./images/curator-media-picker-dark.jpg)
 
 ## Installation
 
