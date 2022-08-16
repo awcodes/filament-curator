@@ -15,7 +15,12 @@ class CuratorThumbnails
 
     public function hasSizes(string $ext): bool
     {
-        return config('filament-curator.sizes') && in_array($ext, ['jpeg', 'jpg', 'png', 'webp', 'bmp']);
+        return config('filament-curator.sizes') && $this->isResizable($ext);
+    }
+
+    public function isResizable(string $ext): bool
+    {
+        return in_array($ext, ['jpeg', 'jpg', 'png', 'webp', 'bmp']);
     }
 
     public function generate(Model $media): void
