@@ -79,9 +79,11 @@
         }
     },
     resetPicker: function() {
-        this.files = [];
-        this.setSelected(null);
-        this.selectTab(this.$id('tab', 1));
+        setTimeout(() => {
+            this.files = [];
+            this.setSelected(null);
+            this.selectTab(this.$id('tab', 1))
+        }, 1000);
     }
 }"
     x-on:close-modal.window="if ($event.detail.id === 'filament-curator-media-picker') isOpen = false; resetPicker();"
@@ -103,7 +105,7 @@
         x-transition:leave-start="opacity-100"
         x-transition:leave-end="opacity-0"
         x-cloak
-        class="fixed inset-0 z-40 flex items-center min-h-screen p-10 overflow-y-auto transition">
+        class="fixed inset-0 z-40 flex items-center min-h-screen p-6 overflow-y-auto transition">
 
         <button x-on:click="isOpen = false; resetPicker();"
             type="button"
@@ -147,6 +149,13 @@
                                 class="block w-full py-1 transition duration-75 border-gray-300 rounded-lg shadow-sm focus:border-primary-600 focus:ring-1 focus:ring-inset focus:ring-primary-600 disabled:opacity-70 dark:bg-gray-700 dark:text-white dark:border-gray-600" />
                         </div>
 
+                        <x-filament-support::icon-button
+                            icon="heroicon-s-x"
+                            x-on:click="$dispatch('close-modal', {id: 'filament-curator-media-picker'})"
+                        >
+                            {{ __('filament-curator::media-picker-modal.edit_cancel') }}
+                        </x-filament-support::icon-button>
+
                     </div>
                 </div>
 
@@ -162,7 +171,8 @@
                                 x-on:keydown.end.prevent.stop="$focus.last()"
                                 x-on:keydown.page-down.prevent.stop="$focus.last()"
                                 role="tablist"
-                                class="flex items-stretch -mb-px text-sm">
+                                class="flex items-stretch -mb-px text-sm"
+                            >
                                 <li>
                                     <button :id="$id('tab', whichChild($el.parentElement, $refs.tablist))"
                                         x-on:click="selectTab($el.id); $dispatch('clear-selected');"
@@ -174,9 +184,10 @@
                                             'border-gray-300 dark:border-gray-700 bg-gray-200 dark:bg-gray-700' :
                                             'border-transparent'"
                                         class="inline-flex px-4 py-2 border-t border-l border-r rounded-t-md"
-                                        role="tab">
+                                        role="tab"
+                                    >
                                             {{ __('filament-curator::media-picker-modal.upload_tab') }}
-                                        </button>
+                                    </button>
                                 </li>
                                 <li>
                                     <button :id="$id('tab', whichChild($el.parentElement, $refs.tablist))"
@@ -189,9 +200,10 @@
                                             'border-gray-300 dark:border-gray-700 bg-gray-200 dark:bg-gray-700' :
                                             'border-transparent'"
                                         class="inline-flex px-4 py-2 border-t border-l border-r rounded-t-md"
-                                        role="tab">
+                                        role="tab"
+                                    >
                                             {{ __('filament-curator::media-picker-modal.media_library_tab') }}
-                                        </button>
+                                    </button>
                                 </li>
                             </ul>
 
@@ -200,14 +212,14 @@
                                 <section x-show="isTabSelected($id('tab', whichChild($el, $el.parentElement)))"
                                     x-bind:aria-labelledby="$id('tab', whichChild($el, $el.parentElement))"
                                     role="tabpanel"
-                                    class="h-full p-4 overflow-y-scroll md:p-6">
+                                    class="h-full overflow-y-scroll">
                                     @livewire('filament-curator-create-media-form')
                                 </section>
                                 <section x-show="isTabSelected($id('tab', whichChild($el, $el.parentElement)))"
                                     x-bind:aria-labelledby="$id('tab', whichChild($el, $el.parentElement))"
                                     role="tabpanel"
-                                    class="h-full overflow-hidden">
-                                    <div class="relative flex w-full h-full overflow-hidden">
+                                    class="h-full flex flex-col overflow-hidden">
+                                    <div class="relative flex flex-1 w-full h-full overflow-hidden">
                                         <div class="relative flex-1 h-full p-4 overflow-scroll">
 
                                             {{-- Loading Indicator --}}
@@ -291,68 +303,79 @@
 
                                         {{-- Edit Form --}}
                                         <div @class([
-                                            'hidden w-full h-full max-w-xs overflow-scroll bg-gray-200 lg:!block ',
+                                            'hidden w-full h-full max-w-xs overflow-scroll bg-gray-100 lg:!block ',
                                             'dark:bg-gray-900' => config('filament.dark_mode'),
                                         ])>
                                             <form wire:submit.prevent="update"
                                                 x-show="selected"
-                                                class="p-4">
+                                                class="flex flex-col h-full">
 
-                                                <h4 class="mb-4 font-bold">
+                                                <h4 class="font-bold py-2 px-4 mb-0">
                                                     {{ __('filament-curator::media-picker-modal.edit_media') }}
                                                 </h4>
 
-                                                <div
-                                                    class="flex justify-center mb-4 overflow-hidden border border-gray-300 rounded dark:border-gray-700 checkered">
-                                                    <template x-if="selected?.type.includes('image')">
-                                                        <img x-bind:src="selected?.medium_url"
-                                                            x-bind:alt="selected?.alt"
-                                                            x-bind:width="selected?.width"
-                                                            x-bind:height="selected?.height"
-                                                            class="block object-cover h-full" />
-                                                    </template>
-                                                    <template x-if="!selected?.type.includes('image')">
-                                                        <x-filament-curator::document-image icon-size="lg">
-                                                            <x-slot name="label"><span
-                                                                    x-text="selected?.filename"></span></x-slot>
-                                                        </x-filament-curator::document-image>
-                                                    </template>
+                                                <div class="flex-1 overflow-scroll px-4 pb-4">
+
+                                                    <div
+                                                        class="flex justify-center mb-4 overflow-hidden border border-gray-300 rounded dark:border-gray-700 checkered h-48 flex-shrink-0 relative">
+                                                        <template x-if="selected?.type.includes('image')">
+                                                            <img x-bind:src="selected?.medium_url"
+                                                                x-bind:alt="selected?.alt"
+                                                                x-bind:width="selected?.width"
+                                                                x-bind:height="selected?.height"
+                                                                class="block object-cover h-full" />
+                                                        </template>
+                                                        <template x-if="!selected?.type.includes('image')">
+                                                            <x-filament-curator::document-image icon-size="lg">
+                                                                <x-slot name="label"><span x-text="selected?.filename"></span></x-slot>
+                                                            </x-filament-curator::document-image>
+                                                        </template>
+                                                        <div class="absolute top-0 right-0 flex bg-gray-900 divide-x divide-gray-700 rounded-bl-lg shadow-md">
+                                                            <a x-bind:href="selected?.url" target="_blank" rel="noopener nofollow"
+                                                                class="flex items-center justify-center flex-none w-10 h-10 transition text-primary-600 hover:text-primary-500 dark:text-primary-500 dark:hover:text-primary-400">
+                                                                <x-heroicon-s-eye class="w-4 h-4" />
+                                                            </a>
+                                                            <button type="button"
+                                                                wire:click="download"
+                                                                class="flex items-center justify-center flex-none w-10 h-10 transition text-primary-600 hover:text-primary-500 dark:text-primary-500 dark:hover:text-primary-400">
+                                                                <x-heroicon-s-download class="w-4 h-4" />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+
+                                                    {{ $this->form }}
                                                 </div>
 
-                                                {{ $this->form }}
+                                                <div @class([
+                                                        'flex items-center justify-center gap-3 p-2 border-t border-gray-300 bg-gray-200',
+                                                        'dark:border-gray-700 dark:bg-black' => config('filament.dark_mode'),
+                                                    ])
+                                                >
 
-                                                <div class="flex items-center gap-3 mt-4">
-
-                                                    <x-filament::button type="submit">
-                                                        <span wire:loading>
-                                                            <svg class="inline-block w-5 h-5 text-white animate-spin"
-                                                                xmlns="http://www.w3.org/2000/svg"
-                                                                fill="none"
-                                                                viewBox="0 0 24 24">
-                                                                <circle class="opacity-25"
-                                                                    cx="12"
-                                                                    cy="12"
-                                                                    r="10"
-                                                                    stroke="currentColor"
-                                                                    stroke-width="4"></circle>
-                                                                <path class="opacity-75"
-                                                                    fill="currentColor"
-                                                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                                                                </path>
-                                                            </svg>
-                                                        </span>
-                                                        <span>{{ __('filament-curator::media-picker-modal.edit_save') }}</span>
+                                                    <x-filament::button
+                                                        type="submit"
+                                                        wire:target="update"
+                                                        size="sm"
+                                                    >
+                                                        {{ __('filament-curator::media-picker-modal.edit_save') }}
                                                     </x-filament::button>
 
-                                                    <x-filament::button type="button"
+                                                    <x-filament::button
+                                                        type="button"
                                                         color="danger"
-                                                        wire:click.prevent="destroy">
+                                                        wire:target="destroy"
+                                                        wire:click.prevent="destroy"
+                                                        size="sm"
+                                                    >
                                                         {{ __('filament-curator::media-picker-modal.edit_delete') }}
                                                     </x-filament::button>
 
-                                                    <x-filament::button type="button"
+                                                    <x-filament::button
+                                                        type="button"
                                                         color="secondary"
-                                                        x-on:click="selected = null">
+                                                        x-on:click="selected = null"
+                                                        size="sm"
+                                                    >
                                                         {{ __('filament-curator::media-picker-modal.edit_cancel') }}
                                                     </x-filament::button>
 
@@ -362,23 +385,30 @@
                                         </div>
                                         {{-- End Edit Form --}}
                                     </div>
+                                    <div @class([
+                                            'flex items-center justify-start p-2 border-t border-gray-300',
+                                            'dark:border-gray-700' => config('filament.dark_mode'),
+                                        ])
+                                        x-bind:class="!selected ? 'opacity-75 pointer-events-none' : null"
+                                    >
+                                        <x-filament::button
+                                            type="button"
+                                            color="success"
+                                            x-bind:disabled="!selected"
+                                            x-on:click="
+                                                $dispatch('insert-media', {id: 'filament-curator-media-picker', media: selected, fieldId: fieldId});
+                                                $dispatch('close-modal', {id: 'filament-curator-media-picker'});
+                                            "
+                                        >
+                                            {{ __('filament-curator::media-picker-modal.use_selected_image') }}
+                                        </x-filament::button>
+                                    </div>
                                 </section>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div @class([
-                    'flex items-center justify-end p-3 filament-curator-media-picker-modal-footer border-t border-gray-300',
-                    'dark:border-gray-700' => config('filament.dark_mode'),
-                ])>
-                    <button type="button"
-                        x-bind:disabled="!selected"
-                        x-on:click="$dispatch('insert-media', {id: 'filament-curator-media-picker', media: selected, fieldId: fieldId}); $dispatch('close-modal', {id: 'filament-curator-media-picker', media: selected, fieldId: fieldId})"
-                        class="inline-flex items-center justify-center gap-1 px-4 text-sm font-medium text-white transition-colors border border-transparent rounded-lg shadow focus:outline-none focus:ring-offset-2 focus:ring-2 focus:ring-inset filament-button h-9 focus:ring-white bg-success-600 hover:enabled:bg-success-500 focus:bg-success-700 focus:ring-offset-success-700 disabled:opacity-70">
-                        {{ __('filament-curator::media-picker-modal.use_selected_image') }}
-                    </button>
-                </div>
             </div>
         </div>
     </div>

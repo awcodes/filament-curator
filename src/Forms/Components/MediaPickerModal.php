@@ -2,11 +2,13 @@
 
 namespace FilamentCurator\Forms\Components;
 
+use Filament\Forms;
 use Livewire\Component;
 use Filament\Facades\Filament;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms;
+use Illuminate\Support\Facades\Storage;
 use Filament\Forms\Concerns\InteractsWithForms;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class MediaPickerModal extends Component implements HasForms
 {
@@ -52,6 +54,12 @@ class MediaPickerModal extends Component implements HasForms
                 ->label(__('filament-curator::media-form.labels.description'))
                 ->rows(2),
         ];
+    }
+
+    public function download(): StreamedResponse
+    {
+        $item = resolve(config('filament-curator.model'))->where('id', $this->selected['id'])->first();
+        return Storage::disk($item['disk'])->download($item['filename']);
     }
 
     public function update(): void
