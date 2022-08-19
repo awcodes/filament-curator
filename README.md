@@ -117,7 +117,7 @@ class MediaResource extends CuratorMediaResource
 
 ## Themeing
 
-If you are using a custom theme for Filament you will need to add this plugin's views to your Tailwind CSS config.
+If you are using a custom theme for Filament you will need to add this plugin's views to your Tailwind CSS config. Once this is done you may disable the plugins stylesheet in the config file by changing 'load_styles' to false.
 
 ```js
 content: [

@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'load_styles' => true,
     'model' => \FilamentCurator\Models\Media::class,
     'media_resource' => \FilamentCurator\Resources\MediaResource::class,
     'disk' => 'public',

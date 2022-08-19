@@ -20,9 +20,13 @@ class FilamentCuratorServiceProvider extends PluginServiceProvider
         'https://unpkg.com/@alpinejs/intersect@3.x.x/dist/cdn.min.js',
     ];
 
-    protected array $styles = [
-        'filament-curator-styles' => __DIR__ . '/../resources/dist/filament-curator.css',
-    ];
+    protected function getStyles(): array
+    {
+        $styles = config('filament-curator.load_styles') ? [
+            'filament-curator-styles' => __DIR__ . '/../resources/dist/filament-curator.css',
+        ] : [];
+        return $styles;
+    }
 
     protected function getResources(): array
     {
