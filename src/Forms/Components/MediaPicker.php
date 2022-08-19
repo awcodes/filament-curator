@@ -21,13 +21,12 @@ class MediaPicker extends Field
         parent::setUp();
         $this->buttonLabel = __('filament-curator::media-picker.button_label');
 
-        // $this->registerActions([
-        //     Action::make('download')->action(function($test): StreamedResponse {
-        //         ray($test);
-        //         $item = resolve(config('filament-curator.model'))->where('id', $id)->first();
-        //         return Storage::disk($item['disk'])->download($item['filename']);
-        //     })
-        // ]);
+        $this->registerActions([
+            Action::make('download')->action(function(): StreamedResponse {
+                $item = resolve(config('filament-curator.model'))->where('id', $this->getState())->first();
+                return Storage::disk($item['disk'])->download($item['filename']);
+            })
+        ]);
     }
 
     public function buttonLabel(string | Htmlable | Closure | null $buttonLabel): static
@@ -47,7 +46,7 @@ class MediaPicker extends Field
         return $this->evaluate($this->buttonLabel);
     }
 
-    public function download(int $id): StreamedResponse
+    public function download($state): StreamedResponse
     {
         $item = resolve(config('filament-curator.model'))->where('id', $id)->first();
         return Storage::disk($item['disk'])->download($item['filename']);

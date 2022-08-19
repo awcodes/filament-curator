@@ -36,22 +36,30 @@
 
                 <div class="absolute top-0 right-0 flex bg-gray-900 divide-x divide-gray-700 rounded-bl-lg shadow-md">
                     <a href="{{ $currentItem['url'] }}" target="_blank" rel="noopener nofollow"
-                        class="flex items-center justify-center flex-none w-10 h-10 transition text-primary-600 hover:text-primary-500 dark:text-primary-500 dark:hover:text-primary-400">
+                        class="flex items-center justify-center flex-none w-10 h-10 transition text-primary-600 hover:text-primary-500 dark:text-primary-500 dark:hover:text-primary-400"
+                        x-tooltip="'View'"
+                    >
                         <x-heroicon-s-eye class="w-4 h-4" />
                     </a>
-                    {{-- <button type="button"
+                    <button type="button"
                         wire:click="mountFormComponentAction('{{ $getStatePath() }}', 'download')"
-                        class="flex items-center justify-center flex-none w-10 h-10 transition text-primary-600 hover:text-primary-500 dark:text-primary-500 dark:hover:text-primary-400">
+                        class="flex items-center justify-center flex-none w-10 h-10 transition text-primary-600 hover:text-primary-500 dark:text-primary-500 dark:hover:text-primary-400"
+                        x-tooltip="'Download'"
+                    >
                         <x-heroicon-s-download class="w-4 h-4" />
-                    </button> --}}
+                    </button>
                     <button type="button"
                         x-on:click="$dispatch('open-modal', {id: 'filament-curator-media-picker', fieldId: '{{ $getStatePath() }}', mediaId: {{ $currentItem['id'] }} })"
-                        class="flex items-center justify-center flex-none w-10 h-10 transition text-primary-600 hover:text-primary-500 dark:text-primary-500 dark:hover:text-primary-400">
+                        class="flex items-center justify-center flex-none w-10 h-10 transition text-primary-600 hover:text-primary-500 dark:text-primary-500 dark:hover:text-primary-400"
+                        x-tooltip="'Edit'"
+                    >
                         <x-heroicon-s-pencil class="w-4 h-4" />
                     </button>
                     <button type="button"
                         x-on:click="state = null"
-                        class="flex items-center justify-center flex-none w-10 h-10 transition text-danger-600 hover:text-danger-500 dark:text-danger-500 dark:hover:text-danger-400">
+                        class="flex items-center justify-center flex-none w-10 h-10 transition text-danger-600 hover:text-danger-500 dark:text-danger-500 dark:hover:text-danger-400"
+                        x-tooltip="'Delete'"
+                    >
                         <x-heroicon-s-trash class="w-4 h-4" />
                     </button>
                 </div>

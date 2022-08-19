@@ -332,12 +332,16 @@
                                                         </template>
                                                         <div class="absolute top-0 right-0 flex bg-gray-900 divide-x divide-gray-700 rounded-bl-lg shadow-md">
                                                             <a x-bind:href="selected?.url" target="_blank" rel="noopener nofollow"
-                                                                class="flex items-center justify-center flex-none w-10 h-10 transition text-primary-600 hover:text-primary-500 dark:text-primary-500 dark:hover:text-primary-400">
+                                                                class="flex items-center justify-center flex-none w-10 h-10 transition text-primary-600 hover:text-primary-500 dark:text-primary-500 dark:hover:text-primary-400"
+                                                                x-tooltip="'View'"
+                                                            >
                                                                 <x-heroicon-s-eye class="w-4 h-4" />
                                                             </a>
                                                             <button type="button"
                                                                 wire:click="download"
-                                                                class="flex items-center justify-center flex-none w-10 h-10 transition text-primary-600 hover:text-primary-500 dark:text-primary-500 dark:hover:text-primary-400">
+                                                                class="flex items-center justify-center flex-none w-10 h-10 transition text-primary-600 hover:text-primary-500 dark:text-primary-500 dark:hover:text-primary-400"
+                                                                x-tooltip="'Download'"
+                                                            >
                                                                 <x-heroicon-s-download class="w-4 h-4" />
                                                             </button>
                                                         </div>
