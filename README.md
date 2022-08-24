@@ -64,6 +64,10 @@ use FilamentCurator\Forms\Components\MediaPicker;
 
 MediaPicker::make(string $fieldName)
     ->label(string $customLabel)
+    ->buttonLabel(string | Htmlable | Closure $buttonLabel)
+    ->color('primary|secondary|success|danger') // defaults to primary
+    ->outlined(true|false) // defaults to true
+    ->size('sm|md|lg') // defaults to md
 ```
 
 Media can also be related to models by simply adding the relationship to your model.
@@ -71,9 +75,9 @@ Media can also be related to models by simply adding the relationship to your mo
 ```php
 use FilamentCurator\Models\Media;
 
-public function ogImage(): HasOne
+public function featuredImage(): HasOne
 {
-    return $this->hasOne(Media::class, 'id', 'og_image');
+    return $this->hasOne(Media::class, 'id', 'featured_image');
 }
 ```
 
@@ -82,16 +86,16 @@ To retrieve different sizes urls, Curator's Media model comes with a helper that
 If a size doesn't exist in your config, then it will return the full size image url.
 
 ```php
-// Assuming a relationship on a Meta model for ogImage...
+// Assuming a relationship on a Post model for featuredImage...
 
-$meta->ogImage->getSizeUrl('thumbnail');
-$meta->ogImage->getSizeUrl('medium');
-$meta->ogImage->getSizeUrl('large');
+$post->featuredImage->getSizeUrl('thumbnail');
+$post->featuredImage->getSizeUrl('medium');
+$post->featuredImage->getSizeUrl('large');
 ```
 
 ## Custom Media Model
 
-If you need additional functionality you can extend Curator's Media model with your own and updating the 'model' setting in the config file with your model.
+If you need additional functionality you can extend Curator's Media model with your own by updating the 'model' setting in the config file with your model.
 
 ```php
 use FilamentCurator\Models\Media as CuratorMedia;

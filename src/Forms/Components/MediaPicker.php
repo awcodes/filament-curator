@@ -6,12 +6,17 @@ use Closure;
 use Filament\Forms\Components\Actions\Action;
 use FilamentCurator\Models\Media;
 use Filament\Forms\Components\Field;
+use Filament\Support\Actions\Concerns;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Contracts\Support\Htmlable;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class MediaPicker extends Field
 {
+    use Concerns\HasColor;
+    use Concerns\HasSize;
+    use Concerns\CanBeOutlined;
+
     protected string $view = 'filament-curator::components.media-picker';
 
     protected string | Htmlable | Closure | null $buttonLabel = null;
@@ -19,7 +24,11 @@ class MediaPicker extends Field
     protected function setUp(): void
     {
         parent::setUp();
+
         $this->buttonLabel = __('filament-curator::media-picker.button_label');
+        $this->size = 'md';
+        $this->color = 'primary';
+        $this->isOutlined = true;
 
         $this->registerActions([
             Action::make('download')->action(function(): StreamedResponse {
