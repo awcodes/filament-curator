@@ -13,7 +13,9 @@
         @if (!$getState())
             <div>
                 <x-filament::button type="button"
-                    :outlined="true"
+                    color="{{ $getColor() }}"
+                    outlined="{{ $isOutlined() }}"
+                    size="{{ $getSize() }}"
                     x-on:click="$dispatch('open-modal', {id: 'filament-curator-media-picker', fieldId: '{{ $getStatePath() }}'})">
                     {{ $getButtonLabel() }}
                 </x-filament::button>
