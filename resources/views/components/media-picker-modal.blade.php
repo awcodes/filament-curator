@@ -212,7 +212,7 @@
                                 <section x-show="isTabSelected($id('tab', whichChild($el, $el.parentElement)))"
                                     x-bind:aria-labelledby="$id('tab', whichChild($el, $el.parentElement))"
                                     role="tabpanel"
-                                    class="h-full overflow-y-scroll">
+                                    class="h-full overflow-hidden">
                                     @livewire('filament-curator-create-media-form')
                                 </section>
                                 <section x-show="isTabSelected($id('tab', whichChild($el, $el.parentElement)))"
@@ -220,7 +220,7 @@
                                     role="tabpanel"
                                     class="h-full flex flex-col overflow-hidden">
                                     <div class="relative flex flex-1 w-full h-full overflow-hidden">
-                                        <div class="relative flex-1 h-full p-4 overflow-scroll">
+                                        <div class="relative flex-1 h-full p-4 overflow-auto">
 
                                             {{-- Loading Indicator --}}
                                             <div x-show="isFetching"
@@ -303,7 +303,7 @@
 
                                         {{-- Edit Form --}}
                                         <div @class([
-                                            'hidden w-full h-full max-w-xs overflow-scroll bg-gray-100 lg:!block ',
+                                            'hidden w-full h-full max-w-xs overflow-auto bg-gray-100 lg:!block ',
                                             'dark:bg-gray-900' => config('filament.dark_mode'),
                                         ])>
                                             <form wire:submit.prevent="update"
@@ -314,7 +314,7 @@
                                                     {{ __('filament-curator::media-picker-modal.edit_media') }}
                                                 </h4>
 
-                                                <div class="flex-1 overflow-scroll px-4 pb-4">
+                                                <div class="flex-1 overflow-auto px-4 pb-4">
 
                                                     <div
                                                         class="flex justify-center mb-4 overflow-hidden border border-gray-300 rounded dark:border-gray-700 checkered h-48 flex-shrink-0 relative">

@@ -1,8 +1,8 @@
 <x-filament::form
     wire:submit.prevent="create"
-    class="flex flex-col h-full overflow-hidden w-full"
+    class="flex flex-col h-full w-full overflow-hidden"
 >
-    <div class="flex-1 w-full p-4 md:p-6">
+    <div class="flex-1 w-full p-4 md:p-6 h-full overflow-auto">
         {{ $this->form }}
     </div>
 
