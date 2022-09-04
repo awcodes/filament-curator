@@ -13,6 +13,7 @@ use FilamentCurator\Commands\MakeInstallCuratorCommand;
 use FilamentCurator\Commands\MakePublishCuratorCommand;
 use Spatie\LaravelPackageTools\Package;
 use FilamentCurator\Commands\RegenerateThumbnails;
+use Illuminate\Support\Facades\Blade;
 
 class FilamentCuratorServiceProvider extends PluginServiceProvider
 {
@@ -65,5 +66,10 @@ class FilamentCuratorServiceProvider extends PluginServiceProvider
 
         Livewire::component('filament-curator-media-picker-modal', Forms\Components\MediaPickerModal::class);
         Livewire::component('filament-curator-create-media-form', Forms\Components\CreateMediaForm::class);
+
+        Filament::registerRenderHook(
+            'content.end',
+            fn (): string => Blade::render('@livewire(\'filament-curator-media-picker-modal\')'),
+        );
     }
 }

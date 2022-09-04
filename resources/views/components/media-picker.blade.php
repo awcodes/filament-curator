@@ -73,10 +73,4 @@
             </div>
         @endif
     </div>
-
-    @once
-        @push('modals')
-            @livewire('filament-curator-media-picker-modal')
-        @endpush
-    @endonce
 </x-forms::field-wrapper>
