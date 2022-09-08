@@ -23,15 +23,17 @@ class CuratorThumbnails
         return in_array($ext, ['jpeg', 'jpg', 'png', 'webp', 'bmp']);
     }
 
-    public function generate(Model $media): void
+    public function generate(Model $media, bool $usePath = false): void
     {
         if ($this->hasSizes($media->ext)) {
             $pathinfo = $this->getPathInfo($media->filename);
 
             foreach (config('filament-curator.sizes') as $name => $data) {
-                $image = Image::make(
-                    Storage::disk($media->disk)->url($media->filename)
-                );
+                $file = $usePath
+                    ? Storage::disk($media->disk)->path($media->filename)
+                    : Storage::disk($media->disk)->url($media->filename);
+
+                $image = Image::make($file);
 
                 if ($data['width'] == $data['height']) {
                     $image->fit($data['width']);
