@@ -2,20 +2,33 @@
 
 namespace FilamentCurator;
 
+use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
+use Intervention\Image\Facades\Image;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
-use Intervention\Image\Facades\Image;
 
 class CuratorThumbnails
 {
+    protected $defaults = [
+        'thumbnail' => ['width' => 200, 'height' => 200, 'quality' => 60],
+    ];
+
     private function getPathInfo(string $filename): array
     {
         return pathinfo($filename);
     }
 
+    private function getSizes(): array
+    {
+        return Arr::exists(config('filament-curator.sizes'), 'thumbnail')
+            ? config('filament-curator.sizes')
+            : array_merge($this->defaults, config('filament-curator.sizes'));
+    }
+
     public function hasSizes(string $ext): bool
     {
-        return config('filament-curator.sizes') && $this->isResizable($ext);
+        return $this->getSizes() && $this->isResizable($ext);
     }
 
     public function isResizable(string $ext): bool
@@ -28,7 +41,7 @@ class CuratorThumbnails
         if ($this->hasSizes($media->ext)) {
             $pathinfo = $this->getPathInfo($media->filename);
 
-            foreach (config('filament-curator.sizes') as $name => $data) {
+            foreach ($this->getSizes() as $name => $data) {
                 $file = $usePath
                     ? Storage::disk($media->disk)->path($media->filename)
                     : Storage::disk($media->disk)->url($media->filename);
@@ -60,8 +73,12 @@ class CuratorThumbnails
         if ($this->hasSizes($media->ext)) {
             $pathinfo = $this->getPathInfo($media->filename);
 
-            foreach (config('filament-curator.sizes') as $name => $data) {
-                Storage::disk($media->disk)->delete($pathinfo['dirname'] . '/' . $pathinfo['filename'] . '-' . $name . '.' . $media->ext);
+            $thumbnails = collect(Storage::disk($media->disk)->allFiles())->filter(function($item) use ($pathinfo) {
+                return Str::startsWith($item, $pathinfo['dirname'] . '/' . $pathinfo['filename'] . '-');
+            });
+
+            foreach ($thumbnails as $thumbnail) {
+                Storage::disk($media->disk)->delete($thumbnail);
             }
         }
     }

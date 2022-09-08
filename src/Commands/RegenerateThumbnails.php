@@ -16,7 +16,7 @@ class RegenerateThumbnails extends Command
      *
      * @var string
      */
-    protected $signature = 'curator:regenerate-thumbnails';
+    protected $signature = 'curator:regenerate-thumbnails {--path : regenerate from path instead of url}';
 
     /**
      * The console command description.
@@ -46,7 +46,7 @@ class RegenerateThumbnails extends Command
             foreach ($media as $item) {
                 if (CuratorThumbnails::hasSizes($item->ext)) {
                     CuratorThumbnails::destroy($item);
-                    CuratorThumbnails::generate($item);
+                    CuratorThumbnails::generate($item, $this->option('path'));
                 }
 
                 $progress->advance();
