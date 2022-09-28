@@ -10,7 +10,7 @@ class CuratorColumn extends ImageColumn
 
     public function getImagePath(): ?string
     {
-        $state = $this->record->image;
+        $state = $this->getState();
 
         if (! $state) {
             return null;
