@@ -98,7 +98,7 @@ $post->featuredImage->getSizeUrl('large');
 To show an item in your tables you can use the CuratorColumn. This column extends Filament's ImageColumn and can use the same methods available on that column.
 
 ```php
-CuratorColumn::make('image_id')
+CuratorColumn::make('relationship_name')
 ```
 
 ## Custom Media Model
