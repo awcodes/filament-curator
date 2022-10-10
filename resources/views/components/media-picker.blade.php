@@ -50,6 +50,7 @@
                     >
                         <x-heroicon-s-download class="w-4 h-4" />
                     </button>
+                    @if (! $isDisabled())
                     <button type="button"
                         x-on:click="$dispatch('open-modal', {id: 'filament-curator-media-picker', fieldId: '{{ $getStatePath() }}', mediaId: {{ $currentItem['id'] }} })"
                         class="flex items-center justify-center flex-none w-10 h-10 transition text-primary-600 hover:text-primary-500 dark:text-primary-500 dark:hover:text-primary-400"
@@ -64,6 +65,7 @@
                     >
                         <x-heroicon-s-trash class="w-4 h-4" />
                     </button>
+                    @endif
                 </div>
                 <div
                     class="absolute inset-x-0 bottom-0 flex items-center justify-between px-4 pt-10 pb-4 text-xs text-white bg-gradient-to-t from-black/80 to-transparent">
