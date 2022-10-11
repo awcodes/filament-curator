@@ -3,10 +3,11 @@
 namespace FilamentCurator\Forms\Components;
 
 use Closure;
+use Exception;
 use Filament\Forms\Components\Actions\Action;
-use FilamentCurator\Models\Media;
 use Filament\Forms\Components\Field;
 use Filament\Support\Actions\Concerns;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Contracts\Support\Htmlable;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -21,6 +22,13 @@ class MediaPicker extends Field
 
     protected string | Htmlable | Closure | null $buttonLabel = null;
 
+    protected string $mediaModel;
+
+    protected bool | Closure | null $fitContent = false;
+
+    /**
+     * @throws Exception
+     */
     protected function setUp(): void
     {
         parent::setUp();
@@ -30,12 +38,21 @@ class MediaPicker extends Field
         $this->color = 'primary';
         $this->isOutlined = true;
 
+        $this->mediaModel = config('filament-curator.model');
+
         $this->registerActions([
             Action::make('download')->action(function(): StreamedResponse {
-                $item = resolve(config('filament-curator.model'))->where('id', $this->getState())->first();
+                $item = resolve($this->mediaModel)->where('id', $this->getState())->first();
                 return Storage::disk($item['disk'])->download($item['filename']);
             })
         ]);
+    }
+
+    public function fitContent(bool | Closure | null $fitContent = true): static
+    {
+        $this->fitContent = $fitContent;
+
+        return $this;
     }
 
     public function buttonLabel(string | Htmlable | Closure | null $buttonLabel): static
@@ -45,9 +62,9 @@ class MediaPicker extends Field
         return $this;
     }
 
-    public function getCurrentItem($state)
+    public function getCurrentItem(): Model | null
     {
-        return resolve(config('filament-curator.model'))->where('id', $state)->first();
+        return resolve($this->mediaModel)->where('id', $this->getState())->first();
     }
 
     public function getButtonLabel(): string | Htmlable | null
@@ -57,7 +74,11 @@ class MediaPicker extends Field
 
     public function download($state): StreamedResponse
     {
-        $item = resolve(config('filament-curator.model'))->where('id', $id)->first();
+        $item = resolve($this->mediaModel)->where('id', $id)->first();
         return Storage::disk($item['disk'])->download($item['filename']);
+    }
+
+    public function getFitContent(): bool {
+        return $this->evaluate($this->fitContent);
     }
 }

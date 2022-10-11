@@ -14,10 +14,10 @@ class MediaPickerModal extends Component implements HasForms
 {
     use InteractsWithForms;
 
-    public $selected = null;
-    public $data;
+    public array | null $selected = null;
+    public array $data;
 
-    public function updatedSelected($value)
+    public function updatedSelected($value): void
     {
         if ($value) {
             $item = resolve(config('filament-curator.model'))->firstWhere('id', $value['id']);

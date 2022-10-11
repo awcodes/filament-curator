@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Storage;
 
 class CuratorThumbnails
 {
-    protected $defaults = [
+    protected array $defaults = [
         'thumbnail' => ['width' => 200, 'height' => 200, 'quality' => 60],
     ];
 
@@ -39,7 +39,7 @@ class CuratorThumbnails
     public function generate(Model $media, bool $usePath = false): void
     {
         if ($this->hasSizes($media->ext)) {
-            $pathinfo = $this->getPathInfo($media->filename);
+            $path_info = $this->getPathInfo($media->filename);
 
             foreach ($this->getSizes() as $name => $data) {
                 $file = $usePath
@@ -61,7 +61,7 @@ class CuratorThumbnails
                 $image->encode(null, $data['quality']);
 
                 Storage::disk($media->disk)->put(
-                    "{$pathinfo["dirname"]}/{$pathinfo["filename"]}-{$name}.{$media->ext}",
+                    "{$path_info["dirname"]}/{$path_info["filename"]}-{$name}.{$media->ext}",
                     $image->stream()
                 );
             }
@@ -71,10 +71,10 @@ class CuratorThumbnails
     public function destroy(Model $media): void
     {
         if ($this->hasSizes($media->ext)) {
-            $pathinfo = $this->getPathInfo($media->filename);
+            $path_info = $this->getPathInfo($media->filename);
 
-            $thumbnails = collect(Storage::disk($media->disk)->allFiles())->filter(function($item) use ($pathinfo) {
-                return Str::startsWith($item, $pathinfo['dirname'] . '/' . $pathinfo['filename'] . '-');
+            $thumbnails = collect(Storage::disk($media->disk)->allFiles())->filter(function($item) use ($path_info) {
+                return Str::startsWith($item, $path_info['dirname'] . '/' . $path_info['filename'] . '-');
             });
 
             foreach ($thumbnails as $thumbnail) {
