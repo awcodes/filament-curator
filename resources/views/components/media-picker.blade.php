@@ -10,7 +10,10 @@
     <div x-data="{ state: $wire.entangle('{{ $getStatePath() }}') }"
         x-on:insert-media.window="$event.detail.fieldId == '{{ $getStatePath() }}' ? state = $event.detail.media.id : null"
         class="w-full filament-curator-media-picker">
-        @if (!$getState())
+        @php
+            $currentItem = $getCurrentItem($getState());
+        @endphp
+        @if (!$currentItem)
             <div>
                 <x-filament::button type="button"
                     color="{{ $getColor() }}"
@@ -21,9 +24,6 @@
                 </x-filament::button>
             </div>
         @else
-            @php
-                $currentItem = $getCurrentItem($getState());
-            @endphp
             <div
                 class="relative block w-full h-64 overflow-hidden transition duration-75 border border-gray-300 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 dark:text-white">
 
