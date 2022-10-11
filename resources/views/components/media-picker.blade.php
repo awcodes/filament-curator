@@ -1,3 +1,7 @@
+@php
+    $currentItem = $getCurrentItem();
+@endphp
+
 <x-forms::field-wrapper :id="$getId()"
     :label="$getLabel()"
     :label-sr-only="$isLabelHidden()"
@@ -10,7 +14,8 @@
     <div x-data="{ state: $wire.entangle('{{ $getStatePath() }}') }"
         x-on:insert-media.window="$event.detail.fieldId == '{{ $getStatePath() }}' ? state = $event.detail.media.id : null"
         class="w-full filament-curator-media-picker">
-        @if (!$getState())
+
+        @if (!$currentItem)
             <div>
                 <x-filament::button type="button"
                     color="{{ $getColor() }}"
@@ -21,16 +26,17 @@
                 </x-filament::button>
             </div>
         @else
-            @php
-                $currentItem = $getCurrentItem($getState());
-            @endphp
             <div
-                class="relative block w-full h-64 overflow-hidden transition duration-75 border border-gray-300 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 dark:text-white">
+                class="relative block w-full h-64 overflow-hidden transition duration-75 border border-gray-300 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 dark:text-white flex justify-center checkered">
 
                 @if (str($currentItem['type'])->contains('image'))
                     <img src="{{ $currentItem['url'] }}"
                         alt="{{ $currentItem['alt'] }}"
-                        class="object-cover w-full h-full checkered" />
+                         @class([
+                            'h-full',
+                            'object-fit' => $getFitContent(),
+                            'object-cover w-full' => ! $getFitContent(),
+                        ]) />
                 @else
                     <x-filament-curator::document-image label="{{ $currentItem['filename'] }}"
                         icon-size="xl" />
@@ -41,14 +47,14 @@
                         class="flex items-center justify-center flex-none w-10 h-10 transition text-primary-600 hover:text-primary-500 dark:text-primary-500 dark:hover:text-primary-400"
                         x-tooltip="'View'"
                     >
-                        <x-heroicon-s-eye class="w-4 h-4" />
+                        @svg('heroicon-s-eye', 'w-4 h-4')
                     </a>
                     <button type="button"
                         wire:click="mountFormComponentAction('{{ $getStatePath() }}', 'download')"
                         class="flex items-center justify-center flex-none w-10 h-10 transition text-primary-600 hover:text-primary-500 dark:text-primary-500 dark:hover:text-primary-400"
                         x-tooltip="'Download'"
                     >
-                        <x-heroicon-s-download class="w-4 h-4" />
+                        @svg('heroicon-s-download', 'w-4 h-4')
                     </button>
                     @if (! $isDisabled())
                     <button type="button"
@@ -56,14 +62,14 @@
                         class="flex items-center justify-center flex-none w-10 h-10 transition text-primary-600 hover:text-primary-500 dark:text-primary-500 dark:hover:text-primary-400"
                         x-tooltip="'Edit'"
                     >
-                        <x-heroicon-s-pencil class="w-4 h-4" />
+                        @svg('heroicon-s-pencil', 'w-4 h-4')
                     </button>
                     <button type="button"
                         x-on:click="state = null"
                         class="flex items-center justify-center flex-none w-10 h-10 transition text-danger-600 hover:text-danger-500 dark:text-danger-500 dark:hover:text-danger-400"
                         x-tooltip="'Delete'"
                     >
-                        <x-heroicon-s-trash class="w-4 h-4" />
+                        @svg('heroicon-s-trash', 'w-4 h-4')
                     </button>
                     @endif
                 </div>

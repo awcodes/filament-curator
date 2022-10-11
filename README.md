@@ -68,6 +68,7 @@ MediaPicker::make(string $fieldName)
     ->color('primary|secondary|success|danger') // defaults to primary
     ->outlined(true|false) // defaults to true
     ->size('sm|md|lg') // defaults to md
+    ->fitContent(true|false) // defaults to false (forces image to fit inside the preview area)
 ```
 
 Media can also be related to models by simply adding the relationship to your model.

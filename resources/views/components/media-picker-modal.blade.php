@@ -58,10 +58,10 @@
     },
     addNewFile: function(media = null) {
         if (media) {
-            this.files.unshift(media);
+            this.files = [...media, ...this.files];
             this.$nextTick(() => {
                 this.selectTab(this.$id('tab', 2));
-                this.setSelected(media.id);
+                this.setSelected(media[0].id);
             })
         }
     },
@@ -207,7 +207,7 @@
                                 </li>
                             </ul>
 
-                            <div role="tabpanels"
+                            <div
                                 class="flex-1 h-full overflow-hidden border border-gray-300 dark:border-gray-700 rounded-b-md">
                                 <section x-show="isTabSelected($id('tab', whichChild($el, $el.parentElement)))"
                                     x-bind:aria-labelledby="$id('tab', whichChild($el, $el.parentElement))"
@@ -335,14 +335,14 @@
                                                                 class="flex items-center justify-center flex-none w-10 h-10 transition text-primary-600 hover:text-primary-500 dark:text-primary-500 dark:hover:text-primary-400"
                                                                 x-tooltip="'View'"
                                                             >
-                                                                <x-heroicon-s-eye class="w-4 h-4" />
+                                                                @svg('heroicon-s-eye', 'w-4 h-4')
                                                             </a>
                                                             <button type="button"
                                                                 wire:click="download"
                                                                 class="flex items-center justify-center flex-none w-10 h-10 transition text-primary-600 hover:text-primary-500 dark:text-primary-500 dark:hover:text-primary-400"
                                                                 x-tooltip="'Download'"
                                                             >
-                                                                <x-heroicon-s-download class="w-4 h-4" />
+                                                                @svg('heroicon-s-download', 'w-4 h-4')
                                                             </button>
                                                         </div>
                                                     </div>
