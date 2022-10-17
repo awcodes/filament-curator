@@ -54,8 +54,7 @@ class CreateMediaForm extends Component implements HasForms
                 ->disk(config('filament-curator.disk', 'public'))
                 ->visibility(config('filament-curator.visibility', 'public'))
                 ->required()
-                ->multiple()
-                ->panelLayout('integrated'),
+                ->multiple(),
         ];
     }
 
