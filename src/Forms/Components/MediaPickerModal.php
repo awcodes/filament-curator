@@ -72,7 +72,7 @@ class MediaPickerModal extends Component implements HasForms
     public function destroy(): void
     {
         $item = resolve(config('filament-curator.model'))->where('id', $this->selected['id'])->first();
-        $this->data = null;
+        $this->data = [];
         $this->selected = null;
         $this->dispatchBrowserEvent('remove-media', ['media' => $item]);
         $item->delete();

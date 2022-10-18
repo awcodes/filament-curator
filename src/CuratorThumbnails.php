@@ -19,7 +19,7 @@ class CuratorThumbnails
         return pathinfo($filename);
     }
 
-    private function getSizes(): array
+    public function getSizes(): array
     {
         return Arr::exists(config('filament-curator.sizes'), 'thumbnail')
             ? config('filament-curator.sizes')
@@ -42,9 +42,11 @@ class CuratorThumbnails
             $path_info = $this->getPathInfo($media->filename);
 
             foreach ($this->getSizes() as $name => $data) {
-                $file = $usePath
-                    ? Storage::disk($media->disk)->path($media->filename)
-                    : Storage::disk($media->disk)->url($media->filename);
+                if (in_array($media->disk, config('filament-curator.cloud_disks'))) {
+                    $file = Storage::disk($media->disk)->url($media->filename);
+                } else {
+                    $file = Storage::disk($media->disk)->path($media->filename);
+                }
 
                 $image = Image::make($file);
 
