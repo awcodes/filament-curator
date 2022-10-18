@@ -91,7 +91,7 @@ class Media extends Model
 
     public function getSizeUrl(string $size): string
     {
-        $sizes = config('filament-curator.sizes');
+        $sizes = CuratorThumbnails::getSizes();
         if (Arr::exists($sizes, $size) && $this->has_sizes) {
             return $this->getUrlForSize($size);
         }
