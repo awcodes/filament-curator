@@ -36,7 +36,7 @@ class CuratorThumbnails
         return in_array($ext, ['jpeg', 'jpg', 'png', 'webp', 'bmp']);
     }
 
-    public function generate(Model $media, bool $usePath = false): void
+    public function generate(Model | \stdClass $media, bool $usePath = false): void
     {
         if ($this->hasSizes($media->ext)) {
             $path_info = $this->getPathInfo($media->filename);
@@ -70,7 +70,7 @@ class CuratorThumbnails
         }
     }
 
-    public function destroy(Model $media): void
+    public function destroy(Model | \stdClass $media): void
     {
         if ($this->hasSizes($media->ext)) {
             $path_info = $this->getPathInfo($media->filename);

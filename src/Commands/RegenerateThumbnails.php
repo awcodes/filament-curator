@@ -5,6 +5,7 @@ namespace FilamentCurator\Commands;
 use FilamentCurator\Thumbnails;
 use Illuminate\Console\Command;
 use FilamentCurator\Models\Media;
+use Illuminate\Support\Facades\DB;
 use Intervention\Image\Facades\Image;
 use Illuminate\Support\Facades\Storage;
 use FilamentCurator\Facades\CuratorThumbnails;
@@ -16,7 +17,9 @@ class RegenerateThumbnails extends Command
      *
      * @var string
      */
-    protected $signature = 'curator:regenerate-thumbnails {--path : regenerate from path instead of url}';
+    protected $signature = 'curator:regenerate-thumbnails 
+        {--chunk=100 : number of items to chunk for processing}
+    ';
 
     /**
      * The console command description.
@@ -30,27 +33,28 @@ class RegenerateThumbnails extends Command
      *
      * @return int
      */
-    public function handle()
+    public function handle(): int
     {
-        $media = Media::all();
+        $mediaCount = DB::table('media')->count();
 
-        if ($media->isNotEmpty()) {
+        if ($mediaCount > 0) {
+
             $this->info('Regenerating...');
 
-            $progress = $this->output->createProgressBar(count($media));
+            $progress = $this->output->createProgressBar($mediaCount);
 
-            $progress->start();
+            $this->info($this->option('chunk'));
 
-            $this->newLine();
+            DB::table('media')->orderBy('id')->chunk($this->option('chunk'), function ($media) use ($progress) {
+                foreach ($media as $item) {
+                    if (CuratorThumbnails::hasSizes($item->ext)) {
+                        CuratorThumbnails::destroy($item);
+                        CuratorThumbnails::generate($item);
+                    }
 
-            foreach ($media as $item) {
-                if (CuratorThumbnails::hasSizes($item->ext)) {
-                    CuratorThumbnails::destroy($item);
-                    CuratorThumbnails::generate($item, $this->option('path'));
+                    $progress->advance();
                 }
-
-                $progress->advance();
-            }
+            });
 
             $progress->finish();
         } else {
