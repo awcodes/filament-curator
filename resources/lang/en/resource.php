@@ -14,5 +14,6 @@ return [
         'file' => 'File',
         'ext' => 'Ext',
         'updated_at' => 'Updated At',
+        'thumbnail_url' => 'Thumbnail'
     ],
 ];

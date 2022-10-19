@@ -3,6 +3,7 @@
 return [
     'heading' => 'Media Picker',
     'search_label' => 'Search',
+    'search_placeholder' => 'Search',
     'upload_tab' => 'Upload Media',
     'media_library_tab' => 'Media Library',
     'deselect' => 'Deselect',

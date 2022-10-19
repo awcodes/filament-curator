@@ -130,7 +130,9 @@ class MediaResource extends Resource
     {
         return $table
             ->columns([
-                ThumbnailColumn::make('thumbnail_url')->size(40),
+                ThumbnailColumn::make('thumbnail_url')
+					->label(__('filament-curator::resource.labels.thumbnail_url'))
+					->size(40),
                 TextColumn::make('public_id')
                     ->label(__('filament-curator::resource.labels.public_id'))
                     ->searchable()
