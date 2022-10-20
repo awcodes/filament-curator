@@ -4,7 +4,7 @@ namespace FilamentCurator\Config\PathGenerator;
 
 use Carbon\Carbon;
 
-class WordpressPathGenerator implements PathGenerator
+class DatePathGenerator implements PathGenerator
 {
     public function getPath(?string $baseDir): string
     {
