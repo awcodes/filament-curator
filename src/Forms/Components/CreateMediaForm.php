@@ -2,12 +2,13 @@
 
 namespace FilamentCurator\Forms\Components;
 
-use Filament\Forms;
-use Livewire\Component;
+use FilamentCurator\Config\PathGenerator\PathGenerator;
 use FilamentCurator\Models\Media;
-use Filament\Forms\Contracts\HasForms;
+use Filament\Forms;
 use Filament\Forms\Concerns\InteractsWithForms;
+use Filament\Forms\Contracts\HasForms;
 use Filament\Pages\Actions\Concerns\CanSubmitForm;
+use Livewire\Component;
 
 class CreateMediaForm extends Component implements HasForms
 {
@@ -50,7 +51,6 @@ class CreateMediaForm extends Component implements HasForms
                 ->maxSize(config('filament-curator.max_size'))
                 ->rules(config('filament-curator.rules'))
                 ->acceptedFileTypes(config('filament-curator.accepted_file_types'))
-                ->directory(config('filament-curator.directory', 'images'))
                 ->disk(config('filament-curator.disk', 'public'))
                 ->visibility(config('filament-curator.visibility', 'public'))
                 ->required()

@@ -6,6 +6,7 @@ return [
     'media_resource' => \FilamentCurator\Resources\MediaResource::class,
     'disk' => 'public',
     'directory' => 'media',
+    'path_generator' => \FilamentCurator\Config\PathGenerator\DefaultPathGenerator::class,
     'visibility' => 'public',
     'preserve_file_names' => false,
     'accepted_file_types' => ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'application/pdf'],

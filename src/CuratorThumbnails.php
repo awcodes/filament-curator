@@ -2,11 +2,11 @@
 
 namespace FilamentCurator;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Intervention\Image\Facades\Image;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Storage;
 
 class CuratorThumbnails
 {
@@ -75,7 +75,7 @@ class CuratorThumbnails
         if ($this->hasSizes($media->ext)) {
             $path_info = $this->getPathInfo($media->filename);
 
-            $thumbnails = collect(Storage::disk($media->disk)->allFiles())->filter(function($item) use ($path_info) {
+            $thumbnails = collect(Storage::disk($media->disk)->allFiles())->filter(function ($item) use ($path_info) {
                 return Str::startsWith($item, $path_info['dirname'] . '/' . $path_info['filename'] . '-');
             });
 

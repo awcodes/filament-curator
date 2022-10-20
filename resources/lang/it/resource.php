@@ -9,7 +9,7 @@ return [
         'dimensions' => 'Dimensioni',
         'disk' => 'Disco',
         'directory' => 'Directory',
-        'public_id' => 'Id Pubblic',
+        'public_id' => 'Id Pubblico',
         'file_url' => 'URL del File',
         'file' => 'File',
         'ext' => 'Estensione',
