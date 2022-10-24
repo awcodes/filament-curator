@@ -2,20 +2,40 @@
 
 namespace FilamentCurator\Forms\Components;
 
-use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
-use Livewire\TemporaryUploadedFile;
-use Intervention\Image\Facades\Image;
-use Illuminate\Support\Facades\Storage;
-use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\BaseFileUpload;
+use FilamentCurator\Config\PathGenerator\PathGenerator;
 use FilamentCurator\Facades\CuratorThumbnails;
+use Filament\Forms\Components\BaseFileUpload;
+use Filament\Forms\Components\FileUpload;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Intervention\Image\Facades\Image;
+use Livewire\TemporaryUploadedFile;
 
 class MediaUpload extends FileUpload
 {
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->directory(function () {
+            $generator = config('filament-curator.path_generator');
+            if (class_exists($generator) && is_subclass_of($generator, PathGenerator::class)) {
+                $path = resolve($generator)->getPath(config('filament-curator.directory'));
+            } else {
+                $path = config('filament-curator.directory');
+            }
+
+            // normalization /path//to/dir/ --> path/to/dir
+            $path = preg_replace('#/+#', '/', $path);
+            if (Str::startsWith($path, '/')) {
+                $path = substr($path, 1);
+            }
+            if (Str::endsWith($path, '/')) {
+                $path = substr($path, 0, strlen($path) - 1);
+            }
+
+            return $path;
+        });
 
         $this->saveUploadedFileUsing(function (BaseFileUpload $component, TemporaryUploadedFile $file, $state, $set) {
 

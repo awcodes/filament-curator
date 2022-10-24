@@ -2,25 +2,25 @@
 
 namespace FilamentCurator\Resources;
 
-use Filament\Resources\Form;
-use Filament\Resources\Table;
-use Filament\Resources\Resource;
-use Filament\Forms\Components\View;
+use FilamentCurator\Forms\Components\MediaUpload;
+use FilamentCurator\Resources\MediaResource\Pages\CreateMedia;
+use FilamentCurator\Resources\MediaResource\Pages\EditMedia;
+use FilamentCurator\Resources\MediaResource\Pages\ListMedia;
+use FilamentCurator\Tables\Columns\ThumbnailColumn;
 use Filament\Forms\Components\Group;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\View;
+use Filament\Forms\Components\ViewField;
+use Filament\Resources\Form;
+use Filament\Resources\Resource;
+use Filament\Resources\Table;
+use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\ViewField;
-use Filament\Tables\Actions\DeleteAction;
-use Filament\Forms\Components\Placeholder;
-use FilamentCurator\Forms\Components\MediaUpload;
-use FilamentCurator\Tables\Columns\ThumbnailColumn;
-use FilamentCurator\Resources\MediaResource\Pages\EditMedia;
-use FilamentCurator\Resources\MediaResource\Pages\ListMedia;
-use FilamentCurator\Resources\MediaResource\Pages\CreateMedia;
 
 class MediaResource extends Resource
 {
@@ -49,7 +49,6 @@ class MediaResource extends Resource
                                     ->disableLabel()
                                     ->maxWidth(5000)
                                     ->acceptedFileTypes(config('filament-curator.accepted_file_types'))
-                                    ->directory(config('filament-curator.directory', 'images'))
                                     ->disk(config('filament-curator.disk', 'public'))
                                     ->required()
                                     ->maxFiles(1)
@@ -67,7 +66,7 @@ class MediaResource extends Resource
                                         $component->state($record);
                                     }),
                             ]),
-                        Section::make('Details')
+                        Section::make(__('filament-curator::resource.labels.details'))
                             ->schema([
                                 Placeholder::make('uploaded_on')
                                     ->label(__('filament-curator::resource.labels.uploaded_on'))
@@ -116,7 +115,7 @@ class MediaResource extends Resource
                                 Textarea::make('description')
                                     ->label(__('filament-curator::media-form.labels.description'))
                                     ->rows(2),
-                                ])
+                            ])
                     ])->columnSpan([
                         'lg' => 'full',
                         'xl' => 1,
@@ -131,8 +130,8 @@ class MediaResource extends Resource
         return $table
             ->columns([
                 ThumbnailColumn::make('thumbnail_url')
-					->label(__('filament-curator::resource.labels.thumbnail_url'))
-					->size(40),
+                    ->label(__('filament-curator::resource.labels.thumbnail_url'))
+                    ->size(40),
                 TextColumn::make('public_id')
                     ->label(__('filament-curator::resource.labels.public_id'))
                     ->searchable()

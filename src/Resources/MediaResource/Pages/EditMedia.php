@@ -14,8 +14,8 @@ class EditMedia extends EditRecord
     public function getActions(): array
     {
         return [
-            Action::make('save')->action('save'),
-            Action::make('preview')->color('secondary')->url($this->record->url)->openUrlInNewTab(),
+            Action::make('save')->action('save')->label(__('filament-curator::resource.labels.save')),
+            Action::make('preview')->color('secondary')->url($this->record->url)->openUrlInNewTab()->label(__('filament-curator::resource.labels.preview')),
             DeleteAction::make(),
         ];
     }
