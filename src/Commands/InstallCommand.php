@@ -2,11 +2,8 @@
 
 namespace FilamentCurator\Commands;
 
-use Filament\Facades\Filament;
 use Illuminate\Console\Command;
-use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
@@ -17,7 +14,7 @@ class InstallCommand extends Command
 
     public $signature = 'curator:install {--F|fresh}';
 
-    public $description = "Installs Filament Curator into your project.";
+    public $description = 'Installs Filament Curator into your project.';
 
     public function handle(): int
     {
@@ -25,7 +22,7 @@ class InstallCommand extends Command
 
         $confirmed = $this->confirm('Do you wish to continue?', true);
 
-        if ($this->CheckIfAlreadyInstalled() && !$this->option('fresh')) {
+        if ($this->CheckIfAlreadyInstalled() && ! $this->option('fresh')) {
             $this->comment('Seems you have already installed Filament Curator!');
             $this->comment('You should run `curator:install --fresh` instead to re-install Filament Curator.');
 

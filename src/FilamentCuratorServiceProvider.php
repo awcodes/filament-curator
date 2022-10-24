@@ -2,18 +2,13 @@
 
 namespace FilamentCurator;
 
-use Livewire\Livewire;
 use Filament\Facades\Filament;
-use FilamentCurator\Observers\MediaObserver;
 use Filament\PluginServiceProvider;
-use Illuminate\Support\Facades\File;
-use Filament\Navigation\UserMenuItem;
 use FilamentCurator\Commands\InstallCommand;
-use FilamentCurator\Commands\MakeInstallCuratorCommand;
-use FilamentCurator\Commands\MakePublishCuratorCommand;
-use Spatie\LaravelPackageTools\Package;
 use FilamentCurator\Commands\RegenerateThumbnails;
 use Illuminate\Support\Facades\Blade;
+use Livewire\Livewire;
+use Spatie\LaravelPackageTools\Package;
 
 class FilamentCuratorServiceProvider extends PluginServiceProvider
 {
@@ -26,6 +21,7 @@ class FilamentCuratorServiceProvider extends PluginServiceProvider
         $styles = config('filament-curator.load_styles') ? [
             'filament-curator-styles' => __DIR__ . '/../resources/dist/filament-curator.css',
         ] : [];
+
         return $styles;
     }
 
@@ -42,7 +38,7 @@ class FilamentCuratorServiceProvider extends PluginServiceProvider
             ->name('filament-curator')
             ->hasConfigFile()
             ->hasViews()
-            ->hasRoute("web")
+            ->hasRoute('web')
             ->hasTranslations()
             ->hasCommands([
                 InstallCommand::class,

@@ -7,9 +7,9 @@ use Exception;
 use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\Field;
 use Filament\Support\Actions\Concerns;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Contracts\Support\Htmlable;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class MediaPicker extends Field
@@ -41,10 +41,11 @@ class MediaPicker extends Field
         $this->mediaModel = config('filament-curator.model');
 
         $this->registerActions([
-            Action::make('download')->action(function(): StreamedResponse {
+            Action::make('download')->action(function (): StreamedResponse {
                 $item = resolve($this->mediaModel)->where('id', $this->getState())->first();
+
                 return Storage::disk($item['disk'])->download($item['filename']);
-            })
+            }),
         ]);
     }
 
@@ -75,10 +76,12 @@ class MediaPicker extends Field
     public function download($state): StreamedResponse
     {
         $item = resolve($this->mediaModel)->where('id', $id)->first();
+
         return Storage::disk($item['disk'])->download($item['filename']);
     }
 
-    public function getFitContent(): bool {
+    public function getFitContent(): bool
+    {
         return $this->evaluate($this->fitContent);
     }
 }

@@ -10,6 +10,6 @@ return [
     ],
 
     'notices' => [
-        'success' => 'Elemento aggiornato correttamente.'
-    ]
+        'success' => 'Elemento aggiornato correttamente.',
+    ],
 ];

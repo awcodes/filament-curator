@@ -54,7 +54,7 @@ class CuratorThumbnails
                     $image->fit($data['width']);
                 } else {
                     $image->resize($data['width'], $data['height'], function ($constraint) use ($data) {
-                        if (!$data['height']) {
+                        if (! $data['height']) {
                             $constraint->aspectRatio();
                         }
                     });
@@ -63,7 +63,7 @@ class CuratorThumbnails
                 $image->encode(null, $data['quality']);
 
                 Storage::disk($media->disk)->put(
-                    "{$path_info["dirname"]}/{$path_info["filename"]}-{$name}.{$media->ext}",
+                    "{$path_info['dirname']}/{$path_info['filename']}-{$name}.{$media->ext}",
                     $image->stream()
                 );
             }

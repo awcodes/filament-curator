@@ -2,12 +2,8 @@
 
 namespace FilamentCurator\Forms\Components;
 
-use FilamentCurator\Config\PathGenerator\PathGenerator;
-use FilamentCurator\Models\Media;
-use Filament\Forms;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Pages\Actions\Concerns\CanSubmitForm;
 use Livewire\Component;
 
 class CreateMediaForm extends Component implements HasForms
@@ -17,16 +13,27 @@ class CreateMediaForm extends Component implements HasForms
     public array $data = [];
 
     public string $public_id = '';
+
     public string $filename = '';
+
     public string $ext = '';
+
     public string $type = '';
+
     public int $width = 0;
+
     public int $height = 0;
+
     public string $disk = '';
+
     public int $size = 0;
+
     public string $alt = '';
+
     public string $title = '';
+
     public string $caption = '';
+
     public string $description = '';
 
     public function mount()

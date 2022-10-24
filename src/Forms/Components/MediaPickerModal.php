@@ -2,12 +2,12 @@
 
 namespace FilamentCurator\Forms\Components;
 
-use Filament\Forms;
-use Livewire\Component;
 use Filament\Facades\Filament;
+use Filament\Forms;
+use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Illuminate\Support\Facades\Storage;
-use Filament\Forms\Concerns\InteractsWithForms;
+use Livewire\Component;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class MediaPickerModal extends Component implements HasForms
@@ -15,6 +15,7 @@ class MediaPickerModal extends Component implements HasForms
     use InteractsWithForms;
 
     public array | null $selected = null;
+
     public array $data;
 
     public function updatedSelected($value): void
@@ -42,7 +43,7 @@ class MediaPickerModal extends Component implements HasForms
         return [
             Forms\Components\TextInput::make('alt')
                 ->label(__('filament-curator::media-form.labels.alt'))
-                ->extraInputAttributes(['aria-describedby' => "edit-alt-helper"]),
+                ->extraInputAttributes(['aria-describedby' => 'edit-alt-helper']),
             Forms\Components\View::make('filament-curator::alt-helper')
                 ->extraAttributes(['id' => 'edit-alt-helper']),
             Forms\Components\TextInput::make('title')
@@ -59,6 +60,7 @@ class MediaPickerModal extends Component implements HasForms
     public function download(): StreamedResponse
     {
         $item = resolve(config('filament-curator.model'))->where('id', $this->selected['id'])->first();
+
         return Storage::disk($item['disk'])->download($item['filename']);
     }
 

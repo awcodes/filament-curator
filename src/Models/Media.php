@@ -115,12 +115,12 @@ class Media extends Model
 
     public function sizeForHumans(int $precision = 1): string
     {
-        $units = ["B", "KiB", "MiB", "GiB", "TiB", "PiB"];
+        $units = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'];
         $size = $this->size;
         for ($i = 0; $size > 1024; $i++) {
             $size /= 1024;
         }
 
-        return round($size, $precision) . " " . $units[$i];
+        return round($size, $precision) . ' ' . $units[$i];
     }
 }

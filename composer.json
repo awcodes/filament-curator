@@ -18,8 +18,9 @@
     "require": {
         "php": "^8.0.2",
         "filament/filament": "^2.0",
-        "spatie/laravel-package-tools": "^1.9.2",
-        "intervention/image": "^2.7"
+        "intervention/image": "^2.7",
+        "laravel/pint": "^1.2",
+        "spatie/laravel-package-tools": "^1.9.2"
     },
     "autoload": {
         "psr-4": {
@@ -37,6 +38,9 @@
                 "FilamentCurator\\FilamentCuratorServiceProvider"
             ]
         }
+    },
+    "scripts": {
+        "pint": "vendor/bin/pint"
     },
     "config": {
         "optimize-autoloader": true,

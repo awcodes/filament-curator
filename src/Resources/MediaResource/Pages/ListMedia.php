@@ -2,8 +2,8 @@
 
 namespace FilamentCurator\Resources\MediaResource\Pages;
 
-use FilamentCurator\Resources\MediaResource;
 use Filament\Resources\Pages\ListRecords;
+use FilamentCurator\Resources\MediaResource;
 
 class ListMedia extends ListRecords
 {
