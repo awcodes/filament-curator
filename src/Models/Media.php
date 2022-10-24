@@ -2,12 +2,12 @@
 
 namespace FilamentCurator\Models;
 
-use stdClass;
-use Illuminate\Support\Arr;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Storage;
 use FilamentCurator\Facades\CuratorThumbnails;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Storage;
+use stdClass;
 
 class Media extends Model
 {
@@ -31,6 +31,10 @@ class Media extends Model
         static::deleted(function (Media $media) {
             CuratorThumbnails::destroy($media);
             Storage::disk($media->disk)->delete($media->filename);
+
+            if (count(Storage::disk($media->disk)->allFiles($media->directory)) == 0) {
+                Storage::disk($media->disk)->deleteDirectory($media->directory);
+            }
         });
     }
 

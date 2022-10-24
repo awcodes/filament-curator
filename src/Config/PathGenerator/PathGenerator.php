@@ -4,5 +4,5 @@ namespace FilamentCurator\Config\PathGenerator;
 
 interface PathGenerator
 {
-    public function getPath(?string $baseDir): string;
+    public function getPath(?string $baseDir = null): string;
 }
