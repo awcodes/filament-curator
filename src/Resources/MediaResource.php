@@ -2,16 +2,11 @@
 
 namespace FilamentCurator\Resources;
 
-use FilamentCurator\Forms\Components\MediaUpload;
-use FilamentCurator\Resources\MediaResource\Pages\CreateMedia;
-use FilamentCurator\Resources\MediaResource\Pages\EditMedia;
-use FilamentCurator\Resources\MediaResource\Pages\ListMedia;
-use FilamentCurator\Tables\Columns\ThumbnailColumn;
 use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Section;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\View;
 use Filament\Forms\Components\ViewField;
 use Filament\Resources\Form;
@@ -21,6 +16,11 @@ use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use FilamentCurator\Forms\Components\MediaUpload;
+use FilamentCurator\Resources\MediaResource\Pages\CreateMedia;
+use FilamentCurator\Resources\MediaResource\Pages\EditMedia;
+use FilamentCurator\Resources\MediaResource\Pages\ListMedia;
+use FilamentCurator\Tables\Columns\ThumbnailColumn;
 
 class MediaResource extends Resource
 {
@@ -52,7 +52,7 @@ class MediaResource extends Resource
                                     ->disk(config('filament-curator.disk', 'public'))
                                     ->required()
                                     ->maxFiles(1)
-                                    ->panelAspectRatio('24:9')
+                                    ->panelAspectRatio('24:9'),
                             ]),
                         Section::make(__('filament-curator::resource.labels.preview'))
                             ->hidden(function ($livewire) {
@@ -96,7 +96,7 @@ class MediaResource extends Resource
                     ])
                     ->columnSpan([
                         'lg' => 'full',
-                        'xl' => 2
+                        'xl' => 2,
                     ]),
                 Group::make()
                     ->schema([
@@ -104,7 +104,7 @@ class MediaResource extends Resource
                             ->schema([
                                 TextInput::make('alt')
                                     ->label(__('filament-curator::media-form.labels.alt'))
-                                    ->extraInputAttributes(['aria-describedby' => "resource-alt-helper"]),
+                                    ->extraInputAttributes(['aria-describedby' => 'resource-alt-helper']),
                                 View::make('filament-curator::alt-helper')
                                     ->extraAttributes(['id' => 'resource-alt-helper']),
                                 TextInput::make('title')
@@ -115,7 +115,7 @@ class MediaResource extends Resource
                                 Textarea::make('description')
                                     ->label(__('filament-curator::media-form.labels.description'))
                                     ->rows(2),
-                            ])
+                            ]),
                     ])->columnSpan([
                         'lg' => 'full',
                         'xl' => 1,

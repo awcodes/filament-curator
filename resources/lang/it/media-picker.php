@@ -1,5 +1,5 @@
 <?php
 
 return [
-    'button_label' => 'Carica file'
+    'button_label' => 'Carica file',
 ];

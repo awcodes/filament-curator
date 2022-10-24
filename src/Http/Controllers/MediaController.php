@@ -9,9 +9,9 @@ class MediaController extends Controller
 {
     public function index(Request $request)
     {
-        $files = resolve(config('filament-curator.model'))->where('id', '<>',  $request->media_id)->latest()->paginate(25);
+        $files = resolve(config('filament-curator.model'))->where('id', '<>', $request->media_id)->latest()->paginate(25);
 
-        if ($request->has('media_id') && !$request->has('page')) {
+        if ($request->has('media_id') && ! $request->has('page')) {
             $selected = resolve(config('filament-curator.model'))->where('id', $request->media_id)->first();
             $files->prepend($selected);
         }

@@ -16,6 +16,6 @@ return [
         'updated_at' => 'Aggiornato',
         'thumbnail_url' => 'Miniatura',
         'details' => 'Dettagli',
-        'save' => 'Salva'
+        'save' => 'Salva',
     ],
 ];

@@ -1,5 +1,5 @@
 <?php
 
 return [
-    'button_label' => 'Tambahkan media'
+    'button_label' => 'Tambahkan media',
 ];

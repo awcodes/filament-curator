@@ -2,10 +2,10 @@
 
 namespace FilamentCurator\Forms\Components;
 
-use FilamentCurator\Config\PathGenerator\PathGenerator;
-use FilamentCurator\Facades\CuratorThumbnails;
 use Filament\Forms\Components\BaseFileUpload;
 use Filament\Forms\Components\FileUpload;
+use FilamentCurator\Config\PathGenerator\PathGenerator;
+use FilamentCurator\Facades\CuratorThumbnails;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Intervention\Image\Facades\Image;
@@ -38,7 +38,6 @@ class MediaUpload extends FileUpload
         });
 
         $this->saveUploadedFileUsing(function (BaseFileUpload $component, TemporaryUploadedFile $file, $state, $set) {
-
             $filename = $component->shouldPreserveFilenames() ? Str::of(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME))->slug() : Str::uuid();
 
             $storeMethod = $component->getVisibility() === 'public' ? 'storePubliclyAs' : 'storeAs';
@@ -49,7 +48,7 @@ class MediaUpload extends FileUpload
                 $height = $image->getHeight();
             }
 
-            if (Storage::disk($component->getDiskName())->exists(ltrim($component->getDirectory() . '/' . $filename  .  '.' . $file->getClientOriginalExtension(), '/'))) {
+            if (Storage::disk($component->getDiskName())->exists(ltrim($component->getDirectory() . '/' . $filename . '.' . $file->getClientOriginalExtension(), '/'))) {
                 $filename = $filename . '-' . time();
             }
 
@@ -62,7 +61,7 @@ class MediaUpload extends FileUpload
                 'disk' => $component->getDiskName(),
                 'directory' => $component->getDirectory(),
                 'size' => $file->getSize(),
-                'filename' => $file->{$storeMethod}($component->getDirectory(), $filename  .  '.' . $file->getClientOriginalExtension(), $component->getDiskName()),
+                'filename' => $file->{$storeMethod}($component->getDirectory(), $filename . '.' . $file->getClientOriginalExtension(), $component->getDiskName()),
             ];
         });
     }
@@ -75,18 +74,18 @@ class MediaUpload extends FileUpload
             return;
         }
 
-        if (!is_array($this->getState())) {
+        if (! is_array($this->getState())) {
             $this->state([$this->getState()]);
         }
 
         $state = array_map(function (TemporaryUploadedFile | array $file) {
-            if (!$file instanceof TemporaryUploadedFile) {
+            if (! $file instanceof TemporaryUploadedFile) {
                 return $file;
             }
 
             $callback = $this->saveUploadedFileUsing;
 
-            if (!$callback) {
+            if (! $callback) {
                 $file->delete();
 
                 return $file;

@@ -2,13 +2,9 @@
 
 namespace FilamentCurator\Commands;
 
-use FilamentCurator\Thumbnails;
-use Illuminate\Console\Command;
-use FilamentCurator\Models\Media;
-use Illuminate\Support\Facades\DB;
-use Intervention\Image\Facades\Image;
-use Illuminate\Support\Facades\Storage;
 use FilamentCurator\Facades\CuratorThumbnails;
+use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 
 class RegenerateThumbnails extends Command
 {
@@ -38,7 +34,6 @@ class RegenerateThumbnails extends Command
         $mediaCount = DB::table('media')->count();
 
         if ($mediaCount > 0) {
-
             $this->info('Regenerating...');
 
             $progress = $this->output->createProgressBar($mediaCount);

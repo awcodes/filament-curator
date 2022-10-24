@@ -16,6 +16,6 @@ return [
         'updated_at' => 'Updated At',
         'thumbnail_url' => 'Thumbnail',
         'details' => 'Details',
-        'save' => 'Save'
+        'save' => 'Save',
     ],
 ];

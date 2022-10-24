@@ -10,6 +10,6 @@ return [
     ],
 
     'notices' => [
-        'success' => 'Item behasil diperbarui.'
-    ]
+        'success' => 'Item behasil diperbarui.',
+    ],
 ];

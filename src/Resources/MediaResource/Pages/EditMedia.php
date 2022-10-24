@@ -2,10 +2,10 @@
 
 namespace FilamentCurator\Resources\MediaResource\Pages;
 
-use FilamentCurator\Resources\MediaResource;
 use Filament\Pages\Actions\Action;
 use Filament\Pages\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
+use FilamentCurator\Resources\MediaResource;
 
 class EditMedia extends EditRecord
 {
