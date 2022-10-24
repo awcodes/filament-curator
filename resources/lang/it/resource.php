@@ -14,6 +14,8 @@ return [
         'file' => 'File',
         'ext' => 'Estensione',
         'updated_at' => 'Aggiornato',
-        'thumbnail_url' => 'Miniatura'
+        'thumbnail_url' => 'Miniatura',
+        'details' => 'Dettagli',
+        'save' => 'Salva'
     ],
 ];

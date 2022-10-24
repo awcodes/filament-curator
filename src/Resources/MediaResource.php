@@ -66,7 +66,7 @@ class MediaResource extends Resource
                                         $component->state($record);
                                     }),
                             ]),
-                        Section::make('Details')
+                        Section::make(__('filament-curator::resource.labels.details'))
                             ->schema([
                                 Placeholder::make('uploaded_on')
                                     ->label(__('filament-curator::resource.labels.uploaded_on'))
