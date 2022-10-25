@@ -62,6 +62,7 @@ class MediaResource extends Resource
                                 ViewField::make('preview')
                                     ->view('filament-curator::components.media-preview')
                                     ->disableLabel()
+                                    ->dehydrated(false)
                                     ->afterStateHydrated(function ($component, $state, $record) {
                                         $component->state($record);
                                     }),
