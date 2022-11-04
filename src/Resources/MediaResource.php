@@ -28,6 +28,8 @@ class MediaResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-photograph';
 
+    protected static ?string $label = 'Media';
+
     public static function getModel(): string
     {
         return config('filament-curator.model');
