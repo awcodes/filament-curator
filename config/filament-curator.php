@@ -4,6 +4,8 @@ return [
     'load_styles' => true,
     'model' => \FilamentCurator\Models\Media::class,
     'media_resource' => \FilamentCurator\Resources\MediaResource::class,
+    'label' => 'Media',
+    'navigation_icon' => 'heroicon-o-photograph',
     'disk' => 'public',
     'directory' => 'media',
     'path_generator' => \FilamentCurator\Config\PathGenerator\DefaultPathGenerator::class,
