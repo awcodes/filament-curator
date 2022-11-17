@@ -4,7 +4,7 @@
   min-height: 250px;
   border-radius: theme("borderRadius.xl");
   border: dashed 2px theme("colors.gray.300");
-  background-color: theme(colors.gray.100) !important;
+  background-color: theme("colors.gray.100") !important;
 }
 
 .dark .filament-curator-media-picker-modal .filepond--root {
@@ -13,7 +13,7 @@
 }
 
 .filament-curator-media-picker-modal .filepond--panel-root {
-  background-color: theme(colors.gray.100) !important;
+  background-color: theme("colors.gray.100") !important;
   border: none !important;
   box-shadow: none !important;
 }
@@ -35,4 +35,8 @@
   background-color: theme("colors.gray.800");
   background-image: linear-gradient(45deg, theme("colors.gray.700") 25%, transparent 25%), linear-gradient(135deg, theme("colors.gray.700") 25%, transparent 25%), linear-gradient(45deg, transparent 75%, theme("colors.gray.700") 75%),
     linear-gradient(135deg, transparent 75%, theme("colors.gray.700") 75%);
+}
+
+.filament-modal-content-inner {
+    height: 100%;
 }

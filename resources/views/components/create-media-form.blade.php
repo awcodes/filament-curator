@@ -6,17 +6,14 @@
         {{ $this->form }}
     </div>
 
-    <div
-        @class([
-            'flex items-center justify-start p-2 border-t border-gray-300',
-            'dark:border-gray-700' => config('filament.dark_mode'),
-        ])
-    >
+    <div class="flex items-center justify-start gap-3 p-2 border-t border-gray-300 bg-gray-200 dark:border-gray-800 dark:bg-black/10">
         <x-filament::button
             type="submit"
+            size="sm"
             wire:target="create"
+            disabled="{{ blank($data['files']) }}"
         >
-            {{ __('filament-curator::media-picker-modal.edit_save') }}
+            {{ __('filament-curator::media-picker-modal.add_files') }}
         </x-filament::button>
     </div>
 </x-filament::form>
