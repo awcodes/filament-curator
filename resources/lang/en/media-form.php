@@ -12,4 +12,6 @@ return [
     'notices' => [
         'success' => 'Item updated successfully.',
     ],
+
+    'alt_hint' => 'Alt?'
 ];

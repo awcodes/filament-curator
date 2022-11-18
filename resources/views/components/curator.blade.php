@@ -150,7 +150,7 @@
             </ul>
         </div> <!-- gallery -->
 
-        <div class="w-full h-full max-w-xs overflow-auto bg-gray-100 dark:bg-gray-900 flex flex-col">
+        <div class="w-full h-full max-w-xs overflow-auto bg-gray-100 dark:bg-gray-900/30 flex flex-col">
 
             <div x-show="! selected" class="flex-1 overflow-hidden">
                 <div class="flex flex-col h-full overflow-y-auto">

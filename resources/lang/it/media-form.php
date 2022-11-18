@@ -12,4 +12,6 @@ return [
     'notices' => [
         'success' => 'Elemento aggiornato correttamente.',
     ],
+
+    'alt_hint' => 'Alt?'
 ];

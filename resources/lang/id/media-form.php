@@ -12,4 +12,6 @@ return [
     'notices' => [
         'success' => 'Item behasil diperbarui.',
     ],
+
+    'alt_hint' => 'Alt?'
 ];

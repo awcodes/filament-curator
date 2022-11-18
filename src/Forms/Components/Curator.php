@@ -7,6 +7,7 @@ use Filament\Forms;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\HtmlString;
 use Livewire\Component;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -56,21 +57,7 @@ class Curator extends Component implements HasForms
 
     protected function getEditMediaFormSchema(): array
     {
-        return [
-            Forms\Components\TextInput::make('alt')
-                ->label(__('filament-curator::media-form.labels.alt'))
-                ->extraInputAttributes(['aria-describedby' => 'edit-alt-helper']),
-            Forms\Components\View::make('filament-curator::alt-helper')
-                ->extraAttributes(['id' => 'edit-alt-helper']),
-            Forms\Components\TextInput::make('title')
-                ->label(__('filament-curator::media-form.labels.title')),
-            Forms\Components\Textarea::make('caption')
-                ->label(__('filament-curator::media-form.labels.caption'))
-                ->rows(2),
-            Forms\Components\Textarea::make('description')
-                ->label(__('filament-curator::media-form.labels.description'))
-                ->rows(2),
-        ];
+        return app(config('filament-curator.media_resource'))::getAdditionInformationFormSchema();
     }
 
     protected function getForms(): array

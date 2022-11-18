@@ -21,6 +21,7 @@ use FilamentCurator\Resources\MediaResource\Pages\CreateMedia;
 use FilamentCurator\Resources\MediaResource\Pages\EditMedia;
 use FilamentCurator\Resources\MediaResource\Pages\ListMedia;
 use FilamentCurator\Tables\Columns\CuratorColumn;
+use Illuminate\Support\HtmlString;
 
 class MediaResource extends Resource
 {
@@ -110,21 +111,9 @@ class MediaResource extends Resource
                 Group::make()
                     ->schema([
                         Section::make('Meta')
-                            ->schema([
-                                TextInput::make('alt')
-                                    ->label(__('filament-curator::media-form.labels.alt'))
-                                    ->extraInputAttributes(['aria-describedby' => 'resource-alt-helper']),
-                                View::make('filament-curator::alt-helper')
-                                    ->extraAttributes(['id' => 'resource-alt-helper']),
-                                TextInput::make('title')
-                                    ->label(__('filament-curator::media-form.labels.title')),
-                                Textarea::make('caption')
-                                    ->label(__('filament-curator::media-form.labels.caption'))
-                                    ->rows(2),
-                                Textarea::make('description')
-                                    ->label(__('filament-curator::media-form.labels.description'))
-                                    ->rows(2),
-                            ]),
+                            ->schema(
+                                static::getAdditionInformationFormSchema()
+                            ),
                     ])->columnSpan([
                         'lg' => 'full',
                         'xl' => 1,
@@ -188,6 +177,23 @@ class MediaResource extends Resource
             'index' => ListMedia::route('/'),
             'create' => CreateMedia::route('/create'),
             'edit' => EditMedia::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getAdditionInformationFormSchema(): array
+    {
+        return [
+            TextInput::make('alt')
+                ->label(__('filament-curator::media-form.labels.alt'))
+                ->hint(fn (): HtmlString => new HtmlString('<a href="https://www.w3.org/WAI/tutorials/images/decision-tree" class="filament-link" target="_blank">' . __('filament-curator::media-form.alt_hint') . '</a>')),
+            TextInput::make('title')
+                ->label(__('filament-curator::media-form.labels.title')),
+            Textarea::make('caption')
+                ->label(__('filament-curator::media-form.labels.caption'))
+                ->rows(2),
+            Textarea::make('description')
+                ->label(__('filament-curator::media-form.labels.description'))
+                ->rows(2),
         ];
     }
 }
