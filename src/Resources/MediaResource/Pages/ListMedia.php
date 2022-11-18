@@ -7,5 +7,8 @@ use FilamentCurator\Resources\MediaResource;
 
 class ListMedia extends ListRecords
 {
-    protected static string $resource = MediaResource::class;
+    public static function getResource(): string
+    {
+        return config('filament-curator.media_resource');
+    }
 }

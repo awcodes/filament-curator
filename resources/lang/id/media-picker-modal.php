@@ -13,4 +13,8 @@ return [
     'edit_delete' => 'Hapus',
     'edit_cancel' => 'Batalkan',
     'use_selected_image' => 'Gunakan Gambar Yang Dipilih',
+    'add_files' => 'Tambahkan File',
+    'view' => 'Melihat',
+    'edit' => 'Sunting',
+    'download' => 'Unduh',
 ];

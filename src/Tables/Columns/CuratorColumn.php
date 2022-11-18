@@ -3,6 +3,8 @@
 namespace FilamentCurator\Tables\Columns;
 
 use Filament\Tables\Columns\ImageColumn;
+use FilamentCurator\Facades\CuratorThumbnails;
+use Illuminate\Support\Str;
 
 class CuratorColumn extends ImageColumn
 {
@@ -14,6 +16,10 @@ class CuratorColumn extends ImageColumn
 
         if (! $state) {
             return null;
+        }
+
+        if (is_string($state)) {
+            return $state;
         }
 
         /** @var FilesystemAdapter $storage */
@@ -37,8 +43,22 @@ class CuratorColumn extends ImageColumn
         return $state->thumbnail_url;
     }
 
-    public function getType(): ?string
+    public function isImage(): bool
     {
-        return $this->record->image ? $this->record->image->type : '';
+        $state = $this->getState();
+
+        if (filled($state)) {
+            if (is_a($state, config('filament-curator.model'))) {
+                $url = $state->filename;
+            } else {
+                $url = $state;
+            }
+
+            $ext = Str::of($url)->afterLast('.');
+
+            return CuratorThumbnails::isResizable($ext);
+        }
+
+        return false;
     }
 }

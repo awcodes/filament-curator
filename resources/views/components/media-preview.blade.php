@@ -12,17 +12,20 @@ $record = $getRecord();
                 srcset="{{ $record['large_url'] . ' 1024w, ' . $record['medium_url'] . ' 640w' }}"
                 sizes="(max-width: 1200px) 100vw, 1024px"
                 loading="lazy"
-                class="overflow-hidden border border-gray-300 rounded dark:border-black checkered" />
+                class="overflow-hidden border border-gray-300 rounded dark:border-black checkered"
+            />
         @else
             <img src="{{ $record['url'] }}"
                 alt="{{ $record['alt'] }}"
                 width="{{ $record['width'] }}"
                 height="{{ $record['height'] }}"
                 loading="lazy"
-                class="overflow-hidden border border-gray-300 rounded dark:border-black checkered" />
+                class="overflow-hidden border border-gray-300 rounded dark:border-black checkered"
+            />
         @endif
     @else
-        <x-filament-curator::document-image label="{{ $record['filename'] }}"
+        <x-filament-curator::document-image
+            label="{{ $record['filename'] }}"
             icon-size="lg" />
     @endif
 </div>

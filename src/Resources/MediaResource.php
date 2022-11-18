@@ -20,7 +20,7 @@ use FilamentCurator\Forms\Components\MediaUpload;
 use FilamentCurator\Resources\MediaResource\Pages\CreateMedia;
 use FilamentCurator\Resources\MediaResource\Pages\EditMedia;
 use FilamentCurator\Resources\MediaResource\Pages\ListMedia;
-use FilamentCurator\Tables\Columns\ThumbnailColumn;
+use FilamentCurator\Tables\Columns\CuratorColumn;
 
 class MediaResource extends Resource
 {
@@ -138,7 +138,7 @@ class MediaResource extends Resource
     {
         return $table
             ->columns([
-                ThumbnailColumn::make('thumbnail_url')
+                CuratorColumn::make('thumbnail_url')
                     ->label(__('filament-curator::resource.labels.thumbnail_url'))
                     ->size(40),
                 TextColumn::make('public_id')

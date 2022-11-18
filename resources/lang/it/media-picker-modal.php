@@ -14,4 +14,8 @@ return [
     'edit_delete' => 'Elimina',
     'edit_cancel' => 'Annulla',
     'use_selected_image' => "Usa l'immagine selezionata",
+    'add_files' => 'Aggiungere i file',
+    'view' => 'Visualizzazione',
+    'edit' => 'Modificare',
+    'download' => 'Scarica',
 ];

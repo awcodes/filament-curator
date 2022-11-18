@@ -1,0 +1,1 @@
+<livewire:curator :state-path="$statePath" :modal-id="$modalId" />

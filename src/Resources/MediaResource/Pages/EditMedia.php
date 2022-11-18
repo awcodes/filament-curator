@@ -5,11 +5,13 @@ namespace FilamentCurator\Resources\MediaResource\Pages;
 use Filament\Pages\Actions\Action;
 use Filament\Pages\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
-use FilamentCurator\Resources\MediaResource;
 
 class EditMedia extends EditRecord
 {
-    protected static string $resource = MediaResource::class;
+    public static function getResource(): string
+    {
+        return config('filament-curator.media_resource');
+    }
 
     public function getActions(): array
     {

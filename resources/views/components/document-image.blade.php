@@ -16,6 +16,6 @@ $iconClasses = [
     'grid place-items-center w-full h-full bg-gray-200 p-2 text-sm',
     'dark:bg-gray-700' => config('filament.dark_mode'),
 ])>
-    <x-heroicon-o-document class="{{ $iconClasses[$iconSize] }}" />
+    @svg('heroicon-s-document', '{{ $iconClasses[$iconSize] }}')
     <span class="sr-only">{{ $label }}</span>
 </div>

@@ -60,13 +60,6 @@ class FilamentCuratorServiceProvider extends PluginServiceProvider
     {
         parent::boot();
 
-        Livewire::component('filament-curator-media-picker-modal', Forms\Components\MediaPickerModal::class);
-        Livewire::component('filament-curator-create-media-form', Forms\Components\CreateMediaForm::class);
         Livewire::component('curator', Forms\Components\Curator::class);
-
-        Filament::registerRenderHook(
-            'content.end',
-            fn (): string => Blade::render('@livewire(\'filament-curator-media-picker-modal\')'),
-        );
     }
 }

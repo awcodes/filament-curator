@@ -7,6 +7,8 @@ use Exception;
 use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\Field;
 use Filament\Support\Actions\Concerns;
+use FilamentCurator\Actions\MediaAction;
+use FilamentCurator\Actions\MediaPickerAction;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
@@ -41,6 +43,7 @@ class MediaPicker extends Field
         $this->mediaModel = config('filament-curator.model');
 
         $this->registerActions([
+            MediaPickerAction::make(),
             Action::make('download')->action(function (): StreamedResponse {
                 $item = resolve($this->mediaModel)->where('id', $this->getState())->first();
 

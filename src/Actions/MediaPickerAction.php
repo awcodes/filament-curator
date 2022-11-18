@@ -10,11 +10,11 @@ use FilamentCurator\Forms\Components\MediaPicker;
 use FilamentTiptapEditor\TiptapEditor;
 use Illuminate\View\View;
 
-class MediaAction extends Action
+class MediaPickerAction extends Action
 {
     public static function getDefaultName(): ?string
     {
-        return 'filament_tiptap_media';
+        return 'filament_curator_media_picker';
     }
 
     protected function setUp(): void
@@ -27,8 +27,9 @@ class MediaAction extends Action
 
         $this->modalActions(fn () => []);
 
-        $this->modalContent(fn(TiptapEditor | MediaPicker $component): View => view('filament-curator::components.media-action', [
+        $this->modalContent(fn(MediaPicker $component): View => view('filament-curator::components.media-action', [
             'statePath' => $component->getStatePath(),
+//            'state' => $component->getState(),
             'modalId' => $component->getLivewire()->id . '-form-component-action',
         ]));
 
