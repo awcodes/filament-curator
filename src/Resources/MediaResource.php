@@ -78,31 +78,15 @@ class MediaResource extends Resource
                             ]),
                         Section::make(__('filament-curator::resource.labels.details'))
                             ->schema([
-                                Placeholder::make('uploaded_on')
-                                    ->label(__('filament-curator::resource.labels.uploaded_on'))
-                                    ->content(fn ($record): string => $record ? $record->created_at->format('F j, Y') : '-'),
-                                Placeholder::make('file_type')
-                                    ->label(__('filament-curator::resource.labels.file_type'))
-                                    ->content(fn ($record): string => $record ? $record->type : '-'),
-                                Placeholder::make('file_size')
-                                    ->label(__('filament-curator::resource.labels.file_size'))
-                                    ->content(fn ($record): string => $record ? $record->sizeForHumans() : '-'),
-                                Placeholder::make('dimensions')
-                                    ->label(__('filament-curator::resource.labels.dimensions'))
-                                    ->content(fn ($record): string => $record ? $record->width . ' x ' . $record->height : '-'),
-                                Placeholder::make('disk')
-                                    ->label(__('filament-curator::resource.labels.disk'))
-                                    ->content(fn ($record): string => $record ? $record->disk : '-'),
-                                Placeholder::make('directory')
-                                    ->label(__('filament-curator::resource.labels.directory'))
-                                    ->content(fn ($record): string => $record ? $record->directory : '-'),
-                                Placeholder::make('public_id')
-                                    ->label(__('filament-curator::resource.labels.public_id'))
-                                    ->content(fn ($record): string => $record ? $record->public_id : '-')->columnSpan(['lg' => 4]),
-                                Placeholder::make('file_url')
-                                    ->label(__('filament-curator::resource.labels.file_url'))
-                                    ->content(fn ($record): string => $record ? $record->url : '-')->columnSpan(['lg' => 4]),
-                            ])->columns(['lg' => 4]),
+                                ViewField::make('preview')
+                                    ->view('filament-curator::components.media-details')
+                                    ->disableLabel()
+                                    ->dehydrated(false)
+                                    ->columnSpan('full')
+                                    ->afterStateHydrated(function ($component, $state, $record) {
+                                        $component->state($record);
+                                    }),
+                            ]),
                     ])
                     ->columnSpan([
                         'lg' => 'full',
