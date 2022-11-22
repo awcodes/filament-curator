@@ -10,7 +10,7 @@
             {!! $height !== null ? "height: {$height};" : null !!}
             {!! $width !== null ? "width: {$width};" : null !!}
         "
-        @class(['rounded-full overflow-hidden' => $isRounded()])
+        @class(['rounded-full overflow-hidden grid place-content-center' => $isRounded()])
     >
         @if ($isImage())
             <img
@@ -25,7 +25,7 @@
         @else
             <x-filament-curator::document-image
                 label="{{ $getImagePath() }}"
-                icon-size="sm"
+                icon-size="md"
             />
         @endif
     </div>

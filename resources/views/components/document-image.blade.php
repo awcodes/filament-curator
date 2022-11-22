@@ -13,9 +13,10 @@ $iconClasses = [
 @endphp
 
 <div @class([
-    'grid place-items-center w-full h-full bg-gray-200 p-2 text-sm',
+    'grid place-items-center w-full h-full bg-gray-200 text-sm',
     'dark:bg-gray-700' => config('filament.dark_mode'),
+    $attributes->get('class')
 ])>
-    @svg('heroicon-s-document', '{{ $iconClasses[$iconSize] }}')
+    @svg('heroicon-s-document', ['class' => $iconClasses[$iconSize]])
     <span class="sr-only">{{ $label }}</span>
 </div>
