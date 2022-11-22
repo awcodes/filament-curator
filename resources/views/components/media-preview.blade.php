@@ -26,6 +26,8 @@ $record = $getRecord();
     @else
         <x-filament-curator::document-image
             label="{{ $record['filename'] }}"
-            icon-size="lg" />
+            icon-size="xl"
+            class="p-4 rounded"
+        />
     @endif
 </div>
