@@ -147,12 +147,10 @@ Then update the config to use your generator.
 
 ## Table Display
 
-To show an item in your tables you can use the ThumbnailColumn. This column
+To show an item in your tables you can use the CuratorColumn. This column
 extends Filament's ImageColumn and can use the same methods available on that
 column. By default, all image columns will show a generic document image 
 unless their mime type is an 'image'.
-
-***NOTE: CuratorColumn is deprecated. Please use ThumbnailColumn instead.***
 
 ```php
 CuratorColumn::make('relationship_name')
