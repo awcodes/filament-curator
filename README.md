@@ -1,17 +1,17 @@
 # Filament Curator
 
-A media picker plugin for Filament Admin.
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/awcodes/filament-curator.svg?style=flat-square)](https://packagist.org/packages/awcodes/filament-curator)
+[![Total Downloads](https://img.shields.io/packagist/dt/awcodes/filament-curator.svg?style=flat-square)](https://packagist.org/packages/awcodes/filament-curator)
 
-:bangbang: This package is still in development
+A media picker/manager plugin for Filament Admin.
 
-:bangbang: This package does not work with Spatie Media Library since it
-requires it's own media model.
+:bangbang: This package does not work with Spatie Media Library.
 
-![Gallery View](./images/curator-gallery-dark.jpg)
+![Gallery View](./images/dark-gallery-selected.png)
 
-![Upload View](./images/curator-upload-dark.jpg)
+![Upload View](./images/dark-gallery.png)
 
-![Field View](./images/curator-media-picker-dark.jpg)
+![Field View](./images/dark-media-picker-filled.png)
 
 ## Installation
 
@@ -36,7 +36,7 @@ php artisan curator:install
 
 ## Image Sizes
 
-By default Curator will generate image sizes for each uploaded image based on
+By default, Curator will generate image sizes for each uploaded image based on
 the sizes setting in the config file. If you want to disable image sizes
 completely then set the sizes key to an empty array. 
 
@@ -60,7 +60,7 @@ php artisan curator:regenerate-thumbnails --chunk=100
 
 ## Cloud Providers Table Display
 
-By default in the Media Resource table the disk icon is set to display a cloud
+By default, in the Media Resource table the disk icon is set to display a cloud
 if the disk is either 'Cloudinary' or 's3'. If you would like to extend or
 change this you can do so in the `filament-curator.php` config file.
 
@@ -112,21 +112,50 @@ $post->featuredImage->getSizeUrl('medium');
 $post->featuredImage->getSizeUrl('large');
 ```
 
+## Path Generation
+By default, Curator will use the directory and disk set in the config to 
+store your media. If you'd like to store the media in a different way 
+Curator comes with Path Generators that can be used to modify the behavior. 
+Just set the one you want to use in the config.
+
+`DefaultPathGenerator` will save files in disk/directory.
+
+`DatePathGenerator` will save files in disk/directory/Y/m/d.
+
+`UserPathGenerator` will save files in disk/directory/user-auth-identifier
+
+You are also free to use your own Path Generators by implementing the 
+`PathGenerator` interface on your own classes.
+
+```php
+use FilamentCurator\Config\PathGenerator;
+
+class CustomPathGenerator implements PathGenerator
+{
+    public function getPath(?string $baseDir = null): string
+    {
+        return ($baseDir ? $baseDir . '/' : '') . 'my/custom/path';
+    }
+}
+```
+
+Then update the config to use your generator.
+
+```php
+'path_generator' => \CustomPathGenerator::class,
+```
+
 ## Table Display
 
 To show an item in your tables you can use the ThumbnailColumn. This column
 extends Filament's ImageColumn and can use the same methods available on that
-column. By default all image columns will show a generic document image 
+column. By default, all image columns will show a generic document image 
 unless their mime type is an 'image'.
 
 ***NOTE: CuratorColumn is deprecated. Please use ThumbnailColumn instead.***
 
 ```php
-// Deprecated
 CuratorColumn::make('relationship_name')
-
-ThumbnailColumn::make('relationship.name')
-    ->additionalMethodsFromFilamentImageColumn()
 ```
 
 ## Custom Media Model
@@ -143,7 +172,7 @@ class Media extends CuratorMedia
 }
 ```
 
-## Themeing
+## Theming
 
 If you are using a custom theme for Filament you will need to add this plugin's
 views to your Tailwind CSS config.
@@ -151,7 +180,7 @@ views to your Tailwind CSS config.
 ```js
 content: [
     ...
-        "./vendor/awcodes/filament-curator/resources/views/**/*.blade.php",
+    "./vendor/awcodes/filament-curator/resources/views/**/*.blade.php",
 ],
 ```
 

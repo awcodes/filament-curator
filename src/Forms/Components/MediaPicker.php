@@ -7,7 +7,6 @@ use Exception;
 use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\Field;
 use Filament\Support\Actions\Concerns;
-use FilamentCurator\Actions\MediaAction;
 use FilamentCurator\Actions\MediaPickerAction;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Model;
