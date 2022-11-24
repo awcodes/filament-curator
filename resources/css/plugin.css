@@ -15,15 +15,15 @@
     linear-gradient(135deg, transparent 75%, theme("colors.gray.700") 75%);
 }
 
-.filament-modal-content {
-    position: relative;
-}
-
 .filament-curator-modal-window {
     @apply !p-0;
 
     > div {
         @apply space-y-0;
+    }
+
+    .filament-modal-content {
+        position: relative;
     }
 
     .filament-modal-header {
