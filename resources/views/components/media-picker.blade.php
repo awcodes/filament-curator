@@ -1,5 +1,6 @@
 @php
     $currentItem = $getCurrentItem();
+    $statePath = $getStatePath();
 @endphp
 
 <x-forms::field-wrapper :id="$getId()"
@@ -9,12 +10,12 @@
     :hint="$getHint()"
     :hint-icon="$getHintIcon()"
     :required="$isRequired()"
-    :state-path="$getStatePath()"
+    :state-path="$statePath"
 >
 
     <div
-        x-data="{ state: $wire.entangle('{{ $getStatePath() }}') }"
-        x-on:insert-media.window="$event.detail.statePath == '{{ $getStatePath() }}' ? state = $event.detail.media.id : null"
+        x-data="{ state: $wire.entangle('{{ $statePath }}') }"
+        x-on:insert-media.window="$event.detail.statePath == '{{ $statePath }}' ? state = $event.detail.media : null"
         class="w-full filament-curator-media-picker"
     >
 
@@ -24,7 +25,7 @@
                     color="{{ $getColor() }}"
                     outlined="{{ $isOutlined() }}"
                     size="{{ $getSize() }}"
-                    wire:click="mountFormComponentAction('{{ $getStatePath() }}', 'filament_curator_media_picker')">
+                    wire:click="mountFormComponentAction('{{ $statePath }}', 'filament_curator_media_picker')">
                     {{ $getButtonLabel() }}
                 </x-filament::button>
             </div>
@@ -54,36 +55,40 @@
                         href="{{ $currentItem['url'] }}"
                         target="_blank"
                         rel="noopener nofollow"
-                        class="flex items-center justify-center flex-none w-10 h-10 transition text-primary-600 hover:text-primary-500 dark:text-primary-500 dark:hover:text-primary-400"
+                        class="flex items-center justify-center flex-none w-10 h-10 transition text-gray-600 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400"
                         x-tooltip.raw="{{ __('filament-curator::media-picker-modal.view') }}"
                     >
                         @svg('heroicon-s-eye', 'w-4 h-4')
+                        <span class="sr-only">{{ __('filament-curator::media-picker-modal.view') }}</span>
                     </a>
                     <button
                         type="button"
-                        wire:click="mountFormComponentAction('{{ $getStatePath() }}', 'download')"
+                        wire:click="mountFormComponentAction('{{ $statePath }}', 'filament_curator_download_media')"
                         class="flex items-center justify-center flex-none w-10 h-10 transition text-primary-600 hover:text-primary-500 dark:text-primary-500 dark:hover:text-primary-400"
                         x-tooltip.raw="{{ __('filament-curator::media-picker-modal.download') }}"
                     >
                         @svg('heroicon-s-download', 'w-4 h-4')
+                        <span class="sr-only">{{ __('filament-curator::media-picker-modal.download') }}</span>
                     </button>
                     @if (! $isDisabled())
                     <a
                         href="{{ app(config('filament-curator.media_resource'))->getUrl('edit', $currentItem['id']) }}"
                         target="_blank"
                         rel="noopener nofollow"
-                        class="flex items-center justify-center flex-none w-10 h-10 transition text-primary-600 hover:text-primary-500 dark:text-primary-500 dark:hover:text-primary-400"
+                        class="flex items-center justify-center flex-none w-10 h-10 transition text-success-600 hover:text-success-500 dark:text-success-500 dark:hover:text-success-400"
                         x-tooltip.raw="{{ __('filament-curator::media-picker-modal.edit') }}"
                     >
                         @svg('heroicon-s-pencil', 'w-4 h-4')
+                        <span class="sr-only">{{ __('filament-curator::media-picker-modal.edit') }}</span>
                     </a>
                     <button
                         type="button"
                         x-on:click="state = null"
                         class="flex items-center justify-center flex-none w-10 h-10 transition text-danger-600 hover:text-danger-500 dark:text-danger-500 dark:hover:text-danger-400"
-                        x-tooltip.raw="{{ __('filament-curator::media-picker-modal.edit_delete') }}"
+                        x-tooltip.raw="{{ __('filament-curator::media-picker-modal.remove') }}"
                     >
-                        @svg('heroicon-s-trash', 'w-4 h-4')
+                        @svg('heroicon-s-minus-circle', 'w-4 h-4')
+                        <span class="sr-only">{{ __('filament-curator::media-picker-modal.remove') }}</span>
                     </button>
                     @endif
                 </div>

@@ -6,14 +6,19 @@ use Closure;
 use Exception;
 use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\Field;
+use Filament\Forms\Components\FileUpload;
 use Filament\Support\Actions\Concerns;
+use FilamentCurator\Actions\DownloadAction;
 use FilamentCurator\Actions\MediaPickerAction;
+use FilamentCurator\Config\PathGenerator\PathGenerator;
+use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-class MediaPicker extends Field
+class MediaPicker extends FileUpload
 {
     use Concerns\HasColor;
     use Concerns\HasSize;
@@ -40,14 +45,23 @@ class MediaPicker extends Field
         $this->isOutlined = true;
 
         $this->mediaModel = config('filament-curator.model');
+        $this->directory = config('filament-curator.directory');
+        $this->preserveFilenames = config('filament-curator.preserve_file_names');
+        $this->maxWidth = config('filament-curator.max_width');
+        $this->minSize = config('filament-curator.min_size');
+        $this->maxSize = config('filament-curator.max_size');
+        $this->rules = config('filament-curator.rules');
+        $this->acceptedFileTypes = config('filament-curator.accepted_file_types');
+        $this->disk = config('filament-curator.disk', 'public');
+        $this->visibility = config('filament-curator.visibility', 'public');
+
+        $this->afterStateHydrated(function(FileUpload $component, $record) {
+            $component->state($record->{$this->name});
+        });
 
         $this->registerActions([
             MediaPickerAction::make(),
-            Action::make('download')->action(function (): StreamedResponse {
-                $item = resolve($this->mediaModel)->where('id', $this->getState())->first();
-
-                return Storage::disk($item['disk'])->download($item['filename']);
-            }),
+            DownloadAction::make(),
         ]);
     }
 
@@ -61,6 +75,32 @@ class MediaPicker extends Field
     public function buttonLabel(string | Htmlable | Closure | null $buttonLabel): static
     {
         $this->buttonLabel = $buttonLabel;
+
+        return $this;
+    }
+
+    public function directory(Closure | PathGenerator | string | null $directory): static
+    {
+        if (
+            is_object($directory) &&
+            class_exists($directory) &&
+            is_subclass_of($directory, PathGenerator::class)
+        ) {
+            $path = resolve($directory)->getPath(config('filament-curator.directory'));
+        } else {
+            $path = $directory ?? config('filament-curator.directory');
+        }
+
+        // normalization /path//to/dir/ --> path/to/dir
+        $path = preg_replace('#/+#', '/', $path);
+        if (Str::startsWith($path, '/')) {
+            $path = substr($path, 1);
+        }
+        if (Str::endsWith($path, '/')) {
+            $path = substr($path, 0, strlen($path) - 1);
+        }
+
+        $this->directory = $path;
 
         return $this;
     }

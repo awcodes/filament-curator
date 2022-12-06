@@ -4,11 +4,17 @@ namespace FilamentCurator\Forms\Components;
 
 use Filament\Facades\Filament;
 use Filament\Forms;
+use Filament\Forms\Components\BaseFileUpload;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
+use FilamentCurator\Config\PathGenerator\PathGenerator;
+use FilamentCurator\Facades\CuratorThumbnails;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\HtmlString;
+use Illuminate\Support\Str;
+use Intervention\Image\Facades\Image;
 use Livewire\Component;
+use Livewire\TemporaryUploadedFile;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class Curator extends Component implements HasForms
@@ -25,6 +31,30 @@ class Curator extends Component implements HasForms
 
     public $state = null;
 
+    public $directory;
+
+    public $preserveFilenames;
+
+    public $maxWidth;
+
+    public $minSize;
+
+    public $maxSize;
+
+    public $validationRules = [];
+
+    public $acceptedFileTypes = [];
+
+    public $disk;
+
+    public $visibility;
+
+    public $imageCropAspectRatio;
+
+    public $imageResizeTargetWidth;
+
+    public $imageResizeTargetHeight;
+
     public function mount()
     {
         $this->addMediaForm->fill();
@@ -40,18 +70,22 @@ class Curator extends Component implements HasForms
     {
         return [
             MediaUpload::make('files')
-                ->label(__('filament-curator::media-form.labels.file'))
                 ->disableLabel()
-                ->preserveFilenames(config('filament-curator.preserve_file_names'))
-                ->maxWidth(config('filament-curator.max_width'))
-                ->minSize(config('filament-curator.min_size'))
-                ->maxSize(config('filament-curator.max_size'))
-                ->rules(config('filament-curator.rules'))
-                ->acceptedFileTypes(config('filament-curator.accepted_file_types'))
-                ->disk(config('filament-curator.disk', 'public'))
-                ->visibility(config('filament-curator.visibility', 'public'))
                 ->required()
-                ->multiple(),
+                ->multiple()
+                ->label(__('filament-curator::media-form.labels.file'))
+                ->preserveFilenames($this->preserveFilenames)
+                ->maxWidth($this->maxWidth)
+                ->minSize($this->minSize)
+                ->maxSize($this->maxSize)
+                ->rules($this->validationRules)
+                ->acceptedFileTypes($this->acceptedFileTypes)
+                ->disk($this->disk)
+                ->visibility($this->visibility)
+                ->directory($this->directory)
+                ->imageCropAspectRatio($this->imageCropAspectRatio)
+                ->imageResizeTargetWidth($this->imageResizeTargetWidth)
+                ->imageResizeTargetHeight($this->imageResizeTargetHeight),
         ];
     }
 
@@ -129,5 +163,23 @@ class Curator extends Component implements HasForms
     public function render()
     {
         return view('filament-curator::components.curator');
+    }
+
+    private function testMethodOutput()
+    {
+        ray([
+            'directory' => $this->directory,
+            'preserveFilenames' => $this->preserveFilenames,
+            'maxWidth' => $this->maxWidth,
+            'minSize' => $this->minSize,
+            'maxSize' => $this->maxSize,
+            'rules' => $this->validationRules,
+            'acceptedFileTypes' => $this->acceptedFileTypes,
+            'disk' => $this->disk,
+            'visibility' => $this->visibility,
+            'imageCropAspectRatio' => $this->imageCropAspectRatio,
+            'imageResizeTargetWidth' => $this->imageResizeTargetWidth,
+            'imageResizeTargetHeight' => $this->imageResizeTargetHeight,
+        ]);
     }
 }

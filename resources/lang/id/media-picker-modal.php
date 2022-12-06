@@ -17,4 +17,5 @@ return [
     'view' => 'Melihat',
     'edit' => 'Sunting',
     'download' => 'Unduh',
+    'remove' => 'Menghapus',
 ];

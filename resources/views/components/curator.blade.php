@@ -221,11 +221,11 @@
                                     type="button"
                                     wire:target="destroyFile"
                                     wire:click.prevent="destroyFile"
-                                    x-tooltip.raw="{{ __('filament-curator::media-picker-modal.edit_delete') }}"
+                                    x-tooltip.raw="{{ __('filament-curator::media-picker-modal.remove') }}"
                                     class="flex items-center justify-center flex-none w-10 h-10 transition text-danger-600 hover:text-danger-500 dark:text-danger-500 dark:hover:text-danger-400"
                                 >
-                                    @svg('heroicon-s-trash', 'w-4 h-4')
-                                    <span class="sr-only">{{ __('filament-curator::media-picker-modal.edit_delete') }}</span>
+                                    @svg('heroicon-s-minus-circle', 'w-4 h-4')
+                                    <span class="sr-only">{{ __('filament-curator::media-picker-modal.remove') }}</span>
                                 </button>
                             </div>
                         </div>

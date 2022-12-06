@@ -1,1 +1,16 @@
-<livewire:curator :state-path="$statePath" :modal-id="$modalId" />
+<livewire:curator
+    :state-path="$statePath"
+    :modal-id="$modalId"
+    :directory="$directory"
+    :preserve-filenames="$preserveFilenames"
+    :max-width="$maxWidth"
+    :min-size="$minSize"
+    :max-size="$maxSize"
+    :rules="$rules"
+    :accepted-file-types="$acceptedFileTypes"
+    :disk="$disk"
+    :visibility="$visibility"
+    :image-crop-aspect-ratio="$imageCropAspectRatio"
+    :image-resize-target-width="$imageResizeTargetWidth"
+    :image-resize-target-height="$imageResizeTargetHeight"
+/>
