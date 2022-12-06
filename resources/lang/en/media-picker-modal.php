@@ -18,4 +18,5 @@ return [
     'view' => 'View',
     'edit' => 'Edit',
     'download' => 'Download',
+    'remove' => 'Remove',
 ];

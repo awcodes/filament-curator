@@ -18,4 +18,5 @@ return [
     'view' => 'Visualizzazione',
     'edit' => 'Modificare',
     'download' => 'Scarica',
+    'remove' => 'Rimuovere',
 ];

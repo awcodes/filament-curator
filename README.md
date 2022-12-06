@@ -5,7 +5,8 @@
 
 A media picker/manager plugin for Filament Admin.
 
-:bangbang: This package does not work with Spatie Media Library.
+> **Warning**
+> This package does not work with Spatie Media Library.
 
 ![Gallery View](./images/dark-gallery-selected.png)
 
@@ -24,7 +25,7 @@ composer require awcodes/filament-curator
 (optional) Publish the config.
 
 ```bash
-php artisan vendor:publish --tag=filament-curator-config
+php artisan vendor:publish --tag="filament-curator-config"
 ```
 
 Install Filament Curator into your app. This will publish the necessary
@@ -71,7 +72,9 @@ change this you can do so in the `filament-curator.php` config file.
 ## Usage
 
 Include the MediaPicker button in your forms to trigger the modal and either
-select an existing image or upload a new one.
+select an existing image or upload a new one. Some of the common methods 
+from Filament's `FileUpload` component can be used to help with sizing, 
+validation, etc for specific instances of the MediaPicker.
 
 ```php
 use FilamentCurator\Forms\Components\MediaPicker;
@@ -83,6 +86,19 @@ MediaPicker::make(string $fieldName)
     ->outlined(true|false) // defaults to true
     ->size('sm|md|lg') // defaults to md
     ->fitContent(true|false) // defaults to false (forces image to fit inside the preview area)
+    // see https://filamentphp.com/docs/2.x/forms/fields#file-upload for more information about the following methods
+    ->preserveFilenames()
+    ->maxWidth()
+    ->minSize()
+    ->maxSize()
+    ->rules()
+    ->acceptedFileTypes()
+    ->disk()
+    ->visibility()
+    ->directory()
+    ->imageCropAspectRatio()
+    ->imageResizeTargetWidth()
+    ->imageResizeTargetHeight()
 ```
 
 Media can also be related to models by simply adding the relationship to your
@@ -110,6 +126,16 @@ url.
 $post->featuredImage->getSizeUrl('thumbnail');
 $post->featuredImage->getSizeUrl('medium');
 $post->featuredImage->getSizeUrl('large');
+```
+
+## Blade Helper
+
+To make it easy to output images without worrying about relationships you
+can use the `<x-curator-image/>` blade component. It is recommended to use
+the model relation to output your images in the way that is best for your app.
+
+```php
+<x-curator-image media-id="2" />
 ```
 
 ## Path Generation
@@ -143,6 +169,15 @@ Then update the config to use your generator.
 
 ```php
 'path_generator' => \CustomPathGenerator::class,
+```
+
+Path Generators can also be passed into the `directory()` method on the 
+`MediaPicker` field.
+
+```php
+MediaPicker::make(string $fieldName)
+    ->label(string $customLabel)
+    ->directory(CustomPathGenerator::class),
 ```
 
 ## Table Display

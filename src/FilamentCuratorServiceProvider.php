@@ -61,5 +61,7 @@ class FilamentCuratorServiceProvider extends PluginServiceProvider
         parent::boot();
 
         Livewire::component('curator', Forms\Components\Curator::class);
+
+        Blade::component('curator-image', View\Components\CuratorImage::class);
     }
 }
