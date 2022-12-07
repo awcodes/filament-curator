@@ -82,7 +82,6 @@ class MediaPicker extends FileUpload
     public function directory(Closure | PathGenerator | string | null $directory): static
     {
         if (
-            is_object($directory) &&
             class_exists($directory) &&
             is_subclass_of($directory, PathGenerator::class)
         ) {
