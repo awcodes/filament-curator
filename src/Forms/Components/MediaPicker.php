@@ -5,6 +5,7 @@ namespace FilamentCurator\Forms\Components;
 use Closure;
 use Exception;
 use Filament\Forms\Components\Actions\Action;
+use Filament\Forms\Components\BaseFileUpload;
 use Filament\Forms\Components\Field;
 use Filament\Forms\Components\FileUpload;
 use Filament\Support\Actions\Concerns;
@@ -15,7 +16,9 @@ use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Livewire\TemporaryUploadedFile;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class MediaPicker extends FileUpload
@@ -124,5 +127,45 @@ class MediaPicker extends FileUpload
     public function getFitContent(): bool
     {
         return $this->evaluate($this->fitContent);
+    }
+
+    public function getValidationRules(): array
+    {
+        $rules = [
+            $this->getRequiredValidationRule(),
+        ];
+
+        if (filled($count = $this->maxFiles)) {
+            $rules[] = "max:{$count}";
+        }
+
+        if (filled($count = $this->minFiles)) {
+            $rules[] = "min:{$count}";
+        }
+
+        $rules[] = function (string $attribute, array|int $value, Closure $fail): void {
+
+            if (!is_array($value)) {
+                $value = \Illuminate\Support\Arr::wrap($value);
+            }
+
+            $files = array_filter($value, fn (TemporaryUploadedFile | string $file): bool => $file instanceof TemporaryUploadedFile);
+
+            $name = $this->getName();
+
+            $validator = Validator::make(
+                data: [$name => $files],
+                rules: ["{$name}.*" => array_merge(['file'], parent::getValidationRules())],
+                customAttributes: ["{$name}.*" => $this->getValidationAttribute()],
+            );
+
+            if (! $validator->fails()) {
+                return;
+            }
+
+            $fail($validator->errors()->first());
+        };
+
+        return $rules;
     }
 }
