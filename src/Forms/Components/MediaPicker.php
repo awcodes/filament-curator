@@ -58,8 +58,8 @@ class MediaPicker extends FileUpload
         $this->disk = config('filament-curator.disk', 'public');
         $this->visibility = config('filament-curator.visibility', 'public');
 
-        $this->afterStateHydrated(function(FileUpload $component, $record) {
-            $component->state($record->{$this->name});
+        $this->afterStateHydrated(function(FileUpload $component, $state) {
+            $component->state($state);
         });
 
         $this->registerActions([
