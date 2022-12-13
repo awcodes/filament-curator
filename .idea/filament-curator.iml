@@ -104,6 +104,7 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor/illuminate/routing" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/illuminate/cookie" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/laravel/pint" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/_laravel_idea" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
