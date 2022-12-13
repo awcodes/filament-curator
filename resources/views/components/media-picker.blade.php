@@ -19,7 +19,7 @@
         class="w-full filament-curator-media-picker"
     >
 
-        @if (!$currentItem)
+        @if (! $currentItem)
             <div>
                 <x-filament::button type="button"
                     color="{{ $getColor() }}"

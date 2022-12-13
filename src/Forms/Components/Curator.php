@@ -33,7 +33,7 @@ class Curator extends Component implements HasForms
 
     public $directory;
 
-    public $preserveFilenames;
+    public $shouldPreserveFilenames;
 
     public $maxWidth;
 
@@ -45,7 +45,7 @@ class Curator extends Component implements HasForms
 
     public $acceptedFileTypes = [];
 
-    public $disk;
+    public $diskName;
 
     public $visibility;
 
@@ -74,13 +74,13 @@ class Curator extends Component implements HasForms
                 ->required()
                 ->multiple()
                 ->label(__('filament-curator::media-form.labels.file'))
-                ->preserveFilenames($this->preserveFilenames)
+                ->preserveFilenames($this->shouldPreserveFilenames)
                 ->maxWidth($this->maxWidth)
                 ->minSize($this->minSize)
                 ->maxSize($this->maxSize)
                 ->rules($this->validationRules)
                 ->acceptedFileTypes($this->acceptedFileTypes)
-                ->disk($this->disk)
+                ->disk($this->diskName)
                 ->visibility($this->visibility)
                 ->directory($this->directory)
                 ->imageCropAspectRatio($this->imageCropAspectRatio)
