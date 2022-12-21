@@ -63,7 +63,7 @@ class MediaPicker extends Field
         $this->isOutlined = true;
 
         $this->mediaModel = config('filament-curator.model');
-        $this->directory = config('filament-curator.directory');
+        $this->directory = $this->setDefaultDirectory();
         $this->shouldPreserveFilenames = config('filament-curator.preserve_file_names');
         $this->maxWidth = config('filament-curator.max_width');
         $this->minSize = config('filament-curator.min_size');
@@ -266,5 +266,21 @@ class MediaPicker extends Field
         }
 
         return $types;
+    }
+
+    public function setDefaultDirectory(): string
+    {
+        $path = resolve(config('filament-curator.path_generator'))->getPath(config('filament-curator.directory'));
+
+        // normalization /path//to/dir/ --> path/to/dir
+        $path = preg_replace('#/+#', '/', $path);
+        if (Str::startsWith($path, '/')) {
+            $path = substr($path, 1);
+        }
+        if (Str::endsWith($path, '/')) {
+            $path = substr($path, 0, strlen($path) - 1);
+        }
+
+        return $path;
     }
 }
