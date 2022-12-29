@@ -15,7 +15,7 @@
 
     <div
         x-data="{ state: $wire.entangle('{{ $statePath }}') }"
-        x-on:insert-media.window="$event.detail.statePath == '{{ $statePath }}' ? state = $event.detail.media : null"
+        x-on:insert-media.window="$event.detail.statePath == '{{ $statePath }}' ? state = $event.detail.media.id : null"
         class="w-full filament-curator-media-picker"
     >
 
@@ -31,7 +31,7 @@
             </div>
         @else
             <div
-                class="relative block w-full h-64 overflow-hidden transition duration-75 border border-gray-300 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 dark:text-white flex justify-center checkered">
+                class="relative w-full h-64 overflow-hidden transition duration-75 border border-gray-300 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 dark:text-white flex justify-center checkered">
 
                 @if (str($currentItem['type'])->contains('image'))
                     <img
