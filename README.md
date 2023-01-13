@@ -205,6 +205,22 @@ class Media extends CuratorMedia
 }
 ```
 
+## Custom Media Resource
+
+If you need additional functionality you can extend Curator's Media Resource with
+your own by updating the 'media_resource' setting in the config file with your own resource.
+**Please note that this step may break media handling if used improperly.**
+
+```php
+use FilamentCurator\Resources\MediaResource as BaseMediaResource;
+
+class MediaResource extends BaseMediaResource
+{
+    // This is an example of hiding Media Resource from the navigation menu.
+    protected static bool $shouldRegisterNavigation = false;
+}
+```
+
 ## Theming
 
 If you are using a custom theme for Filament you will need to add this plugin's
