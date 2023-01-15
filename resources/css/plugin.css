@@ -1,32 +1,69 @@
+@import '../../node_modules/cropperjs/dist/cropper.css';
 @tailwind utilities;
 
 .checkered {
     background-color: theme("colors.gray.200");
-    background-image: linear-gradient(45deg, theme("colors.gray.300") 25%, transparent 25%), linear-gradient(135deg, theme("colors.gray.300") 25%, transparent 25%), linear-gradient(45deg, transparent 75%, theme("colors.gray.300") 75%),
-    linear-gradient(135deg, transparent 75%, theme("colors.gray.300") 75%);
+    background-image:  repeating-linear-gradient(45deg, theme("colors.gray.300") 25%, transparent 25%, transparent 75%, theme("colors.gray.300") 75%, theme("colors.gray.300")), repeating-linear-gradient(45deg, theme("colors.gray.300") 25%, theme("colors.gray.200") 25%, theme("colors.gray.200") 75%, theme("colors.gray.300") 75%, theme("colors.gray.300"));
 
+    opacity: 0.8;
+    background-position: 0 0, 10px 10px;
     background-size: 20px 20px;
-    background-position: 0 0, 10px 0, 10px -10px, 0 10px;
 }
 
 .dark .checkered {
     background-color: theme("colors.gray.800");
-    background-image: linear-gradient(45deg, theme("colors.gray.700") 25%, transparent 25%), linear-gradient(135deg, theme("colors.gray.700") 25%, transparent 25%), linear-gradient(45deg, transparent 75%, theme("colors.gray.700") 75%),
-    linear-gradient(135deg, transparent 75%, theme("colors.gray.700") 75%);
+    background-image:  repeating-linear-gradient(45deg, theme("colors.gray.700") 25%, transparent 25%, transparent 75%, theme("colors.gray.700") 75%, theme("colors.gray.700")), repeating-linear-gradient(45deg, theme("colors.gray.700") 25%, theme("colors.gray.800") 25%, theme("colors.gray.800") 75%, theme("colors.gray.700") 75%, theme("colors.gray.700"));
 }
 
-.filament-curator-modal-window {
-    @apply !p-0;
-
-    > div {
-        @apply space-y-0;
+.filament-resources-media {
+    .filament-forms-tabs-component-header {
+        @apply bg-gray-100 dark:bg-gray-900;
     }
 
-    .filament-modal-content {
-        position: relative;
+    .filament-tables-component {
+        .filament-tables-record-checkbox {
+            z-index: 1;
+        }
     }
+}
 
-    .filament-modal-header {
-        @apply p-4;
+[wire\:key*="curator_picker"],
+[wire\:key*="curator_curation"] {
+    .filament-modal-window {
+        @apply !p-0;
+
+        > div {
+            @apply space-y-0;
+        }
+
+        > button:first-child {
+            &:hover,
+            &:focus {
+                .filament-modal-close-button {
+                    @apply text-primary-500;
+                }
+            }
+        }
+
+        .filament-modal-header {
+            @apply py-2 px-4;
+
+            .filament-modal-heading {
+                @apply text-base;
+            }
+
+            + .filament-hr {
+                @apply mt-0;
+            }
+        }
+
+        .filament-modal-close-button {
+            @apply w-5 h-5;
+            margin-block-start: 0.1575rem;
+        }
+
+        .filament-modal-content {
+            position: relative;
+        }
     }
 }

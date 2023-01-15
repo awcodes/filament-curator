@@ -1,15 +1,28 @@
 {
-  "private": true,
-  "scripts": {
-    "dev": "npx tailwindcss -i resources/css/plugin.css -o resources/dist/filament-curator.css --postcss --watch",
-    "build": "npx tailwindcss -i resources/css/plugin.css -o resources/dist/filament-curator.css --postcss --minify && npm run purge",
-    "purge": "filament-purge -i resources/dist/filament-curator.css -o resources/dist/filament-curator.css"
-  },
-  "devDependencies": {
-    "@awcodes/filament-plugin-purge": "^1.0.0",
-    "autoprefixer": "^10.4.7",
-    "axios": "^0.27.2",
-    "postcss": "^8.4.14",
-    "tailwindcss": "^3.1.6"
-  }
+    "private": true,
+    "scripts": {
+        "dev:styles": "npx tailwindcss -i resources/css/plugin.css -o resources/dist/curator.css --postcss --watch",
+        "dev:scripts": "esbuild resources/js/plugin.js --bundle --sourcemap=inline --outfile=resources/dist/curator.js --watch",
+        "build:styles": "npx tailwindcss -i resources/css/plugin.css -o resources/dist/curator.css --postcss --minify && npm run purge",
+        "build:scripts": "esbuild resources/js/plugin.js --bundle --minify --outfile=resources/dist/curator.js",
+        "purge": "filament-purge -i resources/dist/curator.css -o resources/dist/curator.css",
+        "dev": "npm-run-all --parallel dev:*",
+        "build": "npm-run-all build:*"
+    },
+    "devDependencies": {
+        "@alpinejs/intersect": "^3.10.5",
+        "@awcodes/filament-plugin-purge": "^1.0.2",
+        "alpinejs": "^3.10.5",
+        "autoprefixer": "^10.4.7",
+        "esbuild": "^0.8.57",
+        "npm-run-all": "^4.1.5",
+        "postcss": "^8.4.14",
+        "postcss-import": "^15.1.0",
+        "prettier": "^2.7.1",
+        "prettier-plugin-tailwindcss": "^0.1.13",
+        "tailwindcss": "^3.1.6"
+    },
+    "dependencies": {
+        "cropperjs": "^1.5.13"
+    }
 }

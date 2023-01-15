@@ -1,51 +1,81 @@
 {
-    "name": "awcodes/filament-curator",
-    "type": "project",
-    "description": "A media picker plugin for Filament Admin.",
+    "name": "awcodes/curator",
+    "description": "A media picker plugin for FilamentPHP.",
     "keywords": [
-        "framework",
+        "awcodes",
         "laravel",
+        "curator",
         "filament"
     ],
+    "homepage": "https://github.com/awcodes/curator",
     "license": "MIT",
     "authors": [
         {
-            "name": "Adam Weston",
+            "name": "awcodes",
             "email": "awcodes1@gmail.com",
             "role": "Developer"
         }
     ],
     "require": {
-        "php": "^8.0.2",
+        "php": "^8.0",
         "filament/filament": "^2.0",
+        "illuminate/contracts": "^9.0",
         "intervention/image": "^2.7",
-        "laravel/pint": "^1.2",
-        "spatie/laravel-package-tools": "^1.9.2"
+        "league/glide-laravel": "^1.0",
+        "spatie/laravel-package-tools": "^1.13.5"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.0",
+        "nunomaduro/collision": "^6.0",
+        "nunomaduro/larastan": "^2.0.1",
+        "orchestra/testbench": "^7.0",
+        "pestphp/pest": "^1.21",
+        "pestphp/pest-plugin-laravel": "^1.1",
+        "pestphp/pest-plugin-livewire": "^1.0",
+        "pestphp/pest-plugin-parallel": "^0.3",
+        "phpstan/extension-installer": "^1.1",
+        "phpstan/phpstan-deprecation-rules": "^1.0",
+        "phpstan/phpstan-phpunit": "^1.0",
+        "phpunit/phpunit": "^9.5",
+        "spatie/laravel-ray": "^1.26"
     },
     "autoload": {
         "psr-4": {
-            "FilamentCurator\\": "src/"
+            "Awcodes\\Curator\\": "src",
+            "Awcodes\\Curator\\Database\\Factories\\": "database/factories"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "FilamentCurator\\Tests\\": "tests/"
+            "Awcodes\\Curator\\Tests\\": "tests"
+        }
+    },
+    "scripts": {
+        "pint": "vendor/bin/pint",
+        "test:pest": "vendor/bin/pest --parallel",
+        "test:phpstan": "vendor/bin/phpstan analyse",
+        "test": [
+            "@test:pest",
+            "@test:phpstan"
+        ]
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "composer/package-versions-deprecated": true,
+            "pestphp/pest-plugin": true,
+            "phpstan/extension-installer": true
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "FilamentCurator\\FilamentCuratorServiceProvider"
-            ]
+                "Awcodes\\Curator\\CuratorServiceProvider"
+            ],
+            "aliases": {
+                "Curator": "Awcodes\\Curator\\Facades\\Curator"
+            }
         }
-    },
-    "scripts": {
-        "pint": "vendor/bin/pint"
-    },
-    "config": {
-        "optimize-autoloader": true,
-        "preferred-install": "dist",
-        "sort-packages": true
     },
     "minimum-stability": "dev",
     "prefer-stable": true

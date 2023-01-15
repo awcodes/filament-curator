@@ -1,12 +1,10 @@
 <?php
 
+namespace Awcodes\Curator\Actions;
 
-namespace FilamentCurator\Actions;
-
+use Awcodes\Curator\Components\Forms\CuratorPicker;
 use Filament\Forms\Components\Actions\Action;
-use FilamentCurator\Forms\Components\MediaPicker;
 use FilamentTiptapEditor\TiptapEditor;
-use Illuminate\View\View;
 
 class MediaAction extends Action
 {
@@ -21,26 +19,27 @@ class MediaAction extends Action
 
         $this->modalWidth('screen');
 
-        $this->modalHeading(__('filament-curator::media-picker-modal.heading'));
+        $this->modalHeading(__('curator::views.modal.heading'));
 
         $this->modalActions(fn () => []);
 
-        $this->modalContent(static function(TiptapEditor | MediaPicker $component): View {
-            return view('filament-curator::components.media-action', [
+        $this->modalContent(static function (TiptapEditor|CuratorPicker $component) {
+            return view('curator::components.actions.picker-action', [
                 'statePath' => $component->getStatePath(),
-                'modalId' => $component->getLivewire()->id . '-form-component-action',
-                'directory' => config('filament-tiptap-editor.directory'),
-                'shouldPreserveFilenames' => config('filament-tiptap-editor.preserve_file_names'),
-                'maxWidth' => config('filament-curator.max_width'),
-                'minSize' => config('filament-curator.min_size'),
-                'maxSize' => config('filament-tiptap-editor.max_file_size'),
+                'modalId' => $component->getLivewire()->id.'-form-component-action',
+                'directory' => app('curator')->getDirectory(),
+                'pathGenerator' => app('curator')->getPathGenerator(),
+                'shouldPreserveFilenames' => app('curator')->shouldPreserveFilenames(),
+                'maxWidth' => app('curator')->getMaxWidth(),
+                'minSize' => app('curator')->getMinSize(),
+                'maxSize' => app('curator')->getMaxSize(),
                 'rules' => [],
-                'acceptedFileTypes' => config('filament-tiptap-editor.accepted_file_types'),
-                'diskName' => config('filament-tiptap-editor.disk'),
-                'visibility' => config('filament-tiptap-editor.visibility'),
-                'imageCropAspectRatio' => config('filament-tiptap-editor.image_crop_aspect_ratio'),
-                'imageResizeTargetWidth' => config('filament-tiptap-editor.image_resize_target_width'),
-                'imageResizeTargetHeight' => config('filament-tiptap-editor.image_resize_target_height'),
+                'acceptedFileTypes' => app('curator')->getAcceptedFileTypes(),
+                'diskName' => app('curator')->getDiskName(),
+                'visibility' => app('curator')->getVisibility(),
+                'imageCropAspectRatio' => app('curator')->getImageCropAspectRatio(),
+                'imageResizeTargetWidth' => app('curator')->getImageResizeTargetWidth(),
+                'imageResizeTargetHeight' => app('curator')->getImageResizeTargetHeight(),
             ]);
         });
     }

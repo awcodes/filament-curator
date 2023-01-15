@@ -1,119 +1,70 @@
 <?php
 
-namespace FilamentCurator\Models;
+namespace Awcodes\Curator\Models;
 
-use FilamentCurator\Facades\CuratorThumbnails;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Awcodes\Curator\Concerns\HasPackageFactory;
+use Awcodes\Curator\Facades\Curator;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
-use stdClass;
 
 class Media extends Model
 {
-    use HasFactory;
+    use HasPackageFactory;
 
-    protected static function booted()
-    {
-        static::creating(function (Media $media) {
-            if (is_array($media->filename) || $media->filename instanceof stdClass) {
-                foreach ($media->filename as $k => $v) {
-                    $media->{$k} = $v;
-                }
-            }
-        });
-
-        static::created(function (Media $media) {
-            $media->refresh();
-            CuratorThumbnails::generate($media);
-        });
-
-        static::deleted(function (Media $media) {
-            CuratorThumbnails::destroy($media);
-            Storage::disk($media->disk)->delete($media->filename);
-
-            if (count(Storage::disk($media->disk)->allFiles($media->directory)) == 0) {
-                Storage::disk($media->disk)->deleteDirectory($media->directory);
-            }
-        });
-    }
-
-    protected $fillable = [
-        'public_id',
-        'filename',
-        'ext',
-        'type',
-        'alt',
-        'title',
-        'description',
-        'caption',
-        'width',
-        'height',
-        'disk',
-        'directory',
-        'size',
-    ];
+    protected $guarded = [];
 
     protected $casts = [
         'width' => 'integer',
         'height' => 'integer',
+        'size' => 'integer',
+        'curations' => 'array',
     ];
 
     protected $appends = [
         'url',
         'thumbnail_url',
-        'medium_url',
-        'large_url',
-        'size_for_humans',
-        'hasSizes',
+        'resizable',
     ];
 
-    public function getHasSizesAttribute(): bool
+    protected function url(): Attribute
     {
-        return CuratorThumbnails::hasSizes($this->ext);
+        return Attribute::make(
+            get: fn () => Storage::disk($this->disk)->url($this->directory.'/'.$this->name.'.'.$this->ext),
+        );
     }
 
-    public function getUrlAttribute(): string
+    protected function thumbnailUrl(): Attribute
     {
-        return Storage::disk($this->disk)->url($this->filename);
+        return Attribute::make(
+            get: fn () => '/curator/'.$this->path.'?w=200&h=200&fit=crop&fm=webp',
+        );
     }
 
-    public function getThumbnailUrlAttribute(): string
+    protected function fullPath(): Attribute
     {
-        return $this->getSizeUrl('thumbnail');
+        return Attribute::make(
+            get: fn () => Storage::disk($this->disk)->path($this->directory.'/'.$this->name.'.'.$this->ext),
+        );
     }
 
-    public function getMediumUrlAttribute(): string
+    protected function resizable(): Attribute
     {
-        return $this->getSizeUrl('medium');
+        return Attribute::make(
+            get: fn () => Curator::isResizable($this->ext),
+        );
     }
 
-    public function getlargeUrlAttribute(): string
+    protected function sizeForHumans(): Attribute
     {
-        return $this->getSizeUrl('large');
+        return Attribute::make(
+            get: fn () => $this->getSizeForHumans()
+        );
     }
 
-    public function getSizeUrl(string $size): string
-    {
-        $sizes = CuratorThumbnails::getSizes();
-        if (Arr::exists($sizes, $size) && $this->has_sizes) {
-            return $this->getUrlForSize($size);
-        }
-
-        return Storage::disk($this->disk)->url($this->filename);
-    }
-
-    public function getUrlForSize(string $size = 'large'): string
-    {
-        return Storage::disk($this->disk)->url($this->public_id . '-' . $size . '.' . $this->ext);
-    }
-
-    public function getSizeForHumansAttribute(): string
-    {
-        return $this->sizeForHumans();
-    }
-
-    public function sizeForHumans(int $precision = 1): string
+    public function getSizeForHumans(int $precision = 1): string
     {
         $units = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'];
         $size = $this->size;
@@ -121,6 +72,13 @@ class Media extends Model
             $size /= 1024;
         }
 
-        return round($size, $precision) . ' ' . $units[$i];
+        return round($size, $precision).' '.$units[$i];
+    }
+
+    public function getCuration(string $key): array
+    {
+        return Arr::first(collect($this->curations)->filter(function($item) use ($key) {
+            return $item['curation']['key'] === $key;
+        }))['curation'] ?? [];
     }
 }
