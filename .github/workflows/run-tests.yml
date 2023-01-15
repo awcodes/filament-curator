@@ -2,7 +2,7 @@ name: Run Tests
 
 on:
   pull_request:
-    branches: [main]
+    branches: [1.x, 2.x]
     types: [closed]
 
 jobs:
