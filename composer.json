@@ -1,5 +1,5 @@
 {
-    "name": "awcodes/curator",
+    "name": "awcodes/filament-curator",
     "description": "A media picker plugin for FilamentPHP.",
     "keywords": [
         "awcodes",
@@ -7,7 +7,7 @@
         "curator",
         "filament"
     ],
-    "homepage": "https://github.com/awcodes/curator",
+    "homepage": "https://github.com/awcodes/filament-curator",
     "license": "MIT",
     "authors": [
         {
