@@ -33,7 +33,7 @@ This will update Curator's database schema and create a backup of your media tab
 
 ### Additional Steps
 1. Change any references in your codebase from `$media->filename` to `$media->path`.
-2. Change any use statements from `Awcodes\FilamentCurator` to `Awcodes\Curator`.
+2. Change any use statements from `FilamentCurator` to `Awcodes\Curator`.
 
 ## Usage
 
