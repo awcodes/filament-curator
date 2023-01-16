@@ -7,27 +7,29 @@
         $media = $getMedia();
     @endphp
 
-    <div style="
-            {!! $height !== null ? "height: {$height};" : null !!}
-            {!! $width !== null ? "width: {$width};" : null !!}
-        "
-        @class(['rounded-full overflow-hidden grid place-content-center' => $isRounded()])
-    >
-        @if ($isImage())
-            <img
-                src="/curator/{{ $media->path }}?w=50&h=50&fit=crop&fm=webp"
-                style="
-                    {!! $height !== null ? "height: {$height};" : null !!}
-                    {!! $width !== null ? "width: {$width};" : null !!}
-                "
-                @class(['object-cover object-center' => $isRounded()])
-                {{ $getExtraImgAttributeBag() }}
-            />
-        @else
-            <x-curator::document-image
-                label="{{ $media->name }}"
-                icon-size="md"
-            />
-        @endif
-    </div>
+    @if ($media)
+        <div style="
+                {!! $height !== null ? "height: {$height};" : null !!}
+                {!! $width !== null ? "width: {$width};" : null !!}
+            "
+            @class(['rounded-full overflow-hidden grid place-content-center' => $isRounded()])
+        >
+            @if ($isImage())
+                <img
+                    src="/curator/{{ $media->path }}?w=50&h=50&fit=crop&fm=webp"
+                    style="
+                        {!! $height !== null ? "height: {$height};" : null !!}
+                        {!! $width !== null ? "width: {$width};" : null !!}
+                    "
+                    @class(['object-cover object-center' => $isRounded()])
+                    {{ $getExtraImgAttributeBag() }}
+                />
+            @else
+                <x-curator::document-image
+                    label="{{ $media->name }}"
+                    icon-size="md"
+                />
+            @endif
+        </div>
+    @endif
 </div>

@@ -30,7 +30,7 @@ class CuratorColumn extends ImageColumn
         return false;
     }
 
-    public function getMedia(): Media
+    public function getMedia(): ?Media
     {
         $record = $this->getRecord();
 
