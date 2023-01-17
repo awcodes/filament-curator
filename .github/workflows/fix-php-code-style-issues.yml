@@ -2,7 +2,7 @@ name: Fix PHP code styling
 
 on:
   pull_request:
-    branches: [ 1.x, 2.x ]
+    branches: [ 2.x ]
     types: [ closed ]
 
 jobs:
