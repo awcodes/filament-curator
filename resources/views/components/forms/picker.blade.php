@@ -30,7 +30,7 @@
                 {{ $getButtonLabel() }}
             </x-filament::button>
         @else
-            <div class="relative block w-full h-64 overflow-hidden transition duration-75 border border-gray-300 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 dark:text-white flex justify-center checkered">
+            <div {{ $attributes->merge($getExtraAttributes())->class(['relative block w-full h-64 overflow-hidden transition duration-75 border border-gray-300 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 dark:text-white flex justify-center checkered']) }}>
 
                 @if (str($currentItem['type'])->contains('image'))
                     <img
