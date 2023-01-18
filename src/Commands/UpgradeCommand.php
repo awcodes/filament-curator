@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
+use Illuminate\Support\Arr;
 
 class UpgradeCommand extends Command
 {
@@ -29,9 +30,22 @@ class UpgradeCommand extends Command
             Schema::dropIfExists('media_tmp');
         }
 
+        // get db driver
+        $driver = Arr::get(DB::connection()->getConfig(), 'driver');
+
         // clone db as a backup
-        DB::statement('CREATE TABLE media_tmp LIKE media');
-        DB::statement('INSERT media_tmp SELECT * FROM media');
+        match($driver) {
+            'sqlite' => function(): void {
+                DB::statement('CREATE TABLE media_tmp AS SELECT * FROM media');
+            },
+            'pgsql' => function(): void {
+                DB::statement('CREATE TABLE media_tmp AS (SELECT * FROM media)');
+            },
+            default => function(): void {
+                DB::statement('CREATE TABLE media_tmp LIKE media');
+                DB::statement('INSERT media_tmp SELECT * FROM media');
+            }
+        };
 
         // publish migration
         $this->info('Publishing migration...');
