@@ -1,16 +1,14 @@
 @if (str($media->type)->contains('image'))
-    <img src="{{ $source }}"
-         alt="{{ $media->alt }}"
-         width="{{ $media->width }}"
-         height="{{ $media->height }}"
-         @if ($loading)
-             loading="{{ $loading }}"
-         @endif
-         @if ($sourceset)
-            srcset="{{ $sourceset }}"
+    <img
+        src="{{ $source }}"
+        alt="{{ $media->alt }}"
+        width="{{ $media->width }}"
+        height="{{ $media->height }}"
+        @if ($sourceSet)
+            srcset="{{ $sourceSet }}"
             sizes="{{ $sizes }}"
-         @endif
-         {{ $attributes }}
+        @endif
+        {{ $attributes->filter(fn ($attr) => $attr !== '') }}
     />
 @else
     <x-curator::document-image
