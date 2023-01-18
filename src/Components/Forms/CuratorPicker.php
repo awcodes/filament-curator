@@ -65,6 +65,8 @@ class CuratorPicker extends Field
         $this->curatorDirectory = app('curator')->getDirectory();
         $this->curatorPathGenerator = app('curator')->getPathGenerator();
 
+        $this->curatorAcceptedFileTypes = app('curator')->getAcceptedFileTypes();
+
         $this->registerActions([
             PickerAction::make(),
             DownloadAction::make(),
