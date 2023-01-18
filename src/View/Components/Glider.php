@@ -12,10 +12,11 @@ class Glider extends Component
 {
     public string $source;
 
+    public string|null $sourceSet = null;
+
     public function __construct(
         public int|Media $media,
         public string|null $glide = null,
-        public string $loading = 'lazy',
         public array|null $srcset = null,
         public string|null $sizes = null,
         public string|null $background = null,
@@ -104,16 +105,18 @@ class Glider extends Component
     public function render(): View|Closure|string
     {
         if ($this->glide) {
-            $this->source = '/curator/'.$this->media->path.'?'.$this->glide;
+            $this->source = '/curator/' . $this->media->path . '?' . $this->glide;
         } else {
             $this->source = $this->buildGlideSource();
         }
 
-        return view('curator::components.glider', [
-            'media' => $this->media,
-            'source' => $this->source,
-            'loading' => $this->loading,
-            'sourceset' => $this->buildSrcSet(),
-        ]);
+        if ($this->srcset) {
+            $this->sourceSet = $this->buildSrcSet();
+        }
+
+        return function (array $data) {
+            ray($data);
+            return 'curator::components.glider';
+        };
     }
 }

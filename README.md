@@ -206,7 +206,6 @@ See [Glide's quick reference](https://glide.thephpleague.com/2.0/api/quick-refer
     <x-curator-glider
         class="object-cover w-auto"
         :media="1" 
-        loading=""
         glide=""
         :srcset="['1024w','640w']"
         sizes="(max-width: 1200px) 100vw, 1024px"
