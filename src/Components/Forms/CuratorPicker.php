@@ -65,6 +65,17 @@ class CuratorPicker extends Field
         $this->curatorDirectory = app('curator')->getDirectory();
         $this->curatorPathGenerator = app('curator')->getPathGenerator();
 
+        $this->curatorShouldPreserveFilenames = app('curator')->shouldPreserveFilenames();
+        $this->maxWidth = app('curator')->getMaxWidth();
+        $this->curatorMinSize = app('curator')->getMinSize();
+        $this->curatorMaxSize = app('curator')->getMaxSize();
+        $this->curatorAcceptedFileTypes = app('curator')->getAcceptedFileTypes();
+        $this->curatorDiskName = app('curator')->getDiskName();
+        $this->curatorVisibility = app('curator')->getVisibility();
+        $this->curatorImageCropAspectRatio = app('curator')->getImageCropAspectRatio();
+        $this->curatorImageResizeTargetHeight = app('curator')->getImageResizeTargetHeight();
+        $this->curatorImageResizeTargetWidth = app('curator')->getImageResizeTargetWidth();
+
         $this->registerActions([
             PickerAction::make(),
             DownloadAction::make(),
