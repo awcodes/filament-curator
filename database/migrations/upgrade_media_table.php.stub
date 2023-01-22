@@ -12,13 +12,14 @@ return new class extends Migration
             $table->string('name')->nullable();
             $table->string('path')->nullable();
             $table->longText('curations')->nullable();
+            $table->text('exif')->nullable();
         });
     }
 
     public function down()
     {
         Schema::table('media', function(Blueprint $table) {
-            $table->dropColumn(['name', 'path', 'curations']);
+            $table->dropColumn(['name', 'path', 'curations', 'exif']);
         });
     }
 };

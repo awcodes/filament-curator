@@ -20,6 +20,7 @@ class Media extends Model
         'height' => 'integer',
         'size' => 'integer',
         'curations' => 'array',
+        'exif' => 'array',
     ];
 
     protected $appends = [
