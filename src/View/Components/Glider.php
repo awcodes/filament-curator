@@ -115,7 +115,6 @@ class Glider extends Component
         }
 
         return function (array $data) {
-            ray($data);
             return 'curator::components.glider';
         };
     }
