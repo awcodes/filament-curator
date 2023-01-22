@@ -24,6 +24,11 @@ class MediaResource extends Resource
         return app('curator')->getResourceLabel();
     }
 
+    public static function getPluralModelLabel(): string
+    {
+        return app('curator')->getPluralResourceLabel();
+    }
+
     protected static function getNavigationIcon(): string
     {
         return app('curator')->getNavigationIcon();

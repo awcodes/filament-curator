@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Facade;
 
 /**
  * @method static resourceLabel(string $label)
+ * @method static pluralResourceLabel(string $label)
  * @method static navigationIcon(string $label)
  * @method static tableHasIconActions(bool | Closure | null $condition)
  * @method static tableHasGridLayout(bool | Closure | null $condition)
@@ -25,6 +26,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static imageResizeTargetHeight(string | Closure | null $height)
  * @method static imageResizeTargetWidth(string | Closure | null $width)
  * @method static string getResourceLabel()
+ * @method static string getPluralResourceLabel()
  * @method static string getNavigationIcon()
  * @method static array getCurationPresets()
  * @method static string shouldTableHaveIconActions()

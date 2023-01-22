@@ -12,6 +12,8 @@ class Curator
 
     protected string|Closure $resourceLabel = 'Media';
 
+    protected string|Closure $pluralResourceLabel = 'Media';
+
     protected string $navigationIcon = 'heroicon-o-photograph';
 
     protected bool|Closure|null $tableHasIconActions = false;
@@ -49,6 +51,13 @@ class Curator
     public function resourceLabel(string|Closure $label): static
     {
         $this->resourceLabel = $label;
+
+        return $this;
+    }
+
+    public function pluralResourceLabel(string|Closure $label): static
+    {
+        $this->pluralResourceLabel = $label;
 
         return $this;
     }
@@ -175,6 +184,11 @@ class Curator
     public function getResourceLabel(): string
     {
         return $this->evaluate($this->resourceLabel);
+    }
+
+    public function getPluralResourceLabel(): string
+    {
+        return $this->evaluate($this->pluralResourceLabel);
     }
 
     public function getNavigationIcon(): string

@@ -34,15 +34,15 @@ This will update Curator's database schema and create a backup of your media tab
 ### Additional Steps
 1. Change any references in your codebase from `$media->filename` to `$media->path`.
 2. Change any use statements from `FilamentCurator` to `Awcodes\Curator`.
-3. Change `FilamentCurator\Forms\Components\MediaPicker` fields to 
+3. Change `FilamentCurator\Forms\Components\MediaPicker` fields to
    `Awcodes\Curator\Components\Forms\CuratorPicker`.
-4. 
+4.
 ## Usage
 
 ### Global Settings
 
 Global settings for Curator are handled through the `Curator` facade.
-Inside the `register()` method of a service provider you can customize the 
+Inside the `register()` method of a service provider you can customize the
 behaviour of Curator's resources. All methods are optional.
 
 ```php
@@ -51,6 +51,7 @@ use Awcodes\Curator\Facades\Curator;
 public function register()
 {
     Curator::resourceLabel(string)
+        ->pluralResourceLabel(string)
         ->navigationIcon(string)
         ->tableHasIconActions(bool|Closure|null)
         ->tableHasGridLayout(bool|Closure|null)
@@ -187,7 +188,7 @@ Curator::curationPresets([
 
 ### Glider Blade Component
 
-To make it as easy as possible to output your media, Curator comes with an 
+To make it as easy as possible to output your media, Curator comes with an
 `<x-curator-glider>` blade component.
 
 See [Glide's quick reference](https://glide.thephpleague.com/2.0/api/quick-reference/) for more information about Glide's options.
@@ -197,15 +198,15 @@ See [Glide's quick reference](https://glide.thephpleague.com/2.0/api/quick-refer
 - media: id (int) or model (Media) instance ***required***
 - loading: defaults to 'lazy'
 - glide: this can be used to pass in a glide query string if you do not want to use individual attributes
-- srcset: this will output the necessary srcset with glide generated urls. 
-  Must be an array of srcset widths and requires the 'sizes' attribute to 
+- srcset: this will output the necessary srcset with glide generated urls.
+  Must be an array of srcset widths and requires the 'sizes' attribute to
   also be set.
 
 ```html
 <div class="aspect-video w-64">
     <x-curator-glider
         class="object-cover w-auto"
-        :media="1" 
+        :media="1"
         glide=""
         :srcset="['1024w','640w']"
         sizes="(max-width: 1200px) 100vw, 1024px"
@@ -254,7 +255,7 @@ To make it as easy as possible to output your curations, Curator comes with an
 
 ### Custom Model and Resources
 
-Should you need to override the default Model and Resources, it is recommended 
+Should you need to override the default Model and Resources, it is recommended
 that you swap your own model and resources in the service container.
 
 ```php
