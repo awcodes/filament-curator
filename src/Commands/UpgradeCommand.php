@@ -50,13 +50,17 @@ class UpgradeCommand extends Command
         // publish migration
         $this->info('Publishing migration...');
 
-        File::copy(
-            __DIR__ . '/../../database/migrations/upgrade_media_table.php.stub',
-            $this->generateMigrationName(
-                'upgrade_media_table',
-                Carbon::now()->addSecond()
-            )
-        );
+        $migrationsPath = realpath(__DIR__ . '/../../database/migrations');
+
+        foreach (glob("{$migrationsPath}/upgrade_*.php.stub") as $filename) {
+            File::copy(
+                $filename,
+                $this->generateMigrationName(
+                    basename($filename),
+                    Carbon::now()->addSecond()
+                )
+            );
+        }
 
         $this->info('Running migration...');
 
@@ -88,9 +92,13 @@ class UpgradeCommand extends Command
             $this->comment('No media entries to process.');
         }
 
-        Schema::table('media', function (Blueprint $table) {
-            $table->dropColumn(['public_id', 'filename']);
-        });
+        foreach(['public_id', 'filename'] as $column) {
+            if (Schema::hasColumn('media', $column)) {
+                Schema::table('media', function (Blueprint $table) use($column) {
+                    $table->dropColumn($column);
+                });
+            }
+        }
 
         $this->newLine();
         $this->info('Curator successfully upgraded.');
