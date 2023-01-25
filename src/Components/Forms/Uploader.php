@@ -32,6 +32,7 @@ class Uploader extends FileUpload
                 $image = Image::make($file->getRealPath());
                 $width = $image->getWidth();
                 $height = $image->getHeight();
+                $exif = $image->exif();
             }
 
             if (Storage::disk($component->getDiskName())->exists(ltrim($component->getDirectory().'/'.$filename.'.'.$extension, '/'))) {
@@ -45,6 +46,7 @@ class Uploader extends FileUpload
                 'directory' => $component->getDirectory(),
                 'name' => $filename,
                 'path' => $path,
+                'exif' => $exif ?? null,
                 'width' => $width ?? null,
                 'height' => $height ?? null,
                 'size' => $file->getSize(),

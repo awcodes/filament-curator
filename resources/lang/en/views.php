@@ -11,7 +11,6 @@ return [
         'file_url' => 'File URL',
         'file' => 'File',
         'ext' => 'Ext',
-        'section_label' => 'Details',
     ],
     'picker' => [
         'button' => 'Add media',

@@ -9,9 +9,17 @@ return new class extends Migration
     public function up()
     {
         Schema::table('media', function (Blueprint $table) {
-            $table->string('name')->nullable();
-            $table->string('path')->nullable();
-            $table->longText('curations')->nullable();
+            if (! Schema::hasColumn('media', 'name')) {
+                $table->string('name')->nullable();
+            }
+
+            if (! Schema::hasColumn('media', 'path')) {
+                $table->string('path')->nullable();
+            }
+
+            if (! Schema::hasColumn('media', 'curations')) {
+                $table->longText('curations')->nullable();
+            }
         });
     }
 

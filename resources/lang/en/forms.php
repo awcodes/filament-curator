@@ -3,6 +3,7 @@
 return [
     'sections' => [
         'details' => 'Details',
+        'exif' => 'Image Data',
         'file' => 'File',
         'meta' => 'Meta',
         'preview' => 'Preview',

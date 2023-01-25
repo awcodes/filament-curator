@@ -11,7 +11,6 @@ return [
         'file_url' => 'رابط الملف',
         'file' => 'الملف',
         'ext' => 'الإمتداد',
-        'section_label' => 'التفاصيل',
     ],
     'picker' => [
         'button' => 'إضافة وسائط',

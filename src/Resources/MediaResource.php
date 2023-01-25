@@ -89,6 +89,18 @@ class MediaResource extends Resource
                                         $component->state($record);
                                     }),
                             ]),
+                        Forms\Components\Section::make(__('curator::forms.sections.exif'))
+                            ->collapsed()
+                            ->visible(fn($record) => $record && $record->exif)
+                            ->schema([
+                                Forms\Components\KeyValue::make('exif')
+                                    ->disableLabel()
+                                    ->dehydrated(false)
+                                    ->disableAddingRows()
+                                    ->disableDeletingRows()
+                                    ->disableEditingKeys()
+                                    ->columnSpan('full'),
+                            ]),
                     ])
                     ->columnSpan([
                         'md' => 'full',
