@@ -97,6 +97,10 @@ class MediaObserver
     {
         Storage::disk($media->disk)->delete($media->path);
 
+        if (Storage::disk($media->disk)->allFiles($media->directory . '/' . $media->name)) {
+            Storage::disk($media->disk)->deleteDirectory($media->directory . '/' . $media->name);
+        }
+
         if (count(Storage::disk($media->disk)->allFiles($media->directory)) == 0) {
             Storage::disk($media->disk)->deleteDirectory($media->directory);
         }
