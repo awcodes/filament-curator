@@ -2,6 +2,19 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.0.11 - 2023-01-30
+
+### What's Changed
+
+- Add more translation keys by @margarizaldi in https://github.com/awcodes/filament-curator/pull/93
+- Fix: checkered class opacity by @awcodes in https://github.com/awcodes/filament-curator/pull/94
+
+### New Contributors
+
+- @margarizaldi made their first contribution in https://github.com/awcodes/filament-curator/pull/93
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.0.10...v2.0.11
+
 ## v2.0.10 - 2023-01-30
 
 ### What's Changed
