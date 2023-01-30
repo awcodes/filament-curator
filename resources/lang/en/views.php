@@ -11,8 +11,6 @@ return [
         'file_url' => 'File URL',
         'file' => 'File',
         'ext' => 'Ext',
-        'copy_url' => 'Copy URL',
-        'url_copied' => 'Copied!',
     ],
     'picker' => [
         'button' => 'Add media',
@@ -56,11 +54,5 @@ return [
         'crop_mode' => 'Crop Mode',
         'reset' => 'Reset',
         'save_curation' => 'Save Curation',
-        'height' => 'Height',
-        'width' => 'Width',
-        'format' => 'Format',
-        'quality' => 'Quality',
-        'rotate' => 'Rotate',
-        'rotate_deg' => 'deg',
     ],
 ];
