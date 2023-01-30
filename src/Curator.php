@@ -5,6 +5,11 @@ namespace Awcodes\Curator;
 use Closure;
 use Filament\Support\Concerns\EvaluatesClosures;
 use Illuminate\Support\Facades\Session;
+use League\Flysystem\Filesystem;
+use League\Flysystem\Local\LocalFilesystemAdapter;
+use League\Glide\Responses\LaravelResponseFactory;
+use League\Glide\Server;
+use League\Glide\ServerFactory;
 
 class Curator
 {
@@ -47,6 +52,12 @@ class Curator
     protected string|Closure|null $imageResizeTargetWidth = null;
 
     protected array|null $curationPresets = [];
+
+    protected string $glideSourcePathPrefix = 'public';
+
+    protected string $glideCachePathPrefix = '.cache';
+
+    protected Server|ServerFactory|null $glideServer = null;
 
     public function resourceLabel(string|Closure $label): static
     {
@@ -181,6 +192,27 @@ class Curator
         return $this;
     }
 
+    public function glideSourcePathPrefix(string $prefix = 'public'): static
+    {
+        $this->glideCachePathPrefix = $prefix;
+
+        return $this;
+    }
+
+    public function glideCachePathPrefix(string $prefix = '.cache'): static
+    {
+        $this->glideCachePathPrefix = $prefix;
+
+        return $this;
+    }
+
+    public function glideServer(Server|ServerFactory|null $server): static
+    {
+        $this->glideServer = $server;
+
+        return $this;
+    }
+
     public function getResourceLabel(): string
     {
         return $this->evaluate($this->resourceLabel);
@@ -285,5 +317,30 @@ class Curator
     public function isResizable(string $ext): bool
     {
         return in_array($ext, ['jpeg', 'jpg', 'png', 'webp', 'bmp']);
+    }
+
+    public function getGlideSourcePathPrefix(): string
+    {
+        return $this->glideSourcePathPrefix;
+    }
+
+    public function getGlideCachePathPrefix(): string
+    {
+        return $this->glideCachePathPrefix;
+    }
+
+    public function getGlideServer(): Server|ServerFactory
+    {
+        if (! $this->glideServer) {
+            return ServerFactory::create([
+                'response' => new LaravelResponseFactory(app('request')),
+                'source' => storage_path('app'),
+                'source_path_prefix' => $this->getGlideSourcePathPrefix(),
+                'cache' => storage_path('app'),
+                'cache_path_prefix' => $this->getGlideCachePathPrefix(),
+            ]);
+        }
+
+        return $this->glideServer;
     }
 }

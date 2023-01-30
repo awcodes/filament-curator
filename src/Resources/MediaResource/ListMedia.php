@@ -56,6 +56,11 @@ class ListMedia extends ListRecords
         return null;
     }
 
+    protected function getDefaultTableRecordsPerPageSelectOption(): int
+    {
+        return 12;
+    }
+
     protected function getTableRecordsPerPageSelectOptions(): array
     {
         return [6, 12, 24, 48, -1];

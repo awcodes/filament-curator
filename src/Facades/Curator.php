@@ -4,27 +4,32 @@ namespace Awcodes\Curator\Facades;
 
 use Closure;
 use Illuminate\Support\Facades\Facade;
+use League\Glide\Server;
+use League\Glide\ServerFactory;
 
 /**
  * @method static resourceLabel(string $label)
  * @method static pluralResourceLabel(string $label)
  * @method static navigationIcon(string $label)
- * @method static tableHasIconActions(bool | Closure | null $condition)
- * @method static tableHasGridLayout(bool | Closure | null $condition)
+ * @method static tableHasIconActions(bool|Closure|null $condition)
+ * @method static tableHasGridLayout(bool|Closure|null $condition)
  * @method static curationPresets(array|null $presets)
- * @method static preserveFilenames(bool | Closure $condition)
- * @method static acceptedFileTypes(array | Closure $types)
- * @method static maxWidth(int | Closure $width)
- * @method static minSize(int | Closure $size)
- * @method static maxSize(int | Closure $size)
- * @method static disk(string | Closure $disk)
+ * @method static preserveFilenames(bool|Closure $condition)
+ * @method static acceptedFileTypes(array|Closure $types)
+ * @method static maxWidth(int|Closure $width)
+ * @method static minSize(int|Closure $size)
+ * @method static maxSize(int|Closure $size)
+ * @method static disk(string|Closure $disk)
  * @method static directory(Closure|string|null $directory)
  * @method static pathGenerator(string|null $generator)
- * @method static visibility(string | Closure $visibility)
+ * @method static visibility(string|Closure $visibility)
  * @method static cloudDisks(array $disks)
- * @method static imageCropAspectRatio(string | Closure | null $ratio)
- * @method static imageResizeTargetHeight(string | Closure | null $height)
- * @method static imageResizeTargetWidth(string | Closure | null $width)
+ * @method static imageCropAspectRatio(string|Closure|null $ratio)
+ * @method static imageResizeTargetHeight(string|Closure|null $height)
+ * @method static imageResizeTargetWidth(string|Closure|null $width)
+ * @method static glideSourcePathPrefix(string $prefix)
+ * @method static glideCachePathPrefix(string $prefix)
+ * @method static glideServer(Server|ServerFactory|null $server)
  * @method static string getResourceLabel()
  * @method static string getPluralResourceLabel()
  * @method static string getNavigationIcon()
@@ -44,6 +49,9 @@ use Illuminate\Support\Facades\Facade;
  * @method static array getImageResizeTargetHeight()
  * @method static array getImageResizeTargetWidth()
  * @method static bool isResizable(string $ext)
+ * @method static string getGlideSourcePathPrefix()
+ * @method static string getGlideCachePathPrefix()
+ * @method static Server|ServerFactory|null getGlideServer()
  *
  * @see \Awcodes\Curator\Curator
  */

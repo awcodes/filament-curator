@@ -15,7 +15,7 @@ class Glider extends Component
     public string|null $sourceSet = null;
 
     public function __construct(
-        public int|Media $media,
+        public int|Media|null $media,
         public string|null $glide = null,
         public array|null $srcset = null,
         public string|null $sizes = null,
