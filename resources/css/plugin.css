@@ -5,7 +5,6 @@
     background-color: theme("colors.gray.200");
     background-image:  repeating-linear-gradient(45deg, theme("colors.gray.300") 25%, transparent 25%, transparent 75%, theme("colors.gray.300") 75%, theme("colors.gray.300")), repeating-linear-gradient(45deg, theme("colors.gray.300") 25%, theme("colors.gray.200") 25%, theme("colors.gray.200") 75%, theme("colors.gray.300") 75%, theme("colors.gray.300"));
 
-    opacity: 0.8;
     background-position: 0 0, 10px 10px;
     background-size: 20px 20px;
 }

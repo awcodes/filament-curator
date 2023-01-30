@@ -9,6 +9,8 @@
       <data directive="@can" injection="true" prefix="&lt;?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)-&gt;check(" suffix=")): ?&gt;" />
       <data directive="@canany" injection="true" prefix="&lt;?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)-&gt;any(" suffix=")): ?&gt;" />
       <data directive="@cannot" injection="true" prefix="&lt;?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)-&gt;denies(" suffix=")): ?&gt;" />
+      <data directive="@capture" injection="true" prefix="&lt;?php _bladeDirective(" suffix="); ?&gt;" />
+      <data directive="@captureSlots" injection="true" prefix="&lt;?php _bladeDirective(" suffix="); ?&gt;" />
       <data directive="@case" injection="true" prefix="&lt;?php case (" suffix="): ?&gt;" />
       <data directive="@checked" injection="true" prefix="&lt;?php if(" suffix=") {echo 'checked';}?&gt;" />
       <data directive="@choice" injection="true" prefix="&lt;?php echo app('translator')-&gt;choice(" suffix="); ?&gt;" />
@@ -17,6 +19,7 @@
       <data directive="@componentfirst" injection="true" prefix="&lt;?php $__env-&gt;startComponentFirst(" suffix="); ?&gt;" />
       <data directive="@continue" injection="true" prefix="&lt;?php if(" suffix=") continue; ?&gt;" />
       <data directive="@csrf" />
+      <data directive="@currency" injection="true" prefix="&lt;?php _bladeDirective(" suffix="); ?&gt;" />
       <data directive="@dd" injection="true" prefix="&lt;?php dd(" suffix="); ?&gt;" />
       <data directive="@default" />
       <data directive="@disabled" injection="true" prefix="&lt;?php if(" suffix=") {echo 'disabled';}?&gt;" />
@@ -34,6 +37,7 @@
       <data directive="@endcan" />
       <data directive="@endcanany" />
       <data directive="@endcannot" />
+      <data directive="@endcapture" />
       <data directive="@endcomponent" />
       <data directive="@endcomponentClass" />
       <data directive="@endcomponentfirst" />
@@ -84,6 +88,7 @@
       <data directive="@livewireScripts" />
       <data directive="@livewireStyles" />
       <data directive="@method" injection="true" prefix="&lt;?php echo method_field(" suffix="); ?&gt;" />
+      <data directive="@money" injection="true" prefix="&lt;?php _bladeDirective(" suffix="); ?&gt;" />
       <data directive="@once" />
       <data directive="@overwrite" />
       <data directive="@parent" />
