@@ -1,7 +1,7 @@
 # Filament Curator
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/awcodes/curator.svg?style=flat-square)](https://packagist.org/packages/awcodes/curator)
-[![Total Downloads](https://img.shields.io/packagist/dt/awcodes/curator.svg?style=flat-square)](https://packagist.org/packages/awcodes/curator)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/awcodes/filament-curator.svg?style=flat-square)](https://packagist.org/packages/awcodes/filament-curator)
+[![Total Downloads](https://img.shields.io/packagist/dt/awcodes/filament-curator.svg?style=flat-square)](https://packagist.org/packages/awcodes/filament-curator)
 
 A media picker/manager plugin for Filament Admin.
 
@@ -36,7 +36,7 @@ This will update Curator's database schema and create a backup of your media tab
 2. Change any use statements from `FilamentCurator` to `Awcodes\Curator`.
 3. Change `FilamentCurator\Forms\Components\MediaPicker` fields to
    `Awcodes\Curator\Components\Forms\CuratorPicker`.
-4.
+
 ## Usage
 
 ### Global Settings
@@ -68,7 +68,10 @@ public function register()
         ->cloudDisks(array)
         ->imageCropAspectRatio(string|Closure|null)
         ->imageResizeTargetHeight(string|Closure|null)
-        ->imageResizeTargetWidth(string|Closure|null);
+        ->imageResizeTargetWidth(string|Closure|null)
+        ->glideSourcePathPrefix(string)
+        ->glideCachePathPrefix(string)
+        ->glideServer(Server|ServerFactory);
 }
 ```
 

@@ -25,6 +25,9 @@ use Illuminate\Support\Facades\Facade;
  * @method static imageCropAspectRatio(string | Closure | null $ratio)
  * @method static imageResizeTargetHeight(string | Closure | null $height)
  * @method static imageResizeTargetWidth(string | Closure | null $width)
+ * @method static glideSourcePathPrefix(string $prefix)
+ * @method static glideCachePathPrefix(string $prefix)
+ * @method static glideServerFactory(Server | ServerFactory | null)
  * @method static string getResourceLabel()
  * @method static string getPluralResourceLabel()
  * @method static string getNavigationIcon()
@@ -44,6 +47,9 @@ use Illuminate\Support\Facades\Facade;
  * @method static array getImageResizeTargetHeight()
  * @method static array getImageResizeTargetWidth()
  * @method static bool isResizable(string $ext)
+ * @method static string getGlideSourcePathPrefix()
+ * @method static string getGlideCachePathPrefix()
+ * @method static Server|ServerFactory|null getGlideServer()
  *
  * @see \Awcodes\Curator\Curator
  */
