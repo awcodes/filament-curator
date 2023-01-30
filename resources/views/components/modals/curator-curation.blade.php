@@ -46,19 +46,19 @@
                                 </label>
                                 <p class="text-xs mt-1 pl-2">{{ __('curator::views.curation.key_helper') }}</p>
                             </div>
-                            <x-curator::curation-select prefix="Format" name="format" x-model="format">
+                            <x-curator::curation-select prefix="{{ __('curator::views.curation.format') }}" name="format" x-model="format">
                                 <option value="jpg">jpg</option>
                                 <option value="jpeg">jpeg</option>
                                 <option value="webp">webp</option>
                                 <option value="png">png</option>
                                 <option value="avif">avif</option>
                             </x-curator::curation-select>
-                            <x-curator::curation-input type="number" prefix="Quality" name="quality" x-model="quality"/>
+                            <x-curator::curation-input type="number" prefix="{{ __('curator::views.curation.quality') }}" name="quality" x-model="quality"/>
                             <x-curator::curation-input type="text" prefix="X" suffix="px" name="x" x-on:input="setCropBoxX($event)" x-bind:value="Math.round(data.x)" />
                             <x-curator::curation-input type="text" prefix="Y" suffix="px" name="y" x-on:input="setCropBoxY($event)" x-bind:value="Math.round(data.y)" />
-                            <x-curator::curation-input type="text" prefix="Width" suffix="px" name="width" x-on:input="setCropBoxWidth($event)" x-bind:value="Math.round(cropBoxData.width)" />
-                            <x-curator::curation-input type="text" prefix="Height" suffix="px" name="height" x-on:input="setCropBoxHeight($event)" x-bind:value="Math.round(cropBoxData.height)" />
-                            <x-curator::curation-input type="text" prefix="Rotate" suffix="deg" name="rotate" x-on:input="cropper.rotateTo($event.target.value)" x-bind:value="data.rotate" />
+                            <x-curator::curation-input type="text" prefix="{{ __('curator::views.curation.width') }}" suffix="px" name="width" x-on:input="setCropBoxWidth($event)" x-bind:value="Math.round(cropBoxData.width)" />
+                            <x-curator::curation-input type="text" prefix="{{ __('curator::views.curation.height') }}" suffix="px" name="height" x-on:input="setCropBoxHeight($event)" x-bind:value="Math.round(cropBoxData.height)" />
+                            <x-curator::curation-input type="text" prefix="{{ __('curator::views.curation.rotate') }}" suffix="{{ __('curator::views.curation.rotate_deg') }}" name="rotate" x-on:input="cropper.rotateTo($event.target.value)" x-bind:value="data.rotate" />
                         </div>
 
                         <div class="flex items-center w-full mt-3">
