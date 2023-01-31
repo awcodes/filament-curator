@@ -8,6 +8,7 @@ return [
         'meta' => 'Meta',
         'preview' => 'Preview',
         'upload_new' => 'Upload New',
+        'upload_new_helper' => 'If you have any curations for this media you will possibly need to recreate them, it will not happen automatically.',
         'curation' => 'Curation',
     ],
     'fields' => [
