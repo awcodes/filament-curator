@@ -2,6 +2,14 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.0.12 - 2023-01-31
+
+### What's Changed
+
+- Add Indonesian (id) language by @margarizaldi in https://github.com/awcodes/filament-curator/pull/95
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.0.11...v2.0.12
+
 ## v2.0.11 - 2023-01-30
 
 ### What's Changed
