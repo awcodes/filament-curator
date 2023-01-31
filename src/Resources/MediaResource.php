@@ -62,6 +62,8 @@ class MediaResource extends Resource
                                     ->visible(fn($record) => Str::of($record->type)->contains('image'))
                                     ->schema([
                                         Forms\Components\Repeater::make('curations')
+                                            ->label(__('curator::forms.sections.curation'))
+                                            ->disableLabel()
                                             ->itemLabel(fn ($state): ?string => $state['curation']['key'] ?? null)
                                             ->collapsible()
                                             ->schema([
@@ -75,7 +77,7 @@ class MediaResource extends Resource
                                 Forms\Components\Tabs\Tab::make(__('curator::forms.sections.upload_new'))
                                     ->schema([
                                         static::getUploaderField()
-                                            ->helperText('If you have any curations for this media you will possibly need to recreate them, it will not happen automatically.')
+                                            ->helperText(__('curator::forms.sections.upload_new_helper')),
                                     ]),
                             ]),
                         Forms\Components\Section::make(__('curator::forms.sections.details'))
