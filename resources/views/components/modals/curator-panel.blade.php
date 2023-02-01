@@ -121,7 +121,7 @@
                             </template>
                         </button>
 
-                        <p x-text="file.title.length > 0 ? file.title : file.name" class="text-xs truncate absolute bottom-0 inset-x-0 px-1 pb-1 pt-4 text-white bg-gradient-to-t from-black/80 to-transparent pointer-events-none"></p>
+                        <p x-text="file.name" class="text-xs truncate absolute bottom-0 inset-x-0 px-1 pb-1 pt-4 text-white bg-gradient-to-t from-black/80 to-transparent pointer-events-none"></p>
 
                         <button
                             type="button"
