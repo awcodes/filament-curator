@@ -27,7 +27,8 @@
 }
 
 [wire\:key*="curator_picker"],
-[wire\:key*="curator_curation"] {
+[wire\:key*="curator_curation"],
+[wire\:key*="filament_tiptap_media"] {
     .filament-modal-window {
         @apply !p-0;
 
