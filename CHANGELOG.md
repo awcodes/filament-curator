@@ -2,6 +2,15 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.0.14 - 2023-02-01
+
+### What's Changed
+
+- Fix: tiptap integrations bugs by @awcodes in https://github.com/awcodes/filament-curator/pull/98
+- Fix: file title errors in panel thumbnails by @awcodes in https://github.com/awcodes/filament-curator/pull/99
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.0.13...v2.0.14
+
 ## v2.0.13 - 2023-01-31
 
 ### What's Changed
