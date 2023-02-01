@@ -19,7 +19,7 @@ class MediaAction extends Action
 
         $this->modalWidth('screen');
 
-        $this->modalHeading(__('curator::views.modal.heading'));
+        $this->modalHeading(__('curator::views.panel.heading'));
 
         $this->modalActions(fn () => []);
 
