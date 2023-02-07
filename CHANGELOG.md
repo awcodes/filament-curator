@@ -2,6 +2,14 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.0.15 - 2023-02-07
+
+### What's Changed
+
+- Feat: add support for navigation sort, group and registration by @awcodes in https://github.com/awcodes/filament-curator/pull/103
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.0.14...v2.0.15
+
 ## v2.0.14 - 2023-02-01
 
 ### What's Changed
