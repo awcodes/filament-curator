@@ -13,6 +13,11 @@ class ListMedia extends ListRecords
 {
     protected static string $resource = MediaResource::class;
 
+    protected function getTitle(): string
+    {
+        return app('curator')->getResourceLabel();
+    }
+
     protected function getActions(): array
     {
         return array_merge(

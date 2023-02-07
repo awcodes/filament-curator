@@ -21,6 +21,12 @@ class Curator
 
     protected string $navigationIcon = 'heroicon-o-photograph';
 
+    protected string|null $navigationGroup = null;
+
+    protected int|null $navigationSort = null;
+
+    protected bool $shouldRegisterNavigation = true;
+
     protected bool|Closure|null $tableHasIconActions = false;
 
     protected bool|Closure|null $tableHasGridLayout = true;
@@ -76,6 +82,27 @@ class Curator
     public function navigationIcon(string $icon): static
     {
         $this->navigationIcon = $icon;
+
+        return $this;
+    }
+
+    public function navigationSort(int $order): static
+    {
+        $this->navigationSort = $order;
+
+        return $this;
+    }
+
+    public function navigationGroup(string|null $group = null): static
+    {
+        $this->navigationGroup = $group;
+
+        return $this;
+    }
+
+    public function registerNavigation(bool|Closure|null $condition = true): static
+    {
+        $this->shouldRegisterNavigation = $condition;
 
         return $this;
     }
@@ -223,9 +250,24 @@ class Curator
         return $this->evaluate($this->pluralResourceLabel);
     }
 
-    public function getNavigationIcon(): string
+    public function getNavigationIcon(): string|null
     {
         return $this->navigationIcon;
+    }
+
+    public function getNavigationSort(): int|null
+    {
+        return $this->navigationSort;
+    }
+
+    public function getNavigationGroup(): string|null
+    {
+        return $this->navigationGroup;
+    }
+
+    public function shouldRegisterNavigation(): bool
+    {
+        return $this->evaluate($this->shouldRegisterNavigation);
     }
 
     public function getCurationPresets(): array|null

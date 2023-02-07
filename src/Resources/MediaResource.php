@@ -12,6 +12,7 @@ use Filament\Resources\Form;
 use Filament\Resources\Resource;
 use Filament\Resources\Table;
 use Filament\Tables;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 
@@ -29,9 +30,29 @@ class MediaResource extends Resource
         return app('curator')->getPluralResourceLabel();
     }
 
+    public static function getNavigationLabel(): string
+    {
+        return static::getModelLabel();
+    }
+
     protected static function getNavigationIcon(): string
     {
         return app('curator')->getNavigationIcon();
+    }
+
+    protected static function getNavigationSort(): ?int
+    {
+        return app('curator')->getNavigationSort();
+    }
+
+    protected static function getNavigationGroup(): ?string
+    {
+        return app('curator')->getNavigationGroup();
+    }
+
+    protected static function shouldRegisterNavigation(): bool
+    {
+        return app('curator')->shouldRegisterNavigation();
     }
 
     public static function form(Form $form): Form
