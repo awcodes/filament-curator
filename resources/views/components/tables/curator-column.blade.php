@@ -15,8 +15,12 @@
             @class(['rounded-full overflow-hidden grid place-content-center' => $isRounded()])
         >
             @if ($isImage())
+                @php
+                    $urlBuilder = \League\Glide\Urls\UrlBuilderFactory::create('/curator/', config('app.key'));
+                    $url = $urlBuilder->getUrl($media->path, ['w' => 50, 'h' => 50, 'fit' => 'crop', 'fm' => 'webp']);
+                @endphp
                 <img
-                    src="/curator/{{ $media->path }}?w=50&h=50&fit=crop&fm=webp"
+                    src="{{ $url }}"
                     style="
                         {!! $height !== null ? "height: {$height};" : null !!}
                         {!! $width !== null ? "width: {$width};" : null !!}

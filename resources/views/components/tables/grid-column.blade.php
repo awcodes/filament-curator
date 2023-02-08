@@ -7,8 +7,12 @@
 
     <div class="absolute inset-0 h-[175px] z-0 rounded-t-xl overflow-hidden">
         @if (\Awcodes\Curator\Facades\Curator::isResizable($record->ext))
+            @php
+                $urlBuilder = \League\Glide\Urls\UrlBuilderFactory::create('/curator/', config('app.key'));
+                $url = $urlBuilder->getUrl($record->path, ['w' => 640, 'h' => 320, 'fit' => 'crop', 'fm' => 'webp']);
+            @endphp
             <img
-                src="/curator/{{ $record->path }}?w=640&h=320&fit=crop&fm=webp"
+                src="{{ $url }}"
                 alt="{{ $record->alt }}"
                 class="object-cover h-full w-full"
             />

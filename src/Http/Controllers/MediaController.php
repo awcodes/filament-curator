@@ -3,7 +3,6 @@
 namespace Awcodes\Curator\Http\Controllers;
 
 use Awcodes\Curator\Models\Media;
-use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use League\Glide\Filesystem\FileNotFoundException;
@@ -21,7 +20,12 @@ class MediaController extends Controller
             $files->prepend($selected);
         }
 
-        return response()->json($files, 200);
+        $files->each(function($item) {
+            $urlBuilder = \League\Glide\Urls\UrlBuilderFactory::create('/curator/', config('app.key'));
+            $item->signedUrl = $urlBuilder->getUrl($item->path, ['w' => 300, 'h' => 300, 'fit' => 'crop', 'fm' => 'webp']);
+        });
+
+        return response()->json($files);
     }
 
     public function search(Request $request)
@@ -32,10 +36,15 @@ class MediaController extends Controller
             ->orWhere('description', 'like', '%'.$request->q.'%')
             ->paginate(50);
 
-        return response()->json($files, 200);
+        $files->each(function($item) {
+            $urlBuilder = \League\Glide\Urls\UrlBuilderFactory::create('/curator/', config('app.key'));
+            $item->signedUrl = $urlBuilder->getUrl($item->path, ['w' => 300, 'h' => 300, 'fit' => 'crop', 'fm' => 'webp']);
+        });
+
+        return response()->json($files);
     }
 
-    public function show(Request $request, Filesystem $filesystem, $path)
+    public function show(Request $request, $path)
     {
         try {
             SignatureFactory::create(config('app.key'))->validateRequest('/curator/' . $path, $request->all());
