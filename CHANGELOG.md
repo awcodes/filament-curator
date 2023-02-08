@@ -2,6 +2,15 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.1.0 - 2023-02-08
+
+### What's Changed
+
+- Feat: support video preview by @awcodes in https://github.com/awcodes/filament-curator/pull/104
+- Feat: implement signed urls by @awcodes in https://github.com/awcodes/filament-curator/pull/105
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.0.15...v2.1.0
+
 ## v2.0.15 - 2023-02-07
 
 ### What's Changed
