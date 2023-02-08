@@ -1,6 +1,7 @@
 @props([
     'label' => null,
     'iconSize' => 'md',
+    'type' => 'file'
 ])
 
 @php
@@ -13,10 +14,13 @@ $iconClasses = [
 @endphp
 
 <div @class([
-    'grid place-items-center w-full h-full bg-gray-200 text-sm',
-    'dark:bg-gray-700' => config('filament.dark_mode'),
+    'curator-document-image grid place-items-center w-full h-full text-sm',
     $attributes->get('class')
 ])>
-    @svg('heroicon-s-document', ['class' => $iconClasses[$iconSize]])
+    @if (str($type)->contains('video'))
+        @svg('heroicon-s-video-camera', ['class' => $iconClasses[$iconSize]])
+    @else
+        @svg('heroicon-s-document', ['class' => $iconClasses[$iconSize]])
+    @endif
     <span class="sr-only">{{ $label }}</span>
 </div>

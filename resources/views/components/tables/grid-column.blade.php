@@ -14,8 +14,9 @@
             />
         @else
             <x-curator::document-image
-                label="{{ $record->filename }}"
-                icon-size="md"
+                :label="$record->filename"
+                icon-size="lg"
+                :type="$record->type"
             />
         @endif
         <div
