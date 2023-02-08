@@ -30,7 +30,10 @@
                 {{ $getButtonLabel() }}
             </x-filament::button>
         @else
-            <div {{ $attributes->merge($getExtraAttributes())->class(['relative block w-full h-64 overflow-hidden transition duration-75 border border-gray-300 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 dark:text-white flex justify-center checkered']) }}>
+            <div {{ $attributes->merge($getExtraAttributes())->class([
+                'relative block w-full overflow-hidden transition duration-75 border border-gray-300 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 dark:text-white flex justify-center checkered',
+                'h-64' => ! str($currentItem['type'])->contains('video'),
+            ]) }}>
 
                 @if (str($currentItem['type'])->contains('image'))
                     <img
@@ -42,6 +45,8 @@
                             'object-cover w-full' => ! $isConstrained(),
                         ])
                     />
+                @elseif (str($currentItem['type'])->contains('video'))
+                    <video controls src="{{ $currentItem['url'] }}"></video>
                 @else
                     <x-curator::document-image
                         label="{{ $currentItem['name'] }}"
@@ -91,12 +96,15 @@
                     </button>
                     @endif
                 </div>
-                <div
-                    class="absolute inset-x-0 bottom-0 flex items-center justify-between px-2 pt-10 pb-1 text-xs text-white bg-gradient-to-t from-black/80 to-transparent gap-3"
-                >
-                    <p class="truncate">{{ $currentItem['name'] }}.{{ $currentItem['ext'] }}</p>
-                    <p class="flex-shrink-0">{{ $currentItem['size_for_humans'] }}</p>
-                </div>
+
+                @if (! str($currentItem['type'])->contains('video'))
+                    <div
+                        class="absolute inset-x-0 bottom-0 flex items-center justify-between px-2 pt-10 pb-1 text-xs text-white bg-gradient-to-t from-black/80 to-transparent gap-3"
+                    >
+                        <p class="truncate">{{ $currentItem['name'] }}.{{ $currentItem['ext'] }}</p>
+                        <p class="flex-shrink-0">{{ $currentItem['size_for_humans'] }}</p>
+                    </div>
+                @endif
             </div>
         @endif
 

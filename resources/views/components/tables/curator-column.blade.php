@@ -26,8 +26,9 @@
                 />
             @else
                 <x-curator::document-image
-                    label="{{ $media->name }}"
+                    :label="$media->name"
                     icon-size="md"
+                    :type="$media->type"
                 />
             @endif
         </div>

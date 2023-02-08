@@ -115,9 +115,17 @@
                                 />
                             </template>
                             <template x-if="!file.type.includes('image')">
-                                <x-curator::document-image icon-size="lg">
-                                    <x-slot name="label"><span x-text="file.filename"></span></x-slot>
-                                </x-curator::document-image>
+                                <div @class([
+                                    'curator-document-image grid place-items-center w-full h-full text-sm',
+                                ])>
+                                    <template x-if="file.type.includes('video')">
+                                        @svg('heroicon-s-video-camera', ['class' => 'w-10 h-10'])
+                                    </template>
+                                    <template x-if="!file.type.includes('video')">
+                                        @svg('heroicon-s-document', ['class' => 'w-10 h-10'])
+                                    </template>
+                                    <span class="sr-only"><span x-text="file.name"></span></span>
+                                </div>
                             </template>
                         </button>
 
@@ -224,9 +232,17 @@
                                 />
                             </template>
                             <template x-if="!selected?.type.includes('image')">
-                                <x-curator::document-image icon-size="lg">
-                                    <x-slot name="label"><span x-text="selected?.filename"></span></x-slot>
-                                </x-curator::document-image>
+                                <div @class([
+                                    'curator-document-image grid place-items-center w-full h-full text-sm',
+                                ])>
+                                    <template x-if="selected?.type.includes('video')">
+                                        <video controls x-bind:src="selected?.url"></video>
+                                    </template>
+                                    <template x-if="!selected?.type.includes('video')">
+                                        @svg('heroicon-s-document', ['class' => 'w-10 h-10'])
+                                        <span class="sr-only"><span x-text="selected?.name"></span></span>
+                                    </template>
+                                </div>
                             </template>
                             <div class="absolute top-0 right-0 flex bg-gray-900 divide-x divide-gray-700 rounded-bl-lg shadow-md">
                                 <a

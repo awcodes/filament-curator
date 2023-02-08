@@ -14,6 +14,14 @@
     background-image:  repeating-linear-gradient(45deg, theme("colors.gray.700") 25%, transparent 25%, transparent 75%, theme("colors.gray.700") 75%, theme("colors.gray.700")), repeating-linear-gradient(45deg, theme("colors.gray.700") 25%, theme("colors.gray.800") 25%, theme("colors.gray.800") 75%, theme("colors.gray.700") 75%, theme("colors.gray.700"));
 }
 
+.curator-document-image {
+    background: radial-gradient(ellipse at top, theme("colors.gray.200"), transparent), radial-gradient(ellipse at bottom, theme("colors.gray.400"), transparent);
+}
+
+.dark .curator-document-image {
+    background: radial-gradient(ellipse at top, theme("colors.gray.700"), transparent), radial-gradient(ellipse at bottom, theme("colors.gray.900"), transparent);
+}
+
 .filament-resources-media {
     .filament-forms-tabs-component-header {
         @apply bg-gray-100 dark:bg-gray-900;
