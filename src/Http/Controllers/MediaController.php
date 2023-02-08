@@ -6,6 +6,9 @@ use Awcodes\Curator\Models\Media;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use League\Glide\Filesystem\FileNotFoundException;
+use League\Glide\Signatures\SignatureException;
+use League\Glide\Signatures\SignatureFactory;
 
 class MediaController extends Controller
 {
@@ -32,8 +35,16 @@ class MediaController extends Controller
         return response()->json($files, 200);
     }
 
-    public function show(Filesystem $filesystem, $path)
+    public function show(Request $request, Filesystem $filesystem, $path)
     {
+        try {
+            SignatureFactory::create(config('app.key'))->validateRequest('/curator/' . $path, $request->all());
+        } catch (SignatureException $e) {
+            abort(403);
+        } catch (FileNotFoundException $e) {
+            abort(404);
+        }
+
         $server = app('curator')->getGlideServer();
         $server->setBaseUrl('/curator/');
         return $server->getImageResponse($path, request()->all());

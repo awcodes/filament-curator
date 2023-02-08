@@ -33,6 +33,7 @@ use League\Glide\ServerFactory;
  * @method static glideSourcePathPrefix(string $prefix)
  * @method static glideCachePathPrefix(string $prefix)
  * @method static glideServer(Server|ServerFactory|null $server)
+ * @method static glideMaxImageSize(int $size)
  * @method static string getResourceLabel()
  * @method static string getPluralResourceLabel()
  * @method static string getNavigationIcon()
@@ -57,6 +58,7 @@ use League\Glide\ServerFactory;
  * @method static bool isResizable(string $ext)
  * @method static string getGlideSourcePathPrefix()
  * @method static string getGlideCachePathPrefix()
+ * @method static int getGlideMaxImageSize()
  * @method static Server|ServerFactory|null getGlideServer()
  *
  * @see \Awcodes\Curator\Curator

@@ -63,6 +63,8 @@ class Curator
 
     protected string $glideCachePathPrefix = '.cache';
 
+    protected int $glideMaxImageSize = 2000*2000;
+
     protected Server|ServerFactory|null $glideServer = null;
 
     public function resourceLabel(string|Closure $label): static
@@ -240,6 +242,13 @@ class Curator
         return $this;
     }
 
+    public function glideMaxImageSize(int $size): static
+    {
+        $this->glideMaxImageSize = $size;
+
+        return $this;
+    }
+
     public function getResourceLabel(): string
     {
         return $this->evaluate($this->resourceLabel);
@@ -371,6 +380,11 @@ class Curator
         return $this->glideCachePathPrefix;
     }
 
+    public function getGlideMaxImageSize(): int
+    {
+        return $this->glideMaxImageSize;
+    }
+
     public function getGlideServer(): Server|ServerFactory
     {
         if (! $this->glideServer) {
@@ -380,6 +394,7 @@ class Curator
                 'source_path_prefix' => $this->getGlideSourcePathPrefix(),
                 'cache' => storage_path('app'),
                 'cache_path_prefix' => $this->getGlideCachePathPrefix(),
+                'max_image_size' => $this->getGlideMaxImageSize(),
             ]);
         }
 
