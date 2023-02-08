@@ -7,6 +7,8 @@ use Closure;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Str;
 use Illuminate\View\Component;
+use League\Glide\Urls\UrlBuilder;
+use League\Glide\Urls\UrlBuilderFactory;
 
 class Glider extends Component
 {
@@ -85,7 +87,8 @@ class Glider extends Component
             $overrides
         ));
 
-        return '/curator/' . $this->media->path . ($params ? '?' . http_build_query($params) : null);
+        $urlBuilder = UrlBuilderFactory::create('/curator/', config('app.key'));
+        return $urlBuilder->getUrl($this->media->path, $params);
     }
 
     public function buildSrcSet(): ?string

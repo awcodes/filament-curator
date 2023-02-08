@@ -74,7 +74,8 @@ public function register()
         ->imageResizeTargetWidth(string|Closure|null)
         ->glideSourcePathPrefix(string)
         ->glideCachePathPrefix(string)
-        ->glideServer(Server|ServerFactory);
+        ->glideServer(Server|ServerFactory)
+        ->glideMaxImageSize(int);
 }
 ```
 
