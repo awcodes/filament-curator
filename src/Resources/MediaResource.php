@@ -32,7 +32,7 @@ class MediaResource extends Resource
 
     public static function getNavigationLabel(): string
     {
-        return static::getModelLabel();
+        return Str::of(static::getPluralModelLabel())->title() ?? Str::of(static::getModelLabel())->title();
     }
 
     protected static function getNavigationIcon(): string
