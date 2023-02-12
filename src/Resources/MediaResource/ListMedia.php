@@ -16,7 +16,7 @@ class ListMedia extends ListRecords
 
     protected function getTitle(): string
     {
-        return Str::of(app('curator')->getResourceLabel())->title();
+        return Str::headline(app('curator')->getPluralResourceLabel());
     }
 
     protected function getActions(): array
