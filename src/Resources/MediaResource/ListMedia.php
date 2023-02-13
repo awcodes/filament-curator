@@ -8,6 +8,7 @@ use Filament\Pages\Actions\Action;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Str;
 
 class ListMedia extends ListRecords
 {
@@ -15,7 +16,7 @@ class ListMedia extends ListRecords
 
     protected function getTitle(): string
     {
-        return app('curator')->getResourceLabel();
+        return Str::headline(app('curator')->getPluralResourceLabel());
     }
 
     protected function getActions(): array
@@ -30,7 +31,7 @@ class ListMedia extends ListRecords
                     ->icon(function (): string {
                         return Session::get('tableLayout') ? 'heroicon-s-view-list' : 'heroicon-s-view-grid';
                     })
-                    ->action(function(): void {
+                    ->action(function (): void {
                         Session::put('tableLayout', ! Session::get('tableLayout'));
                     }),
             ],

@@ -32,7 +32,7 @@ class MediaResource extends Resource
 
     public static function getNavigationLabel(): string
     {
-        return static::getModelLabel();
+        return Str::title(static::getPluralModelLabel()) ?? Str::title(static::getModelLabel());
     }
 
     protected static function getNavigationIcon(): string
@@ -80,7 +80,7 @@ class MediaResource extends Resource
                                             }),
                                     ]),
                                 Forms\Components\Tabs\Tab::make(__('curator::forms.sections.curation'))
-                                    ->visible(fn($record) => Str::of($record->type)->contains('image'))
+                                    ->visible(fn ($record) => Str::of($record->type)->contains('image'))
                                     ->schema([
                                         Forms\Components\Repeater::make('curations')
                                             ->label(__('curator::forms.sections.curation'))
@@ -114,7 +114,7 @@ class MediaResource extends Resource
                             ]),
                         Forms\Components\Section::make(__('curator::forms.sections.exif'))
                             ->collapsed()
-                            ->visible(fn($record) => $record && $record->exif)
+                            ->visible(fn ($record) => $record && $record->exif)
                             ->schema([
                                 Forms\Components\KeyValue::make('exif')
                                     ->disableLabel()
