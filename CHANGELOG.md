@@ -2,6 +2,18 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.1.2 - 2023-02-13
+
+### What's Changed
+
+- Fixes resource navigation naming and list title naming by @archilex in https://github.com/awcodes/filament-curator/pull/107
+
+### New Contributors
+
+- @archilex made their first contribution in https://github.com/awcodes/filament-curator/pull/107
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.1.1...v2.1.2
+
 ## v2.1.1 - 2023-02-08
 
 ### What's Changed
