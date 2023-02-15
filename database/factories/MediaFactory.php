@@ -13,7 +13,7 @@ class MediaFactory extends Factory
     {
         return $this->state(function (array $attributes) {
             return [
-                'filename' => 'document.pdf',
+                'name' => 'document.pdf',
                 'path' => 'media/document.pdf',
                 'type' => 'application/pdf',
                 'width' => null,
@@ -27,7 +27,7 @@ class MediaFactory extends Factory
     {
         return $this->state(function (array $attributes) {
             return [
-                'filename' => 'vertical.jpg',
+                'name' => 'vertical.jpg',
                 'path' => 'media/vertical.jpg',
             ];
         });
@@ -38,7 +38,7 @@ class MediaFactory extends Factory
         return [
             'disk' => 'public',
             'directory' => 'media',
-            'filename' => 'horizontal.jpg',
+            'name' => 'horizontal.jpg',
             'path' => 'media/horizontal.jpg',
             'width' => 640,
             'height' => 640,
