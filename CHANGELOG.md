@@ -2,6 +2,14 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.2.0 - 2023-02-16
+
+### What's Changed
+
+- Laravel 10 compatibility by @howdu in https://github.com/awcodes/filament-curator/pull/109
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.1.3...v2.2.0
+
 ## v2.1.3 - 2023-02-15
 
 ### What's Changed
