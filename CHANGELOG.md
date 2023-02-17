@@ -2,6 +2,14 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.2.1 - 2023-02-17
+
+### What's Changed
+
+- Fix: add nextTick to help with image loading race condition by @awcodes in https://github.com/awcodes/filament-curator/pull/112
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.2.0...v2.2.1
+
 ## v2.2.0 - 2023-02-16
 
 ### What's Changed
