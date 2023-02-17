@@ -33,10 +33,12 @@ document.addEventListener("alpine:init", () => {
         init() {
             this.destroy();
 
-            this.cropper = new Cropper(this.$refs.image, {
-                background: false,
+            this.$nextTick(() => {
+                this.cropper = new Cropper(this.$refs.image, {
+                    background: false,
+                });
             });
-
+            
             this.$watch('preset', ($value) => {
                 if ($value === 'custom') {
                     this.cropper.reset()
