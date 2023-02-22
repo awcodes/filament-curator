@@ -8,8 +8,8 @@ use League\Glide\Server;
 use League\Glide\ServerFactory;
 
 /**
- * @method static resourceLabel(string $label)
- * @method static pluralResourceLabel(string $label)
+ * @method static resourceLabel(string|Closure $label)
+ * @method static pluralResourceLabel(string|Closure $label)
  * @method static navigationIcon(string $label)
  * @method static navigationSort(int $order)
  * @method static navigationGroup(string $group)

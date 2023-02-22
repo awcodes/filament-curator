@@ -50,8 +50,8 @@ use Awcodes\Curator\Facades\Curator;
 
 public function register()
 {
-    Curator::resourceLabel(string)
-        ->pluralResourceLabel(string)
+    Curator::resourceLabel(string|Closure)
+        ->pluralResourceLabel(string|Closure)
         ->navigationIcon(string)
         ->navigationSort(int)
         ->navigationGroup(string)
