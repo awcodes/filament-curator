@@ -75,7 +75,8 @@ public function register()
         ->glideSourcePathPrefix(string)
         ->glideCachePathPrefix(string)
         ->glideServer(Server|ServerFactory)
-        ->glideMaxImageSize(int);
+        ->glideMaxImageSize(int)
+        ->glideDriver(string);
 }
 ```
 
