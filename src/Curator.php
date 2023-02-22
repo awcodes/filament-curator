@@ -67,6 +67,8 @@ class Curator
 
     protected Server|ServerFactory|null $glideServer = null;
 
+    protected string $glideDriver = 'gd';
+
     public function resourceLabel(string|Closure $label): static
     {
         $this->resourceLabel = $label;
@@ -249,6 +251,13 @@ class Curator
         return $this;
     }
 
+    public function glideDriver(string $driver = 'gd'): static
+    {
+        $this->glideDriver = $driver;
+
+        return $this;
+    }
+
     public function getResourceLabel(): string
     {
         return $this->evaluate($this->resourceLabel);
@@ -385,10 +394,16 @@ class Curator
         return $this->glideMaxImageSize;
     }
 
+    public function getGlideDriver(): string
+    {
+        return $this->glideDriver;
+    }
+
     public function getGlideServer(): Server|ServerFactory
     {
         if (! $this->glideServer) {
             return ServerFactory::create([
+                'driver' => $this->getGlideDriver(),
                 'response' => new LaravelResponseFactory(app('request')),
                 'source' => storage_path('app'),
                 'source_path_prefix' => $this->getGlideSourcePathPrefix(),
