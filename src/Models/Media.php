@@ -38,8 +38,10 @@ class Media extends Model
 
     protected function thumbnailUrl(): Attribute
     {
+        $urlBuilder = \League\Glide\Urls\UrlBuilderFactory::create('/curator/', config('app.key'));
+
         return Attribute::make(
-            get: fn () => '/curator/'.$this->path.'?w=200&h=200&fit=crop&fm=webp',
+            get: fn () => $urlBuilder->getUrl($this->path, ['w' => 200, 'h' => 200, 'fit' => 'crop', 'fm' => 'webp']),
         );
     }
 

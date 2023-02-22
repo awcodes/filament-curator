@@ -107,7 +107,7 @@
                         >
                             <template x-if="file.type.includes('image')">
                                 <img
-                                    x-bind:src="file.signedUrl"
+                                    x-bind:src="file.thumbnail_url"
                                     x-bind:alt="file.alt"
                                     width="300"
                                     height="300"
@@ -224,7 +224,7 @@
                         <div class="flex justify-center mb-4 overflow-hidden border border-gray-300 rounded dark:border-gray-700 checkered h-48 flex-shrink-0 relative">
                             <template x-if="selected?.type.includes('image')">
                                 <img
-                                    x-bind:src="selected?.signedUrl"
+                                    x-bind:src="selected?.url"
                                     x-bind:alt="selected?.alt"
                                     x-bind:width="selected?.width"
                                     x-bind:height="selected?.height"
