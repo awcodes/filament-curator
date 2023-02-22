@@ -2,6 +2,15 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.2.2 - 2023-02-22
+
+### What's Changed
+
+- Fix: thumbnail and preview in panel by @awcodes in https://github.com/awcodes/filament-curator/pull/114
+- Feat: driver config by @awcodes in https://github.com/awcodes/filament-curator/pull/115
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.2.1...v2.2.2
+
 ## v2.2.1 - 2023-02-17
 
 ### What's Changed
