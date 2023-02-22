@@ -2,6 +2,14 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.2.3 - 2023-02-22
+
+### What's Changed
+
+- Fix: Facade resource docblock and readme by @awcodes in https://github.com/awcodes/filament-curator/pull/116
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.2.2...v2.2.3
+
 ## v2.2.2 - 2023-02-22
 
 ### What's Changed
