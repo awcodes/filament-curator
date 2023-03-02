@@ -96,7 +96,8 @@ CuratorPicker::make(string $fieldName)
     ->color('primary|secondary|success|danger') // defaults to primary
     ->outlined(true|false) // defaults to true
     ->size('sm|md|lg') // defaults to md
-    ->fitContent(true|false) // defaults to false (forces image to fit inside the preview area)
+    ->constrained(true|false) // defaults to false (forces image to fit inside 
+    the preview area)
     ->pathGenerator(DatePathGenerator::class|UserPathGenerator::class) // see path generators below
     // see https://filamentphp.com/docs/2.x/forms/fields#file-upload for more information about the following methods
     ->preserveFilenames()
