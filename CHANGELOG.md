@@ -2,6 +2,18 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.2.4 - 2023-03-06
+
+### What's Changed
+
+- Persian Language Added by @shayan100 in https://github.com/awcodes/filament-curator/pull/119
+
+### New Contributors
+
+- @shayan100 made their first contribution in https://github.com/awcodes/filament-curator/pull/119
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.2.3...v2.2.4
+
 ## v2.2.3 - 2023-02-22
 
 ### What's Changed
