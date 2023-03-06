@@ -1,26 +1,29 @@
 @props([
     'label' => null,
     'iconSize' => 'md',
-    'type' => 'file'
+    'type' => 'file',
+    'extension' => 'pdf',
 ])
 
 @php
 $iconClasses = [
     'sm' => 'w-4 h-4',
-    'md' => 'w-8 h-8',
-    'lg' => 'w-10 h-10',
-    'xl' => 'w-12 h-12',
+    'md' => 'w-6 h-6',
+    'lg' => 'w-16 h-16',
+    'xl' => 'w-24 h-24',
 ];
 @endphp
 
 <div @class([
-    'curator-document-image grid place-items-center w-full h-full text-sm',
+    'curator-document-image grid place-items-center w-full h-full text-xs uppercase relative',
     $attributes->get('class')
 ])>
     @if (str($type)->contains('video'))
-        @svg('heroicon-s-video-camera', ['class' => $iconClasses[$iconSize]])
+        @svg('heroicon-o-video-camera', ['class' => 'opacity-20 ' . $iconClasses[$iconSize]])
+        <span class="block absolute">{{ $extension }}</span>
     @else
-        @svg('heroicon-s-document', ['class' => $iconClasses[$iconSize]])
+        @svg('heroicon-o-document', ['class' => 'opacity-20 ' . $iconClasses[$iconSize]])
+        <span class="block absolute">{{ $extension }}</span>
     @endif
     <span class="sr-only">{{ $label }}</span>
 </div>

@@ -33,6 +33,7 @@
                     :label="$media->name"
                     icon-size="md"
                     :type="$media->type"
+                    :extension="$media->ext"
                 />
             @endif
         </div>
