@@ -2,6 +2,15 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.2.5 - 2023-03-06
+
+### What's Changed
+
+- Chore: update preview icons for non-image formats by @awcodes in https://github.com/awcodes/filament-curator/pull/120
+- Chore: move picker modal to dedicated Alpine component by @awcodes in https://github.com/awcodes/filament-curator/pull/121
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.2.4...v2.2.5
+
 ## v2.2.4 - 2023-03-06
 
 ### What's Changed
