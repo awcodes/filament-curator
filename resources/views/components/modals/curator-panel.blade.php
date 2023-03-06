@@ -1,74 +1,4 @@
-<div x-data="{
-        statePath: '{{ $statePath }}',
-        selected: null,
-        files: [],
-        nextPageUrl: null,
-        isFetching: false,
-        init() {
-            this.getFiles('/curator/media');
-            const observer = new IntersectionObserver(
-                ([e]) => {
-                    if (e.isIntersecting) {
-                        this.loadMoreFiles();
-                        return;
-                    }
-                },
-                {
-                    rootMargin: '0px',
-                    threshold: [0],
-                }
-            );
-            observer.observe(this.$refs.loadMore);
-        },
-        getFiles: async function(url = '/curator/media', selected = null) {
-            if (selected) {
-                let indicator = url.includes('?') ? '&' : '?';
-                url = url + indicator + 'media_id=' + selected;
-            }
-            this.isFetching = true;
-            const response = await fetch(url);
-            const result = await response.json();
-            this.files = this.files ? this.files.concat(result.data) : result.data;
-            this.nextPageUrl = result.next_page_url;
-            this.isFetching = false;
-        },
-        loadMoreFiles: async function() {
-            if (this.nextPageUrl) {
-                this.isFetching = true;
-                await this.getFiles(this.nextPageUrl, this.selected?.id);
-                this.isFetching = false;
-            }
-        },
-        searchFiles: async function(event) {
-            this.isFetching = true;
-            const response = await fetch('/curator/media/search?q=' + event.target.value);
-            const result = await response.json();
-            this.files = result.data;
-            this.isFetching = false;
-        },
-        addNewFile: function(media = null) {
-            if (media) {
-                this.files = [...media, ...this.files];
-                this.$nextTick(() => {
-                    this.setSelected(media[0].id);
-                })
-            }
-        },
-        removeFile: function(media = null) {
-            if (media) {
-                this.files = this.files.filter((obj) => obj.id !== media.id);
-                this.selected = null;
-            }
-        },
-        setSelected: function(mediaId = null) {
-            if (!mediaId || (this.selected && this.selected.id === mediaId)) {
-                this.selected = null;
-            } else {
-                this.selected = this.files.find(obj => obj.id === mediaId);
-            }
-            this.$wire.setCurrentFile(this.selected);
-        },
-    }"
+<div x-data="curator({statePath: '{{ $statePath }}'})"
      x-on:clear-selected="selected = null"
      x-on:insert-media.window="$dispatch('close-modal', { id: '{{ $modalId }}' })"
      x-on:new-media-added.window="addNewFile($event.detail.media)"
@@ -79,8 +9,8 @@
     <div class="flex-1 relative flex flex-col lg:flex-row overflow-hidden">
         <div
             x-show="isFetching"
-            x-cloak
             class="absolute inset-0 z-10 grid place-content-center bg-gray-300/50 dark:bg-gray-900/50"
+            style="display: none;"
         >
             <svg
                 class="w-12 h-12 text-gray-700 dark:text-white animate-spin"
@@ -189,7 +119,7 @@
                     type="search"
                     wire:ignore
                     placeholder="{{ __('curator::views.panel.search_placeholder') }}"
-                    x-on:input.debounce.500ms="searchFiles"
+                    x-on:input.debounce.500ms="searchFiles()"
                     class="block w-full transition pl-10 rtl:pl-3 rtl:pr-10 duration-75 border-none focus:ring-1 focus:ring-inset focus:ring-primary-600 disabled:opacity-70 dark:bg-black/10 dark:text-white"
                 />
             </label>
