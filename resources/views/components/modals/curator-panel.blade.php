@@ -116,13 +116,19 @@
                             </template>
                             <template x-if="!file.type.includes('image')">
                                 <div @class([
-                                    'curator-document-image grid place-items-center w-full h-full text-sm',
+                                    'curator-document-image grid place-items-center w-full h-full text-xs uppercase relative',
                                 ])>
                                     <template x-if="file.type.includes('video')">
-                                        @svg('heroicon-s-video-camera', ['class' => 'w-10 h-10'])
+                                        <div class="relative grid place-items-center w-full h-full">
+                                            @svg('heroicon-o-video-camera', ['class' => 'w-16 h-16 opacity-20'])
+                                            <span class="block absolute" x-text="file.ext"></span>
+                                        </div>
                                     </template>
                                     <template x-if="!file.type.includes('video')">
-                                        @svg('heroicon-s-document', ['class' => 'w-10 h-10'])
+                                        <div class="relative grid place-items-center w-full h-full">
+                                            @svg('heroicon-o-document', ['class' => 'w-16 h-16 opacity-20'])
+                                            <span class="block absolute" x-text="file.ext"></span>
+                                        </div>
                                     </template>
                                     <span class="sr-only"><span x-text="file.name"></span></span>
                                 </div>
@@ -228,19 +234,22 @@
                                     x-bind:alt="selected?.alt"
                                     x-bind:width="selected?.width"
                                     x-bind:height="selected?.height"
-                                    class="block object-cover h-full"
+                                    class="block object-contain w-full h-full"
                                 />
                             </template>
                             <template x-if="!selected?.type.includes('image')">
                                 <div @class([
-                                    'curator-document-image grid place-items-center w-full h-full text-sm',
+                                    'curator-document-image grid place-items-center w-full h-full text-xs uppercase relative',
                                 ])>
                                     <template x-if="selected?.type.includes('video')">
                                         <video controls x-bind:src="selected?.url"></video>
                                     </template>
                                     <template x-if="!selected?.type.includes('video')">
-                                        @svg('heroicon-s-document', ['class' => 'w-10 h-10'])
-                                        <span class="sr-only"><span x-text="selected?.name"></span></span>
+                                        <div class="relative grid place-items-center w-full h-full">
+                                            @svg('heroicon-o-document', ['class' => 'w-16 h-16 opacity-20'])
+                                            <span class="block absolute" x-text="selected?.ext"></span>
+                                            <span class="sr-only"><span x-text="selected?.name"></span></span>
+                                        </div>
                                     </template>
                                 </div>
                             </template>

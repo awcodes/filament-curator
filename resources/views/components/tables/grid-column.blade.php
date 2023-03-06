@@ -21,6 +21,7 @@
                 :label="$record->filename"
                 icon-size="lg"
                 :type="$record->type"
+                :extension="$record->ext"
             />
         @endif
         <div
