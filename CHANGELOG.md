@@ -2,6 +2,14 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.2.6 - 2023-03-07
+
+### What's Changed
+
+- Chore: make assets versionalble for cache busting by @awcodes in https://github.com/awcodes/filament-curator/pull/122
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.2.5...v2.2.6
+
 ## v2.2.5 - 2023-03-06
 
 ### What's Changed
