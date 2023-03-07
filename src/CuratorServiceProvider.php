@@ -5,6 +5,7 @@ namespace Awcodes\Curator;
 use Awcodes\Curator\Commands\UpgradeCommand;
 use Awcodes\Curator\Models\Media;
 use Awcodes\Curator\Observers\MediaObserver;
+use Composer\InstalledVersions;
 use Filament\PluginServiceProvider;
 use Illuminate\Support\Facades\Blade;
 use Livewire\Livewire;
@@ -15,8 +16,12 @@ class CuratorServiceProvider extends PluginServiceProvider
 {
     public static string $name = 'curator';
 
+    public static string $version = 'dev';
+
     public function configurePackage(Package $package): void
     {
+        static::$version = InstalledVersions::getVersion('awcodes/filament-curator');
+
         $package->name(static::$name)
             ->hasRoute('web')
             ->hasViews()
@@ -62,14 +67,14 @@ class CuratorServiceProvider extends PluginServiceProvider
     protected function getStyles(): array
     {
         return [
-            'plugin-curator' => __DIR__.'/../resources/dist/curator.css',
+            'plugin-curator-' . static::$version => __DIR__.'/../resources/dist/curator.css',
         ];
     }
 
     protected function getBeforeCoreScripts(): array
     {
         return [
-            'plugin-curator' => __DIR__.'/../resources/dist/curator.js',
+            'plugin-curator-' . static::$version => __DIR__.'/../resources/dist/curator.js',
         ];
     }
 }
