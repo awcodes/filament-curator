@@ -82,11 +82,11 @@
                         <div class="flex items-center w-full mt-3">
                             <x-filament::button type="button" size="sm" color="secondary" class="!rounded-l-lg !rounded-r-none flex-1" x-on:click="flipHorizontally" x-tooltip.raw="{{ __('curator::views.curation.flip_horizontally') }}">
                                 <span class="sr-only">{{ __('curator::views.curation.flip_horizontally') }}</span>
-                                <svg class="w-4 h-4" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m3 7l5 5l-5 5V7m18 0l-5 5l5 5V7m-9 13v2m0-8v2m0-8v2m0-8v2"/></svg>
+                                <svg class="w-4 h-4" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m17 3l-5 5l-5-5h10m0 18l-5-5l-5 5h10M4 12H2m8 0H8m8 0h-2m8 0h-2"/></svg>
                             </x-filament::button>
                             <x-filament::button type="button" size="sm" color="secondary" class="!rounded-r-lg !rounded-l-none flex-1" x-on:click="flipVertically" x-tooltip.raw="{{ __('curator::views.curation.flip_vertically') }}">
                                 <span class="sr-only">{{ __('curator::views.curation.flip_vertically') }}</span>
-                                <svg class="w-4 h-4" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m17 3l-5 5l-5-5h10m0 18l-5-5l-5 5h10M4 12H2m8 0H8m8 0h-2m8 0h-2"/></svg>
+                                <svg class="w-4 h-4" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m3 7l5 5l-5 5V7m18 0l-5 5l5 5V7m-9 13v2m0-8v2m0-8v2m0-8v2"/></svg>
                             </x-filament::button>
                         </div>
 
@@ -107,7 +107,7 @@
                     </div>
 
                     <div class="flex items-center justify-start gap-3 py-3 px-4 border-t border-gray-300 bg-gray-200 dark:border-gray-800 dark:bg-black/10">
-                        <x-filament::button type="button" size="sm" color="success" x-on:click="saveCuration()">
+                        <x-filament::button type="button" size="sm" color="success" x-on:click="saveCuration()" wire:target="saveCuration" wire:loading="saveCuration">
                             {{ __('curator::views.curation.save_curation') }}
                         </x-filament::button>
                     </div>

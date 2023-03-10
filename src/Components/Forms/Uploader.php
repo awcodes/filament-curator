@@ -30,6 +30,7 @@ class Uploader extends FileUpload
 
             if (Curator::isResizable($extension)) {
                 $image = Image::make($file->getRealPath());
+                $image->orientate();
                 $width = $image->getWidth();
                 $height = $image->getHeight();
                 $exif = $image->exif();
