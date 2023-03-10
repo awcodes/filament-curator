@@ -2,6 +2,14 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.2.7 - 2023-03-10
+
+### What's Changed
+
+- Fix: exif orientation and flipping by @awcodes in https://github.com/awcodes/filament-curator/pull/125
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.2.6...v2.2.7
+
 ## v2.2.6 - 2023-03-07
 
 ### What's Changed
