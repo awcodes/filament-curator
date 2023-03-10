@@ -25,11 +25,35 @@ class CuratorCuration extends Component
 //        dd($data);
         $image = Image::make(Storage::disk($this->media->disk)->path($this->media->path));
 
+        ray($data);
+
         $aspectWidth = floor(($data['canvasData']['width'] / $data['canvasData']['naturalWidth']) * $data['width']);
         $aspectHeight = floor(($data['canvasData']['height'] / $data['canvasData']['naturalHeight']) * $data['height']);
 
-        $image->rotate($data['rotate'])
-            ->crop($data['width'], $data['height'], $data['x'], $data['y'])
+        $image->orientate();
+
+        if ($image->exif('Orientation') > 1) {
+            $rotateCorrection = match ($image->exif('Orientation')) {
+                3, 4 => 180,
+                5, 6 => 90,
+                7, 8 => 270,
+                default => 0
+            };
+
+            $image->rotate($rotateCorrection - $data['rotate']);
+        } else {
+            $image->rotate($data['rotate']);
+        }
+
+        if ($data['scaleX'] === -1) {
+            $image->flip('v');
+        }
+
+        if ($data['scaleY'] === -1) {
+            $image->flip('h');
+        }
+
+        $image->crop($data['width'], $data['height'], $data['x'], $data['y'])
             ->resize($aspectWidth, $aspectHeight)
             ->encode($data['format'] ?? 'jpg', $data['quality'] ?? 60);
 
