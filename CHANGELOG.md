@@ -2,6 +2,14 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.2.8 - 2023-03-11
+
+### What's Changed
+
+- Fix references to filename by @howdu in https://github.com/awcodes/filament-curator/pull/127
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.2.7...v2.2.8
+
 ## v2.2.7 - 2023-03-10
 
 ### What's Changed
