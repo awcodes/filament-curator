@@ -16,7 +16,7 @@
         <video controls src="{{ $record['url'] }}"></video>
     @else
         <x-curator::document-image
-            label="{{ $record['filename'] }}"
+            label="{{ $record['name'] }}"
             icon-size="xl"
             class="p-4 rounded"
             :type="$record['type']"
