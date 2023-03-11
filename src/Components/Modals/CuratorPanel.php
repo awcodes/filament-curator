@@ -106,7 +106,7 @@ class CuratorPanel extends Component implements HasForms
     {
         $item = Media::where('id', $this->selected['id'])->first();
 
-        return Storage::disk($item['disk'])->download($item['filename']);
+        return Storage::disk($item['disk'])->download($item['path']);
     }
 
     public function setCurrentFile(array|null $media): void

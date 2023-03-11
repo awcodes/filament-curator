@@ -18,7 +18,7 @@
             />
         @else
             <x-curator::document-image
-                :label="$record->filename"
+                :label="$record->alt"
                 icon-size="lg"
                 :type="$record->type"
                 :extension="$record->ext"
