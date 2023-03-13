@@ -1,4 +1,4 @@
-<div x-data="curator({statePath: '{{ $statePath , types: @js($acceptedFileTypes)}}'})"
+<div x-data="curator({statePath: '{{ $statePath }}', types: @js($acceptedFileTypes)})"
      x-on:clear-selected="selected = null"
      x-on:insert-media.window="$dispatch('close-modal', { id: '{{ $modalId }}' })"
      x-on:new-media-added.window="addNewFile($event.detail.media)"
