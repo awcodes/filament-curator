@@ -35,10 +35,17 @@ class MediaController extends Controller
 
     public function search(Request $request)
     {
-        $files = Media::where('name', 'like', '%'.$request->q.'%')
-            ->orWhere('alt', 'like', '%'.$request->q.'%')
-            ->orWhere('caption', 'like', '%'.$request->q.'%')
-            ->orWhere('description', 'like', '%'.$request->q.'%')
+        $types = $request->types;
+        $query = Media::where( function($q) use ($request){
+          return  $q->where('name', 'like', '%'.$request->q.'%')
+        ->orWhere('alt', 'like', '%'.$request->q.'%')
+        ->orWhere('caption', 'like', '%'.$request->q.'%')
+        ->orWhere('description', 'like', '%'.$request->q.'%');
+        });
+        if($types!=null && count($types)>0){
+            $query->whereIn('type', $types);
+        }
+        $files = $query
             ->paginate(50);
 
         $files->each(function($item) {

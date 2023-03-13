@@ -48,7 +48,12 @@ document.addEventListener("alpine:init", () => {
         },
         searchFiles: async function(event) {
             this.isFetching = true;
-            const response = await fetch('/curator/media/search?q=' + event.target.value);
+            var url = '/curator/media/search?q=' + event.target.value;
+            if(this.types.length > 0){
+                let indicator = url.includes('?') ? '&' : '?';
+                url = url + indicator + 'types[]=' + this.types.join('&types[]=');
+            }
+            const response = await fetch(url);
             const result = await response.json();
             this.files = result.data;
             this.isFetching = false;
