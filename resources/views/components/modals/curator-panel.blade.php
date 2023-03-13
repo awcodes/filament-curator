@@ -1,12 +1,12 @@
-<div x-data="curator({statePath: '{{ $statePath }}'})"
+<div x-data="curator({statePath: '{{ $statePath , types: @js($acceptedFileTypes)}}'})"
      x-on:clear-selected="selected = null"
      x-on:insert-media.window="$dispatch('close-modal', { id: '{{ $modalId }}' })"
      x-on:new-media-added.window="addNewFile($event.detail.media)"
      x-on:remove-media.window="removeFile($event.detail.media)"
-     class="curator h-full absolute inset-0 flex flex-col"
+     class="absolute inset-0 flex flex-col h-full curator"
 >
 
-    <div class="flex-1 relative flex flex-col lg:flex-row overflow-hidden">
+    <div class="relative flex flex-col flex-1 overflow-hidden lg:flex-row">
         <div
             x-show="isFetching"
             class="absolute inset-0 z-10 grid place-content-center bg-gray-300/50 dark:bg-gray-900/50"
@@ -23,7 +23,7 @@
             </svg>
         </div> <!--loading -->
 
-        <div class="flex-1 h-full overflow-auto p-4">
+        <div class="flex-1 h-full p-4 overflow-auto">
             <ul class="grid grid-cols-3 gap-4 sm:grid-cols-4 md:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10">
 
                 <template x-for="file in files">
@@ -49,15 +49,15 @@
                                     'curator-document-image grid place-items-center w-full h-full text-xs uppercase relative',
                                 ])>
                                     <template x-if="file.type.includes('video')">
-                                        <div class="relative grid place-items-center w-full h-full">
+                                        <div class="relative grid w-full h-full place-items-center">
                                             @svg('heroicon-o-video-camera', ['class' => 'w-16 h-16 opacity-20'])
-                                            <span class="block absolute" x-text="file.ext"></span>
+                                            <span class="absolute block" x-text="file.ext"></span>
                                         </div>
                                     </template>
                                     <template x-if="!file.type.includes('video')">
-                                        <div class="relative grid place-items-center w-full h-full">
+                                        <div class="relative grid w-full h-full place-items-center">
                                             @svg('heroicon-o-document', ['class' => 'w-16 h-16 opacity-20'])
-                                            <span class="block absolute" x-text="file.ext"></span>
+                                            <span class="absolute block" x-text="file.ext"></span>
                                         </div>
                                     </template>
                                     <span class="sr-only"><span x-text="file.name"></span></span>
@@ -65,7 +65,7 @@
                             </template>
                         </button>
 
-                        <p x-text="file.name" class="text-xs truncate absolute bottom-0 inset-x-0 px-1 pb-1 pt-4 text-white bg-gradient-to-t from-black/80 to-transparent pointer-events-none"></p>
+                        <p x-text="file.name" class="absolute inset-x-0 bottom-0 px-1 pt-4 pb-1 text-xs text-white truncate pointer-events-none bg-gradient-to-t from-black/80 to-transparent"></p>
 
                         <button
                             type="button"
@@ -112,7 +112,7 @@
 
         <div class="w-full lg:h-full lg:max-w-xs overflow-auto bg-gray-100 dark:bg-gray-900/30 flex flex-col shadow-top lg:shadow-none z-[1]">
 
-            <label class="border-b border-gray-300 dark:border-gray-800 relative">
+            <label class="relative border-b border-gray-300 dark:border-gray-800">
                 <span class="sr-only">{{ __('curator::views.panel.search_label') }}</span>
                 @svg('heroicon-o-search', 'w-4 h-4 absolute top-3 left-3 rtl:left-0 rtl:right-3 dark:text-gray-500')
                 <input
@@ -120,21 +120,21 @@
                     wire:ignore
                     placeholder="{{ __('curator::views.panel.search_placeholder') }}"
                     x-on:input.debounce.500ms="searchFiles()"
-                    class="block w-full transition pl-10 rtl:pl-3 rtl:pr-10 duration-75 border-none focus:ring-1 focus:ring-inset focus:ring-primary-600 disabled:opacity-70 dark:bg-black/10 dark:text-white"
+                    class="block w-full pl-10 transition duration-75 border-none rtl:pl-3 rtl:pr-10 focus:ring-1 focus:ring-inset focus:ring-primary-600 disabled:opacity-70 dark:bg-black/10 dark:text-white"
                 />
             </label>
 
             <div x-show="! selected" class="flex-1 overflow-hidden">
                 <div class="flex flex-col h-full overflow-y-auto">
-                    <h4 class="font-bold py-2 px-4 mb-0">
+                    <h4 class="px-4 py-2 mb-0 font-bold">
                         {{ __('curator::views.panel.add_files') }}
                     </h4>
 
-                    <div class="flex-1 overflow-auto px-4 pb-4">
+                    <div class="flex-1 px-4 pb-4 overflow-auto">
                         {{ $this->addMediaForm }}
                     </div>
 
-                    <div class="flex items-center justify-start gap-3 py-3 px-4 border-t border-gray-300 bg-gray-200 dark:border-gray-800 dark:bg-black/10">
+                    <div class="flex items-center justify-start gap-3 px-4 py-3 bg-gray-200 border-t border-gray-300 dark:border-gray-800 dark:bg-black/10">
                         <x-filament::button
                             type="button"
                             size="sm"
@@ -151,13 +151,13 @@
 
                <div class="flex flex-col h-full overflow-y-auto">
 
-                    <h4 class="font-bold py-2 px-4 mb-0">
+                    <h4 class="px-4 py-2 mb-0 font-bold">
                         {{ __('curator::views.panel.edit_media') }}
                     </h4>
 
-                    <div class="flex-1 overflow-auto px-4 pb-4">
+                    <div class="flex-1 px-4 pb-4 overflow-auto">
 
-                        <div class="flex justify-center mb-4 overflow-hidden border border-gray-300 rounded dark:border-gray-700 checkered h-48 flex-shrink-0 relative">
+                        <div class="relative flex justify-center flex-shrink-0 h-48 mb-4 overflow-hidden border border-gray-300 rounded dark:border-gray-700 checkered">
                             <template x-if="selected?.type.includes('image')">
                                 <img
                                     x-bind:src="selected?.url"
@@ -175,9 +175,9 @@
                                         <video controls x-bind:src="selected?.url"></video>
                                     </template>
                                     <template x-if="!selected?.type.includes('video')">
-                                        <div class="relative grid place-items-center w-full h-full">
+                                        <div class="relative grid w-full h-full place-items-center">
                                             @svg('heroicon-o-document', ['class' => 'w-16 h-16 opacity-20'])
-                                            <span class="block absolute" x-text="selected?.ext"></span>
+                                            <span class="absolute block" x-text="selected?.ext"></span>
                                             <span class="sr-only"><span x-text="selected?.name"></span></span>
                                         </div>
                                     </template>
@@ -188,7 +188,7 @@
                                     x-bind:href="selected?.url"
                                     target="_blank"
                                     rel="noopener nofollow"
-                                    class="flex items-center justify-center flex-none w-10 h-10 transition text-gray-600 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400"
+                                    class="flex items-center justify-center flex-none w-10 h-10 text-gray-600 transition hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400"
                                     x-tooltip.raw="{{ __('curator::views.panel.view') }}"
                                 >
                                     @svg('heroicon-s-eye', 'w-4 h-4')
@@ -219,7 +219,7 @@
                         {{ $this->editMediaForm }}
                     </div>
 
-                    <div class="flex items-center justify-start gap-3 py-3 px-4 border-t border-gray-300 bg-gray-200 dark:border-gray-800 dark:bg-black/10">
+                    <div class="flex items-center justify-start gap-3 px-4 py-3 bg-gray-200 border-t border-gray-300 dark:border-gray-800 dark:bg-black/10">
 
                         <x-filament::button
                             type="button"
