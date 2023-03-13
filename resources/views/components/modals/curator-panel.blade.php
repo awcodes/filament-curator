@@ -119,7 +119,7 @@
                     type="search"
                     wire:ignore
                     placeholder="{{ __('curator::views.panel.search_placeholder') }}"
-                    x-on:input.debounce.500ms="searchFiles()"
+                    x-on:input.debounce.500ms="searchFiles($event)"
                     class="block w-full pl-10 transition duration-75 border-none rtl:pl-3 rtl:pr-10 focus:ring-1 focus:ring-inset focus:ring-primary-600 disabled:opacity-70 dark:bg-black/10 dark:text-white"
                 />
             </label>
