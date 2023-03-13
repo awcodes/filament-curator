@@ -2,6 +2,19 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.2.9 - 2023-03-13
+
+### What's Changed
+
+- Chore: add types and drop to db migration stubs by @awcodes in https://github.com/awcodes/filament-curator/pull/134
+- Fix: image preview not working by @aymanalareqi in https://github.com/awcodes/filament-curator/pull/132
+
+### New Contributors
+
+- @aymanalareqi made their first contribution in https://github.com/awcodes/filament-curator/pull/132
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.2.8...v2.2.9
+
 ## v2.2.8 - 2023-03-11
 
 ### What's Changed
