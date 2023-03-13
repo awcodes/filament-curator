@@ -225,7 +225,7 @@ class Curator
 
     public function glideSourcePathPrefix(string $prefix = 'public'): static
     {
-        $this->glideCachePathPrefix = $prefix;
+        $this->glideSourcePathPrefix = $prefix;
 
         return $this;
     }
