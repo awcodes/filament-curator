@@ -3,7 +3,7 @@
 namespace Awcodes\Curator;
 
 use Awcodes\Curator\Commands\UpgradeCommand;
-use Awcodes\Curator\Facades\Curator;
+use Awcodes\Curator\Facades\Curator as CuratorFacade;
 use Awcodes\Curator\Models\Media;
 use Awcodes\Curator\Observers\MediaObserver;
 use Composer\InstalledVersions;
@@ -49,7 +49,7 @@ class CuratorServiceProvider extends PluginServiceProvider
     {
         parent::packageBooted();
 
-        Curator::getMediaModel()::observe(MediaObserver::class);
+        app('curator')->getMediaModel()::observe(MediaObserver::class);
 
         Livewire::component('curator-panel', Components\Modals\CuratorPanel::class);
         Livewire::component('curator-curation', Components\Modals\CuratorCuration::class);
