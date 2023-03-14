@@ -2,6 +2,7 @@
 
 namespace Awcodes\Curator\View\Components;
 
+use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Models\Media;
 use Closure;
 use Illuminate\Contracts\View\View;
@@ -49,7 +50,7 @@ class Glider extends Component
         public string|null $watermarkAlpha = null,
     ) {
         if (! $media instanceof Media) {
-            $this->media = Media::where('id', $media)->first();
+            $this->media = Curator::getMediaModel()::where('id', $media)->first();
         }
     }
 

@@ -4,6 +4,7 @@ namespace Awcodes\Curator\Components\Forms;
 
 use Awcodes\Curator\Actions\DownloadAction;
 use Awcodes\Curator\Actions\PickerAction;
+use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Models\Media;
 use Closure;
 use Exception;
@@ -168,7 +169,7 @@ class CuratorPicker extends Field
 
     public function getCurrentItem(): Model|Collection|null
     {
-        return Media::where('id', $this->getState())->first();
+        return Curator::getMediaModel()::where('id', $this->getState())->first();
     }
 
     public function getButtonLabel(): string|Htmlable|null

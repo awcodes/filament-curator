@@ -2,6 +2,7 @@
 
 namespace Awcodes\Curator\View\Components;
 
+use Awcodes\Curator\Facades\Curator;
 use Closure;
 use Awcodes\Curator\Models\Media;
 use Illuminate\Contracts\View\View;
@@ -16,7 +17,7 @@ class Curation extends Component
         public string|null $curation = null,
     ) {
         if (! $media instanceof Media) {
-            $this->media = Media::where('id', $media)->first();
+            $this->media = Curator::getMediaModel()::where('id', $media)->first();
         }
 
         if ($this->media) {
