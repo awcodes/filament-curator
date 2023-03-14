@@ -1,4 +1,4 @@
-<div x-data="curator({statePath: '{{ $statePath }}'})"
+<div x-data="curator({statePath: '{{ $statePath }}', types: @js($acceptedFileTypes)})"
      x-on:clear-selected="selected = null"
      x-on:insert-media.window="$dispatch('close-modal', { id: '{{ $modalId }}' })"
      x-on:new-media-added.window="addNewFile($event.detail.media)"
@@ -119,7 +119,7 @@
                     type="search"
                     wire:ignore
                     placeholder="{{ __('curator::views.panel.search_placeholder') }}"
-                    x-on:input.debounce.500ms="searchFiles()"
+                    x-on:input.debounce.500ms="searchFiles($event)"
                     class="block w-full transition pl-10 rtl:pl-3 rtl:pr-10 duration-75 border-none focus:ring-1 focus:ring-inset focus:ring-primary-600 disabled:opacity-70 dark:bg-black/10 dark:text-white"
                 />
             </label>
