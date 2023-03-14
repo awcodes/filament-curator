@@ -5,6 +5,7 @@ namespace Awcodes\Curator\Resources;
 use Awcodes\Curator\Components\Forms\CuratorEditor;
 use Awcodes\Curator\Components\Forms\Uploader;
 use Awcodes\Curator\Components\Tables\CuratorColumn;
+use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Models\Media;
 use Exception;
 use Filament\Forms;
@@ -18,7 +19,10 @@ use Illuminate\Support\Str;
 
 class MediaResource extends Resource
 {
-    protected static ?string $model = Media::class;
+    public static function getModel(): string
+    {
+        return Curator::getMediaModel();
+    }
 
     public static function getModelLabel(): string
     {
