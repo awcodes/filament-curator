@@ -8,9 +8,7 @@ A media picker/manager plugin for Filament Admin.
 > **Warning**
 > This package does not work with Spatie Media Library.
 
-![Upload View](./images/2.x/dark-gallery.png)
-![Gallery View](./images/2.x/dark-gallery-selected.png)
-![Field View](./images/2.x/dark-field.png)
+![curator-og](https://user-images.githubusercontent.com/3596800/225419661-a0431c1b-957d-466f-a94d-a73a40b11d72.png)
 
 ## Installation
 
