@@ -2,6 +2,7 @@
 
 namespace Awcodes\Curator;
 
+use Awcodes\Curator\Models\Media;
 use Closure;
 use Filament\Support\Concerns\EvaluatesClosures;
 use Illuminate\Support\Facades\Session;
@@ -68,6 +69,8 @@ class Curator
     protected Server|ServerFactory|null $glideServer = null;
 
     protected string $glideDriver = 'gd';
+
+    protected string $mediaModel = Media::class;
 
     public function resourceLabel(string|Closure $label): static
     {
@@ -258,6 +261,13 @@ class Curator
         return $this;
     }
 
+    public function mediaModel(string $model): static
+    {
+        $this->mediaModel = $model;
+
+        return $this;
+    }
+
     public function getResourceLabel(): string
     {
         return $this->evaluate($this->resourceLabel);
@@ -414,5 +424,10 @@ class Curator
         }
 
         return $this->glideServer;
+    }
+
+    public function getMediaModel(): string
+    {
+        return $this->mediaModel;
     }
 }

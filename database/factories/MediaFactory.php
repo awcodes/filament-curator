@@ -2,12 +2,16 @@
 
 namespace Awcodes\Curator\Database\Factories;
 
+use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Models\Media;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class MediaFactory extends Factory
 {
-    protected $model = Media::class;
+    public function modelName(): string
+    {
+        return Curator::getMediaModel();
+    }
 
     public function asDocument(): Factory
     {

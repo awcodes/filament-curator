@@ -3,6 +3,7 @@
 namespace Awcodes\Curator\Components\Modals;
 
 use Awcodes\Curator\Components\Forms\Uploader;
+use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Models\Media;
 use Awcodes\Curator\Resources\MediaResource;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -104,7 +105,7 @@ class CuratorPanel extends Component implements HasForms
 
     public function download(): StreamedResponse
     {
-        $item = Media::where('id', $this->selected['id'])->first();
+        $item = Curator::getMediaModel()::where('id', $this->selected['id'])->first();
 
         return Storage::disk($item['disk'])->download($item['path']);
     }
@@ -112,7 +113,7 @@ class CuratorPanel extends Component implements HasForms
     public function setCurrentFile(array|null $media): void
     {
         if ($media) {
-            $item = Media::firstWhere('id', $media['id']);
+            $item = Curator::getMediaModel()::firstWhere('id', $media['id']);
             if ($item) {
                 $this->editMediaForm->fill([
                     'name' => $item->name,
@@ -143,7 +144,7 @@ class CuratorPanel extends Component implements HasForms
                 });
             }
 
-            $media[] = Media::create($item);
+            $media[] = Curator::getMediaModel()::create($item);
         }
 
         $this->addMediaForm->fill();

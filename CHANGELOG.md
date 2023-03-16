@@ -2,6 +2,20 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.3.0 - 2023-03-14
+
+### What's Changed
+
+- Added German Translation by @martinmildner in https://github.com/awcodes/filament-curator/pull/135
+- Feature: Customize media table by @danharrin in https://github.com/awcodes/filament-curator/pull/136
+
+### New Contributors
+
+- @martinmildner made their first contribution in https://github.com/awcodes/filament-curator/pull/135
+- @danharrin made their first contribution in https://github.com/awcodes/filament-curator/pull/136
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.2.9...v2.3.0
+
 ## v2.2.9 - 2023-03-13
 
 ### What's Changed

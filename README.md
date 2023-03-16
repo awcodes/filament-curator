@@ -8,9 +8,7 @@ A media picker/manager plugin for Filament Admin.
 > **Warning**
 > This package does not work with Spatie Media Library.
 
-![Upload View](./images/2.x/dark-gallery.png)
-![Gallery View](./images/2.x/dark-gallery-selected.png)
-![Field View](./images/2.x/dark-field.png)
+![curator-og](https://user-images.githubusercontent.com/3596800/225419661-a0431c1b-957d-466f-a94d-a73a40b11d72.png)
 
 ## Installation
 
@@ -76,7 +74,8 @@ public function register()
         ->glideCachePathPrefix(string)
         ->glideServer(Server|ServerFactory)
         ->glideMaxImageSize(int)
-        ->glideDriver(string);
+        ->glideDriver(string)
+        ->mediaModel(string);
 }
 ```
 
@@ -262,15 +261,15 @@ To make it as easy as possible to output your curations, Curator comes with an
 <x-curator-curation :media="10" curation="thumbnail" loading="lazy" />
 ```
 
-### Custom Model and Resources
+### Custom Resource
 
-Should you need to override the default Model and Resources, it is recommended
-that you swap your own model and resources in the service container.
+Should you need to override the default Resource, it is recommended
+that you use the service container.
 
 ```php
-use Awcodes\Curator\Models\Media;
+use Awcodes\Curator\Resources\MediaResource;
 
-class YourNotAsCoolMediaModel extends Media
+class YourNotAsCoolMediaResource extends MediaResource
 {
     // ... custom methods and properties
 }
@@ -278,7 +277,7 @@ class YourNotAsCoolMediaModel extends Media
 // and in a service provider
 public function register()
 {
-    $this->app->bind(Media::class, fn() => new YourNotAsCoolMediaModel());
+    $this->app->bind(MediaResource::class, fn() => new YourNotAsCoolMediaResource());
 }
 ```
 
