@@ -22,10 +22,7 @@ class CuratorCuration extends Component
 
     public function saveCuration($data = null): void
     {
-//        dd($data);
         $image = Image::make(Storage::disk($this->media->disk)->path($this->media->path));
-
-        ray($data);
 
         $aspectWidth = floor(($data['canvasData']['width'] / $data['canvasData']['naturalWidth']) * $data['width']);
         $aspectHeight = floor(($data['canvasData']['height'] / $data['canvasData']['naturalHeight']) * $data['height']);
