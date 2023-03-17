@@ -14,5 +14,5 @@
     :image-crop-aspect-ratio="$imageCropAspectRatio"
     :image-resize-target-width="$imageResizeTargetWidth"
     :image-resize-target-height="$imageResizeTargetHeight"
-    :selected="$selected"
+    :selected="$selected ?? null"
 />
