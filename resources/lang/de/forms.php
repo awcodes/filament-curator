@@ -8,8 +8,8 @@ return [
         'meta' => 'Meta',
         'preview' => 'Vorschau',
         'upload_new' => 'Neu hochladen',
-        'upload_new_helper' => 'Wenn Sie Curations für diese Datei haben, müssen Sie diese möglicherweise neu erstellen. Dies geschieht nicht automatisch.',
-        'curation' => 'Curation',
+        'upload_new_helper' => 'Varianten müssen nach dem Hochladen einer neuen Datei manuell neu angelegt werden.',
+        'curation' => 'Varianten',
     ],
     'fields' => [
         'alt' => 'Alternativer Text',
@@ -21,9 +21,9 @@ return [
         'name' => 'Name',
     ],
     'notices' => [
-        'success' => 'Element erfolgreich aktualisiert.',
+        'success' => 'Erfolgreich aktualisiert.',
     ],
     'curations' => [
-        'button_label' => 'Curation erstellen'
-    ]
+        'button_label' => 'Variante erstellen',
+    ],
 ];
