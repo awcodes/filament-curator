@@ -10,6 +10,7 @@ use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Livewire\Component;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -52,6 +53,8 @@ class CuratorPanel extends Component implements HasForms
     public $imageResizeTargetWidth;
 
     public $imageResizeTargetHeight;
+
+    public $mediaId = null;
 
     public function mount()
     {
