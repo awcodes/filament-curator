@@ -1,14 +1,14 @@
 import Cropper from 'cropperjs'
 
 document.addEventListener("alpine:init", () => {
-    Alpine.data('curator', ({ statePath }) => ({
+    Alpine.data('curator', ({ statePath, initialSelection = null }) => ({
         statePath,
         selected: null,
         files: [],
         nextPageUrl: null,
         isFetching: false,
-        init() {
-            this.getFiles('/curator/media');
+        async init() {
+            await this.getFiles('/curator/media', initialSelection?.id);
             const observer = new IntersectionObserver(
                 ([e]) => {
                     if (e.isIntersecting) {
@@ -21,6 +21,9 @@ document.addEventListener("alpine:init", () => {
                 }
             );
             observer.observe(this.$refs.loadMore);
+            if (initialSelection) {
+                this.setSelected(initialSelection.id)
+            }
         },
         getFiles: async function(url = '/curator/media', selected = null) {
             if (selected) {
