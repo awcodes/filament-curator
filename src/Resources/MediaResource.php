@@ -89,7 +89,7 @@ class MediaResource extends Resource
                                         Forms\Components\Repeater::make('curations')
                                             ->label(__('curator::forms.sections.curation'))
                                             ->disableLabel()
-											->disableItemMovement()
+                                            ->disableItemMovement()
                                             ->itemLabel(fn ($state): ?string => $state['curation']['key'] ?? null)
                                             ->collapsible()
                                             ->schema([
@@ -247,7 +247,7 @@ class MediaResource extends Resource
                 }),
             Forms\Components\TextInput::make('alt')
                 ->label(__('curator::forms.fields.alt'))
-                ->hint(fn (): HtmlString => new HtmlString('<a href="https://www.w3.org/WAI/tutorials/images/decision-tree" class="filament-link" target="_blank">'.__('curator::forms.fields.alt_hint').'</a>')),
+                ->hint(fn (): HtmlString => new HtmlString('<a href="https://www.w3.org/WAI/tutorials/images/decision-tree" class="filament-link" target="_blank">' . __('curator::forms.fields.alt_hint') . '</a>')),
             Forms\Components\TextInput::make('title')
                 ->label(__('curator::forms.fields.title')),
             Forms\Components\Textarea::make('caption')
