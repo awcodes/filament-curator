@@ -89,6 +89,7 @@ class MediaResource extends Resource
                                         Forms\Components\Repeater::make('curations')
                                             ->label(__('curator::forms.sections.curation'))
                                             ->disableLabel()
+											->disableItemMovement()
                                             ->itemLabel(fn ($state): ?string => $state['curation']['key'] ?? null)
                                             ->collapsible()
                                             ->schema([
