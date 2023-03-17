@@ -2,6 +2,14 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.4.0 - 2023-03-17
+
+### What's Changed
+
+- Feature: set pre-selected media from tiptap-editor action by @awcodes in https://github.com/awcodes/filament-curator/pull/140
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.3.1...v2.4.0
+
 ## v2.3.1 - 2023-03-17
 
 ### What's Changed
