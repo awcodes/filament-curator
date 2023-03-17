@@ -2,6 +2,15 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.3.1 - 2023-03-17
+
+### What's Changed
+
+- Remove dd() and ray() by @martinmildner in https://github.com/awcodes/filament-curator/pull/137
+- Fixed some more German translations and added disableItemMovement to repeater by @martinmildner in https://github.com/awcodes/filament-curator/pull/138
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.3.0...v2.3.1
+
 ## v2.3.0 - 2023-03-14
 
 ### What's Changed
