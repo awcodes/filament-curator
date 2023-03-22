@@ -40,6 +40,9 @@
         "spatie/laravel-ray": "^1.26"
     },
     "autoload": {
+        "files": [
+            "src/helpers.php"
+        ],
         "psr-4": {
             "Awcodes\\Curator\\": "src",
             "Awcodes\\Curator\\Database\\Factories\\": "database/factories"
