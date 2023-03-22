@@ -2,6 +2,15 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.4.1 - 2023-03-22
+
+### What's Changed
+
+- Bump aglipanci/laravel-pint-action from 2.1.0 to 2.2.0 by @dependabot in https://github.com/awcodes/filament-curator/pull/141
+- Various updates and add helpers by @awcodes in https://github.com/awcodes/filament-curator/pull/143
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.4.0...v2.4.1
+
 ## v2.4.0 - 2023-03-17
 
 ### What's Changed
