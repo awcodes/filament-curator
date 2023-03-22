@@ -261,6 +261,23 @@ To make it as easy as possible to output your curations, Curator comes with an
 <x-curator-curation :media="10" curation="thumbnail" loading="lazy" />
 ```
 
+### Practical use case
+
+Since curations may or may not exist for each media item it's good to use a fallback to the glider component in your blade file so images always get rendered appropriately. This also keeps you from having to create curations for every media item, only the ones where you're trying to change the focal point, etc.
+
+```html
+@if ($media->hasCuration('thumbnail'))
+    <x-curator-curation :media="$media" curation="thumbnail" />
+@else
+    <x-curator-glider
+        class="object-cover w-auto"
+        :media="$media"
+        :width="curator()->preset('thumbnail')['width']"
+        :height="curator()->preset('thumbnail')['height']"
+    />
+@endif
+```
+
 ### Custom Resource
 
 Should you need to override the default Resource, it is recommended

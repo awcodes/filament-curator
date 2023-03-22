@@ -83,4 +83,11 @@ class Media extends Model
             return $item['curation']['key'] === $key;
         }))['curation'] ?? [];
     }
+
+    public function hasCuration(string $key): bool
+    {
+        return (bool) Arr::first(collect($this->curations)->filter(function ($item) use ($key) {
+            return $item['curation']['key'] === $key;
+        }));
+    }
 }

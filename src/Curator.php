@@ -430,4 +430,9 @@ class Curator
     {
         return $this->mediaModel;
     }
+
+    public function preset(string $key): ?array
+    {
+        return collect($this->getCurationPresets())->where('key', $key)->sole();
+    }
 }

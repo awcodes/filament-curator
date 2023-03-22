@@ -64,6 +64,7 @@ use League\Glide\ServerFactory;
  * @method static string getGlideDriver()
  * @method static Server|ServerFactory|null getGlideServer()
  * @method static string getMediaModel()
+ * @method static array|null preset(string $key)
  *
  * @see \Awcodes\Curator\Curator
  */

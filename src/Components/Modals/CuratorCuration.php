@@ -2,11 +2,9 @@
 
 namespace Awcodes\Curator\Components\Modals;
 
-use Awcodes\Curator\Models\Curation;
 use Awcodes\Curator\Models\Media;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
 use Intervention\Image\Facades\Image;
 use Livewire\Component;
 
