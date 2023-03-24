@@ -2,6 +2,15 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.4.2 - 2023-03-24
+
+### What's Changed
+
+- Fix: Upload required on create by @howdu in https://github.com/awcodes/filament-curator/pull/145
+- Fix: Column thumbnail with custom width/height by @howdu in https://github.com/awcodes/filament-curator/pull/146
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.4.1...v2.4.2
+
 ## v2.4.1 - 2023-03-22
 
 ### What's Changed
