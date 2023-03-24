@@ -69,6 +69,7 @@ class MediaResource extends Resource
                             ->hiddenOn('edit')
                             ->schema([
                                 static::getUploaderField()
+                                    ->required()
                             ]),
                         Forms\Components\Tabs::make('image')
                             ->hiddenOn('create')
