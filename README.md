@@ -97,6 +97,7 @@ CuratorPicker::make(string $fieldName)
     ->size('sm|md|lg') // defaults to md
     ->constrained(true|false) // defaults to false (forces image to fit inside 
     the preview area)
+    ->contained(true|false) // defaults to false (forces image to stay contained within the preview area)
     ->pathGenerator(DatePathGenerator::class|UserPathGenerator::class) // see path generators below
     // see https://filamentphp.com/docs/2.x/forms/fields#file-upload for more information about the following methods
     ->preserveFilenames()
