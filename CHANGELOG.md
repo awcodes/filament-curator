@@ -2,6 +2,14 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.5.0 - 2023-03-31
+
+### What's Changed
+
+- Feat: Support fallback images for glider blade component by @awcodes in https://github.com/awcodes/filament-curator/pull/151
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.4.3...v2.5.0
+
 ## v2.4.3 - 2023-03-31
 
 ### What's Changed
