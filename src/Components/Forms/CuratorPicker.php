@@ -29,6 +29,8 @@ class CuratorPicker extends Field
 
     protected bool|Closure|null $isConstrained = false;
 
+    protected bool|Closure|null $isContained = false;
+
     protected string|Closure|null $curatorDiskName = 'public';
 
     protected string|Closure|null $curatorDirectory = 'media';
@@ -93,6 +95,13 @@ class CuratorPicker extends Field
     public function constrained(bool|Closure|null $condition = true): static
     {
         $this->isConstrained = $condition;
+
+        return $this;
+    }
+
+    public function contained(bool | Closure $condition = true): static
+    {
+        $this->isContained = $condition;
 
         return $this;
     }
@@ -180,6 +189,11 @@ class CuratorPicker extends Field
     public function isConstrained(): bool
     {
         return $this->evaluate($this->isConstrained);
+    }
+
+    public function isContained(): bool
+    {
+        return $this->evaluate($this->isContained);
     }
 
     public function getDirectory(): ?string
