@@ -5,6 +5,7 @@ namespace Awcodes\Curator;
 use Awcodes\Curator\Models\Media;
 use Closure;
 use Filament\Support\Concerns\EvaluatesClosures;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Session;
 use League\Flysystem\Filesystem;
 use League\Flysystem\Local\LocalFilesystemAdapter;
@@ -71,6 +72,8 @@ class Curator
     protected string $glideDriver = 'gd';
 
     protected string $mediaModel = Media::class;
+
+    protected array|null $gliderFallbacks = [];
 
     public function resourceLabel(string|Closure $label): static
     {
@@ -268,6 +271,13 @@ class Curator
         return $this;
     }
 
+    public function gliderFallbacks(array|null $fallbacks): static
+    {
+        $this->gliderFallbacks = $fallbacks;
+
+        return $this;
+    }
+
     public function getResourceLabel(): string
     {
         return $this->evaluate($this->resourceLabel);
@@ -434,5 +444,17 @@ class Curator
     public function preset(string $key): ?array
     {
         return collect($this->getCurationPresets())->where('key', $key)->sole();
+    }
+
+    public function getGliderFallbacks(): ?array
+    {
+        return collect($this->gliderFallbacks)->map(function($preset) {
+            return $preset->getFallback();
+        })->toArray();
+    }
+
+    public function getGliderFallback(string $key): ?array
+    {
+        return collect($this->getGliderFallbacks())->where('key', $key)->sole();
     }
 }
