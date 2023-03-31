@@ -34,7 +34,6 @@
                 'relative block w-full overflow-hidden transition duration-75 border border-gray-300 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 dark:text-white flex justify-center checkered',
                 'h-64' => ! str($currentItem['type'])->contains('video'),
             ]) }}>
-
                 @if (str($currentItem['type'])->contains('image'))
                     <img
                         src="{{ $currentItem['url'] }}"
@@ -42,7 +41,8 @@
                          @class([
                             'h-full',
                             'object-fit' => $isConstrained(),
-                            'object-cover w-full' => ! $isConstrained(),
+                            'object-cover w-full' => ! $isConstrained() && ! $isContained(),
+                            'object-contain' => $isContained(),
                         ])
                     />
                 @elseif (str($currentItem['type'])->contains('video'))
