@@ -56,7 +56,8 @@ public function register()
         ->registerNavigation(bool|Closure|null)
         ->tableHasIconActions(bool|Closure|null)
         ->tableHasGridLayout(bool|Closure|null)
-        ->curationPresets(array|null)
+        ->curationPresets(array|null)        
+        ->gliderFallbacks(array|null)
         ->preserveFilenames(bool|Closure)
         ->acceptedFileTypes(array|Closure)
         ->maxWidth(int|Closure)
@@ -216,6 +217,7 @@ See [Glide's quick reference](https://glide.thephpleague.com/2.0/api/quick-refer
         class="object-cover w-auto"
         :media="1"
         glide=""
+        fallback=""
         :srcset="['1024w','640w']"
         sizes="(max-width: 1200px) 100vw, 1024px"
         background=""
@@ -246,6 +248,28 @@ See [Glide's quick reference](https://glide.thephpleague.com/2.0/api/quick-refer
         watermark-alpha=""
     />
 </div>
+```
+
+#### Fallback Images
+
+Glider allows for a fallback image to be used if the media item does not 
+exist. This can be set by passing in the `fallback` attribute referencing 
+one of your registered `GliderFallback`s.
+
+```php
+use Awcodes\Curator\GliderFallback;
+
+Curator::gliderFallbacks([
+    GliderFallback::make(key: 'thumbnail')
+        ->source('defaults/thumbnail.jpg')
+        ->alt('party at LaraconIN')
+        ->width(200)
+        ->height(200),
+]);
+```
+
+```html
+<x-curator-glider :media="1" fallback="thumbnail" />
 ```
 
 ### Curation Blade Component
