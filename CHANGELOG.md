@@ -2,6 +2,19 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.5.1 - 2023-04-02
+
+### What's Changed
+
+- Chore: Use contain instead of fit by @martin-ro in https://github.com/awcodes/filament-curator/pull/153
+- Fix: Can't make an image with S3 drive by @hientt53 in https://github.com/awcodes/filament-curator/pull/154
+
+### New Contributors
+
+- @hientt53 made their first contribution in https://github.com/awcodes/filament-curator/pull/154
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.5.0...v2.5.1
+
 ## v2.5.0 - 2023-03-31
 
 ### What's Changed
