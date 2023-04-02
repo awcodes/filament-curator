@@ -41,7 +41,7 @@
                         alt="{{ $currentItem['alt'] }}"
                          @class([
                             'h-full',
-                            'object-fit' => $isConstrained(),
+                            'object-contain' => $isConstrained(),
                             'object-cover w-full' => ! $isConstrained(),
                         ])
                     />
