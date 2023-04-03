@@ -2,6 +2,14 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.5.2 - 2023-04-03
+
+### What's Changed
+
+- Fix: Local saving bug by @awcodes in https://github.com/awcodes/filament-curator/pull/155
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.5.1...v2.5.2
+
 ## v2.5.1 - 2023-04-02
 
 ### What's Changed
