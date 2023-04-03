@@ -29,7 +29,12 @@ class Uploader extends FileUpload
             $storeMethod = $component->getVisibility() === 'public' ? 'storePubliclyAs' : 'storeAs';
 
             if (Curator::isResizable($extension)) {
-                $content = Storage::disk($file->disk)->get($file->path());
+                if (in_array($file->disk, curator()->getCloudDisks())) {
+                    $content = Storage::disk($file->disk)->get($file->path());
+                } else {
+                    $content = $file->getRealPath();
+                }
+
                 $image = Image::make($content);
                 $image->orientate();
                 $width = $image->getWidth();
