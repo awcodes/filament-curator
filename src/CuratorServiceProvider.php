@@ -3,8 +3,6 @@
 namespace Awcodes\Curator;
 
 use Awcodes\Curator\Commands\UpgradeCommand;
-use Awcodes\Curator\Facades\Curator as CuratorFacade;
-use Awcodes\Curator\Models\Media;
 use Awcodes\Curator\Observers\MediaObserver;
 use Composer\InstalledVersions;
 use Filament\PluginServiceProvider;

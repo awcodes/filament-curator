@@ -8,9 +8,15 @@ class CurationPreset
 
     protected string $name;
 
-    protected int $width;
+    protected string $label;
+
+    protected string $format = 'jpg';
 
     protected int $height;
+
+    protected int $quality = 60;
+
+    protected int $width;
 
     public static function make(string $name): static
     {
@@ -20,6 +26,9 @@ class CurationPreset
         return $static;
     }
 
+    /**
+     * @deprecated Use label() instead
+     */
     public function name(string $name): static
     {
         $this->name = $name;
@@ -27,9 +36,9 @@ class CurationPreset
         return $this;
     }
 
-    public function width(int $width): static
+    public function format(string $format): static
     {
-        $this->width = $width;
+        $this->format = $format;
 
         return $this;
     }
@@ -41,13 +50,36 @@ class CurationPreset
         return $this;
     }
 
+    public function label(string $label): static
+    {
+        $this->label = $label;
+
+        return $this;
+    }
+
+    public function quality(int $quality): static
+    {
+        $this->quality = $quality;
+
+        return $this;
+    }
+
+    public function width(int $width): static
+    {
+        $this->width = $width;
+
+        return $this;
+    }
+
     public function getPreset(): array
     {
         return [
             'key' => $this->key,
-            'name' => $this->name,
+            'name' => $this->label ?? $this->name,
             'width' => $this->width,
             'height' => $this->height,
+            'format' => $this->format,
+            'quality' => $this->quality,
         ];
     }
 }

@@ -25,16 +25,6 @@ class MediaAction extends Action
             $media = $src !== ''
                 ? Curator::getMediaModel()::firstWhere('name', Str::of($src)->afterLast('/')->beforeLast('.'))
                 : null;
-
-//            ray($component->getLivewire()->mediaProps);
-
-//            $form->fill([
-//                'src' => $source,
-//                'alt' => $component->getLivewire()->mediaProps['alt'],
-//                'title' => $component->getLivewire()->mediaProps['title'],
-//                'width' => $component->getLivewire()->mediaProps['width'],
-//                'height' => $component->getLivewire()->mediaProps['height'],
-//            ]);
         });
 
         $this->modalWidth('screen');

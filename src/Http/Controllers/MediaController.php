@@ -3,7 +3,6 @@
 namespace Awcodes\Curator\Http\Controllers;
 
 use Awcodes\Curator\Facades\Curator;
-use Awcodes\Curator\Models\Media;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use League\Glide\Filesystem\FileNotFoundException;
@@ -33,10 +32,10 @@ class MediaController extends Controller
 
     public function search(Request $request)
     {
-        $files = Curator::getMediaModel()::where('name', 'like', '%'.$request->q.'%')
-            ->orWhere('alt', 'like', '%'.$request->q.'%')
-            ->orWhere('caption', 'like', '%'.$request->q.'%')
-            ->orWhere('description', 'like', '%'.$request->q.'%')
+        $files = Curator::getMediaModel()::where('name', 'like', '%'.$request->query('q').'%')
+            ->orWhere('alt', 'like', '%'.$request->query('q').'%')
+            ->orWhere('caption', 'like', '%'.$request->query('q').'%')
+            ->orWhere('description', 'like', '%'.$request->query('q').'%')
             ->paginate(50);
 
         $files->each(function($item) {

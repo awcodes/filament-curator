@@ -189,9 +189,20 @@ Curations are a way to create custom sizes and focal points for your images. Aft
 use Awcodes\Curator\CurationPreset;
 
 Curator::curationPresets([
-    CurationPreset::make(name: 'thumbnail')->width(200)->height(200)->name('Thumbnail'),
-    CurationPreset::make(name: 'avatar')->width(420)->height(420)->name('Avatar'),
-    CurationPreset::make(name: 'hero')->width(1024)->height(320)->name('Hero'),
+    CurationPreset::make('thumbnail')
+        ->label('Thumbnail')
+        ->width(200)
+        ->height(200)
+        ->format('webp')
+        ->quality(80),
+    CurationPreset::make('hero')
+        ->label('Hero')
+        ->width(960)
+        ->height(300),
+    CurationPreset::make(name: 'og-image')
+        ->label('OG Image')
+        ->width(1200)
+        ->height(630),
 ]);
 ```
 

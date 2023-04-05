@@ -3,7 +3,6 @@
 namespace Awcodes\Curator\Actions;
 
 use Awcodes\Curator\Components\Forms\CuratorEditor;
-use Awcodes\Curator\Models\Media;
 use Filament\Forms\Components\Actions\Action;
 use Livewire\Component;
 

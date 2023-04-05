@@ -10,14 +10,14 @@
 
     <div class="flex-1 relative flex flex-col lg:flex-row overflow-hidden">
 
-        <div class="flex-1 lg:h-full overflow-auto p-4">
-            <div class="h-full">
+        <div class="flex-1 w-full lg:h-full overflow-auto p-4">
+            <div class="h-full w-full">
                 <img
                     x-ref="image"
                     src="{{ $media->url }}"
                     x-on:ready="setData()"
                     x-on:crop="updateData()"
-                    class="h-full"
+                    class="h-full w-auto"
                 />
             </div>
         </div>

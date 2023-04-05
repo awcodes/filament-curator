@@ -1,8 +1,13 @@
 import Cropper from 'cropperjs'
 
 document.addEventListener("alpine:init", () => {
-    Alpine.data('curator', ({ statePath, initialSelection = null }) => ({
+    Alpine.data('curator', ({
         statePath,
+        types,
+        initialSelection = null
+    }) => ({
+        statePath,
+        types,
         selected: null,
         files: [],
         nextPageUrl: null,
@@ -118,6 +123,8 @@ document.addEventListener("alpine:init", () => {
                 if ($value === 'custom') {
                     this.cropper.reset()
                     this.key = null;
+                    this.format = 'jpg';
+                    this.quality = 60;
                 } else {
                     let containerData = this.cropper.getContainerData();
                     let cropBoxData = this.cropper.getCropBoxData();
@@ -128,6 +135,8 @@ document.addEventListener("alpine:init", () => {
                     let top = Math.round((containerData.height - height) / 2);
                     this.cropper.setCropBoxData({...cropBoxData, left, top, width, height});
                     this.key = preset.key;
+                    this.format = preset.format;
+                    this.quality = preset.quality;
                 }
             })
         },

@@ -3,7 +3,6 @@
 namespace Awcodes\Curator\Facades;
 
 use Closure;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Facade;
 use League\Glide\Server;
 use League\Glide\ServerFactory;
