@@ -2,6 +2,15 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.5.3 - 2023-04-05
+
+### What's Changed
+
+- Feature: honor file types in picker by @awcodes in https://github.com/awcodes/filament-curator/pull/158
+- Fix: cropper initialize in curation panel @awcodes in https://github.com/awcodes/filament-curator/pull/158
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.5.2...v2.5.3
+
 ## v2.5.2 - 2023-04-03
 
 ### What's Changed
