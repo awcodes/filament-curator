@@ -2,11 +2,10 @@
 
 namespace Awcodes\Curator\Resources\MediaResource;
 
-use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Resources\MediaResource;
+use Exception;
 use Filament\Pages\Actions\Action;
 use Filament\Resources\Pages\ListRecords;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
 
@@ -19,6 +18,9 @@ class ListMedia extends ListRecords
         return Str::headline(app('curator')->getPluralResourceLabel());
     }
 
+    /**
+     * @throws Exception
+     */
     protected function getActions(): array
     {
         return array_merge(

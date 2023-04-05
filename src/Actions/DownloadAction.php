@@ -4,7 +4,6 @@ namespace Awcodes\Curator\Actions;
 
 use Awcodes\Curator\Components\Forms\CuratorPicker;
 use Awcodes\Curator\Facades\Curator;
-use Awcodes\Curator\Models\Media;
 use Filament\Forms\Components\Actions\Action;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;

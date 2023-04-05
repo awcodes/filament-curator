@@ -5,7 +5,6 @@ namespace Awcodes\Curator\Components\Forms;
 use Awcodes\Curator\Actions\DownloadAction;
 use Awcodes\Curator\Actions\PickerAction;
 use Awcodes\Curator\Facades\Curator;
-use Awcodes\Curator\Models\Media;
 use Closure;
 use Exception;
 use Filament\Forms\Components\Field;

@@ -30,17 +30,6 @@ class MediaObserver
     }
 
     /**
-     * Handle the Media "created" event.
-     *
-     * @param Media $media
-     * @return void
-     */
-    public function created(Media $media): void
-    {
-        //
-    }
-
-    /**
      * Handle the Media "updating" event.
      *
      * @param Media $media
@@ -77,17 +66,6 @@ class MediaObserver
     }
 
     /**
-     * Handle the Media "updated" event.
-     *
-     * @param Media $media
-     * @return void
-     */
-    public function updated(Media $media): void
-    {
-        //
-    }
-
-    /**
      * Handle the Media "deleted" event.
      *
      * @param  Media  $media
@@ -104,28 +82,6 @@ class MediaObserver
         if (count(Storage::disk($media->disk)->allFiles($media->directory)) == 0) {
             Storage::disk($media->disk)->deleteDirectory($media->directory);
         }
-    }
-
-    /**
-     * Handle the Media "restored" event.
-     *
-     * @param  Media  $media
-     * @return void
-     */
-    public function restored(Media $media): void
-    {
-        //
-    }
-
-    /**
-     * Handle the Media "forceDeleted" event.
-     *
-     * @param Media $media
-     * @return void
-     */
-    public function forceDeleted(Media $media): void
-    {
-        //
     }
 
     private function hasMediaUpload($media): bool

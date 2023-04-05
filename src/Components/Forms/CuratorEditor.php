@@ -3,18 +3,13 @@
 namespace Awcodes\Curator\Components\Forms;
 
 use Awcodes\Curator\Actions\CurationAction;
-use Awcodes\Curator\Models\Curation;
-use Awcodes\Curator\Models\Media;
 use Closure;
 use Exception;
 use Filament\Forms\Components\Field;
 use Filament\Support\Actions\Concerns\CanBeOutlined;
 use Filament\Support\Actions\Concerns\HasColor;
 use Filament\Support\Actions\Concerns\HasSize;
-use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Htmlable;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Collection;
 
 class CuratorEditor extends Field
 {

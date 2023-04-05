@@ -1,5 +1,6 @@
 <div x-data="curator({
     statePath: '{{ $statePath }}',
+    types: @js($acceptedFileTypes),
     initialSelection: @js($selected)
 })"
      x-on:clear-selected="selected = null"
@@ -31,11 +32,14 @@
 
                 <template x-for="file in files">
 
-                    <li x-bind:key="file.id" class="relative aspect-square" x-bind:class="{'opacity-40': selected && selected.id !== file.id }">
+                    <li x-bind:key="file.id" class="relative aspect-square"
+                        x-bind:class="{'opacity-40': (selected && selected.id !== file.id) || ! types.includes(file.type) }"
+                    >
 
                         <button
                             type="button"
                             x-on:click.prevent="setSelected(file.id)"
+                            x-bind:disabled="! types.includes(file.type)"
                             class="block w-full h-full overflow-hidden bg-gray-700 rounded-sm"
                         >
                             <template x-if="file.type.includes('image')">
@@ -122,7 +126,7 @@
                     type="search"
                     wire:ignore
                     placeholder="{{ __('curator::views.panel.search_placeholder') }}"
-                    x-on:input.debounce.500ms="searchFiles()"
+                    x-on:input.debounce.500ms="searchFiles($event)"
                     class="block w-full transition pl-10 rtl:pl-3 rtl:pr-10 duration-75 border-none focus:ring-1 focus:ring-inset focus:ring-primary-600 disabled:opacity-70 dark:bg-black/10 dark:text-white"
                 />
             </label>
