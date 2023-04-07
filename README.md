@@ -345,6 +345,16 @@ content: [
 ]
 ```
 
+### Editing the views
+
+You can publish the views using
+
+```bash
+php artisan vendor:publish --provider="Awcodes\Curator\CuratorServiceProvider" --tag=views
+```
+
+then edit them from your `resources/views/vendor/curator` folder.
+
 ## Testing
 
 ```bash

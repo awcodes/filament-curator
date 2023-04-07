@@ -43,6 +43,18 @@ class CuratorServiceProvider extends PluginServiceProvider
         $this->app->singleton('curator', fn (): Curator => new Curator());
     }
 
+    public function boot()
+    {
+        $this->publishes([
+            __DIR__ . '/../resources/views' =>
+            base_path('resources/views/vendor/curator')
+        ], 'views');
+
+        $this->loadViewsFrom(__DIR__ . '../resources/views', 'views');
+
+        parent::boot();
+    }
+
     public function packageBooted(): void
     {
         parent::packageBooted();
