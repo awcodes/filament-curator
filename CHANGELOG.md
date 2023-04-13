@@ -2,6 +2,14 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.5.4 - 2023-04-13
+
+### What's Changed
+
+- Check for empty state before querying database by @howdu in https://github.com/awcodes/filament-curator/pull/160
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.5.3...v2.5.4
+
 ## v2.5.3 - 2023-04-05
 
 ### What's Changed
