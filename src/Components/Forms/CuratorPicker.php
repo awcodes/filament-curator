@@ -168,6 +168,10 @@ class CuratorPicker extends Field
 
     public function getCurrentItem(): Model|Collection|null
     {
+        if (! filled($this->getState())) {
+            return null;
+        }
+
         return Curator::getMediaModel()::where('id', $this->getState())->first();
     }
 
