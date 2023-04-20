@@ -8,8 +8,8 @@ use Closure;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Str;
 use Illuminate\View\Component;
-use League\Glide\Urls\UrlBuilder;
 use League\Glide\Urls\UrlBuilderFactory;
+use stdClass;
 
 class Glider extends Component
 {
@@ -18,7 +18,7 @@ class Glider extends Component
     public string|null $sourceSet = null;
 
     public function __construct(
-        public int|Media|null $media,
+        public int|Media|stdClass|null $media,
         public string|null $glide = null,
         public array|null $srcset = null,
         public string|null $sizes = null,
@@ -48,9 +48,14 @@ class Glider extends Component
         public string|null $watermarkPadding = null,
         public string|null $watermarkPosition = null,
         public string|null $watermarkAlpha = null,
+        public string|null $fallback = null,
     ) {
         if (! $media instanceof Media) {
             $this->media = Curator::getMediaModel()::where('id', $media)->first();
+
+            if (! $this->media && $this->fallback) {
+                $this->media = (object) curator()->getGliderFallback($this->fallback);
+            }
         }
     }
 
@@ -58,38 +63,42 @@ class Glider extends Component
     {
         $params = array_filter(array_merge(
             [
-            'bg' => $this->background,
-            'blur' => $this->blur,
-            'border' => $this->border,
-            'bri' => $this->brightness,
-            'con' => $this->contrast,
-            'crop' => $this->crop,
-            'dpr' => $this->devicePixelRatio,
-            'filt' => $this->filter,
-            'fit' => $this->fit,
-            'flip' => $this->flip,
-            'fm' => $this->format,
-            'gam' => $this->gamma,
-            'h' => $this->height,
-            'q' => $this->quality,
-            'or' => $this->orientation,
-            'pixel' => $this->pixelate,
-            'sharp' => $this->sharpen,
-            'w' => $this->width,
-            'mark' => $this->watermarkPath,
-            'markw' => $this->watermarkWidth,
-            'markh' => $this->watermarkHeight,
-            'markx' => $this->watermarkXOffset,
-            'marky' => $this->watermarkYOffset,
-            'markpad' => $this->watermarkPadding,
-            'markpos' => $this->watermarkPosition,
-            'markalpha' => $this->watermarkAlpha,
-        ],
+                'bg' => $this->background,
+                'blur' => $this->blur,
+                'border' => $this->border,
+                'bri' => $this->brightness,
+                'con' => $this->contrast,
+                'crop' => $this->crop,
+                'dpr' => $this->devicePixelRatio,
+                'filt' => $this->filter,
+                'fit' => $this->fit,
+                'flip' => $this->flip,
+                'fm' => $this->format,
+                'gam' => $this->gamma,
+                'h' => $this->height,
+                'q' => $this->quality,
+                'or' => $this->orientation,
+                'pixel' => $this->pixelate,
+                'sharp' => $this->sharpen,
+                'w' => $this->width,
+                'mark' => $this->watermarkPath,
+                'markw' => $this->watermarkWidth,
+                'markh' => $this->watermarkHeight,
+                'markx' => $this->watermarkXOffset,
+                'marky' => $this->watermarkYOffset,
+                'markpad' => $this->watermarkPadding,
+                'markpos' => $this->watermarkPosition,
+                'markalpha' => $this->watermarkAlpha,
+            ],
             $overrides
         ));
 
-        $urlBuilder = UrlBuilderFactory::create('/curator/', config('app.key'));
-        return $urlBuilder->getUrl($this->media->path, $params);
+        if ($this->media) {
+            $urlBuilder = UrlBuilderFactory::create('/curator/', config('app.key'));
+            return $urlBuilder->getUrl($this->media->path, $params);
+        }
+
+        return '';
     }
 
     public function buildSrcSet(): ?string

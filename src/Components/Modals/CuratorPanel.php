@@ -4,11 +4,12 @@ namespace Awcodes\Curator\Components\Modals;
 
 use Awcodes\Curator\Components\Forms\Uploader;
 use Awcodes\Curator\Facades\Curator;
-use Awcodes\Curator\Models\Media;
+use Awcodes\Curator\Generators\PathGenerator;
 use Awcodes\Curator\Resources\MediaResource;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -17,41 +18,41 @@ class CuratorPanel extends Component implements HasForms
 {
     use InteractsWithForms;
 
-    public $selected = null;
+    public Model|null $selected = null;
 
-    public $data;
+    public array $data = [];
 
-    public $statePath;
+    public string|null $statePath;
 
-    public $modalId;
+    public string $modalId;
 
-    public $state = null;
+    public string|null $directory;
 
-    public $directory;
+    public PathGenerator|null $pathGenerator = null;
 
-    public $pathGenerator;
+    public bool $shouldPreserveFilenames = false;
 
-    public $shouldPreserveFilenames;
+    public int|null $maxWidth = null;
 
-    public $maxWidth;
+    public int|null $minSize = null;
 
-    public $minSize;
+    public int|null $maxSize = null;
 
-    public $maxSize;
+    public array $validationRules = [];
 
-    public $validationRules = [];
+    public array $acceptedFileTypes = [];
 
-    public $acceptedFileTypes = [];
+    public string $diskName = 'public';
 
-    public $diskName;
+    public string $visibility = 'public';
 
-    public $visibility;
+    public string|null $imageCropAspectRatio = null;
 
-    public $imageCropAspectRatio;
+    public int|null $imageResizeTargetWidth = null;
 
-    public $imageResizeTargetWidth;
+    public int|null $imageResizeTargetHeight = null;
 
-    public $imageResizeTargetHeight;
+    public int|null $mediaId = null;
 
     public function mount()
     {

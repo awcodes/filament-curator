@@ -35,6 +35,7 @@ use League\Glide\ServerFactory;
  * @method static glideServer(Server|ServerFactory|null $server)
  * @method static glideMaxImageSize(int $size)
  * @method static glideDriver(string $driver)
+ * @method static gliderFallbacks(array|null $fallbacks)
  * @method static mediaModel(string $model)
  * @method static string getResourceLabel()
  * @method static string getPluralResourceLabel()
@@ -64,6 +65,9 @@ use League\Glide\ServerFactory;
  * @method static string getGlideDriver()
  * @method static Server|ServerFactory|null getGlideServer()
  * @method static string getMediaModel()
+ * @method static array|null preset(string $key)
+ * @method static array|null getGliderFallbacks()
+ * @method static array|null getGliderFallback(string $key)
  *
  * @see \Awcodes\Curator\Curator
  */

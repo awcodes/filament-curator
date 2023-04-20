@@ -2,6 +2,99 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.5.4 - 2023-04-13
+
+### What's Changed
+
+- Check for empty state before querying database by @howdu in https://github.com/awcodes/filament-curator/pull/160
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.5.3...v2.5.4
+
+## v2.5.3 - 2023-04-05
+
+### What's Changed
+
+- Feature: honor file types in picker by @awcodes in https://github.com/awcodes/filament-curator/pull/158
+- Fix: cropper initialize in curation panel @awcodes in https://github.com/awcodes/filament-curator/pull/158
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.5.2...v2.5.3
+
+## v2.5.2 - 2023-04-03
+
+### What's Changed
+
+- Fix: Local saving bug by @awcodes in https://github.com/awcodes/filament-curator/pull/155
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.5.1...v2.5.2
+
+## v2.5.1 - 2023-04-02
+
+### What's Changed
+
+- Chore: Use contain instead of fit by @martin-ro in https://github.com/awcodes/filament-curator/pull/153
+- Fix: Can't make an image with S3 drive by @hientt53 in https://github.com/awcodes/filament-curator/pull/154
+
+### New Contributors
+
+- @hientt53 made their first contribution in https://github.com/awcodes/filament-curator/pull/154
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.5.0...v2.5.1
+
+## v2.5.0 - 2023-03-31
+
+### What's Changed
+
+- Feat: Support fallback images for glider blade component by @awcodes in https://github.com/awcodes/filament-curator/pull/151
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.4.3...v2.5.0
+
+## v2.4.3 - 2023-03-31
+
+### What's Changed
+
+- Update .gitattributes by @lakuapik in https://github.com/awcodes/filament-curator/pull/148
+
+### New Contributors
+
+- @lakuapik made their first contribution in https://github.com/awcodes/filament-curator/pull/148
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.4.2...v2.4.3
+
+## v2.4.2 - 2023-03-24
+
+### What's Changed
+
+- Fix: Upload required on create by @howdu in https://github.com/awcodes/filament-curator/pull/145
+- Fix: Column thumbnail with custom width/height by @howdu in https://github.com/awcodes/filament-curator/pull/146
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.4.1...v2.4.2
+
+## v2.4.1 - 2023-03-22
+
+### What's Changed
+
+- Bump aglipanci/laravel-pint-action from 2.1.0 to 2.2.0 by @dependabot in https://github.com/awcodes/filament-curator/pull/141
+- Various updates and add helpers by @awcodes in https://github.com/awcodes/filament-curator/pull/143
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.4.0...v2.4.1
+
+## v2.4.0 - 2023-03-17
+
+### What's Changed
+
+- Feature: set pre-selected media from tiptap-editor action by @awcodes in https://github.com/awcodes/filament-curator/pull/140
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.3.1...v2.4.0
+
+## v2.3.1 - 2023-03-17
+
+### What's Changed
+
+- Remove dd() and ray() by @martinmildner in https://github.com/awcodes/filament-curator/pull/137
+- Fixed some more German translations and added disableItemMovement to repeater by @martinmildner in https://github.com/awcodes/filament-curator/pull/138
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.3.0...v2.3.1
+
 ## v2.3.0 - 2023-03-14
 
 ### What's Changed

@@ -1,14 +1,19 @@
 import Cropper from 'cropperjs'
 
 document.addEventListener("alpine:init", () => {
-    Alpine.data('curator', ({ statePath }) => ({
+    Alpine.data('curator', ({
         statePath,
+        types,
+        initialSelection = null
+    }) => ({
+        statePath,
+        types,
         selected: null,
         files: [],
         nextPageUrl: null,
         isFetching: false,
-        init() {
-            this.getFiles('/curator/media');
+        async init() {
+            await this.getFiles('/curator/media', initialSelection?.id);
             const observer = new IntersectionObserver(
                 ([e]) => {
                     if (e.isIntersecting) {
@@ -21,6 +26,9 @@ document.addEventListener("alpine:init", () => {
                 }
             );
             observer.observe(this.$refs.loadMore);
+            if (initialSelection) {
+                this.setSelected(initialSelection.id)
+            }
         },
         getFiles: async function(url = '/curator/media', selected = null) {
             if (selected) {
@@ -115,6 +123,8 @@ document.addEventListener("alpine:init", () => {
                 if ($value === 'custom') {
                     this.cropper.reset()
                     this.key = null;
+                    this.format = 'jpg';
+                    this.quality = 60;
                 } else {
                     let containerData = this.cropper.getContainerData();
                     let cropBoxData = this.cropper.getCropBoxData();
@@ -125,6 +135,8 @@ document.addEventListener("alpine:init", () => {
                     let top = Math.round((containerData.height - height) / 2);
                     this.cropper.setCropBoxData({...cropBoxData, left, top, width, height});
                     this.key = preset.key;
+                    this.format = preset.format;
+                    this.quality = preset.quality;
                 }
             })
         },

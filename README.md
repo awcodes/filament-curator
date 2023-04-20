@@ -56,7 +56,8 @@ public function register()
         ->registerNavigation(bool|Closure|null)
         ->tableHasIconActions(bool|Closure|null)
         ->tableHasGridLayout(bool|Closure|null)
-        ->curationPresets(array|null)
+        ->curationPresets(array|null)        
+        ->gliderFallbacks(array|null)
         ->preserveFilenames(bool|Closure)
         ->acceptedFileTypes(array|Closure)
         ->maxWidth(int|Closure)
@@ -188,9 +189,20 @@ Curations are a way to create custom sizes and focal points for your images. Aft
 use Awcodes\Curator\CurationPreset;
 
 Curator::curationPresets([
-    CurationPreset::make(name: 'thumbnail')->width(200)->height(200)->name('Thumbnail'),
-    CurationPreset::make(name: 'avatar')->width(420)->height(420)->name('Avatar'),
-    CurationPreset::make(name: 'hero')->width(1024)->height(320)->name('Hero'),
+    CurationPreset::make('thumbnail')
+        ->label('Thumbnail')
+        ->width(200)
+        ->height(200)
+        ->format('webp')
+        ->quality(80),
+    CurationPreset::make('hero')
+        ->label('Hero')
+        ->width(960)
+        ->height(300),
+    CurationPreset::make(name: 'og-image')
+        ->label('OG Image')
+        ->width(1200)
+        ->height(630),
 ]);
 ```
 
@@ -216,6 +228,7 @@ See [Glide's quick reference](https://glide.thephpleague.com/2.0/api/quick-refer
         class="object-cover w-auto"
         :media="1"
         glide=""
+        fallback=""
         :srcset="['1024w','640w']"
         sizes="(max-width: 1200px) 100vw, 1024px"
         background=""
@@ -248,6 +261,28 @@ See [Glide's quick reference](https://glide.thephpleague.com/2.0/api/quick-refer
 </div>
 ```
 
+#### Fallback Images
+
+Glider allows for a fallback image to be used if the media item does not 
+exist. This can be set by passing in the `fallback` attribute referencing 
+one of your registered `GliderFallback`s.
+
+```php
+use Awcodes\Curator\GliderFallback;
+
+Curator::gliderFallbacks([
+    GliderFallback::make(key: 'thumbnail')
+        ->source('defaults/thumbnail.jpg')
+        ->alt('party at LaraconIN')
+        ->width(200)
+        ->height(200),
+]);
+```
+
+```html
+<x-curator-glider :media="1" fallback="thumbnail" />
+```
+
 ### Curation Blade Component
 
 To make it as easy as possible to output your curations, Curator comes with an
@@ -259,6 +294,23 @@ To make it as easy as possible to output your curations, Curator comes with an
 
 ```html
 <x-curator-curation :media="10" curation="thumbnail" loading="lazy" />
+```
+
+### Practical use case
+
+Since curations may or may not exist for each media item it's good to use a fallback to the glider component in your blade file so images always get rendered appropriately. This also keeps you from having to create curations for every media item, only the ones where you're trying to change the focal point, etc.
+
+```html
+@if ($media->hasCuration('thumbnail'))
+    <x-curator-curation :media="$media" curation="thumbnail" />
+@else
+    <x-curator-glider
+        class="object-cover w-auto"
+        :media="$media"
+        :width="curator()->preset('thumbnail')['width']"
+        :height="curator()->preset('thumbnail')['height']"
+    />
+@endif
 ```
 
 ### Custom Resource

@@ -17,7 +17,7 @@
             @if ($isImage())
                 @php
                     $urlBuilder = \League\Glide\Urls\UrlBuilderFactory::create('/curator/', config('app.key'));
-                    $url = $urlBuilder->getUrl($media->path, ['w' => 50, 'h' => 50, 'fit' => 'crop', 'fm' => 'webp']);
+                    $url = $urlBuilder->getUrl($media->path, ['w' => $width, 'h' => $height, 'fit' => 'crop', 'fm' => 'webp']);
                 @endphp
                 <img
                     src="{{ $url }}"
@@ -25,7 +25,7 @@
                         {!! $height !== null ? "height: {$height};" : null !!}
                         {!! $width !== null ? "width: {$width};" : null !!}
                     "
-                    @class(['object-cover object-center' => $isRounded()])
+                    @class(['object-cover object-center' => $isRounded() || $width || $height])
                     {{ $getExtraImgAttributeBag() }}
                 />
             @else

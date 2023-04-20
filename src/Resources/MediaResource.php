@@ -6,14 +6,12 @@ use Awcodes\Curator\Components\Forms\CuratorEditor;
 use Awcodes\Curator\Components\Forms\Uploader;
 use Awcodes\Curator\Components\Tables\CuratorColumn;
 use Awcodes\Curator\Facades\Curator;
-use Awcodes\Curator\Models\Media;
 use Exception;
 use Filament\Forms;
 use Filament\Resources\Form;
 use Filament\Resources\Resource;
 use Filament\Resources\Table;
 use Filament\Tables;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 
@@ -69,6 +67,7 @@ class MediaResource extends Resource
                             ->hiddenOn('edit')
                             ->schema([
                                 static::getUploaderField()
+                                    ->required()
                             ]),
                         Forms\Components\Tabs::make('image')
                             ->hiddenOn('create')
