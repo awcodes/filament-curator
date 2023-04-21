@@ -3,8 +3,13 @@
         <img
             src="{{ $source }}"
             alt="{{ $media->alt }}"
-            width="{{ $media->width }}"
-            height="{{ $media->height }}"
+            @if ($width && $height)
+                width="{{ $width }}"
+                height="{{ $height }}"
+            @else
+                width="{{ $media->width }}"
+                height="{{ $media->height }}"
+            @endif
             @if ($sourceSet)
                 srcset="{{ $sourceSet }}"
                 sizes="{{ $sizes }}"
