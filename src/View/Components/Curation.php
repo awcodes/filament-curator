@@ -6,6 +6,7 @@ use Awcodes\Curator\Facades\Curator;
 use Closure;
 use Awcodes\Curator\Models\Media;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\Component;
 
 class Curation extends Component
@@ -32,6 +33,8 @@ class Curation extends Component
      */
     public function render(): View|string|Closure
     {
+        $this->curatedMedia['url'] = Storage::disk($this->curatedMedia['disk'])->url($this->curatedMedia['path']);
+
         return function (array $data) {
             return 'curator::components.curation';
         };
