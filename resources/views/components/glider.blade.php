@@ -1,7 +1,3 @@
-@props([
-    "width" => null,
-    "height" => null,
-])
 @if ($media)
     @if (str($media->type)->contains('image'))
         <img
