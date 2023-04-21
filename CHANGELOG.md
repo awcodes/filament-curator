@@ -2,6 +2,16 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.5.5 - 2023-04-21
+
+### What's Changed
+
+- Fix translation for button by @martinmildner in https://github.com/awcodes/filament-curator/pull/162
+- Feature: Glider use passed width/height for image size by @howdu in https://github.com/awcodes/filament-curator/pull/161
+- Fix: curation component url generation by @awcodes in https://github.com/awcodes/filament-curator/pull/163
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.5.4...v2.5.5
+
 ## v2.5.4 - 2023-04-13
 
 ### What's Changed
