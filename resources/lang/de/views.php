@@ -55,7 +55,7 @@ return [
         'drag_mode' => 'Drag Modus',
         'crop_mode' => 'Crop Modus',
         'reset' => 'Zurücksetzen',
-        'save_curation' => 'Curation speichern',
+        'save_curation' => 'Variante speichern',
         'height' => 'Höhe',
         'width' => 'Breite',
         'format' => 'Format',
