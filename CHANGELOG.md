@@ -2,6 +2,14 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.5.6 - 2023-04-24
+
+### What's Changed
+
+- Fix: exif malformed utf-8 characters by @howdu in https://github.com/awcodes/filament-curator/pull/168
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.5.5...v2.5.6
+
 ## v2.5.5 - 2023-04-21
 
 ### What's Changed
