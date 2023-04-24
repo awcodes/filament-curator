@@ -20,6 +20,15 @@ class MediaObserver
             foreach ($media->file as $k => $v) {
                 if ($k === 'name') {
                     $media->{$k} = $v->toString();
+                } elseif ($k === 'exif') {
+                    // Fix malformed utf-8 characters
+                    array_walk_recursive($v, function(&$entry){
+                        if(!mb_detect_encoding($entry, 'utf-8', true)){
+                            $entry = utf8_encode($entry);
+                        }
+                    });
+
+                    $media->{$k} = $v;
                 } else {
                     $media->{$k} = $v;
                 }
