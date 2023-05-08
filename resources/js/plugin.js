@@ -113,11 +113,11 @@ document.addEventListener("alpine:init", () => {
         init() {
             this.destroy();
 
-            this.$nextTick(() => {
+            setTimeout(() => {
                 this.cropper = new Cropper(this.$refs.image, {
                     background: false,
                 });
-            });
+            }, 100);
             
             this.$watch('preset', ($value) => {
                 if ($value === 'custom') {
