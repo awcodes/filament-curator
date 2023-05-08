@@ -18,7 +18,7 @@ class CuratorPanel extends Component implements HasForms
 {
     use InteractsWithForms;
 
-    public Model|null $selected = null;
+    public array $selected = [];
 
     public array $data = [];
 
@@ -54,7 +54,7 @@ class CuratorPanel extends Component implements HasForms
 
     public int|null $mediaId = null;
 
-    public function mount()
+    public function mount(): void
     {
         $this->addMediaForm->fill();
         $this->editMediaForm->fill();

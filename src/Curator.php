@@ -5,6 +5,8 @@ namespace Awcodes\Curator;
 use Awcodes\Curator\Models\Media;
 use Closure;
 use Filament\Support\Concerns\EvaluatesClosures;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Session;
 use League\Glide\Responses\LaravelResponseFactory;
 use League\Glide\Server;
@@ -453,5 +455,12 @@ class Curator
     public function getGliderFallback(string $key): ?array
     {
         return collect($this->getGliderFallbacks())->where('key', $key)->sole();
+    }
+
+    public function getMedia(array|Media|int $ids): Collection
+    {
+        $ids = Arr::wrap($ids);
+
+        return $this->mediaModel::whereIn('id', $ids)->orderByRaw('FIELD(id, '.implode(', ', $ids).')')->get();
     }
 }

@@ -14,6 +14,7 @@ use Filament\Support\Actions\Concerns\HasSize;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 
 class CuratorPicker extends Field
@@ -61,6 +62,25 @@ class CuratorPicker extends Field
         $this->size = 'md';
         $this->color = 'primary';
         $this->isOutlined = true;
+
+        $this->formatStateUsing(function (CuratorPicker $component, $state) {
+            if (! filled($state)) {
+                return [];
+            }
+
+            $state = Arr::wrap($state);
+            return app('curator')->getMedia($state);
+        });
+
+        $this->dehydrateStateUsing(function (CuratorPicker $component, $state) {
+            if (! filled($state)) {
+                return [];
+            }
+
+            return collect($state)->map(function ($item) {
+                return $item['id'];
+            })->toArray();
+        });
 
         $this->registerActions([
             PickerAction::make(),
@@ -152,8 +172,13 @@ class CuratorPicker extends Field
         return $this;
     }
 
+    /**
+     * @deprecated
+     */
     public function getCurrentItem(): Model|Collection|null
     {
+        $state = Arr::wrap($this->getState());
+
         if (! filled($this->getState())) {
             return null;
         }

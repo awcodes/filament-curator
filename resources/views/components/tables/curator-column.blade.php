@@ -1,26 +1,37 @@
+@php
+    $items = $getMedia();
+@endphp
+
 <div
-    {{ $attributes->merge($getExtraAttributes())->class(['px-4 py-3 curator-column']) }}
+    {{ $attributes->merge($getExtraAttributes())->class([
+        'curator-column px-4 py-3',
+        'flex items-center -space-x-2' => count($items) > 1,
+    ]) }}
 >
     @php
         $height = $getHeight();
         $width = $getWidth() ?? ($isRounded() ? $height : null);
-        $media = $getMedia();
     @endphp
 
-    @if ($media)
+    @if ($items)
+        @foreach ($items as $item)
         <div style="
                 {!! $height !== null ? "height: {$height};" : null !!}
                 {!! $width !== null ? "width: {$width};" : null !!}
             "
-            @class(['rounded-full overflow-hidden grid place-content-center' => $isRounded()])
+            @class([
+                'rounded-full overflow-hidden' => $isRounded(),
+                'ring-2 ring-white dark:ring-gray-800' => count($items) > 1,
+            ])
         >
-            @if ($isImage())
+            @if (app('curator')->isResizable($item->ext))
                 @php
                     $urlBuilder = \League\Glide\Urls\UrlBuilderFactory::create('/curator/', config('app.key'));
-                    $url = $urlBuilder->getUrl($media->path, ['w' => $width, 'h' => $height, 'fit' => 'crop', 'fm' => 'webp']);
+                    $url = $urlBuilder->getUrl($item->path, ['w' => $width, 'h' => $height, 'fit' => 'crop', 'fm' => 'webp']);
                 @endphp
                 <img
                     src="{{ $url }}"
+                    alt="{{ $item->alt }}"
                     style="
                         {!! $height !== null ? "height: {$height};" : null !!}
                         {!! $width !== null ? "width: {$width};" : null !!}
@@ -30,12 +41,14 @@
                 />
             @else
                 <x-curator::document-image
-                    :label="$media->name"
+                    :label="$item->name"
                     icon-size="md"
-                    :type="$media->type"
-                    :extension="$media->ext"
+                    :type="$item->type"
+                    :extension="$item->ext"
+                    class="h-full w-full"
                 />
             @endif
         </div>
+        @endforeach
     @endif
 </div>

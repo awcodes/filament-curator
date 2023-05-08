@@ -13,7 +13,7 @@
     <div class="flex-1 relative flex flex-col lg:flex-row overflow-hidden">
         <div
             x-show="isFetching"
-            class="absolute inset-0 z-10 grid place-content-center bg-gray-300/50 dark:bg-gray-900/50"
+            class="curator-loading-indicator absolute inset-0 z-10 grid place-content-center bg-gray-300/50 dark:bg-gray-900/50"
             style="display: none;"
         >
             <svg
@@ -52,22 +52,16 @@
                                 />
                             </template>
                             <template x-if="!file.type.includes('image')">
-                                <div @class([
-                                    'curator-document-image grid place-items-center w-full h-full text-xs uppercase relative',
-                                ])>
-                                    <template x-if="file.type.includes('video')">
-                                        <div class="relative grid place-items-center w-full h-full">
+                                <div class="curator-document-image grid place-items-center w-full h-full text-xs uppercase relative">
+                                    <div class="relative grid place-items-center w-full h-full">
+                                        <template x-if="file.type.includes('video')">
                                             @svg('heroicon-o-video-camera', ['class' => 'w-16 h-16 opacity-20'])
-                                            <span class="block absolute" x-text="file.ext"></span>
-                                        </div>
-                                    </template>
-                                    <template x-if="!file.type.includes('video')">
-                                        <div class="relative grid place-items-center w-full h-full">
+                                        </template>
+                                        <template x-if="!file.type.includes('video')">
                                             @svg('heroicon-o-document', ['class' => 'w-16 h-16 opacity-20'])
-                                            <span class="block absolute" x-text="file.ext"></span>
-                                        </div>
-                                    </template>
-                                    <span class="sr-only"><span x-text="file.name"></span></span>
+                                        </template>
+                                    </div>
+                                    <span class="block absolute" x-text="file.ext"></span>
                                 </div>
                             </template>
                         </button>
@@ -246,15 +240,15 @@
                             {{ __('curator::views.panel.edit_cancel') }}
                         </x-filament::button>
 
-                            <x-filament::button
-                                type="submit"
-                                color="success"
-                                size="sm"
-                                wire:click.prevent="insertMedia"
-                                class="ml-auto"
-                            >
-                                {{ __('curator::views.panel.use_selected_image') }}
-                            </x-filament::button>
+                        <x-filament::button
+                            type="submit"
+                            color="success"
+                            size="sm"
+                            wire:click.prevent="insertMedia"
+                            class="ml-auto"
+                        >
+                            {{ __('curator::views.panel.use_selected_image') }}
+                        </x-filament::button>
                     </div>
                </div>
             </div> <!-- edit-media-form -->

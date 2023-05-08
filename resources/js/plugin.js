@@ -8,7 +8,7 @@ document.addEventListener("alpine:init", () => {
     }) => ({
         statePath,
         types,
-        selected: null,
+        selected: [],
         files: [],
         nextPageUrl: null,
         isFetching: false,
