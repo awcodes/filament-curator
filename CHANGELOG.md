@@ -2,6 +2,15 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.5.7 - 2023-05-08
+
+### What's Changed
+
+- Chore: add static return types to facade for intelephense by @awcodes in https://github.com/awcodes/filament-curator/pull/170
+- Feat: add czech translations by @JarkaP in https://github.com/awcodes/filament-curator/pull/173
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.5.6...v2.5.7
+
 ## v2.5.6 - 2023-04-24
 
 ### What's Changed
