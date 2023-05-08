@@ -28,19 +28,19 @@ class CuratorPicker extends Field
 
     protected bool|Closure|null $isConstrained = false;
 
-    protected string|Closure|null $curatorDiskName = 'public';
+    protected string|Closure|null $curatorDiskName = null;
 
-    protected string|Closure|null $curatorDirectory = 'media';
+    protected string|Closure|null $curatorDirectory = null;
 
     protected string|null $curatorPathGenerator = null;
 
-    protected string|Closure|null $curatorVisibility = 'public';
+    protected string|Closure|null $curatorVisibility = null;
 
-    protected array|Closure $curatorAcceptedFileTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'application/pdf'];
+    protected array|Closure|null $curatorAcceptedFileTypes = null;
 
-    protected bool|Closure $curatorShouldPreserveFilenames = false;
+    protected bool|Closure|null $curatorShouldPreserveFilenames = null;
 
-    protected int|Closure|null $curatorMaxSize = 1024;
+    protected int|Closure|null $curatorMaxSize = null;
 
     protected int|Closure|null $curatorMinSize = null;
 
@@ -62,27 +62,13 @@ class CuratorPicker extends Field
         $this->color = 'primary';
         $this->isOutlined = true;
 
-        $this->curatorDirectory = app('curator')->getDirectory();
-        $this->curatorPathGenerator = app('curator')->getPathGenerator();
-
-        $this->curatorShouldPreserveFilenames = app('curator')->shouldPreserveFilenames();
-        $this->maxWidth = app('curator')->getMaxWidth();
-        $this->curatorMinSize = app('curator')->getMinSize();
-        $this->curatorMaxSize = app('curator')->getMaxSize();
-        $this->curatorAcceptedFileTypes = app('curator')->getAcceptedFileTypes();
-        $this->curatorDiskName = app('curator')->getDiskName();
-        $this->curatorVisibility = app('curator')->getVisibility();
-        $this->curatorImageCropAspectRatio = app('curator')->getImageCropAspectRatio();
-        $this->curatorImageResizeTargetHeight = app('curator')->getImageResizeTargetHeight();
-        $this->curatorImageResizeTargetWidth = app('curator')->getImageResizeTargetWidth();
-
         $this->registerActions([
             PickerAction::make(),
             DownloadAction::make(),
         ]);
     }
 
-    public function buttonLabel(string|Htmlable|Closure|null $label): static
+    public function buttonLabel(string|Htmlable|Closure $label): static
     {
         $this->buttonLabel = $label;
 
@@ -117,49 +103,49 @@ class CuratorPicker extends Field
         return $this;
     }
 
-    public function disk(string|Closure|null $name): static
+    public function disk(string|Closure $name): static
     {
         $this->curatorDiskName = $name;
 
         return $this;
     }
 
-    public function maxSize(int|Closure|null $size): static
+    public function maxSize(int|Closure $size): static
     {
         $this->curatorMaxSize = $size;
 
         return $this;
     }
 
-    public function minSize(int|Closure|null $size): static
+    public function minSize(int|Closure $size): static
     {
         $this->curatorMinSize = $size;
 
         return $this;
     }
 
-    public function imageCropAspectRatio(string|Closure|null $ratio): static
+    public function imageCropAspectRatio(string|Closure $ratio): static
     {
         $this->curatorImageCropAspectRatio = $ratio;
 
         return $this;
     }
 
-    public function imageResizeTargetHeight(string|Closure|null $height): static
+    public function imageResizeTargetHeight(string|Closure $height): static
     {
         $this->curatorImageResizeTargetHeight = $height;
 
         return $this;
     }
 
-    public function imageResizeTargetWidth(string|Closure|null $width): static
+    public function imageResizeTargetWidth(string|Closure $width): static
     {
         $this->curatorImageResizeTargetWidth = $width;
 
         return $this;
     }
 
-    public function preserveFilenames(bool|Closure $condition = true): static
+    public function preserveFilenames(bool|Closure|null $condition = true): static
     {
         $this->curatorShouldPreserveFilenames = $condition;
 
@@ -175,7 +161,7 @@ class CuratorPicker extends Field
         return Curator::getMediaModel()::where('id', $this->getState())->first();
     }
 
-    public function getButtonLabel(): string|Htmlable|null
+    public function getButtonLabel(): string
     {
         return $this->evaluate($this->buttonLabel);
     }
@@ -185,59 +171,59 @@ class CuratorPicker extends Field
         return $this->evaluate($this->isConstrained);
     }
 
-    public function getDirectory(): ?string
+    public function getDirectory(): string
     {
-        return $this->evaluate($this->curatorDirectory);
+        return $this->evaluate($this->curatorDirectory) ?? app('curator')->getDirectory();
     }
 
     public function getPathGenerator(): ?string
     {
-        return $this->curatorPathGenerator;
+        return $this->curatorPathGenerator ?? app('curator')->getPathGenerator();
     }
 
     public function getDiskName(): string
     {
-        return $this->evaluate($this->curatorDiskName) ?? config('forms.default_filesystem_disk');
+        return $this->evaluate($this->curatorDiskName) ?? app('curator')->getDiskName();
     }
 
     public function getMaxSize(): ?int
     {
-        return $this->evaluate($this->curatorMaxSize);
+        return $this->evaluate($this->curatorMaxSize) ?? app('curator')->getMaxSize();
     }
 
     public function getMinSize(): ?int
     {
-        return $this->evaluate($this->curatorMinSize);
+        return $this->evaluate($this->curatorMinSize) ?? app('curator')->getMinSize();
     }
 
     public function getVisibility(): string
     {
-        return $this->evaluate($this->curatorVisibility);
+        return $this->evaluate($this->curatorVisibility) ?? app('curator')->getVisibility();
     }
 
     public function shouldPreserveFilenames(): bool
     {
-        return $this->evaluate($this->curatorShouldPreserveFilenames);
+        return $this->evaluate($this->curatorShouldPreserveFilenames) ?? app('curator')->shouldPreserveFilenames();
     }
 
     public function getImageCropAspectRatio(): ?string
     {
-        return $this->evaluate($this->curatorImageCropAspectRatio);
+        return $this->evaluate($this->curatorImageCropAspectRatio) ?? app('curator')->getImageCropAspectRatio();
     }
 
     public function getImageResizeTargetHeight(): ?string
     {
-        return $this->evaluate($this->curatorImageResizeTargetHeight);
+        return $this->evaluate($this->curatorImageResizeTargetHeight) ?? app('curator')->getImageResizeTargetHeight();
     }
 
     public function getImageResizeTargetWidth(): ?string
     {
-        return $this->evaluate($this->curatorImageResizeTargetWidth);
+        return $this->evaluate($this->curatorImageResizeTargetWidth) ?? app('curator')->getImageResizeTargetWidth();
     }
 
     public function getAcceptedFileTypes(): ?array
     {
-        $types = $this->evaluate($this->curatorAcceptedFileTypes);
+        $types = $this->evaluate($this->curatorAcceptedFileTypes) ?? app('curator')->getAcceptedFileTypes();
 
         if ($types instanceof Arrayable) {
             $types = $types->toArray();

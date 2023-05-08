@@ -353,7 +353,7 @@ class Curator
 
     public function getDiskName(): string
     {
-        return $this->evaluate($this->diskName);
+        return $this->evaluate($this->diskName) ?? config('forms.default_filesystem_disk');
     }
 
     public function getPathGenerator(): ?string
