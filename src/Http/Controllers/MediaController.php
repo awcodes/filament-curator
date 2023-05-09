@@ -8,22 +8,33 @@ use Illuminate\Routing\Controller;
 use League\Glide\Filesystem\FileNotFoundException;
 use League\Glide\Signatures\SignatureException;
 use League\Glide\Signatures\SignatureFactory;
+use League\Glide\Urls\UrlBuilderFactory;
 
 class MediaController extends Controller
 {
     public function index(Request $request)
     {
         $mediaModel = Curator::getMediaModel();
+        $selected = $request->has('media') ? explode(',', $request->media) : [];
 
-        $files = $mediaModel::where('id', '<>', $request->media_id)->latest()->paginate(25);
+        $files = $mediaModel::when($selected, function($query, $selected) {
+                return $query->whereNotIn('id', $selected);
+            })
+            ->latest()
+            ->paginate(25);
 
-        if ($request->has('media_id') && ! $request->has('page')) {
-            $selected = $mediaModel::where('id', $request->media_id)->first();
-            $files->prepend($selected);
+        if ($selected && ! $request->has('page')) {
+            $mediaModel::whereIn('id', $selected)
+                ->orderByRaw('FIELD(id, '.implode(', ', $selected).')')
+                ->get()
+                ->reverse()
+                ->map(function($item) use ($files) {
+                    $files->prepend($item);
+                });
         }
 
         $files->each(function($item) {
-            $urlBuilder = \League\Glide\Urls\UrlBuilderFactory::create('/curator/', config('app.key'));
+            $urlBuilder = UrlBuilderFactory::create('/curator/', config('app.key'));
             $item->signedUrl = $urlBuilder->getUrl($item->path, ['w' => 300, 'h' => 300, 'fit' => 'crop', 'fm' => 'webp']);
         });
 
@@ -39,7 +50,7 @@ class MediaController extends Controller
             ->paginate(50);
 
         $files->each(function($item) {
-            $urlBuilder = \League\Glide\Urls\UrlBuilderFactory::create('/curator/', config('app.key'));
+            $urlBuilder = UrlBuilderFactory::create('/curator/', config('app.key'));
             $item->signedUrl = $urlBuilder->getUrl($item->path, ['w' => 300, 'h' => 300, 'fit' => 'crop', 'fm' => 'webp']);
         });
 

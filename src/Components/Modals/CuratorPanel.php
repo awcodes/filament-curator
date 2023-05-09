@@ -111,10 +111,10 @@ class CuratorPanel extends Component implements HasForms
         return Storage::disk($item['disk'])->download($item['path']);
     }
 
-    public function setCurrentFile(array|null $media): void
+    public function setSelection(array $media): void
     {
-        if ($media) {
-            $item = Curator::getMediaModel()::firstWhere('id', $media['id']);
+        if (count($media) === 1) {
+            $item = Curator::getMediaModel()::firstWhere('id', $media[0]['id']);
             if ($item) {
                 $this->editMediaForm->fill([
                     'name' => $item->name,
@@ -124,10 +124,10 @@ class CuratorPanel extends Component implements HasForms
                     'description' => $item->description,
                 ]);
             }
-            $this->selected = $item;
+            $this->selected[] = $item;
         } else {
             $this->editMediaForm->fill();
-            $this->selected = null;
+            $this->selected = [];
         }
     }
 
@@ -163,11 +163,6 @@ class CuratorPanel extends Component implements HasForms
         $this->dispatchBrowserEvent('remove-media', ['media' => $this->selected]);
         $this->selected->delete();
         $this->selected = null;
-    }
-
-    public function insertMedia(): void
-    {
-        $this->dispatchBrowserEvent('insert-media', ['media' => $this->selected, 'statePath' => $this->statePath]);
     }
 
     public function render(): View

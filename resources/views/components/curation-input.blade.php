@@ -2,7 +2,7 @@
     'prefix' => null,
     'suffix' => null,
 ])
-<label class="flex items-center w-full border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm bg-gray-400 dark:bg-gray-800 text-sm">
+<label class="flex items-center w-full border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm bg-gray-100 dark:bg-gray-800 text-sm">
     @if ($prefix)
         <span class="w-20 flex-shrink-0 self-stretch flex items-center justify-center px-2">{{ $prefix }}</span>
     @endif

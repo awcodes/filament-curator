@@ -16,6 +16,7 @@ use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 class CuratorPicker extends Field
 {
@@ -63,24 +64,68 @@ class CuratorPicker extends Field
         $this->color = 'primary';
         $this->isOutlined = true;
 
-        $this->formatStateUsing(function (CuratorPicker $component, $state) {
-            if (! filled($state)) {
-                return [];
-            }
+//        $this->formatStateUsing(function (CuratorPicker $component, $state) {
+//            if (! filled($state)) {
+//                return [];
+//            }
+//
+//            $state = Arr::wrap($state);
+//            return app('curator')->getMedia($state);
+//        });
+
+        $this->afterStateHydrated(static function (CuratorPicker $component, array|int|null $state): void {
+            $items = [];
 
             $state = Arr::wrap($state);
-            return app('curator')->getMedia($state);
+            $media = app('curator')->getMedia($state);
+
+            foreach ($media as $itemData) {
+                $items[(string) Str::uuid()] = $itemData;
+            }
+
+            $component->state($items);
+        });
+
+        $this->afterStateUpdated(static function (CuratorPicker $component, array|int|null $state): void {
+            $items = [];
+
+            $state = array_values($state);
+
+            foreach ($state as $itemData) {
+                $items[(string) Str::uuid()] = $itemData;
+            }
+
+            $component->state($items);
         });
 
         $this->dehydrateStateUsing(function (CuratorPicker $component, $state) {
             if (! filled($state)) {
-                return [];
+                return null;
             }
 
-            return collect($state)->map(function ($item) {
-                return $item['id'];
-            })->toArray();
+            $state = collect($state)->pluck('id')->toArray();
+
+            if (count($state) === 1 && is_array($state)) {
+                $state = $state[0];
+            }
+
+            return $state;
         });
+
+        $this->registerListeners([
+            'picker::moveItems' => [
+                function (CuratorPicker $component, string $statePath, array $uuids): void {
+                    if ($statePath !== $component->getStatePath()) {
+                        return;
+                    }
+
+                    $items = array_merge(array_flip($uuids), $component->getState());
+
+                    $livewire = $component->getLivewire();
+                    data_set($livewire, $statePath, $items);
+                },
+            ],
+        ]);
 
         $this->registerActions([
             PickerAction::make(),

@@ -457,10 +457,16 @@ class Curator
         return collect($this->getGliderFallbacks())->where('key', $key)->sole();
     }
 
-    public function getMedia(array|Media|int $ids): Collection
+    public function getMedia(array|Media|int $ids): Collection|array
     {
         $ids = Arr::wrap($ids);
 
-        return $this->mediaModel::whereIn('id', $ids)->orderByRaw('FIELD(id, '.implode(', ', $ids).')')->get();
+        if ($ids) {
+            return $this->mediaModel::whereIn('id', $ids)
+                ->orderByRaw('FIELD(id, '.implode(', ', $ids).')')
+                ->get();
+        }
+
+        return [];
     }
 }

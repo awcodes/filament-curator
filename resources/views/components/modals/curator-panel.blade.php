@@ -27,18 +27,18 @@
             </svg>
         </div> <!--loading -->
 
-        <div class="flex-1 h-full overflow-auto p-4">
+        <div class="flex-1 h-full overflow-auto p-4" wire:ignore>
             <ul class="grid grid-cols-3 gap-4 sm:grid-cols-4 md:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10">
 
                 <template x-for="file in files">
 
                     <li x-bind:key="file.id" class="relative aspect-square"
-                        x-bind:class="{'opacity-40': (selected && selected.id !== file.id) || ! types.includes(file.type) }"
+                        x-bind:class="{'opacity-40': selected.length > 0 && (! isSelected(file.id) || ! types.includes(file.type)) }"
                     >
 
                         <button
                             type="button"
-                            x-on:click.prevent="setSelected(file.id)"
+                            x-on:click.prevent="addToSelection(file.id)"
                             x-bind:disabled="! types.includes(file.type)"
                             class="block w-full h-full overflow-hidden bg-gray-700 rounded-sm"
                         >
@@ -70,8 +70,8 @@
 
                         <button
                             type="button"
-                            x-on:click="setSelected()"
-                            x-show="selected && selected.id === file.id"
+                            x-on:click="removeFromSelection(file.id)"
+                            x-show="isSelected(file.id)"
                             x-cloak
                             class="absolute inset-0 flex items-center justify-center w-full h-full rounded shadow text-primary-600 bg-primary-500/20 ring-2 ring-primary-500"
                         >
@@ -125,14 +125,81 @@
                 />
             </label>
 
-            <div x-show="! selected" class="flex-1 overflow-hidden">
+            <div class="flex-1 overflow-hidden">
                 <div class="flex flex-col h-full overflow-y-auto">
-                    <h4 class="font-bold py-2 px-4 mb-0">
+                    <h4 x-show="showUploadForm" class="font-bold py-2 px-4 mb-0">
                         {{ __('curator::views.panel.add_files') }}
                     </h4>
 
+                    <h4 x-show="showEditForm" class="font-bold py-2 px-4 mb-0">
+                        {{ __('curator::views.panel.edit_media') }}
+                    </h4>
+
                     <div class="flex-1 overflow-auto px-4 pb-4">
-                        {{ $this->addMediaForm }}
+                        <div x-show="showUploadForm" class="h-full">
+                            {{ $this->addMediaForm }}
+                        </div>
+                        <div x-show="showEditForm" class="h-full">
+                            <div class="flex justify-center mb-4 overflow-hidden border border-gray-300 rounded dark:border-gray-700 checkered h-48 flex-shrink-0 relative">
+                                <template x-if="selected[0]?.type.includes('image')">
+                                    <img
+                                            x-bind:src="selected[0]?.url"
+                                            x-bind:alt="selected[0]?.alt"
+                                            x-bind:width="selected[0]?.width"
+                                            x-bind:height="selected[0]?.height"
+                                            class="block object-contain w-full h-full"
+                                    />
+                                </template>
+                                <template x-if="!selected[0]?.type.includes('image')">
+                                    <div @class([
+                                    'curator-document-image grid place-items-center w-full h-full text-xs uppercase relative',
+                                ])>
+                                        <template x-if="selected[0]?.type.includes('video')">
+                                            <video controls x-bind:src="selected?.url"></video>
+                                        </template>
+                                        <template x-if="!selected[0]?.type.includes('video')">
+                                            <div class="relative grid place-items-center w-full h-full">
+                                                @svg('heroicon-o-document', ['class' => 'w-16 h-16 opacity-20'])
+                                                <span class="block absolute" x-text="selected[0]?.ext"></span>
+                                                <span class="sr-only"><span x-text="selected[0]?.name"></span></span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                                <div class="absolute top-0 right-0 flex bg-gray-900 divide-x divide-gray-700 rounded-bl-lg shadow-md">
+                                    <a
+                                            x-bind:href="selected[0]?.url"
+                                            target="_blank"
+                                            rel="noopener nofollow"
+                                            class="flex items-center justify-center flex-none w-10 h-10 transition text-gray-600 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400"
+                                            x-tooltip.raw="{{ __('curator::views.panel.view') }}"
+                                    >
+                                        @svg('heroicon-s-eye', 'w-4 h-4')
+                                        <span class="sr-only">{{ __('curator::views.panel.view') }}</span>
+                                    </a>
+                                    <button
+                                            type="button"
+                                            wire:click="download"
+                                            class="flex items-center justify-center flex-none w-10 h-10 transition text-primary-600 hover:text-primary-500 dark:text-primary-500 dark:hover:text-primary-400"
+                                            x-tooltip.raw="{{ __('curator::views.panel.download') }}"
+                                    >
+                                        @svg('heroicon-s-download', 'w-4 h-4')
+                                        <span class="sr-only">{{ __('curator::views.panel.download') }}</span>
+                                    </button>
+                                    <button
+                                            type="button"
+                                            wire:target="destroyFile"
+                                            wire:click.prevent="destroyFile"
+                                            x-tooltip.raw="{{ __('curator::views.panel.edit_delete') }}"
+                                            class="flex items-center justify-center flex-none w-10 h-10 transition text-danger-600 hover:text-danger-500 dark:text-danger-500 dark:hover:text-danger-400"
+                                    >
+                                        @svg('heroicon-s-trash', 'w-4 h-4')
+                                        <span class="sr-only">{{ __('curator::views.panel.edit_delete') }}</span>
+                                    </button>
+                                </div>
+                            </div>
+                            {{ $this->editMediaForm }}
+                        </div>
                     </div>
 
                     <div class="flex items-center justify-start gap-3 py-3 px-4 border-t border-gray-300 bg-gray-200 dark:border-gray-800 dark:bg-black/10">
@@ -141,92 +208,17 @@
                             size="sm"
                             wire:target="addFiles"
                             wire:click.prevent="addFiles"
+                            x-show="showUploadForm"
                         >
                             {{ __('curator::views.panel.add_files') }}
                         </x-filament::button>
-                    </div>
-                </div>
-            </div> <!-- add-media-form -->
-
-            <div x-show="selected" class="flex-1 overflow-hidden">
-
-               <div class="flex flex-col h-full overflow-y-auto">
-
-                    <h4 class="font-bold py-2 px-4 mb-0">
-                        {{ __('curator::views.panel.edit_media') }}
-                    </h4>
-
-                    <div class="flex-1 overflow-auto px-4 pb-4">
-
-                        <div class="flex justify-center mb-4 overflow-hidden border border-gray-300 rounded dark:border-gray-700 checkered h-48 flex-shrink-0 relative">
-                            <template x-if="selected?.type.includes('image')">
-                                <img
-                                    x-bind:src="selected?.url"
-                                    x-bind:alt="selected?.alt"
-                                    x-bind:width="selected?.width"
-                                    x-bind:height="selected?.height"
-                                    class="block object-contain w-full h-full"
-                                />
-                            </template>
-                            <template x-if="!selected?.type.includes('image')">
-                                <div @class([
-                                    'curator-document-image grid place-items-center w-full h-full text-xs uppercase relative',
-                                ])>
-                                    <template x-if="selected?.type.includes('video')">
-                                        <video controls x-bind:src="selected?.url"></video>
-                                    </template>
-                                    <template x-if="!selected?.type.includes('video')">
-                                        <div class="relative grid place-items-center w-full h-full">
-                                            @svg('heroicon-o-document', ['class' => 'w-16 h-16 opacity-20'])
-                                            <span class="block absolute" x-text="selected?.ext"></span>
-                                            <span class="sr-only"><span x-text="selected?.name"></span></span>
-                                        </div>
-                                    </template>
-                                </div>
-                            </template>
-                            <div class="absolute top-0 right-0 flex bg-gray-900 divide-x divide-gray-700 rounded-bl-lg shadow-md">
-                                <a
-                                    x-bind:href="selected?.url"
-                                    target="_blank"
-                                    rel="noopener nofollow"
-                                    class="flex items-center justify-center flex-none w-10 h-10 transition text-gray-600 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400"
-                                    x-tooltip.raw="{{ __('curator::views.panel.view') }}"
-                                >
-                                    @svg('heroicon-s-eye', 'w-4 h-4')
-                                    <span class="sr-only">{{ __('curator::views.panel.view') }}</span>
-                                </a>
-                                <button
-                                    type="button"
-                                    wire:click="download"
-                                    class="flex items-center justify-center flex-none w-10 h-10 transition text-primary-600 hover:text-primary-500 dark:text-primary-500 dark:hover:text-primary-400"
-                                    x-tooltip.raw="{{ __('curator::views.panel.download') }}"
-                                >
-                                    @svg('heroicon-s-download', 'w-4 h-4')
-                                    <span class="sr-only">{{ __('curator::views.panel.download') }}</span>
-                                </button>
-                                <button
-                                    type="button"
-                                    wire:target="destroyFile"
-                                    wire:click.prevent="destroyFile"
-                                    x-tooltip.raw="{{ __('curator::views.panel.edit_delete') }}"
-                                    class="flex items-center justify-center flex-none w-10 h-10 transition text-danger-600 hover:text-danger-500 dark:text-danger-500 dark:hover:text-danger-400"
-                                >
-                                    @svg('heroicon-s-trash', 'w-4 h-4')
-                                    <span class="sr-only">{{ __('curator::views.panel.edit_delete') }}</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        {{ $this->editMediaForm }}
-                    </div>
-
-                    <div class="flex items-center justify-start gap-3 py-3 px-4 border-t border-gray-300 bg-gray-200 dark:border-gray-800 dark:bg-black/10">
 
                         <x-filament::button
                             type="button"
                             size="sm"
                             wire:target="updateFile"
                             wire:click.prevent="updateFile"
+                            x-show="showEditForm"
                         >
                             {{ __('curator::views.panel.edit_save') }}
                         </x-filament::button>
@@ -235,7 +227,8 @@
                             type="button"
                             color="secondary"
                             size="sm"
-                            x-on:click.prevent="selected = null"
+                            x-on:click.prevent="selected = []"
+                            x-show="showEditForm"
                         >
                             {{ __('curator::views.panel.edit_cancel') }}
                         </x-filament::button>
@@ -244,14 +237,16 @@
                             type="submit"
                             color="success"
                             size="sm"
-                            wire:click.prevent="insertMedia"
+                            x-on:click.prevent="insertMedia()"
                             class="ml-auto"
+                            x-show="selected.length > 0"
                         >
                             {{ __('curator::views.panel.use_selected_image') }}
                         </x-filament::button>
                     </div>
-               </div>
-            </div> <!-- edit-media-form -->
+                </div>
+            </div>
+
         </div> <!-- gallery forms -->
     </div> <!-- main area -->
 </div>
