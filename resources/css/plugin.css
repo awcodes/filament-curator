@@ -1,6 +1,38 @@
 @import '../../node_modules/cropperjs/dist/cropper.css';
 @tailwind utilities;
 
+.curator-grid-container {
+    /**
+     * User input values.
+     */
+    --grid-layout-gap: theme('spacing.6');
+    --grid-column-count: 1;
+    --grid-item--min-width: 75px;
+
+    /**
+     * Calculated values.
+     */
+    --gap-count: calc(var(--grid-column-count) - 1);
+    --total-gap-width: calc(var(--gap-count) * var(--grid-layout-gap));
+    --grid-item--max-width: calc((100% - var(--total-gap-width)) / var(--grid-column-count));
+
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(max(var(--grid-item--min-width), var(--grid-item--max-width)), 1fr));
+    grid-gap: var(--grid-layout-gap);
+}
+
+@screen md {
+    .curator-grid-container {
+        --grid-column-count: 2;
+    }
+}
+
+@screen lg {
+    .curator-grid-container {
+        --grid-column-count: 3;
+    }
+}
+
 .checkered {
     background-color: theme("colors.gray.200");
     background-image:  repeating-linear-gradient(45deg, theme("colors.gray.300") 25%, transparent 25%, transparent 75%, theme("colors.gray.300") 75%, theme("colors.gray.300")), repeating-linear-gradient(45deg, theme("colors.gray.300") 25%, theme("colors.gray.200") 25%, theme("colors.gray.200") 75%, theme("colors.gray.300") 75%, theme("colors.gray.300"));
