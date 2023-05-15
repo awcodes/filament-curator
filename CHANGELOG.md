@@ -2,6 +2,16 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.5.8 - 2023-05-15
+
+### What's Changed
+
+- Fix: add setTimeout to help with cropper initialization by @awcodes in https://github.com/awcodes/filament-curator/pull/175
+- Chore: refactor fall backs for Picker component by @awcodes in https://github.com/awcodes/filament-curator/pull/176
+- Fix: add array check to exif utf-8 encoding in Media Observer by @awcodes in https://github.com/awcodes/filament-curator/pull/179
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.5.7...v2.5.8
+
 ## v2.5.7 - 2023-05-08
 
 ### What's Changed
