@@ -42,6 +42,10 @@ class CuratorColumn extends ImageColumn
         if (! is_a($record, Media::class)) {
             $state = $this->getState();
 
+            if (is_a($state, Collection::class)) {
+                return $state;
+            }
+
             if (is_a($state, Media::class)) {
                 return Arr::wrap($state);
             }

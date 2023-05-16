@@ -103,6 +103,8 @@
                                     icon="heroicon-s-eye"
                                     href="{{ $item['url'] }}"
                                     tag="a"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                 >
                                     {{ __('curator::views.picker.view') }}
                                 </x-filament::dropdown.list.item>
@@ -121,6 +123,8 @@
                                     icon="heroicon-s-pencil"
                                     href="{{ \Awcodes\Curator\Resources\MediaResource::getUrl('edit', $item['id']) }}"
                                     tag="a"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                 >
                                     {{ __('curator::views.picker.edit') }}
                                 </x-filament::dropdown.list.item>
