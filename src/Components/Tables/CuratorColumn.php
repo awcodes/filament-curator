@@ -13,6 +13,15 @@ class CuratorColumn extends ImageColumn
 {
     protected string $view = 'curator::components.tables.curator-column';
 
+    protected int|null $limit = null;
+
+    public function limit(int $limit): static
+    {
+        $this->limit = $limit;
+
+        return $this;
+    }
+
     /**
      * @deprecated use app('curator')->isResizable($ext) instead
      */
@@ -43,7 +52,7 @@ class CuratorColumn extends ImageColumn
             $state = $this->getState();
 
             if (is_a($state, Collection::class)) {
-                return $state;
+                return $state->take($this->limit);
             }
 
             if (is_a($state, Media::class)) {
@@ -51,7 +60,7 @@ class CuratorColumn extends ImageColumn
             }
 
             $state = Arr::wrap($state);
-            return app('curator')->getMedia($state);
+            return app('curator')->getMedia(array_slice($state, 0, $this->limit));
         }
 
         return Arr::wrap($record);

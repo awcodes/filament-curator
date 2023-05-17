@@ -459,9 +459,19 @@ class Curator
 
     public function getMedia(array|Media|int $ids): Collection|array
     {
-        $ids = Arr::wrap($ids);
+        if ($ids instanceof Media) {
+            return [$ids];
+        }
 
-        if ($ids) {
+        $ids = array_values($ids);
+
+        if (isset($ids[0]['id'])) {
+            return $ids;
+        }
+
+        ray($ids);
+
+        if (filled($ids)) {
             return $this->mediaModel::whereIn('id', $ids)
                 ->orderByRaw('FIELD(id, '.implode(', ', $ids).')')
                 ->get();
