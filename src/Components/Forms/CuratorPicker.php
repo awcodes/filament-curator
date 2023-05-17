@@ -7,6 +7,7 @@ use Awcodes\Curator\Actions\PickerAction;
 use Awcodes\Curator\Facades\Curator;
 use Closure;
 use Exception;
+use Filament\Forms\Components\Concerns\HasContainerGridLayout;
 use Filament\Forms\Components\Field;
 use Filament\Support\Actions\Concerns\CanBeOutlined;
 use Filament\Support\Actions\Concerns\HasColor;
@@ -25,12 +26,6 @@ class CuratorPicker extends Field
     use HasColor;
     use HasSize;
     use CanBeOutlined;
-
-    protected string | Closure | null $relationshipTitleColumnName = null;
-
-    protected string | Closure | null $relationship = null;
-
-    protected bool | Closure $isMultiple = false;
 
     protected string $view = 'curator::components.forms.picker';
 

@@ -3,11 +3,15 @@
     $items = $getState();
 @endphp
 
-<x-forms::field-wrapper :id="$getId()"
+<x-dynamic-component
+    :component="$getFieldWrapperView()"
+    :id="$getId()"
     :label="$getLabel()"
     :label-sr-only="$isLabelHidden()"
     :helper-text="$getHelperText()"
     :hint="$getHint()"
+    :hint-action="$getHintAction()"
+    :hint-color="$getHintColor()"
     :hint-icon="$getHintIcon()"
     :required="$isRequired()"
     :state-path="$statePath"
@@ -170,4 +174,4 @@
         </x-filament::button>
     </div>
 
-</x-forms::field-wrapper>
+</x-dynamic-component>

@@ -469,8 +469,6 @@ class Curator
             return $ids;
         }
 
-        ray($ids);
-
         if (filled($ids)) {
             return $this->mediaModel::whereIn('id', $ids)
                 ->orderByRaw('FIELD(id, '.implode(', ', $ids).')')
