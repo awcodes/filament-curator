@@ -56,6 +56,12 @@ class MediaController extends Controller
             abort(404);
         }
 
+        $media = Curator::getMediaModel()::where('path', $path)->first();
+
+        if (! Curator::isResizable($media->ext)) {
+            return Storage::disk($media->disk)->response($media->path);
+        }
+
         $server = app('curator')->getGlideServer();
         $server->setBaseUrl('/curator/');
         return $server->getImageResponse($path, request()->all());
