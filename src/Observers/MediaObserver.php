@@ -10,9 +10,6 @@ class MediaObserver
 {
     /**
      * Handle the Media "creating" event.
-     *
-     * @param Media $media
-     * @return void
      */
     public function creating(Media $media): void
     {
@@ -22,8 +19,8 @@ class MediaObserver
                     $media->{$k} = $v->toString();
                 } elseif ($k === 'exif' && is_array($v)) {
                     // Fix malformed utf-8 characters
-                    array_walk_recursive($v, function(&$entry){
-                        if(!mb_detect_encoding($entry, 'utf-8', true)){
+                    array_walk_recursive($v, function (&$entry) {
+                        if (! mb_detect_encoding($entry, 'utf-8', true)) {
                             $entry = utf8_encode($entry);
                         }
                     });
@@ -40,9 +37,6 @@ class MediaObserver
 
     /**
      * Handle the Media "updating" event.
-     *
-     * @param Media $media
-     * @return void
      */
     public function updating(Media $media): void
     {
@@ -76,16 +70,13 @@ class MediaObserver
 
     /**
      * Handle the Media "deleted" event.
-     *
-     * @param  Media  $media
-     * @return void
      */
     public function deleted(Media $media): void
     {
         Storage::disk($media->disk)->delete($media->path);
 
-        if (Storage::disk($media->disk)->allFiles($media->directory . '/' . $media->name)) {
-            Storage::disk($media->disk)->deleteDirectory($media->directory . '/' . $media->name);
+        if (Storage::disk($media->disk)->allFiles($media->directory.'/'.$media->name)) {
+            Storage::disk($media->disk)->deleteDirectory($media->directory.'/'.$media->name);
         }
 
         if (count(Storage::disk($media->disk)->allFiles($media->directory)) == 0) {

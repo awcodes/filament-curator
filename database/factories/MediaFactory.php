@@ -3,7 +3,6 @@
 namespace Awcodes\Curator\Database\Factories;
 
 use Awcodes\Curator\Facades\Curator;
-use Awcodes\Curator\Models\Media;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class MediaFactory extends Factory

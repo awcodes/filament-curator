@@ -38,6 +38,7 @@ class MediaAction extends Action
             $selected = $src !== ''
                 ? Curator::getMediaModel()::firstWhere('name', Str::of($src)->afterLast('/')->beforeLast('.'))
                 : null;
+
             return view('curator::components.actions.picker-action', [
                 'statePath' => $component->getStatePath(),
                 'modalId' => $component->getLivewire()->id.'-form-component-action',
@@ -54,7 +55,7 @@ class MediaAction extends Action
                 'imageCropAspectRatio' => app('curator')->getImageCropAspectRatio(),
                 'imageResizeTargetWidth' => app('curator')->getImageResizeTargetWidth(),
                 'imageResizeTargetHeight' => app('curator')->getImageResizeTargetHeight(),
-                'selected' => $selected
+                'selected' => $selected,
             ]);
         });
     }

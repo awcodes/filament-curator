@@ -53,15 +53,15 @@ class CuratorCuration extends Component
             ->encode($data['format'] ?? 'jpg', $data['quality'] ?? 60);
 
         // save image to directory base on media
-        $curationPath = $this->media->directory . '/' . $this->media->name . '/' . $data['key'] . '.' . $image->extension;
+        $curationPath = $this->media->directory.'/'.$this->media->name.'/'.$data['key'].'.'.$image->extension;
 
         Storage::disk($this->media->disk)->put($curationPath, $image->stream());
 
         $curation = [
-            'key' => $data['key'] ?? $aspectWidth . 'x' . $aspectHeight,
+            'key' => $data['key'] ?? $aspectWidth.'x'.$aspectHeight,
             'disk' => $this->media->disk,
             'directory' => $this->media->name,
-            'name' => ($data['key'] ?? $aspectWidth . 'x' . $aspectHeight) . '.' . $image->extension,
+            'name' => ($data['key'] ?? $aspectWidth.'x'.$aspectHeight).'.'.$image->extension,
             'path' => $curationPath,
             'width' => $aspectWidth,
             'height' => $aspectHeight,

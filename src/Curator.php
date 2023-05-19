@@ -62,7 +62,7 @@ class Curator
 
     protected string $glideCachePathPrefix = '.cache';
 
-    protected int $glideMaxImageSize = 2000*2000;
+    protected int $glideMaxImageSize = 2000 * 2000;
 
     protected Server|ServerFactory|null $glideServer = null;
 
@@ -307,7 +307,7 @@ class Curator
 
     public function getCurationPresets(): array|null
     {
-        return collect($this->curationPresets)->map(function($preset) {
+        return collect($this->curationPresets)->map(function ($preset) {
             return $preset->getPreset();
         })->toArray();
     }
@@ -445,7 +445,7 @@ class Curator
 
     public function getGliderFallbacks(): ?array
     {
-        return collect($this->gliderFallbacks)->map(function($preset) {
+        return collect($this->gliderFallbacks)->map(function ($preset) {
             return $preset->getFallback();
         })->toArray();
     }
