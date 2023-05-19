@@ -72,6 +72,15 @@ class Curator
 
     protected array|null $gliderFallbacks = [];
 
+    protected bool $shouldRegisterResources = true;
+
+    public function disableResourceRegistration(): static
+    {
+        $this->shouldRegisterResources = false;
+
+        return $this;
+    }
+
     public function resourceLabel(string|Closure $label): static
     {
         $this->resourceLabel = $label;
@@ -273,6 +282,11 @@ class Curator
         $this->gliderFallbacks = $fallbacks;
 
         return $this;
+    }
+
+    public function shouldRegisterResources(): bool
+    {
+        return $this->evaluate($this->shouldRegisterResources);
     }
 
     public function getResourceLabel(): string
