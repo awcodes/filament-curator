@@ -2,6 +2,14 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.5.9 - 2023-05-19
+
+### What's Changed
+
+- Fix: signed urls for non-resizeable formats like svg by @awcodes in https://github.com/awcodes/filament-curator/pull/182
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.5.8...v2.5.9
+
 ## v2.5.8 - 2023-05-15
 
 ### What's Changed
