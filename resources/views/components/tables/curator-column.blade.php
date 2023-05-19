@@ -12,20 +12,22 @@
                 {!! $height !== null ? "height: {$height};" : null !!}
                 {!! $width !== null ? "width: {$width};" : null !!}
             "
-            @class(['rounded-full overflow-hidden grid place-content-center' => $isRounded()])
+            @class([
+                'bg-gray-200 dark:bg-gray-700',
+                'rounded-full overflow-hidden grid place-content-center' => $isRounded()
+            ])
         >
-            @if ($isImage())
-                @php
-                    $urlBuilder = \League\Glide\Urls\UrlBuilderFactory::create('/curator/', config('app.key'));
-                    $url = $urlBuilder->getUrl($media->path, ['w' => $width, 'h' => $height, 'fit' => 'crop', 'fm' => 'webp']);
-                @endphp
+            @if (str($media->type)->contains('image'))
                 <img
-                    src="{{ $url }}"
+                    src="{{ $media->getSignedUrl(['w' => $width, 'h' => $height, 'fit' => 'crop', 'fm' => 'webp']) }}"
                     style="
                         {!! $height !== null ? "height: {$height};" : null !!}
                         {!! $width !== null ? "width: {$width};" : null !!}
                     "
-                    @class(['object-cover object-center' => $isRounded() || $width || $height])
+                    @class([
+                        'h-full w-auto' => str($media->type)->contains('svg'),
+                        'object-cover object-center' => ! str($media->type)->contains('svg') && ($isRounded() || $width || $height)
+                    ])
                     {{ $getExtraImgAttributeBag() }}
                 />
             @else

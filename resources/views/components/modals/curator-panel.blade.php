@@ -8,6 +8,7 @@
      x-on:new-media-added.window="addNewFile($event.detail.media)"
      x-on:remove-media.window="removeFile($event.detail.media)"
      class="curator h-full absolute inset-0 flex flex-col"
+     wire:ignore
 >
 
     <div class="flex-1 relative flex flex-col lg:flex-row overflow-hidden">

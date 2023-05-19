@@ -22,6 +22,6 @@ return [
         'success' => 'تم تحديث العنصر بنجاح.',
     ],
     'curations' => [
-        'button_label' => 'إنشاء تنظيم'
-    ]
+        'button_label' => 'إنشاء تنظيم',
+    ],
 ];

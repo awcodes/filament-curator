@@ -25,5 +25,5 @@ return [
     ],
     'curations' => [
         'button_label' => 'Vytvořit ořez',
-    ]
+    ],
 ];

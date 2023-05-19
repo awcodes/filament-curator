@@ -5,11 +5,11 @@ namespace Awcodes\Curator\Commands;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
-use Illuminate\Support\Arr;
 
 class UpgradeCommand extends Command
 {
@@ -34,14 +34,14 @@ class UpgradeCommand extends Command
         $driver = Arr::get(DB::connection()->getConfig(), 'driver');
 
         // clone db as a backup
-        match($driver) {
-            'sqlite' => function(): void {
+        match ($driver) {
+            'sqlite' => function (): void {
                 DB::statement('CREATE TABLE media_tmp AS SELECT * FROM media');
             },
-            'pgsql' => function(): void {
+            'pgsql' => function (): void {
                 DB::statement('CREATE TABLE media_tmp AS (SELECT * FROM media)');
             },
-            default => function(): void {
+            default => function (): void {
                 DB::statement('CREATE TABLE media_tmp LIKE media');
                 DB::statement('INSERT media_tmp SELECT * FROM media');
             }
@@ -50,7 +50,7 @@ class UpgradeCommand extends Command
         // publish migration
         $this->info('Publishing migration...');
 
-        $migrationsPath = realpath(__DIR__ . '/../../database/migrations');
+        $migrationsPath = realpath(__DIR__.'/../../database/migrations');
 
         foreach (glob("{$migrationsPath}/upgrade_*.php.stub") as $filename) {
             File::copy(
@@ -74,13 +74,13 @@ class UpgradeCommand extends Command
         if ($mediaCount > 0) {
             $progress = $this->output->createProgressBar($mediaCount);
 
-            DB::table('media')->chunkById(500, function($media) use ($progress) {
+            DB::table('media')->chunkById(500, function ($media) use ($progress) {
                 foreach ($media as $item) {
                     DB::table('media')
                         ->where('id', $item->id)
                         ->update([
-                            'name' => Str::of($item->filename)->replace($item->directory . '/', '')->beforeLast('.'),
-                            'path' => $item->filename
+                            'name' => Str::of($item->filename)->replace($item->directory.'/', '')->beforeLast('.'),
+                            'path' => $item->filename,
                         ]);
                 }
 
@@ -92,9 +92,9 @@ class UpgradeCommand extends Command
             $this->comment('No media entries to process.');
         }
 
-        foreach(['public_id', 'filename'] as $column) {
+        foreach (['public_id', 'filename'] as $column) {
             if (Schema::hasColumn('media', $column)) {
-                Schema::table('media', function (Blueprint $table) use($column) {
+                Schema::table('media', function (Blueprint $table) use ($column) {
                     $table->dropColumn($column);
                 });
             }
@@ -118,11 +118,11 @@ class UpgradeCommand extends Command
         }
 
         foreach (glob(database_path("{$migrationsPath}*.php")) as $filename) {
-            if ((substr($filename, -$len) === $migrationFileName . '.php')) {
+            if ((substr($filename, -$len) === $migrationFileName.'.php')) {
                 return $filename;
             }
         }
 
-        return database_path($migrationsPath . $now->format('Y_m_d_His') . '_' . Str::of($migrationFileName)->snake()->finish('.php'));
+        return database_path($migrationsPath.$now->format('Y_m_d_His').'_'.Str::of($migrationFileName)->snake()->finish('.php'));
     }
 }
