@@ -8,6 +8,7 @@ use League\Glide\Server;
 use League\Glide\ServerFactory;
 
 /**
+ * @method static static disableResourceRegistration()
  * @method static static resourceLabel(string|Closure $label)
  * @method static static pluralResourceLabel(string|Closure $label)
  * @method static static navigationIcon(string $label)
@@ -37,6 +38,7 @@ use League\Glide\ServerFactory;
  * @method static static glideDriver(string $driver)
  * @method static static gliderFallbacks(array|null $fallbacks)
  * @method static static mediaModel(string $model)
+ * @method static bool shouldRegisterResources()
  * @method static string getResourceLabel()
  * @method static string getPluralResourceLabel()
  * @method static string getNavigationIcon()

@@ -58,9 +58,13 @@ class CuratorServiceProvider extends PluginServiceProvider
 
     protected function getResources(): array
     {
-        return [
-            Resources\MediaResource::class,
-        ];
+        if (app('curator')->shouldRegisterResources()) {
+            return [
+                Resources\MediaResource::class,
+            ];
+        }
+
+        return [];
     }
 
     protected function getStyles(): array
