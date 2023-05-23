@@ -49,7 +49,7 @@ class MediaController extends Controller
 
         $media = Curator::getMediaModel()::where('path', $path)->first();
 
-        if (! Curator::isResizable($media->ext)) {
+        if ($media && ! Curator::isResizable($media->ext)) {
             return Storage::disk($media->disk)->response($media->path);
         }
 

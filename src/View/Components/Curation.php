@@ -31,7 +31,9 @@ class Curation extends Component
      */
     public function render(): View|string|Closure
     {
-        $this->curatedMedia['url'] = Storage::disk($this->curatedMedia['disk'])->url($this->curatedMedia['path']);
+        if ($this->curatedMedia) {
+            $this->curatedMedia['url'] = Storage::disk($this->curatedMedia['disk'])->url($this->curatedMedia['path']);
+        }
 
         return function (array $data) {
             return 'curator::components.curation';
