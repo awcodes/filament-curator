@@ -25,18 +25,17 @@
             ])
         >
             @if (app('curator')->isResizable($item->ext))
-                @php
-                    $urlBuilder = \League\Glide\Urls\UrlBuilderFactory::create('/curator/', config('app.key'));
-                    $url = $urlBuilder->getUrl($item->path, ['w' => $width, 'h' => $height, 'fit' => 'crop', 'fm' => 'webp']);
-                @endphp
                 <img
-                    src="{{ $url }}"
+                    src="{{ $item->getSignedUrl(['w' => $width, 'h' => $height, 'fit' => 'crop', 'fm' => 'webp']) }}"
                     alt="{{ $item->alt }}"
                     style="
                         {!! $height !== null ? "height: {$height};" : null !!}
                         {!! $width !== null ? "width: {$width};" : null !!}
                     "
-                    @class(['object-cover object-center' => $isRounded() || $width || $height])
+                    @class([
+                        'h-full w-auto' => str($item->type)->contains('svg'),
+                        'object-cover object-center' => ! str($item->type)->contains('svg') && ($isRounded() || $width || $height)
+                    ])
                     {{ $getExtraImgAttributeBag() }}
                 />
             @else

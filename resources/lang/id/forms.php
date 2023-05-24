@@ -24,6 +24,6 @@ return [
         'success' => 'Berkas berhasil diperbarui.',
     ],
     'curations' => [
-        'button_label' => 'Buat Kurasi'
-    ]
+        'button_label' => 'Buat Kurasi',
+    ],
 ];

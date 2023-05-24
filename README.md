@@ -48,7 +48,8 @@ use Awcodes\Curator\Facades\Curator;
 
 public function register()
 {
-    Curator::resourceLabel(string|Closure)
+    Curator::disableResourceRegistration()
+        ->resourceLabel(string|Closure)
         ->pluralResourceLabel(string|Closure)
         ->navigationIcon(string)
         ->navigationSort(int)
@@ -315,13 +316,29 @@ Since curations may or may not exist for each media item it's good to use a fall
 
 ### Custom Resource
 
-Should you need to override the default Resource, it is recommended
-that you use the service container.
+Should you need to override the default Resources, it is recommended
+that you use the service container to bind Curator's Resource name to your own extensions of them.
 
 ```php
 use Awcodes\Curator\Resources\MediaResource;
+use Awcodes\Curator\Facades\Curator;
 
 class YourNotAsCoolMediaResource extends MediaResource
+{
+    // ... custom methods and properties
+}
+
+class YourNotAsCoolEditMedia extends MediaResource\EditMedia
+{
+    // ... custom methods and properties
+}
+
+class YourNotAsCoolCreateMedia extends MediaResource\CreateMedia
+{
+    // ... custom methods and properties
+}
+
+class YourNotAsCoolListMedia extends MediaResource\ListMedia
 {
     // ... custom methods and properties
 }
@@ -329,7 +346,11 @@ class YourNotAsCoolMediaResource extends MediaResource
 // and in a service provider
 public function register()
 {
+    Curator::disableResourceRegistration();
     $this->app->bind(MediaResource::class, fn() => new YourNotAsCoolMediaResource());
+    $this->app->bind(MediaResource\EditMedia::class, fn() => new YourNotAsCoolEditMedia());
+    $this->app->bind(MediaResource\CreateMedia::class, fn() => new YourNotAsCoolCreateMedia());
+    $this->app->bind(MediaResource\ListMedia::class, fn() => new YourNotAsCoolListMedia());
 }
 ```
 

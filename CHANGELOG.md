@@ -2,6 +2,30 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.5.11 - 2023-05-23
+
+### What's Changed
+
+- Fix: glider fallback urls and null curation error by @awcodes in https://github.com/awcodes/filament-curator/pull/184
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.5.10...v2.5.11
+
+## v2.5.10 - 2023-05-19
+
+### What's Changed
+
+- Feat: add support to disable resource registration by @awcodes in https://github.com/awcodes/filament-curator/pull/183
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.5.9...v2.5.10
+
+## v2.5.9 - 2023-05-19
+
+### What's Changed
+
+- Fix: signed urls for non-resizeable formats like svg by @awcodes in https://github.com/awcodes/filament-curator/pull/182
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.5.8...v2.5.9
+
 ## v2.5.8 - 2023-05-15
 
 ### What's Changed

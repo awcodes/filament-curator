@@ -137,9 +137,9 @@ class CuratorPanel extends Component implements HasForms
 
         foreach ($this->addMediaForm->getState()['files'] as $item) {
             // Fix malformed utf-8 characters
-            if (!empty($item['exif'])) {
-                array_walk_recursive($item['exif'], function(&$entry){
-                    if(!mb_detect_encoding($entry, 'utf-8', true)){
+            if (! empty($item['exif'])) {
+                array_walk_recursive($item['exif'], function (&$entry) {
+                    if (! mb_detect_encoding($entry, 'utf-8', true)) {
                         $entry = utf8_encode($entry);
                     }
                 });

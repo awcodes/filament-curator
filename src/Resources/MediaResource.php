@@ -67,7 +67,7 @@ class MediaResource extends Resource
                             ->hiddenOn('edit')
                             ->schema([
                                 static::getUploaderField()
-                                    ->required()
+                                    ->required(),
                             ]),
                         Forms\Components\Tabs::make('image')
                             ->hiddenOn('create')
@@ -97,7 +97,7 @@ class MediaResource extends Resource
                                                     ->buttonLabel(__('curator::forms.curations.button_label'))
                                                     ->required()
                                                     ->lazy(),
-                                            ])
+                                            ]),
                                     ]),
                                 Forms\Components\Tabs\Tab::make(__('curator::forms.sections.upload_new'))
                                     ->schema([
@@ -246,7 +246,7 @@ class MediaResource extends Resource
                 }),
             Forms\Components\TextInput::make('alt')
                 ->label(__('curator::forms.fields.alt'))
-                ->hint(fn (): HtmlString => new HtmlString('<a href="https://www.w3.org/WAI/tutorials/images/decision-tree" class="filament-link" target="_blank">' . __('curator::forms.fields.alt_hint') . '</a>')),
+                ->hint(fn (): HtmlString => new HtmlString('<a href="https://www.w3.org/WAI/tutorials/images/decision-tree" class="filament-link" target="_blank">'.__('curator::forms.fields.alt_hint').'</a>')),
             Forms\Components\TextInput::make('title')
                 ->label(__('curator::forms.fields.title')),
             Forms\Components\Textarea::make('caption')

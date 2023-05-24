@@ -64,7 +64,7 @@ class Curator
 
     protected string $glideCachePathPrefix = '.cache';
 
-    protected int $glideMaxImageSize = 2000*2000;
+    protected int $glideMaxImageSize = 2000 * 2000;
 
     protected Server|ServerFactory|null $glideServer = null;
 
@@ -73,6 +73,15 @@ class Curator
     protected string $mediaModel = Media::class;
 
     protected array|null $gliderFallbacks = [];
+
+    protected bool $shouldRegisterResources = true;
+
+    public function disableResourceRegistration(): static
+    {
+        $this->shouldRegisterResources = false;
+
+        return $this;
+    }
 
     public function resourceLabel(string|Closure $label): static
     {
@@ -277,6 +286,11 @@ class Curator
         return $this;
     }
 
+    public function shouldRegisterResources(): bool
+    {
+        return $this->evaluate($this->shouldRegisterResources);
+    }
+
     public function getResourceLabel(): string
     {
         return $this->evaluate($this->resourceLabel);
@@ -309,7 +323,7 @@ class Curator
 
     public function getCurationPresets(): array|null
     {
-        return collect($this->curationPresets)->map(function($preset) {
+        return collect($this->curationPresets)->map(function ($preset) {
             return $preset->getPreset();
         })->toArray();
     }
@@ -447,7 +461,7 @@ class Curator
 
     public function getGliderFallbacks(): ?array
     {
-        return collect($this->gliderFallbacks)->map(function($preset) {
+        return collect($this->gliderFallbacks)->map(function ($preset) {
             return $preset->getFallback();
         })->toArray();
     }

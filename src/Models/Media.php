@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
+use League\Glide\Urls\UrlBuilderFactory;
 
 class Media extends Model
 {
@@ -39,10 +40,8 @@ class Media extends Model
 
     protected function thumbnailUrl(): Attribute
     {
-        $urlBuilder = \League\Glide\Urls\UrlBuilderFactory::create('/curator/', config('app.key'));
-
         return Attribute::make(
-            get: fn () => $urlBuilder->getUrl($this->path, ['w' => 200, 'h' => 200, 'fit' => 'crop', 'fm' => 'webp']),
+            get: fn () => $this->getSignedUrl(['w' => 200, 'h' => 200, 'fit' => 'crop', 'fm' => 'webp']),
         );
     }
 
@@ -78,9 +77,20 @@ class Media extends Model
         return round($size, $precision).' '.$units[$i];
     }
 
+    public function getSignedUrl(array $params = []): string
+    {
+        if (! $this->resizable) {
+            return $this->url;
+        }
+
+        $urlBuilder = UrlBuilderFactory::create('/curator/', config('app.key'));
+
+        return $urlBuilder->getUrl($this->path, $params);
+    }
+
     public function getCuration(string $key): array
     {
-        return Arr::first(collect($this->curations)->filter(function($item) use ($key) {
+        return Arr::first(collect($this->curations)->filter(function ($item) use ($key) {
             return $item['curation']['key'] === $key;
         }))['curation'] ?? [];
     }
