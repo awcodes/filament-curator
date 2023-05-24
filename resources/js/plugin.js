@@ -48,16 +48,18 @@ document.addEventListener("alpine:init", () => {
             }
         },
         getFiles: async function(url = '/curator/media', selected = []) {
-            if (selected.length > 0) {
-                let indicator = url.includes('?') ? '&' : '?';
-                url = url + indicator + 'media=' + selected.map(obj => obj.id).join(',');
-            }
-            this.isFetching = true;
-            const response = await fetch(url);
-            const result = await response.json();
-            this.files = this.files ? this.files.concat(result.data) : result.data;
-            this.nextPageUrl = result.next_page_url;
-            this.isFetching = false;
+            this.$nextTick(async () => {
+                if (selected.length > 0) {
+                    let indicator = url.includes('?') ? '&' : '?';
+                    url = url + indicator + 'media=' + selected.map(obj => obj.id).join(',');
+                }
+                this.isFetching = true;
+                const response = await fetch(url);
+                const result = await response.json();
+                this.files = this.files ? this.files.concat(result.data) : result.data;
+                this.nextPageUrl = result.next_page_url;
+                this.isFetching = false;
+            });
         },
         loadMoreFiles: async function() {
             if (this.nextPageUrl) {

@@ -18,6 +18,8 @@ class MediaController extends Controller
         $mediaModel = Curator::getMediaModel();
         $selected = $request->has('media') ? explode(',', $request->media) : [];
 
+        ray($selected);
+
         $files = $mediaModel::when($selected, function($query, $selected) {
                 return $query->whereNotIn('id', $selected);
             })
@@ -26,8 +28,10 @@ class MediaController extends Controller
 
         if ($selected && ! $request->has('page')) {
             $mediaModel::whereIn('id', $selected)
-                ->orderByRaw('FIELD(id, '.implode(', ', $selected).')')
                 ->get()
+                ->sortBy(function ($model) use ($selected) {
+                    return array_search($model->id, $selected);
+                })
                 ->reverse()
                 ->map(function($item) use ($files) {
                     $files->prepend($item);

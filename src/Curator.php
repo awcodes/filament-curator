@@ -484,8 +484,10 @@ class Curator
 
         if (filled($ids)) {
             return $this->mediaModel::whereIn('id', $ids)
-                ->orderByRaw('FIELD(id, '.implode(', ', $ids).')')
-                ->get();
+                ->get()
+                ->sortBy(function ($model) use ($ids) {
+                    return array_search($model->id, $ids);
+                });
         }
 
         return [];

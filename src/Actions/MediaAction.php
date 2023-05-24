@@ -20,12 +20,13 @@ class MediaAction extends Action
     {
         parent::setUp();
 
-        $this->mountUsing(function (TiptapEditor|CuratorPicker $component, ComponentContainer $form) {
-            $src = $component->getLivewire()->mediaProps['src'];
-            $media = $src !== ''
-                ? Curator::getMediaModel()::firstWhere('name', Str::of($src)->afterLast('/')->beforeLast('.'))
-                : null;
-        });
+//        $this->mountUsing(function (TiptapEditor|CuratorPicker $component, ComponentContainer $form) {
+//            $src = $component->getLivewire()->mediaProps[0]['src'];
+//            $media = $src !== ''
+//                ? app('curator')->getMediaModel()::firstWhere('name', Str::of($src)->afterLast('/')->beforeLast('.'))
+//                    ->toArray()
+//                : null;
+//        });
 
         $this->modalWidth('screen');
 
@@ -34,10 +35,13 @@ class MediaAction extends Action
         $this->modalActions(fn () => []);
 
         $this->modalContent(static function (TiptapEditor|CuratorPicker $component) {
-            $src = $component->getLivewire()->mediaProps['src'];
+
+            $src = $component->getLivewire()->mediaProps[0]['src'];
             $selected = $src !== ''
-                ? Curator::getMediaModel()::firstWhere('name', Str::of($src)->afterLast('/')->beforeLast('.'))
-                : null;
+                ? [app('curator')->getMediaModel()::firstWhere('name', Str::of($src)->afterLast('/')->beforeLast('.'))]
+                : [];
+
+            ray($selected);
 
             return view('curator::components.actions.picker-action', [
                 'statePath' => $component->getStatePath(),
