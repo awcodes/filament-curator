@@ -17,9 +17,7 @@ class MediaController extends Controller
     {
         $mediaModel = Curator::getMediaModel();
         $selected = $request->has('media') ? explode(',', $request->media) : [];
-
-        ray($selected);
-
+        
         $files = $mediaModel::when($selected, function($query, $selected) {
                 return $query->whereNotIn('id', $selected);
             })
