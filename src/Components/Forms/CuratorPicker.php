@@ -7,7 +7,6 @@ use Awcodes\Curator\Actions\PickerAction;
 use Awcodes\Curator\Facades\Curator;
 use Closure;
 use Exception;
-use Filament\Forms\Components\Concerns\HasContainerGridLayout;
 use Filament\Forms\Components\Field;
 use Filament\Support\Actions\Concerns\CanBeOutlined;
 use Filament\Support\Actions\Concerns\HasColor;

@@ -44,7 +44,7 @@ class MediaController extends Controller
             ->orWhere('caption', 'like', '%'.$request->query('q').'%')
             ->orWhere('description', 'like', '%'.$request->query('q').'%')
             ->paginate(50);
-        
+
         return response()->json($files);
     }
 

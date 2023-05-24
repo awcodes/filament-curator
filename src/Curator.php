@@ -6,7 +6,6 @@ use Awcodes\Curator\Models\Media;
 use Closure;
 use Filament\Support\Concerns\EvaluatesClosures;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Session;
 use League\Glide\Responses\LaravelResponseFactory;
 use League\Glide\Server;
