@@ -8,6 +8,9 @@ A media picker/manager plugin for Filament Admin.
 > **Warning**
 > This package does not work with Spatie Media Library.
 
+> **Warning**
+> If you are using the Curator integration with Filament Tiptap Editor you will also need to update it to version 2.3.0 or higher.
+
 ![curator-og](https://user-images.githubusercontent.com/3596800/225419661-a0431c1b-957d-466f-a94d-a73a40b11d72.png)
 
 ## Installation
