@@ -4,6 +4,7 @@ namespace Awcodes\Curator\Components\Tables;
 
 use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Models\Media;
+use Closure;
 use Filament\Tables\Columns\ImageColumn;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Arr;
@@ -13,11 +14,29 @@ class CuratorColumn extends ImageColumn
 {
     protected string $view = 'curator::components.tables.curator-column';
 
-    protected int|null $limit = null;
+    protected int|Closure|null $limit = null;
 
-    public function limit(int $limit): static
+    protected int|Closure|null $overlap = null;
+
+    protected int|Closure|null $ring = null;
+
+    public function limit(int | Closure | null $limit = 3): static
     {
         $this->limit = $limit;
+
+        return $this;
+    }
+
+    public function overlap(int | Closure | null $overlap): static
+    {
+        $this->overlap = $overlap;
+
+        return $this;
+    }
+
+    public function ring(string | Closure | null $ring): static
+    {
+        $this->ring = $ring;
 
         return $this;
     }
@@ -64,5 +83,20 @@ class CuratorColumn extends ImageColumn
         }
 
         return Arr::wrap($record);
+    }
+
+    public function getLimit(): ?int
+    {
+        return $this->evaluate($this->limit);
+    }
+
+    public function getOverlap(): ?int
+    {
+        return $this->evaluate($this->overlap);
+    }
+
+    public function getRing(): ?int
+    {
+        return $this->evaluate($this->ring);
     }
 }

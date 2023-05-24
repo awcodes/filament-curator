@@ -113,17 +113,50 @@ CuratorPicker::make(string $fieldName)
     ->imageCropAspectRatio()
     ->imageResizeTargetWidth()
     ->imageResizeTargetHeight()
+    ->multiple() // required if using a relationship with multiple media
+    ->relationship(string $relationshipName, string 'titleColumnName')
 ```
 
-Media can also be related to models by simply adding the relationship to your
-model.
+### Relationships
+
+#### Single
+
+Form component
+
+```php
+CuratorPicker::make('featured_image_id')
+    ->relationship('featured_image', 'id'),
+```
+
+Model
 
 ```php
 use Awcodes\Curator\Models\Media;
 
-public function featuredImage(): HasOne
+public function featuredImage(): BelongsTo
 {
-    return $this->hasOne(Media::class, 'id', 'featured_image');
+    return $this->belongsTo(Media::class, 'featured_image_id', 'id');
+}
+```
+
+#### Multiple
+
+Form component
+
+```php
+CuratorPicker::make('product_picture_ids')
+    ->multiple()
+    ->relationship('product_pictures', 'id'),
+```
+
+Model
+
+```php
+use Awcodes\Curator\Models\Media;
+
+public function productPictures(): BelongsTo
+{
+    return $this->belongsToMany(Media::class, 'media_post', 'post_id', 'media_id');
 }
 ```
 
@@ -175,16 +208,41 @@ CuratorPicker::make(string $fieldName)
 
 ### Curator Column
 
-To render your media in a table Curator comes with an `CuratorColumn` which has the same methods as Filament's ImageColumn.
+To render your media in a table Curator comes with a `CuratorColumn` which has the same methods as Filament's ImageColumn.
 
 ```php
 CuratorColumn::make('featured_image')
     ->size(40)
 ```
 
+For multiple images you can control the number of images shown, the ring size and the overlap.
+
+```php
+CuratorColumn::make('product_pictures')
+    ->ring(2) // options 0,1,2,4
+    ->overlap(4) // options 0,2,3,4
+    ->limit(3),
+```
+
+#### Relationships
+
+If you are using a relationship to store your media then you will encounter n+1 issues on the column. In order to prevent this you should modify your table query to eager load the relationship.
+
+For example when using the admin panel in your ListResource
+```php
+protected function getTableQuery(): Builder
+{
+    return parent::getTableQuery()->with(['featured_image', 'product_pictures']);
+}
+```
+
 ### Curations
 
-Curations are a way to create custom sizes and focal points for your images. After creating curation, they can be referenced by their key to output them in your blade files.
+Curations are a way to create custom sizes and focal points for your images. 
+
+
+#### Curation Presets
+If you have a curation that you are constantly using you can create Presets which will be available in the Curation modal for easier reuse. After creating curation presets, they can be referenced by their key to output them in your blade files.
 
 ```php
 use Awcodes\Curator\CurationPreset;
@@ -357,7 +415,7 @@ public function register()
 ## Theming
 
 If you are using a custom theme for Filament you will need to add this plugin's
-views to your Tailwind CSS config.
+views to your `tailwind.config.js`.
 
 ```js
 content: [

@@ -78,7 +78,7 @@
                                 x-tooltip.raw="{{ __('curator::views.picker.reorder') }}"
                                 wire:sortable.handle
                                 type="button"
-                                class="flex items-center justify-center flex-none w-10 h-10 transition text-gray-600 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400 cursor-grab"
+                                class="flex items-center justify-center flex-none w-10 h-10 transition text-gray-400 hover:text-gray-300 cursor-grab"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="m22.67 12l-4.49 4.5l-2.51-2.5l1.98-2l-1.98-1.96l2.51-2.51L22.67 12M12 1.33l4.47 4.49l-2.51 2.51L12 6.35l-2 1.98l-2.5-2.51L12 1.33m0 21.34l-4.47-4.49l2.51-2.51L12 17.65l2-1.98l2.5 2.51l-4.5 4.49M1.33 12l4.49-4.5L8.33 10l-1.98 2l1.98 1.96l-2.51 2.51L1.33 12M12 10a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2a2 2 0 0 1 2-2Z"/></svg>
                                 <span class="sr-only">
@@ -92,7 +92,7 @@
                                 <button
                                     title="{{ __('forms::components.repeater.buttons.item_options.label') }}"
                                     type="button"
-                                    class="flex items-center justify-center flex-none w-10 h-10 transition text-gray-600 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400"
+                                    class="flex items-center justify-center flex-none w-10 h-10 transition text-gray-400 hover:text-gray-300"
                                 >
                                     @svg('heroicon-s-dots-vertical', 'w-4 h-4')
                                     <span class="sr-only">
@@ -132,21 +132,17 @@
                                 >
                                     {{ __('curator::views.picker.edit') }}
                                 </x-filament::dropdown.list.item>
+                                <x-filament::dropdown.list.item
+                                        color="secondary"
+                                        icon="heroicon-s-minus-circle"
+                                        x-on:click="close(); removeItem('{{ $uuid }}')"
+                                        rel="noopener noreferrer"
+                                >
+                                    {{ __('curator::views.picker.remove') }}
+                                </x-filament::dropdown.list.item>
                                 @endif
                             </x-filament::dropdown.list>
                         </x-filament::dropdown>
-
-                        @if (! $isDisabled())
-                            <button
-                                type="button"
-                                x-on:click="removeItem('{{ $uuid }}')"
-                                x-tooltip.raw="{{ __('curator::views.picker.remove') }}"
-                                class="flex items-center justify-center flex-none w-10 h-10 transition text-danger-600 hover:text-danger-500 dark:text-danger-500 dark:hover:text-danger-400"
-                            >
-                                @svg('heroicon-s-minus-circle', 'w-4 h-4')
-                                <span class="sr-only">{{ __('curator::views.picker.remove') }}</span>
-                            </button>
-                        @endif
                         </div>
 
                     </div>

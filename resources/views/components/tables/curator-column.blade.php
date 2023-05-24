@@ -1,11 +1,28 @@
 @php
     $items = $getMedia();
+    $overlap = $getOverlap() ?? 'sm';
+    $imageCount = count($items);
+    $ring = match ($getRing()) {
+        0 => 'ring-0',
+        1 => 'ring-1',
+        2 => 'ring-2',
+        4 => 'ring-4',
+        default => 'ring',
+    };
+
+    $overlap = match ($overlap) {
+        0 => 'space-x-0',
+        2 => '-space-x-2',
+        3 => '-space-x-3',
+        4 => '-space-x-4',
+        default => '-space-x-1',
+    };
 @endphp
 
 <div
     {{ $attributes->merge($getExtraAttributes())->class([
         'curator-column px-4 py-3',
-        'flex items-center -space-x-2' => count($items) > 1,
+        $overlap . ' flex items-center' => $imageCount > 1,
     ]) }}
 >
     @php
@@ -21,7 +38,7 @@
             "
             @class([
                 'rounded-full overflow-hidden' => $isRounded(),
-                'ring-2 ring-white dark:ring-gray-800' => count($items) > 1,
+                $ring . ' ring-white dark:ring-gray-800' => $imageCount > 1,
             ])
         >
             @if (app('curator')->isResizable($item->ext))
