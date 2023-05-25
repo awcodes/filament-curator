@@ -76,7 +76,7 @@
                     </button>
                     @if (! $isDisabled())
                     <a
-                        href="{{ \Awcodes\Curator\Resources\MediaResource::getUrl('edit', $currentItem['id']) }}"
+                        href="{{ call_user_func([\Filament\Facades\Filament::getModelResource(\Awcodes\Curator\Facades\Curator::getMediaModel()), 'getUrl'], 'edit', $currentItem['id']) }}"
                         target="_blank"
                         rel="noopener nofollow"
                         class="flex items-center justify-center flex-none w-10 h-10 transition text-success-600 hover:text-success-500 dark:text-success-500 dark:hover:text-success-400"
