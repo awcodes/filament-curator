@@ -2,6 +2,14 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.6.0 - 2023-05-27
+
+### What's Changed
+
+- Feat: Add support for multiple images by @awcodes in https://github.com/awcodes/filament-curator/pull/185
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.5.11...v2.6.0
+
 ## v2.5.11 - 2023-05-23
 
 ### What's Changed
