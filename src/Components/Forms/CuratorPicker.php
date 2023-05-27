@@ -14,7 +14,11 @@ use Filament\Support\Actions\Concerns\HasSize;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 class CuratorPicker extends Field
 {
@@ -62,10 +66,82 @@ class CuratorPicker extends Field
         $this->color = 'primary';
         $this->isOutlined = true;
 
+        $this->afterStateHydrated(static function (CuratorPicker $component, array|int|null $state): void {
+            $items = [];
+
+            if (! filled($state)) {
+                $component->state($items);
+                return;
+            }
+
+            if (is_array($state) && isset($state[0]['id'])) {
+                $media = $state;
+            } elseif (isset($state['id'])) {
+                $media = [$state];
+            } else {
+                $state = Arr::wrap($state);
+                $media = app('curator')->getMedia($state);
+            }
+
+            foreach ($media as $itemData) {
+                $items[(string) Str::uuid()] = $itemData;
+            }
+
+            $component->state($items);
+        });
+
+        $this->afterStateUpdated(static function (CuratorPicker $component, array|int|null $state): void {
+            $items = [];
+
+            $state = array_values($state);
+
+            foreach ($state as $itemData) {
+                $items[(string) Str::uuid()] = $itemData;
+            }
+
+            $component->state($items);
+        });
+
+        $this->dehydrateStateUsing(function (CuratorPicker $component, $state) {
+            if (! filled($state)) {
+                return null;
+            }
+
+            $state = collect($state)->pluck('id')->toArray();
+
+            if (count($state) === 1 && is_array($state)) {
+                $state = $state[0];
+            }
+
+            return $state;
+        });
+
+        $this->registerListeners([
+            'picker::moveItems' => [
+                function (CuratorPicker $component, string $statePath, array $uuids): void {
+                    if ($statePath !== $component->getStatePath()) {
+                        return;
+                    }
+
+                    $items = array_merge(array_flip($uuids), $component->getState());
+
+                    $livewire = $component->getLivewire();
+                    data_set($livewire, $statePath, $items);
+                },
+            ],
+        ]);
+
         $this->registerActions([
             PickerAction::make(),
             DownloadAction::make(),
         ]);
+    }
+
+    public function multiple(bool | Closure $condition = true): static
+    {
+        $this->isMultiple = $condition;
+
+        return $this;
     }
 
     public function buttonLabel(string|Htmlable|Closure $label): static
@@ -152,6 +228,9 @@ class CuratorPicker extends Field
         return $this;
     }
 
+    /**
+     * @deprecated
+     */
     public function getCurrentItem(): Model|Collection|null
     {
         if (! filled($this->getState())) {
@@ -230,5 +309,82 @@ class CuratorPicker extends Field
         }
 
         return $types;
+    }
+
+    public function isMultiple(): bool
+    {
+        return $this->evaluate($this->isMultiple);
+    }
+
+    public function relationship(string | Closure $relationshipName, string | Closure $titleColumnName, ?Closure $callback = null): static
+    {
+        $this->relationship = $relationshipName;
+        $this->relationshipTitleColumnName = $titleColumnName;
+
+        $this->loadStateFromRelationshipsUsing(static function (CuratorPicker $component, $state): void {
+            if (filled($state)) {
+                return;
+            }
+
+            $relationship = $component->getRelationship();
+
+            if ($component->isMultiple()) {
+                $relatedModels = $relationship->getResults();
+
+                $component->state($relatedModels);
+
+                return;
+            }
+
+            /** @var BelongsTo $relationship */
+            $relatedModel = $relationship->getResults();
+
+            if (! $relatedModel) {
+                return;
+            }
+
+            $component->state(
+                $relatedModel->getAttribute(
+                    $relationship->getOwnerKeyName(),
+                ),
+            );
+        });
+
+        $this->saveRelationshipsUsing(static function (CuratorPicker $component, Model $record, $state) {
+            if ($component->isMultiple()) {
+                $state = Arr::pluck($state,'id');
+                $component->getRelationship()->sync($state ?? []);
+
+                return;
+            }
+
+            $component->getRelationship()->associate(Arr::first($state)['id']);
+            $record->save();
+        });
+
+        $this->dehydrated(fn (CuratorPicker $component): bool => ! $component->isMultiple());
+
+        return $this;
+    }
+
+    public function getRelationship(): BelongsTo | BelongsToMany | \Znck\Eloquent\Relations\BelongsToThrough | null
+    {
+        $name = $this->getRelationshipName();
+
+        if (blank($name)) {
+            return null;
+        }
+
+        return $this->getModelInstance()->{$name}();
+    }
+
+    public function getRelationshipName(): ?string
+    {
+        return $this->evaluate($this->relationship);
+    }
+
+    public function hasRelationship(): bool
+    {
+        return filled($this->getRelationshipName());
     }
 }

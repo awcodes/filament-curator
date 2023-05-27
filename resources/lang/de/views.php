@@ -16,6 +16,7 @@ return [
     ],
     'picker' => [
         'button' => 'Datei hinzufügen',
+        'reorder' => 'Neu anordnen',
         'view' => 'Anzeigen',
         'edit' => 'Bearbeiten',
         'download' => 'Herunterladen',

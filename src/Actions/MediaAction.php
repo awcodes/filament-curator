@@ -20,13 +20,6 @@ class MediaAction extends Action
     {
         parent::setUp();
 
-        $this->mountUsing(function (TiptapEditor|CuratorPicker $component, ComponentContainer $form) {
-            $src = $component->getLivewire()->mediaProps['src'];
-            $media = $src !== ''
-                ? Curator::getMediaModel()::firstWhere('name', Str::of($src)->afterLast('/')->beforeLast('.'))
-                : null;
-        });
-
         $this->modalWidth('screen');
 
         $this->modalHeading(__('curator::views.panel.heading'));
@@ -34,10 +27,11 @@ class MediaAction extends Action
         $this->modalActions(fn () => []);
 
         $this->modalContent(static function (TiptapEditor|CuratorPicker $component) {
+
             $src = $component->getLivewire()->mediaProps['src'];
             $selected = $src !== ''
-                ? Curator::getMediaModel()::firstWhere('name', Str::of($src)->afterLast('/')->beforeLast('.'))
-                : null;
+                ? [app('curator')->getMediaModel()::firstWhere('name', Str::of($src)->afterLast('/')->beforeLast('.'))]
+                : [];
 
             return view('curator::components.actions.picker-action', [
                 'statePath' => $component->getStatePath(),

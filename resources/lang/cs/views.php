@@ -16,6 +16,7 @@ return [
     ],
     'picker' => [
         'button' => 'Přidat média',
+        'reorder' => 'Přeobjednat',
         'view' => 'Zobrazit',
         'edit' => 'Upravit',
         'download' => 'Stáhnout',

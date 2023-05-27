@@ -8,12 +8,14 @@ document.addEventListener("alpine:init", () => {
     }) => ({
         statePath,
         types,
-        selected: null,
+        selected: [],
         files: [],
         nextPageUrl: null,
         isFetching: false,
+        showEditForm: false,
+        showUploadForm: true,
         async init() {
-            await this.getFiles('/curator/media', initialSelection?.id);
+            await this.getFiles('/curator/media', initialSelection);
             const observer = new IntersectionObserver(
                 ([e]) => {
                     if (e.isIntersecting) {
@@ -26,21 +28,38 @@ document.addEventListener("alpine:init", () => {
                 }
             );
             observer.observe(this.$refs.loadMore);
-            if (initialSelection) {
-                this.setSelected(initialSelection.id)
+
+            this.$watch('selected', (value) => {
+                if (value.length === 1) {
+                    this.$wire.setSelection(value);
+                    this.showEditForm = true;
+                    this.showUploadForm = false;
+                } else if (value.length > 1) {
+                    this.showEditForm = false;
+                    this.showUploadForm = false;
+                } else {
+                    this.showEditForm = false;
+                    this.showUploadForm = true;
+                }
+            });
+
+            if (initialSelection?.length > 0) {
+                this.selected = initialSelection;
             }
         },
-        getFiles: async function(url = '/curator/media', selected = null) {
-            if (selected) {
-                let indicator = url.includes('?') ? '&' : '?';
-                url = url + indicator + 'media_id=' + selected;
-            }
-            this.isFetching = true;
-            const response = await fetch(url);
-            const result = await response.json();
-            this.files = this.files ? this.files.concat(result.data) : result.data;
-            this.nextPageUrl = result.next_page_url;
-            this.isFetching = false;
+        getFiles: async function(url = '/curator/media', selected = []) {
+            this.$nextTick(async () => {
+                if (selected.length > 0) {
+                    let indicator = url.includes('?') ? '&' : '?';
+                    url = url + indicator + 'media=' + selected.map(obj => obj.id).join(',');
+                }
+                this.isFetching = true;
+                const response = await fetch(url);
+                const result = await response.json();
+                this.files = this.files ? this.files.concat(result.data) : result.data;
+                this.nextPageUrl = result.next_page_url;
+                this.isFetching = false;
+            });
         },
         loadMoreFiles: async function() {
             if (this.nextPageUrl) {
@@ -60,25 +79,33 @@ document.addEventListener("alpine:init", () => {
             if (media) {
                 this.files = [...media, ...this.files];
                 this.$nextTick(() => {
-                    this.setSelected(media[0].id);
+                    this.addToSelection(media[0].id);
                 })
             }
         },
         removeFile: function(media = null) {
             if (media) {
                 this.files = this.files.filter((obj) => obj.id !== media.id);
-                this.selected = null;
+                this.removeFromSelection(media.id);
             }
         },
-        setSelected: function(mediaId = null) {
-            if (!mediaId || (this.selected && this.selected.id === mediaId)) {
-                this.selected = null;
-            } else {
-                this.selected = this.files.find(obj => obj.id === mediaId);
-            }
+        addToSelection: function(mediaId = null) {
+            this.selected.push(this.files.find(obj => obj.id === mediaId));
+        },
+        removeFromSelection: function(mediaId = null) {
+            this.selected = this.selected.filter((obj) => obj.id !== mediaId);
+        },
+        isSelected: function(mediaId = null) {
+            if (this.selected.length === 0) return false;
 
-            this.$wire.setCurrentFile(this.selected);
+            return this.selected.find((obj) => obj.id === mediaId) !== undefined;
         },
+        insertMedia: function() {
+            this.$dispatch('insert-media', {
+                statePath: this.statePath,
+                media: this.selected,
+            });
+        }
     }));
 
     Alpine.data('curation', ({ statePath, fileName, fileType, presets = {}}) => ({

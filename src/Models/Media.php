@@ -28,6 +28,7 @@ class Media extends Model
         'url',
         'thumbnail_url',
         'resizable',
+        'size_for_humans',
     ];
 
     protected function url(): Attribute

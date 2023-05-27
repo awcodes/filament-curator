@@ -16,6 +16,7 @@ return [
     ],
     'picker' => [
         'button' => 'Tambah media',
+        'reorder' => 'Susun ulang',
         'view' => 'Lihat',
         'edit' => 'Ubah',
         'download' => 'Unduh',

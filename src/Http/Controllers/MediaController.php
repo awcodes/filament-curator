@@ -9,18 +9,31 @@ use Illuminate\Support\Facades\Storage;
 use League\Glide\Filesystem\FileNotFoundException;
 use League\Glide\Signatures\SignatureException;
 use League\Glide\Signatures\SignatureFactory;
+use League\Glide\Urls\UrlBuilderFactory;
 
 class MediaController extends Controller
 {
     public function index(Request $request)
     {
         $mediaModel = Curator::getMediaModel();
+        $selected = $request->has('media') ? explode(',', $request->media) : [];
+        
+        $files = $mediaModel::when($selected, function($query, $selected) {
+                return $query->whereNotIn('id', $selected);
+            })
+            ->latest()
+            ->paginate(25);
 
-        $files = $mediaModel::where('id', '<>', $request->media_id)->latest()->paginate(25);
-
-        if ($request->has('media_id') && ! $request->has('page')) {
-            $selected = $mediaModel::where('id', $request->media_id)->first();
-            $files->prepend($selected);
+        if ($selected && ! $request->has('page')) {
+            $mediaModel::whereIn('id', $selected)
+                ->get()
+                ->sortBy(function ($model) use ($selected) {
+                    return array_search($model->id, $selected);
+                })
+                ->reverse()
+                ->map(function($item) use ($files) {
+                    $files->prepend($item);
+                });
         }
 
         return response()->json($files);

@@ -40,7 +40,7 @@
                                 </x-curator::curation-select>
                             </div>
                             <div>
-                                <label class="flex items-center w-full border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm bg-gray-400 dark:bg-gray-800 text-sm" x-bind:class="{'border-danger-600 ring-danger-600 dark:border-danger-400 dark:ring-danger-400' : key === null}">
+                                <label class="flex items-center w-full border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm bg-gray-100 dark:bg-gray-800 text-sm" x-bind:class="{'border-danger-600 ring-danger-600 dark:border-danger-400 dark:ring-danger-400' : key === null}">
                                     <span class="w-20 flex-shrink-0 self-stretch flex items-center justify-center px-2">{{ __('curator::views.curation.key') }}</span>
                                     <input type="text" name="key" x-model="key" class="text-sm block w-full transition duration-75 border-none focus:border-primary-500 focus:ring-1 focus:ring-inset focus:ring-primary-500 disabled:opacity-70 dark:bg-gray-700 dark:text-white dark:focus:border-primary-500 !rounded-r-lg" />
                                 </label>
