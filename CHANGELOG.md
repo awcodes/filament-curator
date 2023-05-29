@@ -2,6 +2,16 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.6.1 - 2023-05-29
+
+### What's Changed
+
+- Bump dependabot/fetch-metadata from 1.4.0 to 1.5.1 by @dependabot in https://github.com/awcodes/filament-curator/pull/188
+- Bump aglipanci/laravel-pint-action from 2.2.0 to 2.3.0 by @dependabot in https://github.com/awcodes/filament-curator/pull/189
+- Fix: resolve media resource for edit url by @awcodes in https://github.com/awcodes/filament-curator/pull/190
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.6.0...v2.6.1
+
 ## v2.6.0 - 2023-05-27
 
 ### What's Changed
