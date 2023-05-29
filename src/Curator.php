@@ -3,7 +3,9 @@
 namespace Awcodes\Curator;
 
 use Awcodes\Curator\Models\Media;
+use Awcodes\Curator\Resources\MediaResource;
 use Closure;
+use Filament\Facades\Filament;
 use Filament\Support\Concerns\EvaluatesClosures;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Session;
@@ -276,6 +278,11 @@ class Curator
         $this->mediaModel = $model;
 
         return $this;
+    }
+
+    public function getMediaModelResource(): string
+    {
+        return Filament::getModelResource($this->mediaModel);
     }
 
     public function gliderFallbacks(array|null $fallbacks): static
