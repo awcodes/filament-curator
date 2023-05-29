@@ -125,7 +125,7 @@
                                 <x-filament::dropdown.list.item
                                     color="secondary"
                                     icon="heroicon-s-pencil"
-                                    href="{{ \Awcodes\Curator\Resources\MediaResource::getUrl('edit', $item['id']) }}"
+                                    href="{{ app(app('curator')->getMediaModelResource())->getUrl('edit', $item['id']) }}"
                                     tag="a"
                                     target="_blank"
                                     rel="noopener noreferrer"
