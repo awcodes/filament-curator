@@ -35,9 +35,11 @@ document.addEventListener("alpine:init", () => {
                     this.showEditForm = true;
                     this.showUploadForm = false;
                 } else if (value.length > 1) {
+                    this.$wire.setSelection([]);
                     this.showEditForm = false;
                     this.showUploadForm = false;
                 } else {
+                    this.$wire.setSelection([]);
                     this.showEditForm = false;
                     this.showUploadForm = true;
                 }
