@@ -2,6 +2,14 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.6.2 - 2023-05-31
+
+### What's Changed
+
+- Fix: updating and deleting records in Picker panel by @awcodes in https://github.com/awcodes/filament-curator/pull/192
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.6.1...v2.6.2
+
 ## v2.6.1 - 2023-05-29
 
 ### What's Changed
