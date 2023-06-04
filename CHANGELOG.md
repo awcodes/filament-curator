@@ -2,6 +2,16 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.6.3 - 2023-06-04
+
+### What's Changed
+
+- Fix: undefined keys on insert to picker by @awcodes in https://github.com/awcodes/filament-curator/pull/196
+- Fix: path generator errors on picker and panel by @awcodes in https://github.com/awcodes/filament-curator/pull/197
+- Feature: Add auto height for srcset resized images by @howdu in https://github.com/awcodes/filament-curator/pull/194
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.6.2...v2.6.3
+
 ## v2.6.2 - 2023-05-31
 
 ### What's Changed
