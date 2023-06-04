@@ -2,8 +2,8 @@
 
 namespace Awcodes\Curator;
 
+use Awcodes\Curator\Generators\PathGenerator;
 use Awcodes\Curator\Models\Media;
-use Awcodes\Curator\Resources\MediaResource;
 use Closure;
 use Filament\Facades\Filament;
 use Filament\Support\Concerns\EvaluatesClosures;
@@ -47,7 +47,7 @@ class Curator
 
     protected string|Closure $directory = 'media';
 
-    protected string|null $pathGenerator = null;
+    protected PathGenerator|string|null $pathGenerator = null;
 
     protected string|Closure $visibility = 'public';
 
@@ -196,7 +196,7 @@ class Curator
         return $this;
     }
 
-    public function pathGenerator(string|null $generator): static
+    public function pathGenerator(PathGenerator|string|null $generator): static
     {
         $this->pathGenerator = $generator;
 
@@ -378,7 +378,7 @@ class Curator
         return $this->evaluate($this->diskName) ?? config('forms.default_filesystem_disk');
     }
 
-    public function getPathGenerator(): ?string
+    public function getPathGenerator(): PathGenerator|string|null
     {
         return $this->pathGenerator;
     }

@@ -2,6 +2,7 @@
 
 namespace Awcodes\Curator\Facades;
 
+use Awcodes\Curator\Generators\PathGenerator;
 use Closure;
 use Illuminate\Support\Facades\Facade;
 use League\Glide\Server;
@@ -25,7 +26,7 @@ use League\Glide\ServerFactory;
  * @method static static maxSize(int|Closure $size)
  * @method static static disk(string|Closure $disk)
  * @method static static directory(Closure|string|null $directory)
- * @method static static pathGenerator(string|null $generator)
+ * @method static static pathGenerator(PathGenerator|string|null $generator)
  * @method static static visibility(string|Closure $visibility)
  * @method static static cloudDisks(array $disks)
  * @method static static imageCropAspectRatio(string|Closure|null $ratio)
@@ -53,6 +54,7 @@ use League\Glide\ServerFactory;
  * @method static int getMaxWidth()
  * @method static int getMinSize()
  * @method static int getMaxSize()
+ * @method static PathGenerator|string|null getPathGenerator()
  * @method static string getDiskName()
  * @method static string getDirectory()
  * @method static string getVisibility()

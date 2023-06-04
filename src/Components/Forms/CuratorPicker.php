@@ -5,6 +5,7 @@ namespace Awcodes\Curator\Components\Forms;
 use Awcodes\Curator\Actions\DownloadAction;
 use Awcodes\Curator\Actions\PickerAction;
 use Awcodes\Curator\Facades\Curator;
+use Awcodes\Curator\Generators\PathGenerator;
 use Closure;
 use Exception;
 use Filament\Forms\Components\Field;
@@ -165,7 +166,7 @@ class CuratorPicker extends Field
         return $this;
     }
 
-    public function pathGenerator(string|null $generator): static
+    public function pathGenerator(PathGenerator|string|null $generator): static
     {
         $this->curatorPathGenerator = $generator;
 
@@ -255,7 +256,7 @@ class CuratorPicker extends Field
         return $this->evaluate($this->curatorDirectory) ?? app('curator')->getDirectory();
     }
 
-    public function getPathGenerator(): ?string
+    public function getPathGenerator(): PathGenerator|string|null
     {
         return $this->curatorPathGenerator ?? app('curator')->getPathGenerator();
     }

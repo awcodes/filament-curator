@@ -30,7 +30,7 @@ class CuratorPanel extends Component implements HasForms
 
     public string|null $directory;
 
-    public PathGenerator|null $pathGenerator = null;
+    public PathGenerator|string|null $pathGenerator = null;
 
     public bool $shouldPreserveFilenames = false;
 
