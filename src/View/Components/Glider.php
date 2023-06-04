@@ -111,7 +111,14 @@ class Glider extends Component
         if ($this->srcset) {
             foreach ($this->srcset as $s) {
                 $width = preg_replace("/\D/", '', $s);
-                $srcset .= $this->buildGlideSource(['w' => $width, 'h' => floor($width * ($this->media->height / $this->media->width))]).' '.$s.', ';
+
+                if ($this->height === 'auto') {
+                    $height = null;
+                } else {
+                    $height = floor($width * ($this->media->height / $this->media->width));
+                }
+
+                $srcset .= $this->buildGlideSource(['w' => $width, 'h' => $height]).' '.$s.', ';
             }
 
             return Str::of($srcset)->rtrim(', ');
