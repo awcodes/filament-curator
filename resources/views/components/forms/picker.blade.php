@@ -53,7 +53,7 @@
                     @if (str($item['type'])->contains('image'))
                         <img
                             src="{{ $item['url'] }}"
-                            alt="{{ $item['alt'] }}"
+                            alt="{{ $item['alt'] ?? $item['name'] }}"
                              @class([
                                 'h-full',
                                 'object-contain' => $isConstrained(),
