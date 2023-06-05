@@ -33,6 +33,8 @@ class CuratorPicker extends Field
 
     protected bool|Closure|null $isConstrained = false;
 
+    protected bool|Closure|null $isMultiple = false;
+
     protected string|Closure|null $curatorDiskName = null;
 
     protected string|Closure|null $curatorDirectory = null;
@@ -54,6 +56,10 @@ class CuratorPicker extends Field
     protected string|Closure|null $curatorImageResizeTargetHeight = null;
 
     protected string|Closure|null $curatorImageResizeTargetWidth = null;
+
+    protected string|Closure|null $relationshipTitleColumnName = null;
+
+    protected string|Closure|null $relationship = null;
 
     /**
      * @throws Exception
