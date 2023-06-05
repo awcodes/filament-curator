@@ -352,6 +352,10 @@ class CuratorPicker extends Field
         });
 
         $this->saveRelationshipsUsing(static function (CuratorPicker $component, Model $record, $state) {
+            if (blank($state)) {
+                return;
+            }
+
             if ($component->isMultiple()) {
                 $state = Arr::pluck($state,'id');
                 $component->getRelationship()->sync($state ?? []);
