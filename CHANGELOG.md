@@ -2,6 +2,15 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.6.4 - 2023-06-05
+
+### What's Changed
+
+- Chore: Add missing properties to CuratorPicker by @howdu in https://github.com/awcodes/filament-curator/pull/198
+- Fix:  empty array offset by @howdu in https://github.com/awcodes/filament-curator/pull/199
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.6.3...v2.6.4
+
 ## v2.6.3 - 2023-06-04
 
 ### What's Changed
