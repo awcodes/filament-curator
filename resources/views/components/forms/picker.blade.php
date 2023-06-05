@@ -1,6 +1,6 @@
 @php
     $statePath = $getStatePath();
-    $items = $getState();
+    $items = (array)$getState();
 @endphp
 
 <x-dynamic-component
