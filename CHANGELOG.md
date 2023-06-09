@@ -2,6 +2,15 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.7.0 - 2023-06-09
+
+### What's Changed
+
+- Chore: enforce multiple method to allow only single item selection by @awcodes in https://github.com/awcodes/filament-curator/pull/202
+- Feat: add option to limit picker to field's directory by @awcodes in https://github.com/awcodes/filament-curator/pull/203
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.6.5...v2.7.0
+
 ## v2.6.5 - 2023-06-09
 
 ### What's Changed
