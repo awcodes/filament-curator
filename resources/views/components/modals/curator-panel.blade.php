@@ -1,7 +1,9 @@
 <div x-data="curator({
     statePath: '{{ $statePath }}',
     types: @js($acceptedFileTypes),
-    initialSelection: @js($selected)
+    initialSelection: @js($selected),
+    isMultiple: {{ $isMultiple ? 'true' : 'false' }},
+    directory: '{{ $isLimitedToDirectory ? $directory : null }}',
 })"
      x-on:clear-selected="selected = null"
      x-on:insert-media.window="$dispatch('close-modal', { id: '{{ $modalId }}' })"

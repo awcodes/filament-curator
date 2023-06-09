@@ -4,10 +4,14 @@ document.addEventListener("alpine:init", () => {
     Alpine.data('curator', ({
         statePath,
         types,
-        initialSelection = null
+        initialSelection = null,
+        isMultiple = false,
+        directory = null,
     }) => ({
         statePath,
         types,
+        isMultiple,
+        directory,
         selected: [],
         files: [],
         nextPageUrl: null,
@@ -55,6 +59,10 @@ document.addEventListener("alpine:init", () => {
                     let indicator = url.includes('?') ? '&' : '?';
                     url = url + indicator + 'media=' + selected.map(obj => obj.id).join(',');
                 }
+                if (this.directory) {
+                    let indicator = url.includes('?') ? '&' : '?';
+                    url = url + indicator + 'directory=' + this.directory;
+                }
                 this.isFetching = true;
                 const response = await fetch(url);
                 const result = await response.json();
@@ -72,7 +80,12 @@ document.addEventListener("alpine:init", () => {
         },
         searchFiles: async function(event) {
             this.isFetching = true;
-            const response = await fetch('/curator/media/search?q=' + event.target.value);
+            let url = '/curator/media/search?q=' + event.target.value;
+            if (this.directory) {
+                let indicator = url.includes('?') ? '&' : '?';
+                url = url + indicator + 'directory=' + this.directory;
+            }
+            const response = await fetch(url);
             const result = await response.json();
             this.files = result.data;
             this.isFetching = false;
@@ -92,6 +105,7 @@ document.addEventListener("alpine:init", () => {
             }
         },
         addToSelection: function(mediaId = null) {
+            if (this.selected.length === 1 && ! this.isMultiple) return;
             this.selected.push(this.files.find(obj => obj.id === mediaId));
         },
         removeFromSelection: function(mediaId = null) {

@@ -39,6 +39,8 @@ class CuratorPicker extends Field
 
     protected string|Closure|null $curatorDirectory = null;
 
+    protected bool|null $isLimitedToDirectory = null;
+
     protected string|null $curatorPathGenerator = null;
 
     protected string|Closure|null $curatorVisibility = null;
@@ -172,6 +174,13 @@ class CuratorPicker extends Field
         return $this;
     }
 
+    public function limitToDirectory(bool|Closure|null $condition = true): static
+    {
+        $this->isLimitedToDirectory = $condition;
+
+        return $this;
+    }
+
     public function pathGenerator(PathGenerator|string|null $generator): static
     {
         $this->curatorPathGenerator = $generator;
@@ -260,6 +269,15 @@ class CuratorPicker extends Field
     public function getDirectory(): string
     {
         return $this->evaluate($this->curatorDirectory) ?? app('curator')->getDirectory();
+    }
+
+    public function isLimitedToDirectory(): bool
+    {
+        if (! $this->getDirectory()) {
+            return false;
+        }
+
+        return $this->evaluate($this->isLimitedToDirectory) ?? app('curator')->isLimitedToDirectory();
     }
 
     public function getPathGenerator(): PathGenerator|string|null

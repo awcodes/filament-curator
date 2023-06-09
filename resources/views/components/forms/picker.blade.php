@@ -1,6 +1,6 @@
 @php
     $statePath = $getStatePath();
-    $items = (array)$getState();
+    $items = $getState() ?? [];
 @endphp
 
 <x-dynamic-component
@@ -31,7 +31,6 @@
         x-on:insert-media.window="insertMedia($event)"
         class="curator-media-picker w-full"
     >
-
         <div
             @class([
                 'flex items-center gap-6 flex-wrap' => count($items) <= 3,
@@ -71,7 +70,7 @@
 
                     <div class="absolute top-0 right-0">
                         <div class="relative flex items-center bg-gray-900 divide-x divide-gray-700 rounded-bl-lg shadow-md">
-                        @if (count($items) > 1)
+                        @if ($isMultiple())
                             <button
                                 title="{{ __('forms::components.repeater.buttons.move_item.label') }}"
                                 x-on:click.stop
@@ -158,16 +157,19 @@
                 </div>
             @endforeach
         </div>
-        <x-filament::button
-            type="button"
-            color="{{ $getColor() }}"
-            outlined="{{ $isOutlined() }}"
-            size="{{ $getSize() }}"
-            wire:click="mountFormComponentAction('{{ $statePath }}', 'curator_picker')"
-            class="{{ count($items) > 0 ? 'mt-4' : '' }}"
-        >
-            {{ $getButtonLabel() }}
-        </x-filament::button>
+
+        @if ($isMultiple() || (! $isMultiple() && count($items) === 0))
+            <x-filament::button
+                type="button"
+                color="{{ $getColor() }}"
+                outlined="{{ $isOutlined() }}"
+                size="{{ $getSize() }}"
+                wire:click="mountFormComponentAction('{{ $statePath }}', 'curator_picker')"
+                class="{{ count($items) > 0 ? 'mt-4' : '' }}"
+            >
+                {{ $getButtonLabel() }}
+            </x-filament::button>
+        @endif
     </div>
 
 </x-dynamic-component>
