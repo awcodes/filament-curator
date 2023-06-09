@@ -2,6 +2,14 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.6.5 - 2023-06-09
+
+### What's Changed
+
+- Fix: null state check on picker component by @awcodes in https://github.com/awcodes/filament-curator/pull/201
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.6.4...v2.6.5
+
 ## v2.6.4 - 2023-06-05
 
 ### What's Changed
