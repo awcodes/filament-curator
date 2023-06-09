@@ -2,6 +2,14 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.7.1 - 2023-06-09
+
+### What's Changed
+
+- Fix null state by @howdu in https://github.com/awcodes/filament-curator/pull/204
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.7.0...v2.7.1
+
 ## v2.7.0 - 2023-06-09
 
 ### What's Changed
