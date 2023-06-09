@@ -4,10 +4,12 @@ document.addEventListener("alpine:init", () => {
     Alpine.data('curator', ({
         statePath,
         types,
-        initialSelection = null
+        initialSelection = null,
+        isMultiple = false,
     }) => ({
         statePath,
         types,
+        isMultiple,
         selected: [],
         files: [],
         nextPageUrl: null,
@@ -92,6 +94,7 @@ document.addEventListener("alpine:init", () => {
             }
         },
         addToSelection: function(mediaId = null) {
+            if (this.selected.length === 1 && ! this.isMultiple) return;
             this.selected.push(this.files.find(obj => obj.id === mediaId));
         },
         removeFromSelection: function(mediaId = null) {

@@ -40,6 +40,7 @@ class PickerAction extends Action
                 'imageResizeTargetWidth' => $component->getImageResizeTargetWidth(),
                 'imageResizeTargetHeight' => $component->getImageResizeTargetHeight(),
                 'selected' => array_values($component->getState()),
+                'isMultiple' => $component->isMultiple(),
             ]);
         });
     }
