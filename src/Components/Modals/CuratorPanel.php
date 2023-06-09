@@ -58,6 +58,8 @@ class CuratorPanel extends Component implements HasForms
 
     public bool $isMultiple = false;
 
+    public bool $isLimitedToDirectory = false;
+
     public function mount(): void
     {
         $this->addMediaForm->fill();
