@@ -39,7 +39,7 @@ class PickerAction extends Action
                 'imageCropAspectRatio' => $component->getImageCropAspectRatio(),
                 'imageResizeTargetWidth' => $component->getImageResizeTargetWidth(),
                 'imageResizeTargetHeight' => $component->getImageResizeTargetHeight(),
-                'selected' => array_values($component->getState()),
+                'selected' => array_values((array)$component->getState()),
                 'isMultiple' => $component->isMultiple(),
                 'isLimitedToDirectory' => $component->isLimitedToDirectory(),
             ]);
