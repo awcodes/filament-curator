@@ -21,6 +21,9 @@ class MediaController extends Controller
         $files = $mediaModel::when($selected, function($query, $selected) {
                 return $query->whereNotIn('id', $selected);
             })
+            ->when($request->has('directory'), function($query) use ($request) {
+                return $query->where('directory', $request->directory);
+            })
             ->latest()
             ->paginate(25);
 
@@ -41,10 +44,16 @@ class MediaController extends Controller
 
     public function search(Request $request)
     {
-        $files = Curator::getMediaModel()::where('name', 'like', '%'.$request->query('q').'%')
-            ->orWhere('alt', 'like', '%'.$request->query('q').'%')
-            ->orWhere('caption', 'like', '%'.$request->query('q').'%')
-            ->orWhere('description', 'like', '%'.$request->query('q').'%')
+        $files = Curator::getMediaModel()::query()
+            ->when($request->has('directory'), function($query) use ($request) {
+                return $query->where('directory', $request->query('directory'));
+            })
+            ->when($request->query('q'), function ($query) use ($request) {
+                return $query->where('name', 'like', '%'.$request->query('q').'%')
+                    ->orWhere('alt', 'like', '%'.$request->query('q').'%')
+                    ->orWhere('caption', 'like', '%'.$request->query('q').'%')
+                    ->orWhere('description', 'like', '%'.$request->query('q').'%');
+            })
             ->paginate(50);
 
         return response()->json($files);

@@ -16,4 +16,5 @@
     :image-resize-target-height="$imageResizeTargetHeight"
     :selected="$selected ?? []"
     :is-multiple="$isMultiple"
+    :is-limited-to-directory="$isLimitedToDirectory"
 />

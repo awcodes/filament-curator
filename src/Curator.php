@@ -47,6 +47,8 @@ class Curator
 
     protected string|Closure $directory = 'media';
 
+    protected bool $isLimitedToDirectory = false;
+
     protected PathGenerator|string|null $pathGenerator = null;
 
     protected string|Closure $visibility = 'public';
@@ -192,6 +194,13 @@ class Curator
     public function directory(Closure|string|null $directory): static
     {
         $this->directory = $directory;
+
+        return $this;
+    }
+
+    public function limitToDirectory(bool|Closure|null $condition = true): static
+    {
+        $this->isLimitedToDirectory = $condition;
 
         return $this;
     }
@@ -386,6 +395,11 @@ class Curator
     public function getDirectory(): string
     {
         return $this->evaluate($this->directory);
+    }
+
+    public function isLimitedToDirectory(): bool
+    {
+        return $this->evaluate($this->isLimitedToDirectory);
     }
 
     public function getVisibility(): string
