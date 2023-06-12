@@ -2,6 +2,14 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.7.2 - 2023-06-12
+
+### What's Changed
+
+- Fix: images not showing if on cloud in list view by @awcodes in https://github.com/awcodes/filament-curator/pull/205
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.7.1...v2.7.2
+
 ## v2.7.1 - 2023-06-09
 
 ### What's Changed
