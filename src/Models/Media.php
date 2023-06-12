@@ -79,7 +79,7 @@ class Media extends Model
 
     public function getSignedUrl(array $params = []): string
     {
-        if (! $this->resizable) {
+        if (! $this->resizable || in_array($this->disk, app('curator')->getCloudDisks())) {
             return $this->url;
         }
 
