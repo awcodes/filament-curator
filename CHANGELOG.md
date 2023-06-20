@@ -2,6 +2,14 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.7.3 - 2023-06-20
+
+### What's Changed
+
+- Fix: missing vars on Tiptap Media action by @awcodes in https://github.com/awcodes/filament-curator/pull/209
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.7.2...v2.7.3
+
 ## v2.7.2 - 2023-06-12
 
 ### What's Changed
