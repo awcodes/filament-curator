@@ -50,6 +50,8 @@ class MediaAction extends Action
                 'imageResizeTargetWidth' => app('curator')->getImageResizeTargetWidth(),
                 'imageResizeTargetHeight' => app('curator')->getImageResizeTargetHeight(),
                 'selected' => $selected,
+                'isMultiple' => false,
+                'isLimitedToDirectory' => false,
             ]);
         });
     }
