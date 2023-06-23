@@ -43,8 +43,8 @@
         >
             @if (app('curator')->isResizable($item->ext))
                 @php
-                    $img_width = $width ? str_replace('px', '', $width) : $width;
-                    $img_height = $height ? str_replace('px', '', $height) : $height;
+                    $img_width = $width ? (int)$width : null;
+                    $img_height = $height ? (int)$height : null;
 
                     if ($resolution) {
                         $img_width *= $resolution;
