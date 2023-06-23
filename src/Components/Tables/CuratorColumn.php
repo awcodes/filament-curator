@@ -20,6 +20,8 @@ class CuratorColumn extends ImageColumn
 
     protected int|Closure|null $ring = null;
 
+    protected int|Closure|null $resolution = null;
+
     public function limit(int | Closure | null $limit = 3): static
     {
         $this->limit = $limit;
@@ -30,6 +32,13 @@ class CuratorColumn extends ImageColumn
     public function overlap(int | Closure | null $overlap): static
     {
         $this->overlap = $overlap;
+
+        return $this;
+    }
+
+    public function resolution(int | Closure | null $resolution): static
+    {
+        $this->resolution = $resolution;
 
         return $this;
     }
@@ -93,6 +102,11 @@ class CuratorColumn extends ImageColumn
     public function getOverlap(): ?int
     {
         return $this->evaluate($this->overlap);
+    }
+
+    public function getResolution(): ?int
+    {
+        return $this->evaluate($this->resolution);
     }
 
     public function getRing(): ?int

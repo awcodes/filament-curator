@@ -17,6 +17,11 @@
         4 => '-space-x-4',
         default => '-space-x-1',
     };
+
+    $resolution = $getResolution();
+
+    $height = $getHeight();
+    $width = $getWidth() ?? ($isRounded() ? $height : null);
 @endphp
 
 <div
@@ -25,11 +30,6 @@
         $overlap . ' flex items-center' => $imageCount > 1,
     ]) }}
 >
-    @php
-        $height = $getHeight();
-        $width = $getWidth() ?? ($isRounded() ? $height : null);
-    @endphp
-
     @if ($items)
         @foreach ($items as $item)
         <div style="
@@ -42,10 +42,19 @@
             ])
         >
             @if (app('curator')->isResizable($item->ext))
+                @php
+                    $img_width = $width ? str_replace('px', '', $width) : $width;
+                    $img_height = $height ? str_replace('px', '', $height) : $height;
+
+                    if ($resolution) {
+                        $img_width *= $resolution;
+                        $img_height *= $resolution;
+                    }
+                @endphp
                 <img
                     src="{{ $item->getSignedUrl([
-                        'w' => $width ? str_replace('px', '', $width) : $width,
-                        'h' => $height ? str_replace('px', '', $height) : $height,
+                        'w' => $img_width,
+                        'h' => $img_height,
                         'fit' => 'crop',
                         'fm' => 'webp'
                     ]) }}"
