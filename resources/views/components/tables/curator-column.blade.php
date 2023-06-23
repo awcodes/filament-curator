@@ -43,7 +43,12 @@
         >
             @if (app('curator')->isResizable($item->ext))
                 <img
-                    src="{{ $item->getSignedUrl(['w' => $width, 'h' => $height, 'fit' => 'crop', 'fm' => 'webp']) }}"
+                    src="{{ $item->getSignedUrl([
+                        'w' => $width ? str_replace('px', '', $width) : $width,
+                        'h' => $height ? str_replace('px', '', $height) : $height,
+                        'fit' => 'crop',
+                        'fm' => 'webp'
+                    ]) }}"
                     alt="{{ $item->alt }}"
                     style="
                         {!! $height !== null ? "height: {$height};" : null !!}
