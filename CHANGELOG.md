@@ -2,6 +2,14 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.7.4 - 2023-06-23
+
+### What's Changed
+
+- Fix CuratorColumn image size with px by @howdu in https://github.com/awcodes/filament-curator/pull/211
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.7.3...v2.7.4
+
 ## v2.7.3 - 2023-06-20
 
 ### What's Changed
