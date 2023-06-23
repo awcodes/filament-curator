@@ -56,6 +56,7 @@
                     "
                     @class([
                         'h-full w-auto' => str($item->type)->contains('svg'),
+                        'max-w-none' => $height && ! $width,
                         'object-cover object-center' => ! str($item->type)->contains('svg') && ($isRounded() || $width || $height)
                     ])
                     {{ $getExtraImgAttributeBag() }}
