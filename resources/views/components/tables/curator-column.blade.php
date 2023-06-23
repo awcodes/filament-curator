@@ -17,6 +17,11 @@
         4 => '-space-x-4',
         default => '-space-x-1',
     };
+
+    $resolution = $getResolution();
+
+    $height = $getHeight();
+    $width = $getWidth() ?? ($isRounded() ? $height : null);
 @endphp
 
 <div
@@ -25,11 +30,6 @@
         $overlap . ' flex items-center' => $imageCount > 1,
     ]) }}
 >
-    @php
-        $height = $getHeight();
-        $width = $getWidth() ?? ($isRounded() ? $height : null);
-    @endphp
-
     @if ($items)
         @foreach ($items as $item)
         <div style="
@@ -42,8 +42,22 @@
             ])
         >
             @if (app('curator')->isResizable($item->ext))
+                @php
+                    $img_width = $width ? (int)$width : null;
+                    $img_height = $height ? (int)$height : null;
+
+                    if ($resolution) {
+                        $img_width *= $resolution;
+                        $img_height *= $resolution;
+                    }
+                @endphp
                 <img
-                    src="{{ $item->getSignedUrl(['w' => $width, 'h' => $height, 'fit' => 'crop', 'fm' => 'webp']) }}"
+                    src="{{ $item->getSignedUrl([
+                        'w' => $img_width,
+                        'h' => $img_height,
+                        'fit' => 'crop',
+                        'fm' => 'webp'
+                    ]) }}"
                     alt="{{ $item->alt }}"
                     style="
                         {!! $height !== null ? "height: {$height};" : null !!}
@@ -51,6 +65,7 @@
                     "
                     @class([
                         'h-full w-auto' => str($item->type)->contains('svg'),
+                        'max-w-none' => $height && ! $width,
                         'object-cover object-center' => ! str($item->type)->contains('svg') && ($isRounded() || $width || $height)
                     ])
                     {{ $getExtraImgAttributeBag() }}
