@@ -63,6 +63,8 @@ class CuratorPicker extends Field
 
     protected string|Closure|null $relationship = null;
 
+    protected string | null $orderColumn = null;
+
     /**
      * @throws Exception
      */
@@ -244,6 +246,13 @@ class CuratorPicker extends Field
         return $this;
     }
 
+    public function orderColumn(string $column): static
+    {
+        $this->orderColumn = $column;
+
+        return $this;
+    }
+
     /**
      * @deprecated
      */
@@ -341,6 +350,11 @@ class CuratorPicker extends Field
         return $this->evaluate($this->isMultiple);
     }
 
+    public function getOrderColumn(): string
+    {
+        return $this->orderColumn ?? 'order';
+    }
+
     public function relationship(string | Closure $relationshipName, string | Closure $titleColumnName, ?Closure $callback = null): static
     {
         $this->relationship = $relationshipName;
@@ -380,14 +394,29 @@ class CuratorPicker extends Field
                 return;
             }
 
+            $relationship = $component->getRelationship();
+
             if ($component->isMultiple()) {
+                if (
+                    ($relationship instanceof BelongsToMany) &&
+                    in_array($component->getOrderColumn(), $relationship->getPivotColumns())
+                ) {
+                    $orderColumn = $component->getOrderColumn();
+                    $state = collect(array_values($state))->mapWithKeys(function($item, $index) use ($orderColumn) {
+                       return [$item['id'] => [$orderColumn => $index + 1]];
+                    });
+
+                    $relationship->sync($state ?? []);
+                    return;
+                }
+
                 $state = Arr::pluck($state,'id');
-                $component->getRelationship()->sync($state ?? []);
+                $relationship->sync($state ?? []);
 
                 return;
             }
 
-            $component->getRelationship()->associate(Arr::first($state)['id']);
+            $relationship->associate(Arr::first($state)['id']);
             $record->save();
         });
 
