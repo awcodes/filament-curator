@@ -119,6 +119,7 @@ CuratorPicker::make(string $fieldName)
     ->imageResizeTargetHeight()
     ->multiple() // required if using a relationship with multiple media
     ->relationship(string $relationshipName, string 'titleColumnName')
+    ->orderColumn('order') // only necessary to rename the order column if using a relationship with multiple media
 ```
 
 ### Relationships
@@ -150,7 +151,8 @@ Form component
 ```php
 CuratorPicker::make('product_picture_ids')
     ->multiple()
-    ->relationship('product_pictures', 'id'),
+    ->relationship('product_pictures', 'id')
+    ->orderColumn('order'), // only necessary if you need to rename the order column
 ```
 
 Model
@@ -160,7 +162,10 @@ use Awcodes\Curator\Models\Media;
 
 public function productPictures(): BelongsTo
 {
-    return $this->belongsToMany(Media::class, 'media_post', 'post_id', 'media_id');
+    return $this
+        ->belongsToMany(Media::class, 'media_post', 'post_id', 'media_id')
+        ->withPivot('order')
+        ->orderBy('order');
 }
 ```
 
