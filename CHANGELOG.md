@@ -2,6 +2,14 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.7.6 - 2023-06-24
+
+### What's Changed
+
+- Fix: ordering of multiple images with relationship by @awcodes in https://github.com/awcodes/filament-curator/pull/213
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.7.5...v2.7.6
+
 ## v2.7.5 - 2023-06-24
 
 ### What's Changed
