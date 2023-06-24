@@ -16,7 +16,11 @@ class MediaObserver
         if ($this->hasMediaUpload($media)) {
             foreach ($media->file as $k => $v) {
                 if ($k === 'name') {
-                    $media->{$k} = $v->toString();
+                    if (is_string($v)) {
+                        $media->{$k} = $v;
+                    } else {
+                        $media->{$k} = $v->toString();
+                    }
                 } elseif ($k === 'exif' && is_array($v)) {
                     // Fix malformed utf-8 characters
                     array_walk_recursive($v, function (&$entry) {
