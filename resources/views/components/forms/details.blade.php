@@ -65,7 +65,7 @@
             <dd class="{{ $dataClasses }}">
                 @if (filled($record))
                     <div class="flex items-end justify-between gap-6">
-                        <span>{{ $record->url }}</span>
+                        <span class="truncate">{{ $record->url }}</span>
                         <button
                                 type="button"
                                 class="text-sm flex-shrink-0 flex items-center gap-2"
