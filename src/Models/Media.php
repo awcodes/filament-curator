@@ -34,7 +34,9 @@ class Media extends Model
     protected function url(): Attribute
     {
         return Attribute::make(
-            get: fn () => Storage::disk($this->disk)->url($this->directory.'/'.$this->name.'.'.$this->ext),
+            get: fn () => Storage::disk($this->disk)->temporaryUrl(
+                $this->directory.'/'.$this->name.'.'.$this->ext, now()->addMinutes(5)
+            ),
         );
     }
 
