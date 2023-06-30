@@ -120,7 +120,7 @@ class CuratorPicker extends Field
 
             $state = collect($state)->pluck('id')->toArray();
 
-            if (count($state) === 1 && is_array($state)) {
+            if (count($state) === 1 && is_array($state) && ! $component->isMultiple()) {
                 $state = $state[0];
             }
 
