@@ -43,15 +43,15 @@ class Curator
 
     protected int|Closure $maxSize = 5000;
 
-    protected string|Closure $diskName = 'public';
+    protected string|Closure|null $diskName = null;
 
-    protected string|Closure $directory = 'media';
+    protected string|Closure|null $directory = null;
 
     protected bool $isLimitedToDirectory = false;
 
     protected PathGenerator|string|null $pathGenerator = null;
 
-    protected string|Closure $visibility = 'public';
+    protected string|Closure|null $visibility = null;
 
     protected array $cloudDisks = ['s3', 'cloudinary', 'imgix'];
 
@@ -394,7 +394,7 @@ class Curator
 
     public function getDirectory(): string
     {
-        return $this->evaluate($this->directory);
+        return $this->evaluate($this->directory) ?? 'media';
     }
 
     public function isLimitedToDirectory(): bool
@@ -404,7 +404,7 @@ class Curator
 
     public function getVisibility(): string
     {
-        return $this->evaluate($this->visibility);
+        return $this->evaluate($this->visibility) ?? 'public';
     }
 
     public function getCloudDisks(): array
