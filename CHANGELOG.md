@@ -2,6 +2,16 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.7.7 - 2023-06-30
+
+### What's Changed
+
+- Fix: keep state as array if multiple and only has one item by @awcodes in https://github.com/awcodes/filament-curator/pull/221
+- Fix: allow default disk from forms config by @awcodes in https://github.com/awcodes/filament-curator/pull/222
+- Chore: Allow signed URLs for cloud disks by @martin-ro in https://github.com/awcodes/filament-curator/pull/218
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.7.6...v2.7.7
+
 ## v2.7.6 - 2023-06-24
 
 ### What's Changed
