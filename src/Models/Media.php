@@ -34,7 +34,16 @@ class Media extends Model
     protected function url(): Attribute
     {
         return Attribute::make(
-            get: fn () => Storage::disk($this->disk)->url($this->directory.'/'.$this->name.'.'.$this->ext),
+            get: function () {
+                if (Storage::disk($this->disk)->getVisibility($this->path) === 'private') {
+                    return Storage::disk($this->disk)->temporaryUrl(
+                        $this->path,
+                        now()->addMinutes(5)
+                    );
+                }
+
+                return Storage::disk($this->disk)->url($this->path);
+            },
         );
     }
 
