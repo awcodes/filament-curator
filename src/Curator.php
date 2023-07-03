@@ -17,43 +17,27 @@ class Curator
 {
     use EvaluatesClosures;
 
-    protected string|Closure $resourceLabel = 'Media';
-
-    protected string|Closure $pluralResourceLabel = 'Media';
-
-    protected string $navigationIcon = 'heroicon-o-photograph';
-
-    protected string|null $navigationGroup = null;
-
-    protected int|null $navigationSort = null;
-
-    protected bool $shouldRegisterNavigation = true;
-
-    protected bool|Closure|null $tableHasIconActions = false;
-
-    protected bool|Closure|null $tableHasGridLayout = true;
-
-    protected bool|Closure $shouldPreserveFilenames = false;
-
     protected array|Closure $acceptedFileTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'application/pdf'];
 
-    protected int|Closure $maxWidth = 2000;
+    protected array $cloudDisks = ['s3', 'cloudinary', 'imgix'];
 
-    protected int|Closure $minSize = 0;
-
-    protected int|Closure $maxSize = 5000;
-
-    protected string|Closure|null $diskName = null;
+    protected array|null $curationPresets = [];
 
     protected string|Closure|null $directory = null;
 
-    protected bool $isLimitedToDirectory = false;
+    protected string|Closure|null $diskName = null;
 
-    protected PathGenerator|string|null $pathGenerator = null;
+    protected string $glideCachePathPrefix = '.cache';
 
-    protected string|Closure|null $visibility = null;
+    protected int $glideMaxImageSize = 2000 * 2000;
 
-    protected array $cloudDisks = ['s3', 'cloudinary', 'imgix'];
+    protected string $glideDriver = 'gd';
+
+    protected array|null $gliderFallbacks = [];
+
+    protected Server|ServerFactory|null $glideServer = null;
+
+    protected string $glideSourcePathPrefix = 'public';
 
     protected string|Closure|null $imageCropAspectRatio = null;
 
@@ -61,83 +45,50 @@ class Curator
 
     protected string|Closure|null $imageResizeTargetWidth = null;
 
-    protected array|null $curationPresets = [];
+    protected bool $isLimitedToDirectory = false;
 
-    protected string $glideSourcePathPrefix = 'public';
+    protected int|Closure $maxSize = 5000;
 
-    protected string $glideCachePathPrefix = '.cache';
-
-    protected int $glideMaxImageSize = 2000 * 2000;
-
-    protected Server|ServerFactory|null $glideServer = null;
-
-    protected string $glideDriver = 'gd';
+    protected int|Closure $maxWidth = 2000;
 
     protected string $mediaModel = Media::class;
 
-    protected array|null $gliderFallbacks = [];
+    protected int|Closure $minSize = 0;
+
+    protected string|null $navigationGroup = null;
+
+    protected string $navigationIcon = 'heroicon-o-photograph';
+
+    protected int|null $navigationSort = null;
+
+    protected PathGenerator|string|null $pathGenerator = null;
+
+    protected string|Closure $pluralResourceLabel = 'Media';
+
+    protected string|Closure $resourceLabel = 'Media';
+
+    protected bool|Closure $shouldPreserveFilenames = false;
+
+    protected bool $shouldRegisterNavigation = true;
+
+    protected bool|Closure|null $tableHasGridLayout = true;
+
+    protected bool|Closure|null $tableHasIconActions = false;
+
+    protected string|Closure|null $visibility = null;
 
     protected bool $shouldRegisterResources = true;
 
-    public function disableResourceRegistration(): static
+    public function acceptedFileTypes(array|Closure $types): static
     {
-        $this->shouldRegisterResources = false;
+        $this->acceptedFileTypes = $types;
 
         return $this;
     }
 
-    public function resourceLabel(string|Closure $label): static
+    public function cloudDisks(array $disks): static
     {
-        $this->resourceLabel = $label;
-
-        return $this;
-    }
-
-    public function pluralResourceLabel(string|Closure $label): static
-    {
-        $this->pluralResourceLabel = $label;
-
-        return $this;
-    }
-
-    public function navigationIcon(string $icon): static
-    {
-        $this->navigationIcon = $icon;
-
-        return $this;
-    }
-
-    public function navigationSort(int $order): static
-    {
-        $this->navigationSort = $order;
-
-        return $this;
-    }
-
-    public function navigationGroup(string|null $group = null): static
-    {
-        $this->navigationGroup = $group;
-
-        return $this;
-    }
-
-    public function registerNavigation(bool|Closure|null $condition = true): static
-    {
-        $this->shouldRegisterNavigation = $condition;
-
-        return $this;
-    }
-
-    public function tableHasIconActions(bool|Closure|null $condition = false): static
-    {
-        $this->tableHasIconActions = $condition;
-
-        return $this;
-    }
-
-    public function tableHasGridLayout(bool|Closure|null $condition = true): static
-    {
-        $this->tableHasGridLayout = $condition;
+        $this->cloudDisks = $disks;
 
         return $this;
     }
@@ -149,37 +100,16 @@ class Curator
         return $this;
     }
 
-    public function preserveFilenames(bool|Closure $condition = true): static
+    public function directory(Closure|string|null $directory): static
     {
-        $this->shouldPreserveFilenames = $condition;
+        $this->directory = $directory;
 
         return $this;
     }
 
-    public function acceptedFileTypes(array|Closure $types): static
+    public function disableResourceRegistration(): static
     {
-        $this->acceptedFileTypes = $types;
-
-        return $this;
-    }
-
-    public function maxWidth(int|Closure $width): static
-    {
-        $this->maxWidth = $width;
-
-        return $this;
-    }
-
-    public function minSize(int|Closure $size): static
-    {
-        $this->minSize = $size;
-
-        return $this;
-    }
-
-    public function maxSize(int|Closure $size): static
-    {
-        $this->maxSize = $size;
+        $this->shouldRegisterResources = false;
 
         return $this;
     }
@@ -191,37 +121,218 @@ class Curator
         return $this;
     }
 
-    public function directory(Closure|string|null $directory): static
+    public function getAcceptedFileTypes(): array
     {
-        $this->directory = $directory;
+        return $this->evaluate($this->acceptedFileTypes);
+    }
+
+    public function getCloudDisks(): array
+    {
+        return $this->cloudDisks;
+    }
+
+    public function getCurationPresets(): array|null
+    {
+        return collect($this->curationPresets)->map(function ($preset) {
+            return $preset->getPreset();
+        })->toArray();
+    }
+
+    public function getDiskName(): string
+    {
+        return $this->evaluate($this->diskName) ?? config('forms.default_filesystem_disk');
+    }
+
+    public function getDirectory(): string
+    {
+        return $this->evaluate($this->directory) ?? 'media';
+    }
+
+    public function getGlideCachePathPrefix(): string
+    {
+        return $this->glideCachePathPrefix;
+    }
+
+    public function getGlideDriver(): string
+    {
+        return $this->glideDriver;
+    }
+
+    public function getGliderFallback(string $key): ?array
+    {
+        return collect($this->getGliderFallbacks())->where('key', $key)->sole();
+    }
+
+    public function getGliderFallbacks(): ?array
+    {
+        return collect($this->gliderFallbacks)->map(function ($preset) {
+            return $preset->getFallback();
+        })->toArray();
+    }
+
+    public function getGlideMaxImageSize(): int
+    {
+        return $this->glideMaxImageSize;
+    }
+
+    public function getGlideServer(): Server|ServerFactory
+    {
+        if (! $this->glideServer) {
+            return ServerFactory::create([
+                'driver' => $this->getGlideDriver(),
+                'response' => new LaravelResponseFactory(app('request')),
+                'source' => storage_path('app'),
+                'source_path_prefix' => $this->getGlideSourcePathPrefix(),
+                'cache' => storage_path('app'),
+                'cache_path_prefix' => $this->getGlideCachePathPrefix(),
+                'max_image_size' => $this->getGlideMaxImageSize(),
+            ]);
+        }
+
+        return $this->glideServer;
+    }
+
+    public function getGlideSourcePathPrefix(): string
+    {
+        return $this->glideSourcePathPrefix;
+    }
+
+    public function getImageCropAspectRatio(): ?string
+    {
+        return $this->evaluate($this->imageCropAspectRatio);
+    }
+
+    public function getImageResizeTargetHeight(): ?string
+    {
+        return $this->evaluate($this->imageResizeTargetHeight);
+    }
+
+    public function getImageResizeTargetWidth(): ?string
+    {
+        return $this->evaluate($this->imageResizeTargetWidth);
+    }
+
+    public function getMediaModelResource(): string
+    {
+        return Filament::getModelResource($this->mediaModel);
+    }
+
+    public function getResourceLabel(): string
+    {
+        return $this->evaluate($this->resourceLabel);
+    }
+
+    public function getPluralResourceLabel(): string
+    {
+        return $this->evaluate($this->pluralResourceLabel);
+    }
+
+    public function getNavigationGroup(): string|null
+    {
+        return $this->navigationGroup;
+    }
+
+    public function getNavigationIcon(): string|null
+    {
+        return $this->navigationIcon;
+    }
+
+    public function getNavigationSort(): int|null
+    {
+        return $this->navigationSort;
+    }
+
+    public function getMaxSize(): int
+    {
+        return $this->evaluate($this->maxSize);
+    }
+
+    public function getMaxWidth(): int
+    {
+        return $this->evaluate($this->maxWidth);
+    }
+
+    public function getMedia(array|Media|int $ids): Collection|array
+    {
+        if ($ids instanceof Media) {
+            return [$ids];
+        }
+
+        $ids = array_values($ids);
+
+        if (isset($ids[0]['id'])) {
+            return $ids;
+        }
+
+        if (filled($ids)) {
+            return $this->mediaModel::whereIn('id', $ids)
+                ->get()
+                ->sortBy(function ($model) use ($ids) {
+                    return array_search($model->id, $ids);
+                });
+        }
+
+        return [];
+    }
+
+    public function getMediaModel(): string
+    {
+        return $this->mediaModel;
+    }
+
+    public function getMinSize(): int
+    {
+        return $this->evaluate($this->minSize);
+    }
+
+    public function getPathGenerator(): PathGenerator|string|null
+    {
+        return $this->pathGenerator;
+    }
+
+    public function getVisibility(): string
+    {
+        return $this->evaluate($this->visibility) ?? 'public';
+    }
+
+    public function glideCachePathPrefix(string $prefix = '.cache'): static
+    {
+        $this->glideCachePathPrefix = $prefix;
 
         return $this;
     }
 
-    public function limitToDirectory(bool|Closure|null $condition = true): static
+    public function glideDriver(string $driver = 'gd'): static
     {
-        $this->isLimitedToDirectory = $condition;
+        $this->glideDriver = $driver;
 
         return $this;
     }
 
-    public function pathGenerator(PathGenerator|string|null $generator): static
+    public function glideMaxImageSize(int $size): static
     {
-        $this->pathGenerator = $generator;
+        $this->glideMaxImageSize = $size;
 
         return $this;
     }
 
-    public function visibility(string|Closure $visibility): static
+    public function gliderFallbacks(array|null $fallbacks): static
     {
-        $this->visibility = $visibility;
+        $this->gliderFallbacks = $fallbacks;
 
         return $this;
     }
 
-    public function cloudDisks(array $disks): static
+    public function glideServer(Server|ServerFactory|null $server): static
     {
-        $this->cloudDisks = $disks;
+        $this->glideServer = $server;
+
+        return $this;
+    }
+
+    public function glideSourcePathPrefix(string $prefix = 'public'): static
+    {
+        $this->glideSourcePathPrefix = $prefix;
 
         return $this;
     }
@@ -247,37 +358,33 @@ class Curator
         return $this;
     }
 
-    public function glideSourcePathPrefix(string $prefix = 'public'): static
+    public function isLimitedToDirectory(): bool
     {
-        $this->glideSourcePathPrefix = $prefix;
+        return $this->evaluate($this->isLimitedToDirectory);
+    }
+
+    public function isResizable(string $ext): bool
+    {
+        return in_array($ext, ['jpeg', 'jpg', 'png', 'webp', 'bmp']);
+    }
+
+    public function limitToDirectory(bool|Closure|null $condition = true): static
+    {
+        $this->isLimitedToDirectory = $condition;
 
         return $this;
     }
 
-    public function glideCachePathPrefix(string $prefix = '.cache'): static
+    public function maxSize(int|Closure $size): static
     {
-        $this->glideCachePathPrefix = $prefix;
+        $this->maxSize = $size;
 
         return $this;
     }
 
-    public function glideServer(Server|ServerFactory|null $server): static
+    public function maxWidth(int|Closure $width): static
     {
-        $this->glideServer = $server;
-
-        return $this;
-    }
-
-    public function glideMaxImageSize(int $size): static
-    {
-        $this->glideMaxImageSize = $size;
-
-        return $this;
-    }
-
-    public function glideDriver(string $driver = 'gd'): static
-    {
-        $this->glideDriver = $driver;
+        $this->maxWidth = $width;
 
         return $this;
     }
@@ -289,46 +396,77 @@ class Curator
         return $this;
     }
 
-    public function getMediaModelResource(): string
+    public function minSize(int|Closure $size): static
     {
-        return Filament::getModelResource($this->mediaModel);
-    }
-
-    public function gliderFallbacks(array|null $fallbacks): static
-    {
-        $this->gliderFallbacks = $fallbacks;
+        $this->minSize = $size;
 
         return $this;
     }
 
-    public function shouldRegisterResources(): bool
+    public function navigationGroup(string|null $group = null): static
     {
-        return $this->evaluate($this->shouldRegisterResources);
+        $this->navigationGroup = $group;
+
+        return $this;
     }
 
-    public function getResourceLabel(): string
+    public function navigationIcon(string $icon): static
     {
-        return $this->evaluate($this->resourceLabel);
+        $this->navigationIcon = $icon;
+
+        return $this;
     }
 
-    public function getPluralResourceLabel(): string
+    public function navigationSort(int $order): static
     {
-        return $this->evaluate($this->pluralResourceLabel);
+        $this->navigationSort = $order;
+
+        return $this;
     }
 
-    public function getNavigationIcon(): string|null
+    public function pathGenerator(PathGenerator|string|null $generator): static
     {
-        return $this->navigationIcon;
+        $this->pathGenerator = $generator;
+
+        return $this;
     }
 
-    public function getNavigationSort(): int|null
+    public function pluralResourceLabel(string|Closure $label): static
     {
-        return $this->navigationSort;
+        $this->pluralResourceLabel = $label;
+
+        return $this;
     }
 
-    public function getNavigationGroup(): string|null
+    public function preserveFilenames(bool|Closure $condition = true): static
     {
-        return $this->navigationGroup;
+        $this->shouldPreserveFilenames = $condition;
+
+        return $this;
+    }
+
+    public function preset(string $key): ?array
+    {
+        return collect($this->getCurationPresets())->where('key', $key)->sole();
+    }
+
+    public function registerNavigation(bool|Closure|null $condition = true): static
+    {
+        $this->shouldRegisterNavigation = $condition;
+
+        return $this;
+    }
+
+    public function resourceLabel(string|Closure $label): static
+    {
+        $this->resourceLabel = $label;
+
+        return $this;
+    }
+
+    public function shouldPreserveFilenames(): bool
+    {
+        return $this->evaluate($this->shouldPreserveFilenames);
     }
 
     public function shouldRegisterNavigation(): bool
@@ -336,16 +474,9 @@ class Curator
         return $this->evaluate($this->shouldRegisterNavigation);
     }
 
-    public function getCurationPresets(): array|null
+    public function shouldRegisterResources(): bool
     {
-        return collect($this->curationPresets)->map(function ($preset) {
-            return $preset->getPreset();
-        })->toArray();
-    }
-
-    public function shouldTableHaveIconActions(): string
-    {
-        return $this->evaluate($this->tableHasIconActions);
+        return $this->evaluate($this->shouldRegisterResources);
     }
 
     public function shouldTableHaveGridLayout(): string
@@ -357,160 +488,29 @@ class Curator
         return Session::get('tableLayout');
     }
 
-    public function shouldPreserveFilenames(): bool
+    public function shouldTableHaveIconActions(): string
     {
-        return $this->evaluate($this->shouldPreserveFilenames);
+        return $this->evaluate($this->tableHasIconActions);
     }
 
-    public function getAcceptedFileTypes(): array
+    public function tableHasGridLayout(bool|Closure|null $condition = true): static
     {
-        return $this->evaluate($this->acceptedFileTypes);
+        $this->tableHasGridLayout = $condition;
+
+        return $this;
     }
 
-    public function getMaxWidth(): int
+    public function tableHasIconActions(bool|Closure|null $condition = false): static
     {
-        return $this->evaluate($this->maxWidth);
+        $this->tableHasIconActions = $condition;
+
+        return $this;
     }
 
-    public function getMinSize(): int
+    public function visibility(string|Closure $visibility): static
     {
-        return $this->evaluate($this->minSize);
-    }
+        $this->visibility = $visibility;
 
-    public function getMaxSize(): int
-    {
-        return $this->evaluate($this->maxSize);
-    }
-
-    public function getDiskName(): string
-    {
-        return $this->evaluate($this->diskName) ?? config('forms.default_filesystem_disk');
-    }
-
-    public function getPathGenerator(): PathGenerator|string|null
-    {
-        return $this->pathGenerator;
-    }
-
-    public function getDirectory(): string
-    {
-        return $this->evaluate($this->directory) ?? 'media';
-    }
-
-    public function isLimitedToDirectory(): bool
-    {
-        return $this->evaluate($this->isLimitedToDirectory);
-    }
-
-    public function getVisibility(): string
-    {
-        return $this->evaluate($this->visibility) ?? 'public';
-    }
-
-    public function getCloudDisks(): array
-    {
-        return $this->cloudDisks;
-    }
-
-    public function getImageCropAspectRatio(): ?string
-    {
-        return $this->evaluate($this->imageCropAspectRatio);
-    }
-
-    public function getImageResizeTargetHeight(): ?string
-    {
-        return $this->evaluate($this->imageResizeTargetHeight);
-    }
-
-    public function getImageResizeTargetWidth(): ?string
-    {
-        return $this->evaluate($this->imageResizeTargetWidth);
-    }
-
-    public function isResizable(string $ext): bool
-    {
-        return in_array($ext, ['jpeg', 'jpg', 'png', 'webp', 'bmp']);
-    }
-
-    public function getGlideSourcePathPrefix(): string
-    {
-        return $this->glideSourcePathPrefix;
-    }
-
-    public function getGlideCachePathPrefix(): string
-    {
-        return $this->glideCachePathPrefix;
-    }
-
-    public function getGlideMaxImageSize(): int
-    {
-        return $this->glideMaxImageSize;
-    }
-
-    public function getGlideDriver(): string
-    {
-        return $this->glideDriver;
-    }
-
-    public function getGlideServer(): Server|ServerFactory
-    {
-        if (! $this->glideServer) {
-            return ServerFactory::create([
-                'driver' => $this->getGlideDriver(),
-                'response' => new LaravelResponseFactory(app('request')),
-                'source' => storage_path('app'),
-                'source_path_prefix' => $this->getGlideSourcePathPrefix(),
-                'cache' => storage_path('app'),
-                'cache_path_prefix' => $this->getGlideCachePathPrefix(),
-                'max_image_size' => $this->getGlideMaxImageSize(),
-            ]);
-        }
-
-        return $this->glideServer;
-    }
-
-    public function getMediaModel(): string
-    {
-        return $this->mediaModel;
-    }
-
-    public function preset(string $key): ?array
-    {
-        return collect($this->getCurationPresets())->where('key', $key)->sole();
-    }
-
-    public function getGliderFallbacks(): ?array
-    {
-        return collect($this->gliderFallbacks)->map(function ($preset) {
-            return $preset->getFallback();
-        })->toArray();
-    }
-
-    public function getGliderFallback(string $key): ?array
-    {
-        return collect($this->getGliderFallbacks())->where('key', $key)->sole();
-    }
-
-    public function getMedia(array|Media|int $ids): Collection|array
-    {
-        if ($ids instanceof Media) {
-            return [$ids];
-        }
-
-        $ids = array_values($ids);
-
-        if (isset($ids[0]['id'])) {
-            return $ids;
-        }
-
-        if (filled($ids)) {
-            return $this->mediaModel::whereIn('id', $ids)
-                ->get()
-                ->sortBy(function ($model) use ($ids) {
-                    return array_search($model->id, $ids);
-                });
-        }
-
-        return [];
+        return $this;
     }
 }

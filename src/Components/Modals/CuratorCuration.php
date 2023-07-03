@@ -10,13 +10,13 @@ use Livewire\Component;
 
 class CuratorCuration extends Component
 {
-    public string $statePath;
+    public Media $media;
 
     public string $modalId;
 
-    public Media $media;
-
     public array|null $presets;
+
+    public string $statePath;
 
     public function saveCuration($data = null): void
     {

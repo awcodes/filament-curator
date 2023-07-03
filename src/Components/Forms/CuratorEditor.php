@@ -13,30 +13,13 @@ use Illuminate\Contracts\Support\Htmlable;
 
 class CuratorEditor extends Field
 {
+    use CanBeOutlined;
     use HasColor;
     use HasSize;
-    use CanBeOutlined;
-
-    protected string $view = 'curator::components.forms.curation';
 
     protected string|Htmlable|Closure|null $buttonLabel = null;
 
-    /**
-     * @throws Exception
-     */
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->buttonLabel = __('curator::views.picker.button');
-        $this->size = 'md';
-        $this->color = 'primary';
-        $this->isOutlined = true;
-
-        $this->registerActions([
-            CurationAction::make(),
-        ]);
-    }
+    protected string $view = 'curator::components.forms.curation';
 
     public function buttonLabel(string|Htmlable|Closure|null $label): static
     {
@@ -53,5 +36,22 @@ class CuratorEditor extends Field
     public function getPresets(): array|null
     {
         return app('curator')->getCurationPresets();
+    }
+
+    /**
+     * @throws Exception
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->buttonLabel = __('curator::views.picker.button');
+        $this->size = 'md';
+        $this->color = 'primary';
+        $this->isOutlined = true;
+
+        $this->registerActions([
+            CurationAction::make(),
+        ]);
     }
 }

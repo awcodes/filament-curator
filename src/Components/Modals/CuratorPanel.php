@@ -20,33 +20,13 @@ class CuratorPanel extends Component implements HasForms
 {
     use InteractsWithForms;
 
-    public array $selected = [];
+    public array $acceptedFileTypes = [];
 
     public array $data = [];
 
-    public string|null $statePath;
-
-    public string $modalId;
-
     public string|null $directory;
 
-    public PathGenerator|string|null $pathGenerator = null;
-
-    public bool $shouldPreserveFilenames = false;
-
-    public int|null $maxWidth = null;
-
-    public int|null $minSize = null;
-
-    public int|null $maxSize = null;
-
-    public array $validationRules = [];
-
-    public array $acceptedFileTypes = [];
-
     public string $diskName = 'public';
-
-    public string $visibility = 'public';
 
     public string|null $imageCropAspectRatio = null;
 
@@ -54,21 +34,84 @@ class CuratorPanel extends Component implements HasForms
 
     public int|null $imageResizeTargetHeight = null;
 
-    public int|null $mediaId = null;
+    public bool $isLimitedToDirectory = false;
 
     public bool $isMultiple = false;
 
-    public bool $isLimitedToDirectory = false;
+    public int|null $maxSize = null;
 
-    public function mount(): void
+    public int|null $maxWidth = null;
+
+    public int|null $minSize = null;
+
+    public int|null $mediaId = null;
+
+    public string $modalId;
+
+    public PathGenerator|string|null $pathGenerator = null;
+
+    public array $selected = [];
+
+    public string|null $statePath;
+
+    public bool $shouldPreserveFilenames = false;
+
+    public array $validationRules = [];
+
+    public string $visibility = 'public';
+
+    public function addFiles(): void
     {
+        $media = [];
+
+        foreach ($this->addMediaForm->getState()['files'] as $item) {
+            // Fix malformed utf-8 characters
+            if (! empty($item['exif'])) {
+                array_walk_recursive($item['exif'], function (&$entry) {
+                    if (! mb_detect_encoding($entry, 'utf-8', true)) {
+                        $entry = utf8_encode($entry);
+                    }
+                });
+            }
+
+            $media[] = Curator::getMediaModel()::create($item);
+        }
+
         $this->addMediaForm->fill();
-        $this->editMediaForm->fill();
+        $this->dispatchBrowserEvent('new-media-added', ['media' => $media]);
     }
 
-    protected function getFormStatePath(): string
+    public function destroyFile(): void
     {
-        return 'data';
+        try {
+            $item = Curator::getMediaModel()::find(Arr::first($this->selected)['id']);
+            if ($item) {
+                $item->update($this->editMediaForm->getState());
+                $this->editMediaForm->fill();
+                $this->dispatchBrowserEvent('remove-media', ['media' => $item]);
+                $item->delete();
+                $this->selected = [];
+
+                Notification::make('curator_delete_success')
+                    ->success()
+                    ->body(__('curator::notifications.delete_success'))
+                    ->send();
+            } else {
+                throw new Exception();
+            }
+        } catch (Exception) {
+            Notification::make('curator_delete_error')
+                ->danger()
+                ->body(__('curator::notifications.delete_error'))
+                ->send();
+        }
+    }
+
+    public function download(): StreamedResponse
+    {
+        $item = Curator::getMediaModel()::where('id', $this->selected['id'])->first();
+
+        return Storage::disk($item['disk'])->download($item['path']);
     }
 
     protected function getAddMediaFormSchema(): array
@@ -110,11 +153,20 @@ class CuratorPanel extends Component implements HasForms
         ];
     }
 
-    public function download(): StreamedResponse
+    protected function getFormStatePath(): string
     {
-        $item = Curator::getMediaModel()::where('id', $this->selected['id'])->first();
+        return 'data';
+    }
 
-        return Storage::disk($item['disk'])->download($item['path']);
+    public function mount(): void
+    {
+        $this->addMediaForm->fill();
+        $this->editMediaForm->fill();
+    }
+
+    public function render(): View
+    {
+        return view('curator::components.modals.curator-panel');
     }
 
     public function setSelection(array $media): void
@@ -137,27 +189,6 @@ class CuratorPanel extends Component implements HasForms
         }
     }
 
-    public function addFiles(): void
-    {
-        $media = [];
-
-        foreach ($this->addMediaForm->getState()['files'] as $item) {
-            // Fix malformed utf-8 characters
-            if (! empty($item['exif'])) {
-                array_walk_recursive($item['exif'], function (&$entry) {
-                    if (! mb_detect_encoding($entry, 'utf-8', true)) {
-                        $entry = utf8_encode($entry);
-                    }
-                });
-            }
-
-            $media[] = Curator::getMediaModel()::create($item);
-        }
-
-        $this->addMediaForm->fill();
-        $this->dispatchBrowserEvent('new-media-added', ['media' => $media]);
-    }
-
     public function updateFile(): void
     {
         try {
@@ -178,36 +209,5 @@ class CuratorPanel extends Component implements HasForms
                 ->body(__('curator::notifications.update_error'))
                 ->send();
         }
-    }
-
-    public function destroyFile(): void
-    {
-        try {
-            $item = Curator::getMediaModel()::find(Arr::first($this->selected)['id']);
-            if ($item) {
-                $item->update($this->editMediaForm->getState());
-                $this->editMediaForm->fill();
-                $this->dispatchBrowserEvent('remove-media', ['media' => $item]);
-                $item->delete();
-                $this->selected = [];
-
-                Notification::make('curator_delete_success')
-                    ->success()
-                    ->body(__('curator::notifications.delete_success'))
-                    ->send();
-            } else {
-                throw new Exception();
-            }
-        } catch (Exception) {
-            Notification::make('curator_delete_error')
-                ->danger()
-                ->body(__('curator::notifications.delete_error'))
-                ->send();
-        }
-    }
-
-    public function render(): View
-    {
-        return view('curator::components.modals.curator-panel');
     }
 }

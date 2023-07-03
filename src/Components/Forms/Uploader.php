@@ -18,58 +18,6 @@ class Uploader extends FileUpload
 
     protected string|null $pathGenerator = null;
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->saveUploadedFileUsing(function (BaseFileUpload $component, TemporaryUploadedFile $file, $state, $set) {
-            $filename = $component->shouldPreserveFilenames() ? Str::of(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME))->slug() : Str::uuid();
-            $extension = $file->getClientOriginalExtension();
-
-            $storeMethod = $component->getVisibility() === 'public' ? 'storePubliclyAs' : 'storeAs';
-
-            if (Curator::isResizable($extension)) {
-                if (in_array($file->disk, curator()->getCloudDisks())) {
-                    $content = Storage::disk($file->disk)->get($file->path());
-                } else {
-                    $content = $file->getRealPath();
-                }
-
-                $image = Image::make($content);
-                $image->orientate();
-                $width = $image->getWidth();
-                $height = $image->getHeight();
-                $exif = $image->exif();
-            }
-
-            if (Storage::disk($component->getDiskName())->exists(ltrim($component->getDirectory().'/'.$filename.'.'.$extension, '/'))) {
-                $filename = $filename.'-'.time();
-            }
-
-            $path = $file->{$storeMethod}($component->getDirectory(), $filename.'.'.$extension, $component->getDiskName());
-
-            return [
-                'disk' => $component->getDiskName(),
-                'directory' => $component->getDirectory(),
-                'name' => $filename,
-                'path' => $path,
-                'exif' => $exif ?? null,
-                'width' => $width ?? null,
-                'height' => $height ?? null,
-                'size' => $file->getSize(),
-                'type' => $file->getMimeType(),
-                'ext' => $extension,
-            ];
-        });
-    }
-
-    public function pathGenerator(string|null $generator): static
-    {
-        $this->pathGenerator = $generator;
-
-        return $this;
-    }
-
     public function getDirectory(): ?string
     {
         $directory = $this->directory ?? app('curator')->getDirectory();
@@ -90,6 +38,13 @@ class Uploader extends FileUpload
     public function getPathGenerator(): ?string
     {
         return $this->pathGenerator;
+    }
+
+    public function pathGenerator(string|null $generator): static
+    {
+        $this->pathGenerator = $generator;
+
+        return $this;
     }
 
     public function saveUploadedFiles(): void
@@ -133,5 +88,50 @@ class Uploader extends FileUpload
         }
 
         $this->state($state);
+    }
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->saveUploadedFileUsing(function (BaseFileUpload $component, TemporaryUploadedFile $file, $state, $set) {
+            $filename = $component->shouldPreserveFilenames() ? Str::of(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME))->slug() : Str::uuid();
+            $extension = $file->getClientOriginalExtension();
+
+            $storeMethod = $component->getVisibility() === 'public' ? 'storePubliclyAs' : 'storeAs';
+
+            if (Curator::isResizable($extension)) {
+                if (in_array($file->disk, curator()->getCloudDisks())) {
+                    $content = Storage::disk($file->disk)->get($file->path());
+                } else {
+                    $content = $file->getRealPath();
+                }
+
+                $image = Image::make($content);
+                $image->orientate();
+                $width = $image->getWidth();
+                $height = $image->getHeight();
+                $exif = $image->exif();
+            }
+
+            if (Storage::disk($component->getDiskName())->exists(ltrim($component->getDirectory().'/'.$filename.'.'.$extension, '/'))) {
+                $filename = $filename.'-'.time();
+            }
+
+            $path = $file->{$storeMethod}($component->getDirectory(), $filename.'.'.$extension, $component->getDiskName());
+
+            return [
+                'disk' => $component->getDiskName(),
+                'directory' => $component->getDirectory(),
+                'name' => $filename,
+                'path' => $path,
+                'exif' => $exif ?? null,
+                'width' => $width ?? null,
+                'height' => $height ?? null,
+                'size' => $file->getSize(),
+                'type' => $file->getMimeType(),
+                'ext' => $extension,
+            ];
+        });
     }
 }
