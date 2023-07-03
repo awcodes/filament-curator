@@ -30,9 +30,11 @@ class CuratorPanel extends Component implements HasForms
 
     public string|null $imageCropAspectRatio = null;
 
-    public int|null $imageResizeTargetWidth = null;
+    public string|null $imageResizeMode = null;
 
-    public int|null $imageResizeTargetHeight = null;
+    public string|null $imageResizeTargetWidth = null;
+
+    public string|null $imageResizeTargetHeight = null;
 
     public bool $isLimitedToDirectory = false;
 
@@ -133,6 +135,7 @@ class CuratorPanel extends Component implements HasForms
                 ->directory($this->directory)
                 ->pathGenerator($this->pathGenerator)
                 ->imageCropAspectRatio($this->imageCropAspectRatio)
+                ->imageResizeMode($this->imageResizeMode)
                 ->imageResizeTargetWidth($this->imageResizeTargetWidth)
                 ->imageResizeTargetHeight($this->imageResizeTargetHeight),
         ];

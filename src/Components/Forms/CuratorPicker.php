@@ -39,6 +39,8 @@ class CuratorPicker extends Field
 
     protected string|Closure|null $curatorImageCropAspectRatio = null;
 
+    protected string|Closure|null $curatorImageResizeMode = null;
+
     protected string|Closure|null $curatorImageResizeTargetHeight = null;
 
     protected string|Closure|null $curatorImageResizeTargetWidth = null;
@@ -226,6 +228,11 @@ class CuratorPicker extends Field
         return $this->evaluate($this->curatorImageCropAspectRatio) ?? app('curator')->getImageCropAspectRatio();
     }
 
+    public function getImageResizeMode(): ?string
+    {
+        return $this->evaluate($this->curatorImageResizeMode) ?? app('curator')->getImageResizeMode();
+    }
+
     public function getImageResizeTargetHeight(): ?string
     {
         return $this->evaluate($this->curatorImageResizeTargetHeight) ?? app('curator')->getImageResizeTargetHeight();
@@ -285,6 +292,13 @@ class CuratorPicker extends Field
     public function imageCropAspectRatio(string|Closure $ratio): static
     {
         $this->curatorImageCropAspectRatio = $ratio;
+
+        return $this;
+    }
+
+    public function imageResizeMode(string|Closure $mode): static
+    {
+        $this->curatorImageResizeMode = $mode;
 
         return $this;
     }

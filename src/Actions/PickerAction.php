@@ -37,6 +37,7 @@ class PickerAction extends Action
                 'diskName' => $component->getDiskName(),
                 'visibility' => $component->getVisibility(),
                 'imageCropAspectRatio' => $component->getImageCropAspectRatio(),
+                'imageResizeMode' => $component->getImageResizeMode(),
                 'imageResizeTargetWidth' => $component->getImageResizeTargetWidth(),
                 'imageResizeTargetHeight' => $component->getImageResizeTargetHeight(),
                 'selected' => array_values((array)$component->getState()),

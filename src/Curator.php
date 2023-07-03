@@ -41,6 +41,8 @@ class Curator
 
     protected string|Closure|null $imageCropAspectRatio = null;
 
+    protected string|Closure|null $imageResizeMode = null;
+
     protected string|Closure|null $imageResizeTargetHeight = null;
 
     protected string|Closure|null $imageResizeTargetWidth = null;
@@ -202,6 +204,11 @@ class Curator
         return $this->evaluate($this->imageCropAspectRatio);
     }
 
+    public function getImageResizeMode(): ?string
+    {
+        return $this->evaluate($this->imageResizeMode);
+    }
+
     public function getImageResizeTargetHeight(): ?string
     {
         return $this->evaluate($this->imageResizeTargetHeight);
@@ -340,6 +347,13 @@ class Curator
     public function imageCropAspectRatio(string|Closure|null $ratio): static
     {
         $this->imageCropAspectRatio = $ratio;
+
+        return $this;
+    }
+
+    public function imageResizeMode(string|Closure|null $mode): static
+    {
+        $this->imageResizeMode = $mode;
 
         return $this;
     }

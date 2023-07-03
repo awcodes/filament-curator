@@ -12,6 +12,7 @@
     :disk-name="$diskName"
     :visibility="$visibility"
     :image-crop-aspect-ratio="$imageCropAspectRatio"
+    :image-resize-mode="$imageResizeMode"
     :image-resize-target-width="$imageResizeTargetWidth"
     :image-resize-target-height="$imageResizeTargetHeight"
     :selected="$selected ?? []"
