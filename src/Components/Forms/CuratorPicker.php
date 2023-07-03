@@ -23,35 +23,19 @@ use Illuminate\Support\Str;
 
 class CuratorPicker extends Field
 {
+    use CanBeOutlined;
     use HasColor;
     use HasSize;
-    use CanBeOutlined;
 
     protected string $view = 'curator::components.forms.picker';
 
     protected string|Htmlable|Closure|null $buttonLabel = null;
 
-    protected bool|Closure|null $isConstrained = false;
-
-    protected bool|Closure|null $isMultiple = false;
+    protected array|Closure|null $curatorAcceptedFileTypes = null;
 
     protected string|Closure|null $curatorDiskName = null;
 
     protected string|Closure|null $curatorDirectory = null;
-
-    protected bool|null $isLimitedToDirectory = null;
-
-    protected string|null $curatorPathGenerator = null;
-
-    protected string|Closure|null $curatorVisibility = null;
-
-    protected array|Closure|null $curatorAcceptedFileTypes = null;
-
-    protected bool|Closure|null $curatorShouldPreserveFilenames = null;
-
-    protected int|Closure|null $curatorMaxSize = null;
-
-    protected int|Closure|null $curatorMinSize = null;
 
     protected string|Closure|null $curatorImageCropAspectRatio = null;
 
@@ -59,11 +43,27 @@ class CuratorPicker extends Field
 
     protected string|Closure|null $curatorImageResizeTargetWidth = null;
 
-    protected string|Closure|null $relationshipTitleColumnName = null;
+    protected string|null $curatorPathGenerator = null;
+
+    protected int|Closure|null $curatorMaxSize = null;
+
+    protected int|Closure|null $curatorMinSize = null;
+
+    protected bool|Closure|null $curatorShouldPreserveFilenames = null;
+
+    protected string|Closure|null $curatorVisibility = null;
+
+    protected bool|Closure|null $isConstrained = false;
+
+    protected bool|null $isLimitedToDirectory = null;
+
+    protected bool|Closure|null $isMultiple = false;
+
+    protected string | null $orderColumn = null;
 
     protected string|Closure|null $relationship = null;
 
-    protected string | null $orderColumn = null;
+    protected string|Closure|null $relationshipTitleColumnName = null;
 
     /**
      * @throws Exception
@@ -148,9 +148,9 @@ class CuratorPicker extends Field
         ]);
     }
 
-    public function multiple(bool | Closure $condition = true): static
+    public function acceptedFileTypes(array|Arrayable|Closure $types): static
     {
-        $this->isMultiple = $condition;
+        $this->curatorAcceptedFileTypes = $types;
 
         return $this;
     }
@@ -176,27 +176,6 @@ class CuratorPicker extends Field
         return $this;
     }
 
-    public function limitToDirectory(bool|Closure|null $condition = true): static
-    {
-        $this->isLimitedToDirectory = $condition;
-
-        return $this;
-    }
-
-    public function pathGenerator(PathGenerator|string|null $generator): static
-    {
-        $this->curatorPathGenerator = $generator;
-
-        return $this;
-    }
-
-    public function acceptedFileTypes(array|Arrayable|Closure $types): static
-    {
-        $this->curatorAcceptedFileTypes = $types;
-
-        return $this;
-    }
-
     public function disk(string|Closure $name): static
     {
         $this->curatorDiskName = $name;
@@ -204,18 +183,103 @@ class CuratorPicker extends Field
         return $this;
     }
 
-    public function maxSize(int|Closure $size): static
+    public function getAcceptedFileTypes(): ?array
     {
-        $this->curatorMaxSize = $size;
+        $types = $this->evaluate($this->curatorAcceptedFileTypes) ?? app('curator')->getAcceptedFileTypes();
 
-        return $this;
+        if ($types instanceof Arrayable) {
+            $types = $types->toArray();
+        }
+
+        return $types;
     }
 
-    public function minSize(int|Closure $size): static
+    public function getButtonLabel(): string
     {
-        $this->curatorMinSize = $size;
+        return $this->evaluate($this->buttonLabel);
+    }
 
-        return $this;
+    /**
+     * @deprecated
+     */
+    public function getCurrentItem(): Model|Collection|null
+    {
+        if (! filled($this->getState())) {
+            return null;
+        }
+
+        return Curator::getMediaModel()::where('id', $this->getState())->first();
+    }
+
+    public function getDirectory(): string
+    {
+        return $this->evaluate($this->curatorDirectory) ?? app('curator')->getDirectory();
+    }
+
+    public function getDiskName(): string
+    {
+        return $this->evaluate($this->curatorDiskName) ?? app('curator')->getDiskName();
+    }
+
+    public function getImageCropAspectRatio(): ?string
+    {
+        return $this->evaluate($this->curatorImageCropAspectRatio) ?? app('curator')->getImageCropAspectRatio();
+    }
+
+    public function getImageResizeTargetHeight(): ?string
+    {
+        return $this->evaluate($this->curatorImageResizeTargetHeight) ?? app('curator')->getImageResizeTargetHeight();
+    }
+
+    public function getImageResizeTargetWidth(): ?string
+    {
+        return $this->evaluate($this->curatorImageResizeTargetWidth) ?? app('curator')->getImageResizeTargetWidth();
+    }
+
+    public function getMaxSize(): ?int
+    {
+        return $this->evaluate($this->curatorMaxSize) ?? app('curator')->getMaxSize();
+    }
+
+    public function getMinSize(): ?int
+    {
+        return $this->evaluate($this->curatorMinSize) ?? app('curator')->getMinSize();
+    }
+
+    public function getOrderColumn(): string
+    {
+        return $this->orderColumn ?? 'order';
+    }
+
+    public function getPathGenerator(): PathGenerator|string|null
+    {
+        return $this->curatorPathGenerator ?? app('curator')->getPathGenerator();
+    }
+
+    public function getRelationship(): BelongsTo | BelongsToMany | \Znck\Eloquent\Relations\BelongsToThrough | null
+    {
+        $name = $this->getRelationshipName();
+
+        if (blank($name)) {
+            return null;
+        }
+
+        return $this->getModelInstance()->{$name}();
+    }
+
+    public function getRelationshipName(): ?string
+    {
+        return $this->evaluate($this->relationship);
+    }
+
+    public function getVisibility(): string
+    {
+        return $this->evaluate($this->curatorVisibility) ?? app('curator')->getVisibility();
+    }
+
+    public function hasRelationship(): bool
+    {
+        return filled($this->getRelationshipName());
     }
 
     public function imageCropAspectRatio(string|Closure $ratio): static
@@ -239,45 +303,9 @@ class CuratorPicker extends Field
         return $this;
     }
 
-    public function preserveFilenames(bool|Closure|null $condition = true): static
-    {
-        $this->curatorShouldPreserveFilenames = $condition;
-
-        return $this;
-    }
-
-    public function orderColumn(string $column): static
-    {
-        $this->orderColumn = $column;
-
-        return $this;
-    }
-
-    /**
-     * @deprecated
-     */
-    public function getCurrentItem(): Model|Collection|null
-    {
-        if (! filled($this->getState())) {
-            return null;
-        }
-
-        return Curator::getMediaModel()::where('id', $this->getState())->first();
-    }
-
-    public function getButtonLabel(): string
-    {
-        return $this->evaluate($this->buttonLabel);
-    }
-
     public function isConstrained(): bool
     {
         return $this->evaluate($this->isConstrained);
-    }
-
-    public function getDirectory(): string
-    {
-        return $this->evaluate($this->curatorDirectory) ?? app('curator')->getDirectory();
     }
 
     public function isLimitedToDirectory(): bool
@@ -289,70 +317,58 @@ class CuratorPicker extends Field
         return $this->evaluate($this->isLimitedToDirectory) ?? app('curator')->isLimitedToDirectory();
     }
 
-    public function getPathGenerator(): PathGenerator|string|null
-    {
-        return $this->curatorPathGenerator ?? app('curator')->getPathGenerator();
-    }
-
-    public function getDiskName(): string
-    {
-        return $this->evaluate($this->curatorDiskName) ?? app('curator')->getDiskName();
-    }
-
-    public function getMaxSize(): ?int
-    {
-        return $this->evaluate($this->curatorMaxSize) ?? app('curator')->getMaxSize();
-    }
-
-    public function getMinSize(): ?int
-    {
-        return $this->evaluate($this->curatorMinSize) ?? app('curator')->getMinSize();
-    }
-
-    public function getVisibility(): string
-    {
-        return $this->evaluate($this->curatorVisibility) ?? app('curator')->getVisibility();
-    }
-
-    public function shouldPreserveFilenames(): bool
-    {
-        return $this->evaluate($this->curatorShouldPreserveFilenames) ?? app('curator')->shouldPreserveFilenames();
-    }
-
-    public function getImageCropAspectRatio(): ?string
-    {
-        return $this->evaluate($this->curatorImageCropAspectRatio) ?? app('curator')->getImageCropAspectRatio();
-    }
-
-    public function getImageResizeTargetHeight(): ?string
-    {
-        return $this->evaluate($this->curatorImageResizeTargetHeight) ?? app('curator')->getImageResizeTargetHeight();
-    }
-
-    public function getImageResizeTargetWidth(): ?string
-    {
-        return $this->evaluate($this->curatorImageResizeTargetWidth) ?? app('curator')->getImageResizeTargetWidth();
-    }
-
-    public function getAcceptedFileTypes(): ?array
-    {
-        $types = $this->evaluate($this->curatorAcceptedFileTypes) ?? app('curator')->getAcceptedFileTypes();
-
-        if ($types instanceof Arrayable) {
-            $types = $types->toArray();
-        }
-
-        return $types;
-    }
-
     public function isMultiple(): bool
     {
         return $this->evaluate($this->isMultiple);
     }
 
-    public function getOrderColumn(): string
+    public function limitToDirectory(bool|Closure|null $condition = true): static
     {
-        return $this->orderColumn ?? 'order';
+        $this->isLimitedToDirectory = $condition;
+
+        return $this;
+    }
+
+    public function maxSize(int|Closure $size): static
+    {
+        $this->curatorMaxSize = $size;
+
+        return $this;
+    }
+
+    public function minSize(int|Closure $size): static
+    {
+        $this->curatorMinSize = $size;
+
+        return $this;
+    }
+
+    public function multiple(bool | Closure $condition = true): static
+    {
+        $this->isMultiple = $condition;
+
+        return $this;
+    }
+
+    public function orderColumn(string $column): static
+    {
+        $this->orderColumn = $column;
+
+        return $this;
+    }
+
+    public function pathGenerator(PathGenerator|string|null $generator): static
+    {
+        $this->curatorPathGenerator = $generator;
+
+        return $this;
+    }
+
+    public function preserveFilenames(bool|Closure|null $condition = true): static
+    {
+        $this->curatorShouldPreserveFilenames = $condition;
+
+        return $this;
     }
 
     public function relationship(string | Closure $relationshipName, string | Closure $titleColumnName, ?Closure $callback = null): static
@@ -425,24 +441,8 @@ class CuratorPicker extends Field
         return $this;
     }
 
-    public function getRelationship(): BelongsTo | BelongsToMany | \Znck\Eloquent\Relations\BelongsToThrough | null
+    public function shouldPreserveFilenames(): bool
     {
-        $name = $this->getRelationshipName();
-
-        if (blank($name)) {
-            return null;
-        }
-
-        return $this->getModelInstance()->{$name}();
-    }
-
-    public function getRelationshipName(): ?string
-    {
-        return $this->evaluate($this->relationship);
-    }
-
-    public function hasRelationship(): bool
-    {
-        return filled($this->getRelationshipName());
+        return $this->evaluate($this->curatorShouldPreserveFilenames) ?? app('curator')->shouldPreserveFilenames();
     }
 }
