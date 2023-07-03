@@ -2,6 +2,18 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.8.0 - 2023-07-03
+
+### What's Changed
+
+- Chore: reorganize properties and methods to be alphabetical by @awcodes in https://github.com/awcodes/filament-curator/pull/227
+- Feat: add imageResizeMode for fileUpload by @awcodes in https://github.com/awcodes/filament-curator/pull/228
+- Feat: max items on picker field by @awcodes in https://github.com/awcodes/filament-curator/pull/229
+- Feat: allow wildcard mimetypes by @awcodes in https://github.com/awcodes/filament-curator/pull/232
+- Fix: use glide for image src on picker by @awcodes in https://github.com/awcodes/filament-curator/pull/230
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.7.7...v2.8.0
+
 ## v2.7.7 - 2023-06-30
 
 ### What's Changed
