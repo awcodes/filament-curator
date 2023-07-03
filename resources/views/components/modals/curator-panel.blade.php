@@ -36,13 +36,12 @@
                 <template x-for="file in files">
 
                     <li x-bind:key="file.id" class="relative aspect-square"
-                        x-bind:class="{'opacity-40': selected.length > 0 && (! isSelected(file.id) || ! types.includes(file.type)) }"
+                        x-bind:class="{'opacity-40': selected.length > 0 && !isSelected(file.id) }"
                     >
 
                         <button
                             type="button"
                             x-on:click.prevent="addToSelection(file.id)"
-                            x-bind:disabled="! types.includes(file.type)"
                             class="block w-full h-full overflow-hidden bg-gray-700 rounded-sm"
                         >
                             <template x-if="file.type.includes('image')">
@@ -146,11 +145,11 @@
                             <div class="flex justify-center mb-4 overflow-hidden border border-gray-300 rounded dark:border-gray-700 checkered h-48 flex-shrink-0 relative">
                                 <template x-if="selected[0]?.type.includes('image')">
                                     <img
-                                            x-bind:src="selected[0]?.url"
-                                            x-bind:alt="selected[0]?.alt"
-                                            x-bind:width="selected[0]?.width"
-                                            x-bind:height="selected[0]?.height"
-                                            class="block object-contain w-full h-full"
+                                        x-bind:src="selected[0]?.url"
+                                        x-bind:alt="selected[0]?.alt"
+                                        x-bind:width="selected[0]?.width"
+                                        x-bind:height="selected[0]?.height"
+                                        class="block object-contain w-full h-full"
                                     />
                                 </template>
                                 <template x-if="!selected[0]?.type.includes('image')">
@@ -171,11 +170,11 @@
                                 </template>
                                 <div class="absolute top-0 right-0 flex bg-gray-900 divide-x divide-gray-700 rounded-bl-lg shadow-md">
                                     <a
-                                            x-bind:href="selected[0]?.url"
-                                            target="_blank"
-                                            rel="noopener nofollow"
-                                            class="flex items-center justify-center flex-none w-10 h-10 transition text-gray-600 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400"
-                                            x-tooltip.raw="{{ __('curator::views.panel.view') }}"
+                                        x-bind:href="selected[0]?.url"
+                                        target="_blank"
+                                        rel="noopener nofollow"
+                                        class="flex items-center justify-center flex-none w-10 h-10 transition text-gray-600 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400"
+                                        x-tooltip.raw="{{ __('curator::views.panel.view') }}"
                                     >
                                         @svg('heroicon-s-eye', 'w-4 h-4')
                                         <span class="sr-only">{{ __('curator::views.panel.view') }}</span>

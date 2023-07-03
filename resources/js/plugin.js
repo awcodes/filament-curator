@@ -53,15 +53,19 @@ document.addEventListener("alpine:init", () => {
                 this.selected = initialSelection;
             }
         },
+        getIndicator: function(url) {
+            return url.includes('?') ? '&' : '?';
+        },
         getFiles: async function(url = '/curator/media', selected = []) {
             this.$nextTick(async () => {
                 if (selected.length > 0) {
-                    let indicator = url.includes('?') ? '&' : '?';
-                    url = url + indicator + 'media=' + selected.map(obj => obj.id).join(',');
+                    url = url + this.getIndicator(url) + 'media=' + selected.map(obj => obj.id).join(',');
                 }
                 if (this.directory) {
-                    let indicator = url.includes('?') ? '&' : '?';
-                    url = url + indicator + 'directory=' + this.directory;
+                    url = url + this.getIndicator(url) + 'directory=' + this.directory;
+                }
+                if (this.types) {
+                    url = url + this.getIndicator(url) + 'types=' + this.types.join(',');
                 }
                 this.isFetching = true;
                 const response = await fetch(url);
