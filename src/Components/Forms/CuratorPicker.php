@@ -8,6 +8,7 @@ use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Generators\PathGenerator;
 use Closure;
 use Exception;
+use Filament\Forms\Components\Component;
 use Filament\Forms\Components\Field;
 use Filament\Support\Actions\Concerns\CanBeOutlined;
 use Filament\Support\Actions\Concerns\HasColor;
@@ -60,6 +61,8 @@ class CuratorPicker extends Field
     protected bool|null $isLimitedToDirectory = null;
 
     protected bool|Closure|null $isMultiple = false;
+
+    protected int|Closure|null $maxItems = null;
 
     protected string | null $orderColumn = null;
 
@@ -243,6 +246,11 @@ class CuratorPicker extends Field
         return $this->evaluate($this->curatorImageResizeTargetWidth) ?? app('curator')->getImageResizeTargetWidth();
     }
 
+    public function getMaxItems(): ?int
+    {
+        return $this->evaluate($this->maxItems);
+    }
+
     public function getMaxSize(): ?int
     {
         return $this->evaluate($this->curatorMaxSize) ?? app('curator')->getMaxSize();
@@ -339,6 +347,21 @@ class CuratorPicker extends Field
     public function limitToDirectory(bool|Closure|null $condition = true): static
     {
         $this->isLimitedToDirectory = $condition;
+
+        return $this;
+    }
+
+    public function maxItems(int|Closure $items): static
+    {
+        $this->maxItems = $items;
+
+        $this->rule('array');
+        $this->rule(static function (Component $component): string {
+            /** @var static $component */
+            $count = $component->getMaxItems();
+
+            return "max:{$count}";
+        });
 
         return $this;
     }

@@ -1,6 +1,7 @@
 @php
     $statePath = $getStatePath();
     $items = $getState() ?? [];
+    $isMultiple = $isMultiple();
 @endphp
 
 <x-dynamic-component
@@ -70,7 +71,7 @@
 
                     <div class="absolute top-0 right-0">
                         <div class="relative flex items-center bg-gray-900 divide-x divide-gray-700 rounded-bl-lg shadow-md">
-                        @if ($isMultiple())
+                        @if ($isMultiple)
                             <button
                                 title="{{ __('forms::components.repeater.buttons.move_item.label') }}"
                                 x-on:click.stop
@@ -158,7 +159,10 @@
             @endforeach
         </div>
 
-        @if ($isMultiple() || (! $isMultiple() && count($items) === 0))
+        @if (
+            count($items) === 0 ||
+            ($isMultiple && count($items) < $getMaxItems())
+        )
             <x-filament::button
                 type="button"
                 color="{{ $getColor() }}"
