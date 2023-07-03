@@ -2,6 +2,7 @@
     $statePath = $getStatePath();
     $items = $getState() ?? [];
     $isMultiple = $isMultiple();
+    $maxItems = $getMaxItems();
 @endphp
 
 <x-dynamic-component
@@ -159,10 +160,8 @@
             @endforeach
         </div>
 
-        @if (
-            count($items) === 0 ||
-            ($isMultiple && count($items) < $getMaxItems())
-        )
+        @if (count($items) === 0 || $isMultiple)
+            @if (! $maxItems || ($maxItems && count($items) < $maxItems))
             <x-filament::button
                 type="button"
                 color="{{ $getColor() }}"
@@ -173,6 +172,7 @@
             >
                 {{ $getButtonLabel() }}
             </x-filament::button>
+            @endif
         @endif
     </div>
 
