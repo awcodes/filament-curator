@@ -52,7 +52,7 @@
 
                     @if (str($item['type'])->contains('image'))
                         <img
-                            src="{{ $item['url'] }}"
+                            src="{{ $item['medium_url'] }}"
                             alt="{{ $item['alt'] ?? $item['name'] }}"
                              @class([
                                 'h-full',

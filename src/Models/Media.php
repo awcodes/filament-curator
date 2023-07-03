@@ -27,6 +27,7 @@ class Media extends Model
     protected $appends = [
         'url',
         'thumbnail_url',
+        'medium_url',
         'resizable',
         'size_for_humans',
     ];
@@ -51,6 +52,13 @@ class Media extends Model
     {
         return Attribute::make(
             get: fn () => $this->getSignedUrl(['w' => 200, 'h' => 200, 'fit' => 'crop', 'fm' => 'webp']),
+        );
+    }
+
+    protected function mediumUrl(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->getSignedUrl(['w' => 640, 'h' => 640, 'fit' => 'crop', 'fm' => 'webp']),
         );
     }
 
