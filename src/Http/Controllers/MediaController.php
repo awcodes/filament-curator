@@ -17,12 +17,19 @@ class MediaController extends Controller
     {
         $mediaModel = Curator::getMediaModel();
         $selected = $request->has('media') ? explode(',', $request->media) : [];
-        
+
         $files = $mediaModel::when($selected, function($query, $selected) {
                 return $query->whereNotIn('id', $selected);
             })
             ->when($request->has('directory'), function($query) use ($request) {
                 return $query->where('directory', $request->directory);
+            })
+            ->when($request->has('types'), function($query) use ($request) {
+                $types = explode(',', $request->types);
+                $query = $query->whereIn('type', $types);
+                $wildcardTypes = collect($types)->filter(fn ($type) => str_contains($type, '*'));
+                $wildcardTypes?->map(fn($type) => $query->orWhere('type', 'LIKE', str_replace('*', '%', $type)));
+                return $query;
             })
             ->latest()
             ->paginate(25);
