@@ -2,6 +2,14 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.8.1 - 2023-07-04
+
+### What's Changed
+
+- Fix: Tiptap action with latest attributes by @awcodes in https://github.com/awcodes/filament-curator/pull/234
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.8.0...v2.8.1
+
 ## v2.8.0 - 2023-07-03
 
 ### What's Changed
