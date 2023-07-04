@@ -38,11 +38,11 @@ class PickerAction extends Action
                 'maxWidth' => $component->getMaxWidth(),
                 'minSize' => $component->getMinSize(),
                 'modalId' => $component->getLivewire()->id.'-form-component-action',
-                'statePath' => $component->getStatePath(),
                 'pathGenerator' => $component->getPathGenerator(),
                 'rules' => $component->getValidationRules(),
                 'selected' => array_values((array)$component->getState()),
                 'shouldPreserveFilenames' => $component->shouldPreserveFilenames(),
+                'statePath' => $component->getStatePath(),
                 'visibility' => $component->getVisibility(),
             ]);
         });

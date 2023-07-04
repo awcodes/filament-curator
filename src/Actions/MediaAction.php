@@ -34,24 +34,26 @@ class MediaAction extends Action
                 : [];
 
             return view('curator::components.actions.picker-action', [
-                'statePath' => $component->getStatePath(),
-                'modalId' => $component->getLivewire()->id.'-form-component-action',
-                'directory' => app('curator')->getDirectory(),
-                'pathGenerator' => app('curator')->getPathGenerator(),
-                'shouldPreserveFilenames' => app('curator')->shouldPreserveFilenames(),
-                'maxWidth' => app('curator')->getMaxWidth(),
-                'minSize' => app('curator')->getMinSize(),
-                'maxSize' => app('curator')->getMaxSize(),
-                'rules' => [],
                 'acceptedFileTypes' => app('curator')->getAcceptedFileTypes(),
+                'directory' => app('curator')->getDirectory(),
                 'diskName' => app('curator')->getDiskName(),
-                'visibility' => app('curator')->getVisibility(),
                 'imageCropAspectRatio' => app('curator')->getImageCropAspectRatio(),
                 'imageResizeTargetWidth' => app('curator')->getImageResizeTargetWidth(),
                 'imageResizeTargetHeight' => app('curator')->getImageResizeTargetHeight(),
-                'selected' => $selected,
-                'isMultiple' => false,
+                'imageResizeMode' => app('curator')->getImageResizeMode(),
                 'isLimitedToDirectory' => false,
+                'isMultiple' => false,
+                'maxItems' => 1,
+                'maxSize' => app('curator')->getMaxSize(),
+                'maxWidth' => app('curator')->getMaxWidth(),
+                'minSize' => app('curator')->getMinSize(),
+                'modalId' => $component->getLivewire()->id.'-form-component-action',
+                'pathGenerator' => app('curator')->getPathGenerator(),
+                'rules' => [],
+                'selected' => $selected,
+                'shouldPreserveFilenames' => app('curator')->shouldPreserveFilenames(),
+                'statePath' => $component->getStatePath(),
+                'visibility' => app('curator')->getVisibility(),
             ]);
         });
     }
