@@ -37,7 +37,7 @@ class Media extends Model
     {
         return Attribute::make(
             get: function () {
-                if (Storage::disk($this->disk)->getVisibility($this->path) === 'private') {
+                if (Storage::disk($this->disk)->exists($this->path) && Storage::disk($this->disk)->getVisibility($this->path) === 'private') {
                     return Storage::disk($this->disk)->temporaryUrl(
                         $this->path,
                         now()->addMinutes(5)
