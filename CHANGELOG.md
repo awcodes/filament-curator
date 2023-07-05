@@ -2,6 +2,18 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.8.2 - 2023-07-05
+
+### What's Changed
+
+- Fix: check if path exist before get visibility by @lotarbo in https://github.com/awcodes/filament-curator/pull/235
+
+### New Contributors
+
+- @lotarbo made their first contribution in https://github.com/awcodes/filament-curator/pull/235
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.8.1...v2.8.2
+
 ## v2.8.1 - 2023-07-04
 
 ### What's Changed
