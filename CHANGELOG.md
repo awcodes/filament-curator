@@ -2,6 +2,14 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.8.3 - 2023-07-06
+
+### What's Changed
+
+- Fix: curation data and saving by @awcodes in https://github.com/awcodes/filament-curator/pull/238
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.8.2...v2.8.3
+
 ## v2.8.2 - 2023-07-05
 
 ### What's Changed
