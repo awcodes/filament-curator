@@ -21,6 +21,7 @@ class CuratorCuration extends Component
     public function saveCuration($data = null): void
     {
         $image = Image::make(Storage::disk($this->media->disk)->path($this->media->path));
+        $extension = $data['format'] ?? $image->extension;
 
         $aspectWidth = floor(($data['canvasData']['width'] / $data['canvasData']['naturalWidth']) * $data['width']);
         $aspectHeight = floor(($data['canvasData']['height'] / $data['canvasData']['naturalHeight']) * $data['height']);
@@ -50,10 +51,10 @@ class CuratorCuration extends Component
 
         $image->crop($data['width'], $data['height'], $data['x'], $data['y'])
             ->resize($aspectWidth, $aspectHeight)
-            ->encode($data['format'] ?? 'jpg', $data['quality'] ?? 60);
+            ->encode($extension, $data['quality'] ?? 60);
 
         // save image to directory base on media
-        $curationPath = $this->media->directory.'/'.$this->media->name.'/'.$data['key'].'.'.$image->extension;
+        $curationPath = $this->media->directory.'/'.$this->media->name.'/'.$data['key'].'.'.$extension;
 
         Storage::disk($this->media->disk)->put($curationPath, $image->stream());
 
@@ -61,13 +62,13 @@ class CuratorCuration extends Component
             'key' => $data['key'] ?? $aspectWidth.'x'.$aspectHeight,
             'disk' => $this->media->disk,
             'directory' => $this->media->name,
-            'name' => ($data['key'] ?? $aspectWidth.'x'.$aspectHeight).'.'.$image->extension,
+            'name' => ($data['key'] ?? $aspectWidth.'x'.$aspectHeight).'.'.$extension,
             'path' => $curationPath,
             'width' => $aspectWidth,
             'height' => $aspectHeight,
             'size' => $image->filesize(),
             'type' => $image->mime(),
-            'ext' => $image->extension,
+            'ext' => $extension,
             'url' => Storage::disk($this->media->disk)->url($curationPath),
         ];
 
