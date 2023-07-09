@@ -41,7 +41,7 @@
                 $ring . ' ring-white dark:ring-gray-800' => $imageCount > 1,
             ])
         >
-            @if (app('curator')->isResizable($item->ext))
+            @if (curator()->isResizable($item->ext))
                 @php
                     $img_width = $width ? (int)$width : null;
                     $img_height = $height ? (int)$height : null;

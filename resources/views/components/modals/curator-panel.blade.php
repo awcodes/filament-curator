@@ -1,17 +1,51 @@
-<div x-data="curator({
-    statePath: '{{ $statePath }}',
-    types: @js($acceptedFileTypes),
-    initialSelection: @js($selected),
-    isMultiple: {{ $isMultiple ? 'true' : 'false' }},
-    directory: '{{ $isLimitedToDirectory ? $directory : null }}',
-})"
-     x-on:clear-selected="selected = null"
-     x-on:insert-media.window="$dispatch('close-modal', { id: '{{ $modalId }}' })"
-     x-on:new-media-added.window="addNewFile($event.detail.media)"
-     x-on:remove-media.window="removeFile($event.detail.media)"
-     class="curator h-full absolute inset-0 flex flex-col"
-     wire:ignore
+<div
+    x-ignore
+    ax-load
+    ax-load-src="{{ \Filament\Support\Facades\FilamentAsset::getAlpineComponentSrc('curator', 'awcodes/curator') }}"
+    x-data="curator({
+        statePath: '{{ $statePath }}',
+        types: @js($acceptedFileTypes),
+        initialSelection: @js($selected),
+        isMultiple: {{ $isMultiple ? 'true' : 'false' }},
+        directory: '{{ $isLimitedToDirectory ? $directory : null }}',
+    })"
+    x-on:clear-selected="selected = null"
+    x-on:insert-media.window="$dispatch('close-modal', { id: '{{ $modalId }}' })"
+    x-on:new-media-added.window="addNewFile($event.detail.media)"
+    x-on:remove-media.window="removeFile($event.detail.media)"
+    class="curator h-full absolute inset-0 flex flex-col"
+    wire:ignore
 >
+    <div class="curator-picker-toolbar px-4 py-2 flex items-center justify-between bg-gray-200/70 dark:bg-black/20 dark:text-white">
+        <div class="space-x-2">
+            <x-filament::button
+                size="xs"
+                color="gray"
+                x-on:click="selected = []"
+                x-show="selected.length > 1"
+            >
+                {{ __('curator::views.panel.deselect_all') }}
+            </x-filament::button>
+            <x-filament::button size="xs" color="gray">List View</x-filament::button>
+            <x-filament::button size="xs" color="gray">Grid View</x-filament::button>
+        </div>
+        <label class="border border-gray-300 dark:border-gray-700 rounded-md relative">
+            <span class="sr-only">{{ __('curator::views.panel.search_label') }}</span>
+            <x-filament::icon
+                alias="curator::check"
+                name="heroicon-s-magnifying-glass"
+                size="w-5 h-5"
+                class="absolute top-2.5 left-3 rtl:left-0 rtl:right-3 dark:text-gray-500"
+            />
+            <input
+                type="search"
+                wire:ignore
+                placeholder="{{ __('curator::views.panel.search_placeholder') }}"
+                x-on:input.debounce.500ms="searchFiles($event)"
+                class="block w-full transition !ps-10 !pe-3 duration-75 border-none focus:ring-1 focus:ring-inset focus:ring-primary-600 disabled:opacity-70 bg-transparent"
+            />
+        </label>
+    </div>
 
     <div class="flex-1 relative flex flex-col lg:flex-row overflow-hidden">
         <div
@@ -19,23 +53,20 @@
             class="curator-loading-indicator absolute inset-0 z-10 grid place-content-center bg-gray-300/50 dark:bg-gray-900/50"
             style="display: none;"
         >
-            <svg
-                class="w-12 h-12 text-gray-700 dark:text-white animate-spin"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-            >
+            <svg class="w-12 h-12 text-gray-700 dark:text-white animate-spin" xmlns="http://www.w3.org/2000/svg"
+                 fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
         </div> <!--loading -->
 
         <div class="flex-1 h-full overflow-auto p-4" wire:ignore>
-            <ul class="grid grid-cols-3 gap-4 sm:grid-cols-4 md:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10">
+            <ul class="curator-picker-grid">
 
                 <template x-for="file in files">
 
-                    <li x-bind:key="file.id" class="relative aspect-square"
+                    <li
+                        x-bind:key="file.id" class="relative aspect-square"
                         x-bind:class="{'opacity-40': selected.length > 0 && !isSelected(file.id) }"
                     >
 
@@ -68,7 +99,8 @@
                             </template>
                         </button>
 
-                        <p x-text="file.name" class="text-xs truncate absolute bottom-0 inset-x-0 px-1 pb-1 pt-4 text-white bg-gradient-to-t from-black/80 to-transparent pointer-events-none"></p>
+                        <p x-text="file.name"
+                           class="text-xs truncate absolute bottom-0 inset-x-0 px-1 pb-1 pt-4 text-white bg-gradient-to-t from-black/80 to-transparent pointer-events-none"></p>
 
                         <button
                             type="button"
@@ -78,7 +110,11 @@
                             class="absolute inset-0 flex items-center justify-center w-full h-full rounded shadow text-primary-600 bg-primary-500/20 ring-2 ring-primary-500"
                         >
                             <span class="flex items-center justify-center w-8 h-8 text-white rounded-full bg-primary-500 drop-shadow">
-                                @svg('heroicon-s-check', 'w-5 h-5')
+                                <x-filament::icon
+                                    alias="curator::check"
+                                    name="heroicon-s-check"
+                                    size="w-5 h-5"
+                                />
                             </span>
                             <span class="sr-only">
                                 {{ __('curator::views.panel.deselect') }}
@@ -115,18 +151,6 @@
 
         <div class="w-full lg:h-full lg:max-w-xs overflow-auto bg-gray-100 dark:bg-gray-900/30 flex flex-col shadow-top lg:shadow-none z-[1]">
 
-            <label class="border-b border-gray-300 dark:border-gray-800 relative">
-                <span class="sr-only">{{ __('curator::views.panel.search_label') }}</span>
-                @svg('heroicon-o-search', 'w-4 h-4 absolute top-3 left-3 rtl:left-0 rtl:right-3 dark:text-gray-500')
-                <input
-                    type="search"
-                    wire:ignore
-                    placeholder="{{ __('curator::views.panel.search_placeholder') }}"
-                    x-on:input.debounce.500ms="searchFiles($event)"
-                    class="block w-full transition pl-10 rtl:pl-3 rtl:pr-10 duration-75 border-none focus:ring-1 focus:ring-inset focus:ring-primary-600 disabled:opacity-70 dark:bg-black/10 dark:text-white"
-                />
-            </label>
-
             <div class="flex-1 overflow-hidden">
                 <div class="flex flex-col h-full overflow-y-auto">
                     <h4 x-show="showUploadForm" class="font-bold py-2 px-4 mb-0">
@@ -154,8 +178,8 @@
                                 </template>
                                 <template x-if="!selected[0]?.type.includes('image')">
                                     <div @class([
-                                    'curator-document-image grid place-items-center w-full h-full text-xs uppercase relative',
-                                ])>
+                                        'curator-document-image grid place-items-center w-full h-full text-xs uppercase relative',
+                                    ])>
                                         <template x-if="selected[0]?.type.includes('video')">
                                             <video controls x-bind:src="selected?.url"></video>
                                         </template>
@@ -176,26 +200,38 @@
                                         class="flex items-center justify-center flex-none w-10 h-10 transition text-gray-600 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400"
                                         x-tooltip.raw="{{ __('curator::views.panel.view') }}"
                                     >
-                                        @svg('heroicon-s-eye', 'w-4 h-4')
+                                        <x-filament::icon
+                                            alias="curator::view"
+                                            name="heroicon-s-eye"
+                                            size="w-4 h-4"
+                                        />
                                         <span class="sr-only">{{ __('curator::views.panel.view') }}</span>
                                     </a>
                                     <button
-                                            type="button"
-                                            wire:click="download"
-                                            class="flex items-center justify-center flex-none w-10 h-10 transition text-primary-600 hover:text-primary-500 dark:text-primary-500 dark:hover:text-primary-400"
-                                            x-tooltip.raw="{{ __('curator::views.panel.download') }}"
+                                        type="button"
+                                        wire:click="download"
+                                        class="flex items-center justify-center flex-none w-10 h-10 transition text-primary-600 hover:text-primary-500 dark:text-primary-500 dark:hover:text-primary-400"
+                                        x-tooltip.raw="{{ __('curator::views.panel.download') }}"
                                     >
-                                        @svg('heroicon-s-download', 'w-4 h-4')
+                                        <x-filament::icon
+                                            alias="curator::download"
+                                            name="heroicon-s-arrow-down-tray"
+                                            size="w-4 h-4"
+                                        />
                                         <span class="sr-only">{{ __('curator::views.panel.download') }}</span>
                                     </button>
                                     <button
-                                            type="button"
-                                            wire:target="destroyFile"
-                                            wire:click.prevent="destroyFile"
-                                            x-tooltip.raw="{{ __('curator::views.panel.edit_delete') }}"
-                                            class="flex items-center justify-center flex-none w-10 h-10 transition text-danger-600 hover:text-danger-500 dark:text-danger-500 dark:hover:text-danger-400"
+                                        type="button"
+                                        wire:target="destroyFile"
+                                        wire:click.prevent="destroyFile"
+                                        x-tooltip.raw="{{ __('curator::views.panel.edit_delete') }}"
+                                        class="flex items-center justify-center flex-none w-10 h-10 transition text-danger-600 hover:text-danger-500 dark:text-danger-500 dark:hover:text-danger-400"
                                     >
-                                        @svg('heroicon-s-trash', 'w-4 h-4')
+                                        <x-filament::icon
+                                            alias="curator::trash"
+                                            name="heroicon-s-trash"
+                                            size="w-4 h-4"
+                                        />
                                         <span class="sr-only">{{ __('curator::views.panel.edit_delete') }}</span>
                                     </button>
                                 </div>

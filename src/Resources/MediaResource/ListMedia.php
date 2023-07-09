@@ -2,75 +2,48 @@
 
 namespace Awcodes\Curator\Resources\MediaResource;
 
-use Awcodes\Curator\Resources\MediaResource;
 use Exception;
-use Filament\Pages\Actions\Action;
+use Filament\Actions\Action;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
 
 class ListMedia extends ListRecords
 {
-    protected static string $resource = MediaResource::class;
-
-    protected function getTitle(): string
+    public static function getResource(): string
     {
-        return Str::headline(app('curator')->getPluralResourceLabel());
+        return config('curator.media_resource');
+    }
+
+    public function getTitle(): string
+    {
+        return Str::headline(config('curator.model_plural_label'));
     }
 
     /**
      * @throws Exception
      */
-    protected function getActions(): array
+    public function getHeaderActions(): array
     {
-        return array_merge(
-            [
-                Action::make('toggle-table-view')
-                    ->color('secondary')
-                    ->label(function (): string {
-                        return Session::get('tableLayout') ? __('curator::tables.actions.toggle_table_list') : __('curator::tables.actions.toggle_table_grid');
-                    })
-                    ->icon(function (): string {
-                        return Session::get('tableLayout') ? 'heroicon-s-view-list' : 'heroicon-s-view-grid';
-                    })
-                    ->action(function (): void {
-                        Session::put('tableLayout', ! Session::get('tableLayout'));
-                    }),
-            ],
-            parent::getActions(),
-        );
-    }
-
-    protected function getDefaultTableSortColumn(): ?string
-    {
-        return 'created_at';
-    }
-
-    protected function getDefaultTableSortDirection(): ?string
-    {
-        return 'desc';
-    }
-
-    protected function getTableContentGrid(): ?array
-    {
-        if (app('curator')->shouldTableHaveGridLayout()) {
-            return [
-                'md' => 2,
-                'lg' => 3,
-                'xl' => 4,
-            ];
-        }
-
-        return null;
-    }
-
-    protected function getDefaultTableRecordsPerPageSelectOption(): int
-    {
-        return 12;
-    }
-
-    protected function getTableRecordsPerPageSelectOptions(): array
-    {
-        return [6, 12, 24, 48, -1];
+        return [
+            Action::make('toggle-table-view')
+                ->color('gray')
+                ->label(function (): string {
+                    return Session::get('tableLayout')
+                        ? __('curator::tables.actions.toggle_table_list')
+                        : __('curator::tables.actions.toggle_table_grid');
+                })
+                ->icon(function (): string {
+                    return Session::get('tableLayout')
+                        ? 'heroicon-s-queue-list'
+                        : 'heroicon-s-squares-2x2';
+                })
+                ->action(function (): void {
+                    ray(Session::get('tableLayout'));
+                    Session::put('tableLayout', !Session::get('tableLayout'));
+                }),
+            CreateAction::make(),
+        ];
     }
 }

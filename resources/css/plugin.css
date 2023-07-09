@@ -1,4 +1,5 @@
 @import '../../node_modules/cropperjs/dist/cropper.css';
+
 @tailwind utilities;
 
 .curator-grid-container {
@@ -35,7 +36,7 @@
 
 .checkered {
     background-color: theme("colors.gray.200");
-    background-image:  repeating-linear-gradient(45deg, theme("colors.gray.300") 25%, transparent 25%, transparent 75%, theme("colors.gray.300") 75%, theme("colors.gray.300")), repeating-linear-gradient(45deg, theme("colors.gray.300") 25%, theme("colors.gray.200") 25%, theme("colors.gray.200") 75%, theme("colors.gray.300") 75%, theme("colors.gray.300"));
+    background-image: repeating-linear-gradient(45deg, theme("colors.gray.300") 25%, transparent 25%, transparent 75%, theme("colors.gray.300") 75%, theme("colors.gray.300")), repeating-linear-gradient(45deg, theme("colors.gray.300") 25%, theme("colors.gray.200") 25%, theme("colors.gray.200") 75%, theme("colors.gray.300") 75%, theme("colors.gray.300"));
 
     background-position: 0 0, 10px 10px;
     background-size: 20px 20px;
@@ -43,7 +44,7 @@
 
 .dark .checkered {
     background-color: theme("colors.gray.800");
-    background-image:  repeating-linear-gradient(45deg, theme("colors.gray.700") 25%, transparent 25%, transparent 75%, theme("colors.gray.700") 75%, theme("colors.gray.700")), repeating-linear-gradient(45deg, theme("colors.gray.700") 25%, theme("colors.gray.800") 25%, theme("colors.gray.800") 75%, theme("colors.gray.700") 75%, theme("colors.gray.700"));
+    background-image: repeating-linear-gradient(45deg, theme("colors.gray.700") 25%, transparent 25%, transparent 75%, theme("colors.gray.700") 75%, theme("colors.gray.700")), repeating-linear-gradient(45deg, theme("colors.gray.700") 25%, theme("colors.gray.800") 25%, theme("colors.gray.800") 75%, theme("colors.gray.700") 75%, theme("colors.gray.700"));
 }
 
 .filament-resources-media {
@@ -64,38 +65,33 @@
     .filament-modal-window {
         @apply !p-0;
 
-        > div {
-            @apply space-y-0;
-        }
-
-        > button:first-child {
-            &:hover,
-            &:focus {
-                .filament-modal-close-button {
-                    @apply text-primary-500;
-                }
-            }
-        }
-
         .filament-modal-header {
             @apply py-2 px-4;
 
             .filament-modal-heading {
                 @apply text-base;
             }
-
-            + .filament-hr {
-                @apply mt-0;
-            }
         }
 
         .filament-modal-close-button {
-            @apply w-5 h-5;
-            margin-block-start: 0.1575rem;
+            margin-block-start: -1rem;
+
+            &:hover,
+            &:focus {
+                @apply text-primary-500;
+            }
         }
 
         .filament-modal-content {
             position: relative;
+        }
+
+        .filament-modal-footer {
+            @apply pb-0;
+        }
+
+        .curator-picker-grid {
+            @apply grid grid-cols-3 gap-4 sm:grid-cols-4 md:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10;
         }
     }
 }

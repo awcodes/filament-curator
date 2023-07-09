@@ -18,7 +18,7 @@ class PickerAction extends Action
 
         $this->modalWidth = 'screen';
 
-        $this->modalActions([]);
+        $this->modalFooterActions(fn() => []);
 
         $this->modalHeading(__('curator::views.panel.heading'));
 
@@ -37,7 +37,7 @@ class PickerAction extends Action
                 'maxSize' => $component->getMaxSize(),
                 'maxWidth' => $component->getMaxWidth(),
                 'minSize' => $component->getMinSize(),
-                'modalId' => $component->getLivewire()->id.'-form-component-action',
+                'modalId' => $component->getLivewire()->id . '-form-component-action',
                 'pathGenerator' => $component->getPathGenerator(),
                 'rules' => $component->getValidationRules(),
                 'selected' => array_values((array)$component->getState()),

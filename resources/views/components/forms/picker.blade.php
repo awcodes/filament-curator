@@ -5,19 +5,7 @@
     $maxItems = $getMaxItems();
 @endphp
 
-<x-dynamic-component
-    :component="$getFieldWrapperView()"
-    :id="$getId()"
-    :label="$getLabel()"
-    :label-sr-only="$isLabelHidden()"
-    :helper-text="$getHelperText()"
-    :hint="$getHint()"
-    :hint-action="$getHintAction()"
-    :hint-color="$getHintColor()"
-    :hint-icon="$getHintIcon()"
-    :required="$isRequired()"
-    :state-path="$statePath"
->
+<x-dynamic-component :component="$getFieldWrapperView()" :field="$field">
 
     <div
         x-data="{
@@ -95,7 +83,11 @@
                                     type="button"
                                     class="flex items-center justify-center flex-none w-10 h-10 transition text-gray-400 hover:text-gray-300"
                                 >
-                                    @svg('heroicon-s-dots-vertical', 'w-4 h-4')
+                                    <x-filament::icon
+                                        alias="curator::media-options"
+                                        name="heroicon-s-ellipsis-vertical"
+                                        size="w-4 h-4"
+                                    />
                                     <span class="sr-only">
                                         {{ __('forms::components.repeater.buttons.item_options.label') }}
                                     </span>
@@ -104,8 +96,8 @@
 
                             <x-filament::dropdown.list>
                                 <x-filament::dropdown.list.item
-                                    color="secondary"
                                     icon="heroicon-s-eye"
+                                    iconSize="sm"
                                     href="{{ $item['url'] }}"
                                     tag="a"
                                     target="_blank"
@@ -114,19 +106,19 @@
                                     {{ __('curator::views.picker.view') }}
                                 </x-filament::dropdown.list.item>
 
-                                <x-filament-support::dropdown.list.item
-                                    color="secondary"
-                                    icon="heroicon-s-download"
+                                <x-filament::dropdown.list.item
+                                    icon="heroicon-s-arrow-down-tray"
+                                    iconSize="sm"
                                     wire:click="mountFormComponentAction('{{ $statePath }}', 'curator_download')"
                                 >
                                     {{ __('curator::views.picker.download') }}
-                                </x-filament-support::dropdown.list.item>
+                                </x-filament::dropdown.list.item>
 
                                 @if (! $isDisabled())
                                 <x-filament::dropdown.list.item
-                                    color="secondary"
                                     icon="heroicon-s-pencil"
-                                    href="{{ app(app('curator')->getMediaModelResource())->getUrl('edit', $item['id']) }}"
+                                    iconSize="sm"
+                                    href="{{ curator()->getModelResource()->getUrl('edit', ['record' => $item['id']]) }}"
                                     tag="a"
                                     target="_blank"
                                     rel="noopener noreferrer"
@@ -134,10 +126,10 @@
                                     {{ __('curator::views.picker.edit') }}
                                 </x-filament::dropdown.list.item>
                                 <x-filament::dropdown.list.item
-                                        color="secondary"
-                                        icon="heroicon-s-minus-circle"
-                                        x-on:click="close(); removeItem('{{ $uuid }}')"
-                                        rel="noopener noreferrer"
+                                    icon="heroicon-s-minus-circle"
+                                    iconSize="sm"
+                                    x-on:click="close(); removeItem('{{ $uuid }}')"
+                                    rel="noopener noreferrer"
                                 >
                                     {{ __('curator::views.picker.remove') }}
                                 </x-filament::dropdown.list.item>
@@ -161,7 +153,7 @@
         </div>
 
         @if (count($items) === 0 || $isMultiple)
-            @if (! $maxItems || ($maxItems && count($items) < $maxItems))
+            @if (! $maxItems || count($items) < $maxItems)
             <x-filament::button
                 type="button"
                 color="{{ $getColor() }}"

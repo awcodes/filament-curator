@@ -1,5 +1,19 @@
 {
-    "semi": false,
-    "singleQuote": true,
-    "trailingComma": "all"
+  "semi": false,
+  "singleQuote": true,
+  "tailwindConfig": "./tailwind.config.js",
+  "trailingComma": "all",
+  "plugins": [
+    "./node_modules/prettier-plugin-blade/"
+  ],
+  "overrides": [
+    {
+      "files": [
+        "*.blade.php"
+      ],
+      "options": {
+        "parser": "blade"
+      }
+    }
+  ]
 }

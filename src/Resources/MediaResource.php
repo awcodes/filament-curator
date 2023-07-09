@@ -5,13 +5,13 @@ namespace Awcodes\Curator\Resources;
 use Awcodes\Curator\Components\Forms\CuratorEditor;
 use Awcodes\Curator\Components\Forms\Uploader;
 use Awcodes\Curator\Components\Tables\CuratorColumn;
-use Awcodes\Curator\Facades\Curator;
 use Exception;
 use Filament\Forms;
-use Filament\Resources\Form;
+use Filament\Forms\Form;
 use Filament\Resources\Resource;
-use Filament\Resources\Table;
 use Filament\Tables;
+use Filament\Tables\Table;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 
@@ -19,17 +19,17 @@ class MediaResource extends Resource
 {
     public static function getModel(): string
     {
-        return Curator::getMediaModel();
+        return config('curator.media_model');
     }
 
     public static function getModelLabel(): string
     {
-        return app('curator')->getResourceLabel();
+        return config('curator.model_label');
     }
 
     public static function getPluralModelLabel(): string
     {
-        return app('curator')->getPluralResourceLabel();
+        return config('curator.model_plural_label');
     }
 
     public static function getNavigationLabel(): string
@@ -37,24 +37,24 @@ class MediaResource extends Resource
         return Str::title(static::getPluralModelLabel()) ?? Str::title(static::getModelLabel());
     }
 
-    protected static function getNavigationIcon(): string
+    public static function getNavigationIcon(): string
     {
-        return app('curator')->getNavigationIcon();
+        return config('curator.navigation_icon');
     }
 
-    protected static function getNavigationSort(): ?int
+    public static function getNavigationSort(): ?int
     {
-        return app('curator')->getNavigationSort();
+        return config('curator.navigation_sort');
     }
 
-    protected static function getNavigationGroup(): ?string
+    public static function getNavigationGroup(): ?string
     {
-        return app('curator')->getNavigationGroup();
+        return config('curator.navigation_group');
     }
 
-    protected static function shouldRegisterNavigation(): bool
+    public static function shouldRegisterNavigation(): bool
     {
-        return app('curator')->shouldRegisterNavigation();
+        return config('curator.should_register_navigation');
     }
 
     public static function form(Form $form): Form
@@ -76,24 +76,24 @@ class MediaResource extends Resource
                                     ->schema([
                                         Forms\Components\ViewField::make('preview')
                                             ->view('curator::components.forms.preview')
-                                            ->disableLabel()
+                                            ->hiddenLabel()
                                             ->dehydrated(false)
                                             ->afterStateHydrated(function ($component, $state, $record) {
                                                 $component->state($record);
                                             }),
                                     ]),
                                 Forms\Components\Tabs\Tab::make(__('curator::forms.sections.curation'))
-                                    ->visible(fn ($record) => Str::of($record->type)->contains('image'))
+                                    ->visible(fn($record) => Str::of($record->type)->contains('image'))
                                     ->schema([
                                         Forms\Components\Repeater::make('curations')
                                             ->label(__('curator::forms.sections.curation'))
-                                            ->disableLabel()
-                                            ->disableItemMovement()
-                                            ->itemLabel(fn ($state): ?string => $state['curation']['key'] ?? null)
+                                            ->hiddenLabel()
+                                            ->reorderable(false)
+                                            ->itemLabel(fn($state): ?string => $state['curation']['key'] ?? null)
                                             ->collapsible()
                                             ->schema([
                                                 CuratorEditor::make('curation')
-                                                    ->disableLabel()
+                                                    ->hiddenLabel()
                                                     ->buttonLabel(__('curator::forms.curations.button_label'))
                                                     ->required()
                                                     ->lazy(),
@@ -109,7 +109,7 @@ class MediaResource extends Resource
                             ->schema([
                                 Forms\Components\ViewField::make('details')
                                     ->view('curator::components.forms.details')
-                                    ->disableLabel()
+                                    ->hiddenLabel()
                                     ->dehydrated(false)
                                     ->columnSpan('full')
                                     ->afterStateHydrated(function ($component, $state, $record) {
@@ -118,14 +118,14 @@ class MediaResource extends Resource
                             ]),
                         Forms\Components\Section::make(__('curator::forms.sections.exif'))
                             ->collapsed()
-                            ->visible(fn ($record) => $record && $record->exif)
+                            ->visible(fn($record) => $record && $record->exif)
                             ->schema([
                                 Forms\Components\KeyValue::make('exif')
-                                    ->disableLabel()
+                                    ->hiddenLabel()
                                     ->dehydrated(false)
-                                    ->disableAddingRows()
-                                    ->disableDeletingRows()
-                                    ->disableEditingKeys()
+                                    ->addable(false)
+                                    ->deletable(false)
+                                    ->editableKeys(false)
                                     ->columnSpan('full'),
                             ]),
                     ])
@@ -155,14 +155,32 @@ class MediaResource extends Resource
     {
         return $table
             ->columns(array_merge(
-                app('curator')->shouldTableHaveGridLayout()
+                Session::get('tableLayout')
                     ? static::getDefaultGridTableColumns()
                     : static::getDefaultTableColumns(),
             ))
             ->actions([
-                app('curator')->shouldTableHaveIconActions() ? Tables\Actions\EditAction::make()->iconButton() : Tables\Actions\EditAction::make(),
-                app('curator')->shouldTableHaveIconActions() ? Tables\Actions\DeleteAction::make()->iconButton() : Tables\Actions\DeleteAction::make(),
-            ]);
+                config('curator.table_has_icon_actions')
+                    ? Tables\Actions\EditAction::make()->iconButton()
+                    : Tables\Actions\EditAction::make(),
+                config('curator.table_has_icon_actions')
+                    ? Tables\Actions\DeleteAction::make()->iconButton()
+                    : Tables\Actions\DeleteAction::make(),
+            ])
+            ->defaultSort('created_at', 'desc')
+            ->contentGrid(function () {
+                if (Session::get('tableLayout')) {
+                    return [
+                        'md' => 2,
+                        'lg' => 3,
+                        'xl' => 4,
+                    ];
+                }
+
+                return null;
+            })
+            ->defaultPaginationPageOption(12)
+            ->paginationPageOptions([6, 12, 24, 48, 'all']);
     }
 
     public static function getPages(): array
@@ -189,13 +207,13 @@ class MediaResource extends Resource
                 ->sortable(),
             Tables\Columns\IconColumn::make('disk')
                 ->label(__('curator::tables.columns.disk'))
-                ->options([
+                ->icons([
                     'heroicon-o-server',
-                    'heroicon-o-cloud' => fn ($state): bool => in_array($state, app('curator')->getCloudDisks()),
+                    'heroicon-o-cloud' => fn($state): bool => in_array($state, config('curator.cloud_disks')),
                 ])
                 ->colors([
                     'secondary',
-                    'success' => fn ($state): bool => in_array($state, app('curator')->getCloudDisks()),
+                    'success' => fn($state): bool => in_array($state, config('curator.cloud_disks')),
                 ]),
             Tables\Columns\TextColumn::make('directory')
                 ->label(__('curator::tables.columns.directory'))
@@ -246,7 +264,7 @@ class MediaResource extends Resource
                 }),
             Forms\Components\TextInput::make('alt')
                 ->label(__('curator::forms.fields.alt'))
-                ->hint(fn (): HtmlString => new HtmlString('<a href="https://www.w3.org/WAI/tutorials/images/decision-tree" class="filament-link" target="_blank">'.__('curator::forms.fields.alt_hint').'</a>')),
+                ->hint(fn(): HtmlString => new HtmlString('<a href="https://www.w3.org/WAI/tutorials/images/decision-tree" class="filament-link" target="_blank">' . __('curator::forms.fields.alt_hint') . '</a>')),
             Forms\Components\TextInput::make('title')
                 ->label(__('curator::forms.fields.title')),
             Forms\Components\Textarea::make('caption')
@@ -261,16 +279,16 @@ class MediaResource extends Resource
     public static function getUploaderField(): Uploader
     {
         return Uploader::make('file')
-            ->disableLabel()
-            ->preserveFilenames(app('curator')->shouldPreserveFilenames())
-            ->maxWidth(app('curator')->getMaxWidth())
-            ->minSize(app('curator')->getMinSize())
-            ->maxSize(app('curator')->getMaxSize())
-            ->acceptedFileTypes(app('curator')->getAcceptedFileTypes())
-            ->disk(app('curator')->getDiskName())
-            ->directory(app('curator')->getDirectory())
-            ->pathGenerator(app('curator')->getPathGenerator())
-            ->visibility(app('curator')->getVisibility())
+            ->hiddenLabel()
+            ->preserveFilenames(config('curator.should_preserve_filenames'))
+            ->maxWidth(config('curator.max_width'))
+            ->minSize(config('curator.min_size'))
+            ->maxSize(config('curator.max_size'))
+            ->acceptedFileTypes(config('curator.accepted_file_types'))
+            ->disk(config('curator.disk_name'))
+            ->directory(config('curator.directory'))
+            ->pathGenerator(config('curator.path_generator'))
+            ->visibility(config('curator.visibility'))
             ->maxFiles(1)
             ->panelAspectRatio('24:9');
     }

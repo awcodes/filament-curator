@@ -20,8 +20,8 @@ class Uploader extends FileUpload
 
     public function getDirectory(): ?string
     {
-        $directory = $this->directory ?? app('curator')->getDirectory();
-        $generator = $this->getPathGenerator() ?? app('curator')->getPathGenerator();
+        $directory = $this->directory ?? config('curator.directory');
+        $generator = $this->getPathGenerator() ?? config('curator.path_generator');
 
         if (
             class_exists($generator) &&
@@ -55,18 +55,18 @@ class Uploader extends FileUpload
             return;
         }
 
-        if (! is_array($this->getState())) {
+        if (!is_array($this->getState())) {
             $this->state([$this->getState()]);
         }
 
         $state = array_map(function (TemporaryUploadedFile|array $file) {
-            if (! $file instanceof TemporaryUploadedFile) {
+            if (!$file instanceof TemporaryUploadedFile) {
                 return $file;
             }
 
             $callback = $this->saveUploadedFileUsing;
 
-            if (! $callback) {
+            if (!$callback) {
                 $file->delete();
 
                 return $file;
@@ -101,7 +101,7 @@ class Uploader extends FileUpload
             $storeMethod = $component->getVisibility() === 'public' ? 'storePubliclyAs' : 'storeAs';
 
             if (Curator::isResizable($extension)) {
-                if (in_array($file->disk, curator()->getCloudDisks())) {
+                if (in_array($file->disk, config('curator.cloud_disks'))) {
                     $content = Storage::disk($file->disk)->get($file->path());
                 } else {
                     $content = $file->getRealPath();
@@ -114,15 +114,16 @@ class Uploader extends FileUpload
                 $exif = $image->exif();
             }
 
-            if (Storage::disk($component->getDiskName())->exists(ltrim($component->getDirectory().'/'.$filename.'.'.$extension, '/'))) {
-                $filename = $filename.'-'.time();
+            if (Storage::disk($component->getDiskName())->exists(ltrim($component->getDirectory() . '/' . $filename . '.' . $extension, '/'))) {
+                $filename = $filename . '-' . time();
             }
 
-            $path = $file->{$storeMethod}($component->getDirectory(), $filename.'.'.$extension, $component->getDiskName());
+            $path = $file->{$storeMethod}($component->getDirectory(), $filename . '.' . $extension, $component->getDiskName());
 
             return [
                 'disk' => $component->getDiskName(),
                 'directory' => $component->getDirectory(),
+                'visibility' => $component->getVisibility(),
                 'name' => $filename,
                 'path' => $path,
                 'exif' => $exif ?? null,

@@ -3,10 +3,8 @@
 namespace Awcodes\Curator\Actions;
 
 use Awcodes\Curator\Components\Forms\CuratorPicker;
-use Awcodes\Curator\Facades\Curator;
-use Filament\Forms\ComponentContainer;
+use Awcodes\Scribe\Scribe;
 use Filament\Forms\Components\Actions\Action;
-use FilamentTiptapEditor\TiptapEditor;
 use Illuminate\Support\Str;
 
 class MediaAction extends Action
@@ -24,36 +22,36 @@ class MediaAction extends Action
 
         $this->modalHeading(__('curator::views.panel.heading'));
 
-        $this->modalActions(fn () => []);
+        $this->modalFooterActions(fn() => []);
 
-        $this->modalContent(static function (TiptapEditor|CuratorPicker $component) {
+        $this->modalContent(static function (Scribe|CuratorPicker $component) {
 
             $src = $component->getLivewire()->mediaProps['src'];
             $selected = $src !== ''
-                ? [app('curator')->getMediaModel()::firstWhere('name', Str::of($src)->afterLast('/')->beforeLast('.'))]
+                ? [config('curator.media_model')::firstWhere('name', Str::of($src)->afterLast('/')->beforeLast('.'))]
                 : [];
 
             return view('curator::components.actions.picker-action', [
-                'acceptedFileTypes' => app('curator')->getAcceptedFileTypes(),
-                'directory' => app('curator')->getDirectory(),
-                'diskName' => app('curator')->getDiskName(),
-                'imageCropAspectRatio' => app('curator')->getImageCropAspectRatio(),
-                'imageResizeTargetWidth' => app('curator')->getImageResizeTargetWidth(),
-                'imageResizeTargetHeight' => app('curator')->getImageResizeTargetHeight(),
-                'imageResizeMode' => app('curator')->getImageResizeMode(),
+                'acceptedFileTypes' => config('curator.accepted_file_types'),
+                'directory' => config('curator.directory'),
+                'diskName' => config('curator.disk_name'),
+                'imageCropAspectRatio' => config('curator.image_crop_aspect_ratio'),
+                'imageResizeTargetWidth' => config('curator.image_resize_target_width'),
+                'imageResizeTargetHeight' => config('curator.image_resize_target_height'),
+                'imageResizeMode' => config('curator.image_resize_mode'),
                 'isLimitedToDirectory' => false,
                 'isMultiple' => false,
                 'maxItems' => 1,
-                'maxSize' => app('curator')->getMaxSize(),
-                'maxWidth' => app('curator')->getMaxWidth(),
-                'minSize' => app('curator')->getMinSize(),
-                'modalId' => $component->getLivewire()->id.'-form-component-action',
-                'pathGenerator' => app('curator')->getPathGenerator(),
+                'maxSize' => config('curator.max_size'),
+                'maxWidth' => config('curator.max_width'),
+                'minSize' => config('curator.min_size'),
+                'modalId' => $component->getLivewire()->id . '-form-component-action',
+                'pathGenerator' => config('curator.path_generator'),
                 'rules' => [],
                 'selected' => $selected,
-                'shouldPreserveFilenames' => app('curator')->shouldPreserveFilenames(),
+                'shouldPreserveFilenames' => config('curator.should_preserve_filenames'),
                 'statePath' => $component->getStatePath(),
-                'visibility' => app('curator')->getVisibility(),
+                'visibility' => config('curator.visibility'),
             ]);
         });
     }

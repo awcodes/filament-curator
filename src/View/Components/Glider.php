@@ -2,7 +2,6 @@
 
 namespace Awcodes\Curator\View\Components;
 
-use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Models\Media;
 use Closure;
 use Illuminate\Contracts\View\View;
@@ -19,42 +18,43 @@ class Glider extends Component
 
     public function __construct(
         public int|Media|stdClass|null $media,
-        public string|null $glide = null,
-        public array|null $srcset = null,
-        public string|null $sizes = null,
-        public string|null $background = null,
-        public string|null $blur = null,
-        public string|null $border = null,
-        public string|null $brightness = null,
-        public string|null $contrast = null,
-        public string|null $crop = null,
-        public string|null $devicePixelRatio = null,
-        public string|null $filter = null,
-        public string|null $fit = null,
-        public string|null $flip = null,
-        public string|null $format = null,
-        public string|null $gamma = null,
-        public string|null $height = null,
-        public string|null $quality = null,
-        public string|null $orientation = null,
-        public string|null $pixelate = null,
-        public string|null $sharpen = null,
-        public string|null $width = null,
-        public string|null $watermarkPath = null,
-        public string|null $watermarkWidth = null,
-        public string|null $watermarkHeight = null,
-        public string|null $watermarkXOffset = null,
-        public string|null $watermarkYOffset = null,
-        public string|null $watermarkPadding = null,
-        public string|null $watermarkPosition = null,
-        public string|null $watermarkAlpha = null,
-        public string|null $fallback = null,
-    ) {
-        if (! $media instanceof Media) {
-            $this->media = Curator::getMediaModel()::where('id', $media)->first();
+        public string|null             $glide = null,
+        public array|null              $srcset = null,
+        public string|null             $sizes = null,
+        public string|null             $background = null,
+        public string|null             $blur = null,
+        public string|null             $border = null,
+        public string|null             $brightness = null,
+        public string|null             $contrast = null,
+        public string|null             $crop = null,
+        public string|null             $devicePixelRatio = null,
+        public string|null             $filter = null,
+        public string|null             $fit = null,
+        public string|null             $flip = null,
+        public string|null             $format = null,
+        public string|null             $gamma = null,
+        public string|null             $height = null,
+        public string|null             $quality = null,
+        public string|null             $orientation = null,
+        public string|null             $pixelate = null,
+        public string|null             $sharpen = null,
+        public string|null             $width = null,
+        public string|null             $watermarkPath = null,
+        public string|null             $watermarkWidth = null,
+        public string|null             $watermarkHeight = null,
+        public string|null             $watermarkXOffset = null,
+        public string|null             $watermarkYOffset = null,
+        public string|null             $watermarkPadding = null,
+        public string|null             $watermarkPosition = null,
+        public string|null             $watermarkAlpha = null,
+        public string|null             $fallback = null,
+    )
+    {
+        if (!$media instanceof Media) {
+            $this->media = config('curator.media_model')::where('id', $media)->first();
 
-            if (! $this->media && $this->fallback) {
-                $this->media = (object) curator()->getGliderFallback($this->fallback);
+            if (!$this->media && $this->fallback) {
+                $this->media = (object)$this->getGliderFallback($this->fallback);
             }
         }
     }
@@ -118,7 +118,7 @@ class Glider extends Component
                     $height = floor($width * ($this->media->height / $this->media->width));
                 }
 
-                $srcset .= $this->buildGlideSource(['w' => $width, 'h' => $height]).' '.$s.', ';
+                $srcset .= $this->buildGlideSource(['w' => $width, 'h' => $height]) . ' ' . $s . ', ';
             }
 
             return Str::of($srcset)->rtrim(', ');
@@ -127,10 +127,22 @@ class Glider extends Component
         return null;
     }
 
+    public function getGliderFallback(string $key): ?array
+    {
+        return collect($this->getGliderFallbacks())->where('key', $key)->sole();
+    }
+
+    public function getGliderFallbacks(): ?array
+    {
+        return collect(config('curator.glider_fallbacks'))
+            ->map(fn($preset) => $preset->getFallback())
+            ->toArray();
+    }
+
     public function render(): View|Closure|string
     {
         if ($this->glide) {
-            $this->source = $this->media->resizable ? '/curator/'.$this->media->path.'?'.$this->glide : $this->media->url;
+            $this->source = $this->media->resizable ? '/curator/' . $this->media->path . '?' . $this->glide : $this->media->url;
         } else {
             $this->source = $this->buildGlideSource();
         }

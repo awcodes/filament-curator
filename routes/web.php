@@ -1,10 +1,11 @@
 <?php
 
 use Awcodes\Curator\Http\Controllers\MediaController;
+use Filament\Facades\Filament;
 use Illuminate\Support\Facades\Route;
 
-Route::domain(config('filament.domain'))
-    ->middleware((config('filament.middleware.base')))
+Route::domain(Filament::getCurrentPanel()->getDomain())
+    ->middleware(Filament::getCurrentPanel()->getMiddleware())
     ->group(function () {
         Route::get('/curator/media', [MediaController::class, 'index']);
         Route::get('/curator/media/search', [MediaController::class, 'search']);

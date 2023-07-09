@@ -2,10 +2,12 @@
 
 namespace Awcodes\Curator\Resources\MediaResource;
 
-use Awcodes\Curator\Resources\MediaResource;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateMedia extends CreateRecord
 {
-    protected static string $resource = MediaResource::class;
+    public static function getResource(): string
+    {
+        return config('curator.media_resource');
+    }
 }

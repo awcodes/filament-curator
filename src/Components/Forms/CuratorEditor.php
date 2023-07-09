@@ -5,10 +5,10 @@ namespace Awcodes\Curator\Components\Forms;
 use Awcodes\Curator\Actions\CurationAction;
 use Closure;
 use Exception;
+use Filament\Actions\Concerns\CanBeOutlined;
+use Filament\Actions\Concerns\HasSize;
 use Filament\Forms\Components\Field;
-use Filament\Support\Actions\Concerns\CanBeOutlined;
-use Filament\Support\Actions\Concerns\HasColor;
-use Filament\Support\Actions\Concerns\HasSize;
+use Filament\Support\Concerns\HasColor;
 use Illuminate\Contracts\Support\Htmlable;
 
 class CuratorEditor extends Field
@@ -35,7 +35,7 @@ class CuratorEditor extends Field
 
     public function getPresets(): array|null
     {
-        return app('curator')->getCurationPresets();
+        return config('curator.curation_presets');
     }
 
     /**

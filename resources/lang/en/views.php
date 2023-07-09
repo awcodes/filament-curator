@@ -42,6 +42,7 @@ return [
         'edit' => 'Edit',
         'download' => 'Download',
         'remove' => 'Remove',
+        'deselect_all' => 'Deselect All',
     ],
     'curation' => [
         'heading' => 'Curating',

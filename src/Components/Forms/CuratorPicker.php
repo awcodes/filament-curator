@@ -8,11 +8,11 @@ use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Generators\PathGenerator;
 use Closure;
 use Exception;
+use Filament\Actions\Concerns\CanBeOutlined;
+use Filament\Actions\Concerns\HasSize;
 use Filament\Forms\Components\Component;
 use Filament\Forms\Components\Field;
-use Filament\Support\Actions\Concerns\CanBeOutlined;
-use Filament\Support\Actions\Concerns\HasColor;
-use Filament\Support\Actions\Concerns\HasSize;
+use Filament\Support\Concerns\HasColor;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Model;
@@ -64,7 +64,7 @@ class CuratorPicker extends Field
 
     protected int|Closure|null $maxItems = null;
 
-    protected string | null $orderColumn = null;
+    protected string|null $orderColumn = null;
 
     protected string|Closure|null $relationship = null;
 
@@ -85,7 +85,7 @@ class CuratorPicker extends Field
         $this->afterStateHydrated(static function (CuratorPicker $component, array|int|null $state): void {
             $items = [];
 
-            if (! filled($state)) {
+            if (!filled($state)) {
                 $component->state($items);
                 return;
             }
@@ -96,11 +96,11 @@ class CuratorPicker extends Field
                 $media = [$state];
             } else {
                 $state = Arr::wrap($state);
-                $media = app('curator')->getMedia($state);
+                $media = Curator::getMedia($state);
             }
 
             foreach ($media as $itemData) {
-                $items[(string) Str::uuid()] = $itemData;
+                $items[(string)Str::uuid()] = $itemData;
             }
 
             $component->state($items);
@@ -112,20 +112,20 @@ class CuratorPicker extends Field
             $state = array_values($state);
 
             foreach ($state as $itemData) {
-                $items[(string) Str::uuid()] = $itemData;
+                $items[(string)Str::uuid()] = $itemData;
             }
 
             $component->state($items);
         });
 
         $this->dehydrateStateUsing(function (CuratorPicker $component, $state) {
-            if (! filled($state)) {
+            if (!filled($state)) {
                 return null;
             }
 
             $state = collect($state)->pluck('id')->toArray();
 
-            if (count($state) === 1 && is_array($state) && ! $component->isMultiple()) {
+            if (count($state) === 1 && is_array($state) && !$component->isMultiple()) {
                 $state = $state[0];
             }
 
@@ -190,7 +190,7 @@ class CuratorPicker extends Field
 
     public function getAcceptedFileTypes(): ?array
     {
-        $types = $this->evaluate($this->curatorAcceptedFileTypes) ?? app('curator')->getAcceptedFileTypes();
+        $types = $this->evaluate($this->curatorAcceptedFileTypes) ?? config('curator.accepted_file_types');
 
         if ($types instanceof Arrayable) {
             $types = $types->toArray();
@@ -209,41 +209,41 @@ class CuratorPicker extends Field
      */
     public function getCurrentItem(): Model|Collection|null
     {
-        if (! filled($this->getState())) {
+        if (!filled($this->getState())) {
             return null;
         }
 
-        return Curator::getMediaModel()::where('id', $this->getState())->first();
+        return config('curator.media_model')::where('id', $this->getState())->first();
     }
 
     public function getDirectory(): string
     {
-        return $this->evaluate($this->curatorDirectory) ?? app('curator')->getDirectory();
+        return $this->evaluate($this->curatorDirectory) ?? config('curator.directory');
     }
 
     public function getDiskName(): string
     {
-        return $this->evaluate($this->curatorDiskName) ?? app('curator')->getDiskName();
+        return $this->evaluate($this->curatorDiskName) ?? config('curator.disk_name');
     }
 
     public function getImageCropAspectRatio(): ?string
     {
-        return $this->evaluate($this->curatorImageCropAspectRatio) ?? app('curator')->getImageCropAspectRatio();
+        return $this->evaluate($this->curatorImageCropAspectRatio) ?? config('curator.image_crop_aspect_ratio');
     }
 
     public function getImageResizeMode(): ?string
     {
-        return $this->evaluate($this->curatorImageResizeMode) ?? app('curator')->getImageResizeMode();
+        return $this->evaluate($this->curatorImageResizeMode) ?? config('curator.image_resize_mode');
     }
 
     public function getImageResizeTargetHeight(): ?string
     {
-        return $this->evaluate($this->curatorImageResizeTargetHeight) ?? app('curator')->getImageResizeTargetHeight();
+        return $this->evaluate($this->curatorImageResizeTargetHeight) ?? config('curator.image_resize_target_height');
     }
 
     public function getImageResizeTargetWidth(): ?string
     {
-        return $this->evaluate($this->curatorImageResizeTargetWidth) ?? app('curator')->getImageResizeTargetWidth();
+        return $this->evaluate($this->curatorImageResizeTargetWidth) ?? config('curator.image_resize_target_width');
     }
 
     public function getMaxItems(): ?int
@@ -253,12 +253,12 @@ class CuratorPicker extends Field
 
     public function getMaxSize(): ?int
     {
-        return $this->evaluate($this->curatorMaxSize) ?? app('curator')->getMaxSize();
+        return $this->evaluate($this->curatorMaxSize) ?? config('curator.max_size');
     }
 
     public function getMinSize(): ?int
     {
-        return $this->evaluate($this->curatorMinSize) ?? app('curator')->getMinSize();
+        return $this->evaluate($this->curatorMinSize) ?? config('curator.min_size');
     }
 
     public function getOrderColumn(): string
@@ -268,10 +268,10 @@ class CuratorPicker extends Field
 
     public function getPathGenerator(): PathGenerator|string|null
     {
-        return $this->curatorPathGenerator ?? app('curator')->getPathGenerator();
+        return $this->curatorPathGenerator ?? config('curator.path_generator');
     }
 
-    public function getRelationship(): BelongsTo | BelongsToMany | \Znck\Eloquent\Relations\BelongsToThrough | null
+    public function getRelationship(): BelongsTo|BelongsToMany|\Znck\Eloquent\Relations\BelongsToThrough|null
     {
         $name = $this->getRelationshipName();
 
@@ -289,7 +289,7 @@ class CuratorPicker extends Field
 
     public function getVisibility(): string
     {
-        return $this->evaluate($this->curatorVisibility) ?? app('curator')->getVisibility();
+        return $this->evaluate($this->curatorVisibility) ?? config('curator.visibility');
     }
 
     public function hasRelationship(): bool
@@ -332,11 +332,11 @@ class CuratorPicker extends Field
 
     public function isLimitedToDirectory(): bool
     {
-        if (! $this->getDirectory()) {
+        if (!$this->getDirectory()) {
             return false;
         }
 
-        return $this->evaluate($this->isLimitedToDirectory) ?? app('curator')->isLimitedToDirectory();
+        return $this->evaluate($this->isLimitedToDirectory) ?? config('curator.is_limited_to_directory');
     }
 
     public function isMultiple(): bool
@@ -380,7 +380,7 @@ class CuratorPicker extends Field
         return $this;
     }
 
-    public function multiple(bool | Closure $condition = true): static
+    public function multiple(bool|Closure $condition = true): static
     {
         $this->isMultiple = $condition;
 
@@ -408,7 +408,7 @@ class CuratorPicker extends Field
         return $this;
     }
 
-    public function relationship(string | Closure $relationshipName, string | Closure $titleColumnName, ?Closure $callback = null): static
+    public function relationship(string|Closure $relationshipName, string|Closure $titleColumnName, ?Closure $callback = null): static
     {
         $this->relationship = $relationshipName;
         $this->relationshipTitleColumnName = $titleColumnName;
@@ -431,7 +431,7 @@ class CuratorPicker extends Field
             /** @var BelongsTo $relationship */
             $relatedModel = $relationship->getResults();
 
-            if (! $relatedModel) {
+            if (!$relatedModel) {
                 return;
             }
 
@@ -455,15 +455,15 @@ class CuratorPicker extends Field
                     in_array($component->getOrderColumn(), $relationship->getPivotColumns())
                 ) {
                     $orderColumn = $component->getOrderColumn();
-                    $state = collect(array_values($state))->mapWithKeys(function($item, $index) use ($orderColumn) {
-                       return [$item['id'] => [$orderColumn => $index + 1]];
+                    $state = collect(array_values($state))->mapWithKeys(function ($item, $index) use ($orderColumn) {
+                        return [$item['id'] => [$orderColumn => $index + 1]];
                     });
 
                     $relationship->sync($state ?? []);
                     return;
                 }
 
-                $state = Arr::pluck($state,'id');
+                $state = Arr::pluck($state, 'id');
                 $relationship->sync($state ?? []);
 
                 return;
@@ -473,13 +473,13 @@ class CuratorPicker extends Field
             $record->save();
         });
 
-        $this->dehydrated(fn (CuratorPicker $component): bool => ! $component->isMultiple());
+        $this->dehydrated(fn(CuratorPicker $component): bool => !$component->isMultiple());
 
         return $this;
     }
 
     public function shouldPreserveFilenames(): bool
     {
-        return $this->evaluate($this->curatorShouldPreserveFilenames) ?? app('curator')->shouldPreserveFilenames();
+        return $this->evaluate($this->curatorShouldPreserveFilenames) ?? config('curator.should_preserve_filenames');
     }
 }

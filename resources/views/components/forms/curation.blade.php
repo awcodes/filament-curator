@@ -2,15 +2,7 @@
     $statePath = $getStatePath();
 @endphp
 
-<x-forms::field-wrapper :id="$getId()"
-    :label="$getLabel()"
-    :label-sr-only="$isLabelHidden()"
-    :helper-text="$getHelperText()"
-    :hint="$getHint()"
-    :hint-icon="$getHintIcon()"
-    :required="$isRequired()"
-    :state-path="$statePath"
->
+<x-dynamic-component :component="$getFieldWrapperView()" :field="$field">
 
     <div
         x-data="{ state: $wire.entangle('{{ $statePath }}') }"
@@ -59,4 +51,4 @@
         </div>
     </div>
 
-</x-forms::field-wrapper>
+</x-dynamic-component>

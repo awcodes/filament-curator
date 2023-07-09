@@ -3,7 +3,6 @@
 namespace Awcodes\Curator\Actions;
 
 use Awcodes\Curator\Components\Forms\CuratorPicker;
-use Awcodes\Curator\Facades\Curator;
 use Filament\Forms\Components\Actions\Action;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -20,7 +19,7 @@ class DownloadAction extends Action
         parent::setUp();
 
         $this->action(function (CuratorPicker $component): StreamedResponse {
-            $item = Curator::getMediaModel()::where('id', $component->getState())->first();
+            $item = config('curator.media_model')::where('id', $component->getState())->first();
 
             return Storage::disk($item['disk'])->download($item['path']);
         });

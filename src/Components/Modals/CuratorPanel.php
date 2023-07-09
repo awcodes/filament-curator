@@ -3,7 +3,6 @@
 namespace Awcodes\Curator\Components\Modals;
 
 use Awcodes\Curator\Components\Forms\Uploader;
-use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Generators\PathGenerator;
 use Awcodes\Curator\Resources\MediaResource;
 use Exception;
@@ -68,15 +67,15 @@ class CuratorPanel extends Component implements HasForms
 
         foreach ($this->addMediaForm->getState()['files'] as $item) {
             // Fix malformed utf-8 characters
-            if (! empty($item['exif'])) {
+            if (!empty($item['exif'])) {
                 array_walk_recursive($item['exif'], function (&$entry) {
-                    if (! mb_detect_encoding($entry, 'utf-8', true)) {
+                    if (!mb_detect_encoding($entry, 'utf-8', true)) {
                         $entry = utf8_encode($entry);
                     }
                 });
             }
 
-            $media[] = Curator::getMediaModel()::create($item);
+            $media[] = config('curator.media_model')::create($item);
         }
 
         $this->addMediaForm->fill();
@@ -86,7 +85,7 @@ class CuratorPanel extends Component implements HasForms
     public function destroyFile(): void
     {
         try {
-            $item = Curator::getMediaModel()::find(Arr::first($this->selected)['id']);
+            $item = config('curator.media_model')::find(Arr::first($this->selected)['id']);
             if ($item) {
                 $item->update($this->editMediaForm->getState());
                 $this->editMediaForm->fill();
@@ -111,7 +110,7 @@ class CuratorPanel extends Component implements HasForms
 
     public function download(): StreamedResponse
     {
-        $item = Curator::getMediaModel()::where('id', $this->selected['id'])->first();
+        $item = config('curator.media_model')::where('id', $this->selected['id'])->first();
 
         return Storage::disk($item['disk'])->download($item['path']);
     }
@@ -120,7 +119,7 @@ class CuratorPanel extends Component implements HasForms
     {
         return [
             Uploader::make('files')
-                ->disableLabel()
+                ->hiddenLabel()
                 ->required()
                 ->multiple()
                 ->label(__('curator::forms.fields.file'))
@@ -175,7 +174,7 @@ class CuratorPanel extends Component implements HasForms
     public function setSelection(array $media): void
     {
         if (count($media) === 1) {
-            $item = Curator::getMediaModel()::find($media[0]['id']);
+            $item = config('curator.media_model')::find($media[0]['id']);
             if ($item) {
                 $this->editMediaForm->fill([
                     'name' => $item->name,
@@ -195,7 +194,7 @@ class CuratorPanel extends Component implements HasForms
     public function updateFile(): void
     {
         try {
-            $item = Curator::getMediaModel()::find(Arr::first($this->selected)['id']);
+            $item = config('curator.media_model')::find(Arr::first($this->selected)['id']);
             if ($item) {
                 $item->update($this->editMediaForm->getState());
 
