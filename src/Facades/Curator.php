@@ -8,8 +8,6 @@ use Illuminate\Support\Facades\Facade;
 
 /**
  * @method static Collection|array getMedia(array|Media|int $ids)
- * @method static Media getModel()
- * @method static bool isResizable(string $ext)
  *
  * @see \Awcodes\Curator\Curator
  */

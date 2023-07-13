@@ -2,6 +2,7 @@
 
 namespace Awcodes\Curator\Resources\MediaResource;
 
+use Awcodes\Curator\CuratorPlugin;
 use Exception;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
@@ -13,12 +14,12 @@ class ListMedia extends ListRecords
 {
     public static function getResource(): string
     {
-        return config('curator.media_resource');
+        return CuratorPlugin::get()->getResource();
     }
 
     public function getTitle(): string
     {
-        return Str::headline(config('curator.model_plural_label'));
+        return Str::headline(CuratorPlugin::get()->getPluralResourceLabel());
     }
 
     /**

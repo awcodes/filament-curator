@@ -100,9 +100,18 @@ export default function curator({statePath, types, initialSelection = null, isMu
                 this.removeFromSelection(media.id);
             }
         },
-        addToSelection: function (mediaId = null) {
-            if (this.selected.length === 1 && !this.isMultiple) return;
-            this.selected.push(this.files.find(obj => obj.id === mediaId));
+        addToSelection: function (mediaId = null, event) {
+            if (this.selected.length === 1 && !this.isMultiple) {
+                this.selected = [this.files.find(obj => obj.id === mediaId)];
+                return;
+            }
+
+            if (event.metaKey) {
+                this.selected.push(this.files.find(obj => obj.id === mediaId));
+                return;
+            }
+
+            this.selected = [this.files.find(obj => obj.id === mediaId)];
         },
         removeFromSelection: function (mediaId = null) {
             this.selected = this.selected.filter((obj) => obj.id !== mediaId);

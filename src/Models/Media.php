@@ -3,12 +3,13 @@
 namespace Awcodes\Curator\Models;
 
 use Awcodes\Curator\Concerns\HasPackageFactory;
-use Awcodes\Curator\Facades\Curator;
+use Awcodes\Curator\Facades\CuratorConfig;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
 use League\Glide\Urls\UrlBuilderFactory;
+use function Awcodes\Curator\is_media_resizable;
 
 class Media extends Model
 {
@@ -28,6 +29,7 @@ class Media extends Model
         'url',
         'thumbnail_url',
         'medium_url',
+        'large_url',
         'resizable',
         'size_for_humans',
     ];
@@ -65,6 +67,13 @@ class Media extends Model
         );
     }
 
+    protected function largeUrl(): Attribute
+    {
+        return Attribute::make(
+            get: fn() => $this->getSignedUrl(['w' => 1024, 'h' => 1024, 'fit' => 'contain', 'fm' => 'webp']),
+        );
+    }
+
     protected function fullPath(): Attribute
     {
         return Attribute::make(
@@ -75,7 +84,7 @@ class Media extends Model
     protected function resizable(): Attribute
     {
         return Attribute::make(
-            get: fn() => Curator::isResizable($this->ext),
+            get: fn() => is_media_resizable($this->ext),
         );
     }
 
@@ -101,7 +110,7 @@ class Media extends Model
     {
         if (
             !$this->resizable ||
-            in_array($this->disk, config('curator.cloud_disks'))
+            in_array($this->disk, CuratorConfig::getCloudDisks())
         ) {
             return $this->url;
         }

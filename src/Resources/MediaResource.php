@@ -5,6 +5,8 @@ namespace Awcodes\Curator\Resources;
 use Awcodes\Curator\Components\Forms\CuratorEditor;
 use Awcodes\Curator\Components\Forms\Uploader;
 use Awcodes\Curator\Components\Tables\CuratorColumn;
+use Awcodes\Curator\CuratorPlugin;
+use Awcodes\Curator\Facades\CuratorConfig;
 use Exception;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -19,17 +21,17 @@ class MediaResource extends Resource
 {
     public static function getModel(): string
     {
-        return config('curator.media_model');
+        return CuratorConfig::getMediaModel();
     }
 
     public static function getModelLabel(): string
     {
-        return config('curator.model_label');
+        return CuratorPlugin::get()->getResourceLabel();
     }
 
     public static function getPluralModelLabel(): string
     {
-        return config('curator.model_plural_label');
+        return CuratorPlugin::get()->getPluralResourceLabel();
     }
 
     public static function getNavigationLabel(): string
@@ -39,22 +41,17 @@ class MediaResource extends Resource
 
     public static function getNavigationIcon(): string
     {
-        return config('curator.navigation_icon');
+        return CuratorPlugin::get()->getNavigationIcon();
     }
 
     public static function getNavigationSort(): ?int
     {
-        return config('curator.navigation_sort');
+        return CuratorPlugin::get()->getNavigationSort();
     }
 
     public static function getNavigationGroup(): ?string
     {
-        return config('curator.navigation_group');
-    }
-
-    public static function shouldRegisterNavigation(): bool
-    {
-        return config('curator.should_register_navigation');
+        return CuratorPlugin::get()->getNavigationGroup();
     }
 
     public static function form(Form $form): Form
@@ -160,10 +157,10 @@ class MediaResource extends Resource
                     : static::getDefaultTableColumns(),
             ))
             ->actions([
-                config('curator.table_has_icon_actions')
+                CuratorPlugin::get()->shouldTableHaveIconActions()
                     ? Tables\Actions\EditAction::make()->iconButton()
                     : Tables\Actions\EditAction::make(),
-                config('curator.table_has_icon_actions')
+                CuratorPlugin::get()->shouldTableHaveIconActions()
                     ? Tables\Actions\DeleteAction::make()->iconButton()
                     : Tables\Actions\DeleteAction::make(),
             ])
@@ -280,15 +277,15 @@ class MediaResource extends Resource
     {
         return Uploader::make('file')
             ->hiddenLabel()
-            ->preserveFilenames(config('curator.should_preserve_filenames'))
-            ->maxWidth(config('curator.max_width'))
-            ->minSize(config('curator.min_size'))
-            ->maxSize(config('curator.max_size'))
-            ->acceptedFileTypes(config('curator.accepted_file_types'))
-            ->disk(config('curator.disk_name'))
-            ->directory(config('curator.directory'))
-            ->pathGenerator(config('curator.path_generator'))
-            ->visibility(config('curator.visibility'))
+            ->preserveFilenames(CuratorConfig::shouldPreserveFilenames())
+            ->maxWidth(CuratorConfig::getMaxWidth())
+            ->minSize(CuratorConfig::getMinSize())
+            ->maxSize(CuratorConfig::getMaxSize())
+            ->acceptedFileTypes(CuratorConfig::getAcceptedFileTypes())
+            ->disk(CuratorConfig::getDiskName())
+            ->directory(CuratorConfig::getDirectory())
+            ->pathGenerator(CuratorConfig::getPathGenerator())
+            ->visibility(CuratorConfig::getVisibility())
             ->maxFiles(1)
             ->panelAspectRatio('24:9');
     }

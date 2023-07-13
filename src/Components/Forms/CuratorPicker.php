@@ -5,7 +5,8 @@ namespace Awcodes\Curator\Components\Forms;
 use Awcodes\Curator\Actions\DownloadAction;
 use Awcodes\Curator\Actions\PickerAction;
 use Awcodes\Curator\Facades\Curator;
-use Awcodes\Curator\Generators\PathGenerator;
+use Awcodes\Curator\Facades\CuratorConfig;
+use Awcodes\Curator\Generators\Contracts\PathGenerator;
 use Closure;
 use Exception;
 use Filament\Actions\Concerns\CanBeOutlined;
@@ -145,6 +146,16 @@ class CuratorPicker extends Field
                     data_set($livewire, $statePath, $items);
                 },
             ],
+            'picker::clearItems' => [
+                function (CuratorPicker $component, string $statePath): void {
+                    if ($statePath !== $component->getStatePath()) {
+                        return;
+                    }
+
+                    $livewire = $component->getLivewire();
+                    data_set($livewire, $statePath, []);
+                },
+            ]
         ]);
 
         $this->registerActions([
@@ -190,7 +201,7 @@ class CuratorPicker extends Field
 
     public function getAcceptedFileTypes(): ?array
     {
-        $types = $this->evaluate($this->curatorAcceptedFileTypes) ?? config('curator.accepted_file_types');
+        $types = $this->evaluate($this->curatorAcceptedFileTypes) ?? CuratorConfig::getAcceptedFileTypes();
 
         if ($types instanceof Arrayable) {
             $types = $types->toArray();
@@ -213,37 +224,37 @@ class CuratorPicker extends Field
             return null;
         }
 
-        return config('curator.media_model')::where('id', $this->getState())->first();
+        return CuratorConfig::getMediaModel()->where('id', $this->getState())->first();
     }
 
     public function getDirectory(): string
     {
-        return $this->evaluate($this->curatorDirectory) ?? config('curator.directory');
+        return $this->evaluate($this->curatorDirectory) ?? CuratorConfig::getDirectory();
     }
 
     public function getDiskName(): string
     {
-        return $this->evaluate($this->curatorDiskName) ?? config('curator.disk_name');
+        return $this->evaluate($this->curatorDiskName) ?? CuratorConfig::getDiskName();
     }
 
     public function getImageCropAspectRatio(): ?string
     {
-        return $this->evaluate($this->curatorImageCropAspectRatio) ?? config('curator.image_crop_aspect_ratio');
+        return $this->evaluate($this->curatorImageCropAspectRatio) ?? CuratorConfig::getImageCropAspectRatio();
     }
 
     public function getImageResizeMode(): ?string
     {
-        return $this->evaluate($this->curatorImageResizeMode) ?? config('curator.image_resize_mode');
+        return $this->evaluate($this->curatorImageResizeMode) ?? CuratorConfig::getImageResizeMode();
     }
 
     public function getImageResizeTargetHeight(): ?string
     {
-        return $this->evaluate($this->curatorImageResizeTargetHeight) ?? config('curator.image_resize_target_height');
+        return $this->evaluate($this->curatorImageResizeTargetHeight) ?? CuratorConfig::getImageResizeTargetHeight();
     }
 
     public function getImageResizeTargetWidth(): ?string
     {
-        return $this->evaluate($this->curatorImageResizeTargetWidth) ?? config('curator.image_resize_target_width');
+        return $this->evaluate($this->curatorImageResizeTargetWidth) ?? CuratorConfig::getImageResizeTargetWidth();
     }
 
     public function getMaxItems(): ?int
@@ -253,12 +264,12 @@ class CuratorPicker extends Field
 
     public function getMaxSize(): ?int
     {
-        return $this->evaluate($this->curatorMaxSize) ?? config('curator.max_size');
+        return $this->evaluate($this->curatorMaxSize) ?? CuratorConfig::getMaxSize();
     }
 
     public function getMinSize(): ?int
     {
-        return $this->evaluate($this->curatorMinSize) ?? config('curator.min_size');
+        return $this->evaluate($this->curatorMinSize) ?? CuratorConfig::getMinSize();
     }
 
     public function getOrderColumn(): string
@@ -268,7 +279,7 @@ class CuratorPicker extends Field
 
     public function getPathGenerator(): PathGenerator|string|null
     {
-        return $this->curatorPathGenerator ?? config('curator.path_generator');
+        return $this->curatorPathGenerator ?? CuratorConfig::getPathGenerator();
     }
 
     public function getRelationship(): BelongsTo|BelongsToMany|\Znck\Eloquent\Relations\BelongsToThrough|null
@@ -289,7 +300,7 @@ class CuratorPicker extends Field
 
     public function getVisibility(): string
     {
-        return $this->evaluate($this->curatorVisibility) ?? config('curator.visibility');
+        return $this->evaluate($this->curatorVisibility) ?? CuratorConfig::getVisibility();
     }
 
     public function hasRelationship(): bool
@@ -336,7 +347,7 @@ class CuratorPicker extends Field
             return false;
         }
 
-        return $this->evaluate($this->isLimitedToDirectory) ?? config('curator.is_limited_to_directory');
+        return $this->evaluate($this->isLimitedToDirectory) ?? CuratorConfig::isLimitedToDirectory();
     }
 
     public function isMultiple(): bool
@@ -480,6 +491,6 @@ class CuratorPicker extends Field
 
     public function shouldPreserveFilenames(): bool
     {
-        return $this->evaluate($this->curatorShouldPreserveFilenames) ?? config('curator.should_preserve_filenames');
+        return $this->evaluate($this->curatorShouldPreserveFilenames) ?? CuratorConfig::shouldPreserveFilenames();
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Awcodes\Curator\Http\Controllers;
 
-use Awcodes\Curator\Facades\Curator;
+use Awcodes\Curator\Facades\CuratorConfig;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Storage;
@@ -14,7 +14,7 @@ class MediaController extends Controller
 {
     public function index(Request $request)
     {
-        $mediaModel = Curator::getModel();
+        $mediaModel = CuratorConfig::getMediaModel();
         $selected = $request->has('media') ? explode(',', $request->media) : [];
 
         $files = $mediaModel::when($selected, function ($query, $selected) {
@@ -50,7 +50,7 @@ class MediaController extends Controller
 
     public function search(Request $request)
     {
-        $files = Curator::getModel()
+        $files = CuratorConfig::getMediaModel()
             ->when($request->has('directory'), function ($query) use ($request) {
                 return $query->where('directory', $request->query('directory'));
             })
@@ -75,13 +75,13 @@ class MediaController extends Controller
             abort(404);
         }
 
-        $media = Curator::getModel()->where('path', $path)->first();
+        $media = resolve(CuratorConfig::getMediaModel())->where('path', $path)->first();
 
         if ($media && !$media->resizable) {
             return Storage::disk($media->disk)->response($media->path);
         }
 
-        $server = app(config('curator.glide_server_factory'))->getFactory();
+        $server = CuratorConfig::getGlideServer();
         $server->setBaseUrl('/curator/');
 
         return $server->getImageResponse($path, request()->all());

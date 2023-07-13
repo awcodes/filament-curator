@@ -3,6 +3,7 @@
 namespace Awcodes\Curator\Components\Forms;
 
 use Awcodes\Curator\Actions\CurationAction;
+use Awcodes\Curator\Facades\CuratorConfig;
 use Closure;
 use Exception;
 use Filament\Actions\Concerns\CanBeOutlined;
@@ -35,7 +36,7 @@ class CuratorEditor extends Field
 
     public function getPresets(): array|null
     {
-        return config('curator.curation_presets');
+        return CuratorConfig::getCurationPresets();
     }
 
     /**

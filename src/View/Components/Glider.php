@@ -2,6 +2,7 @@
 
 namespace Awcodes\Curator\View\Components;
 
+use Awcodes\Curator\Facades\CuratorConfig;
 use Awcodes\Curator\Models\Media;
 use Closure;
 use Illuminate\Contracts\View\View;
@@ -51,7 +52,7 @@ class Glider extends Component
     )
     {
         if (!$media instanceof Media) {
-            $this->media = config('curator.media_model')::where('id', $media)->first();
+            $this->media = CuratorConfig::getMediaModel()::where('id', $media)->first();
 
             if (!$this->media && $this->fallback) {
                 $this->media = (object)$this->getGliderFallback($this->fallback);
@@ -134,7 +135,7 @@ class Glider extends Component
 
     public function getGliderFallbacks(): ?array
     {
-        return collect(config('curator.glider_fallbacks'))
+        return collect(CuratorConfig::getGliderFallbacks())
             ->map(fn($preset) => $preset->getFallback())
             ->toArray();
     }

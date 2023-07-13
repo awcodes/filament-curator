@@ -3,6 +3,7 @@
 namespace Awcodes\Curator\Actions;
 
 use Awcodes\Curator\Components\Forms\CuratorPicker;
+use Awcodes\Curator\Facades\CuratorConfig;
 use Awcodes\Scribe\Scribe;
 use Filament\Forms\Components\Actions\Action;
 use Illuminate\Support\Str;
@@ -28,30 +29,30 @@ class MediaAction extends Action
 
             $src = $component->getLivewire()->mediaProps['src'];
             $selected = $src !== ''
-                ? [config('curator.media_model')::firstWhere('name', Str::of($src)->afterLast('/')->beforeLast('.'))]
+                ? [CuratorConfig::getMediaModel()->firstWhere('name', Str::of($src)->afterLast('/')->beforeLast('.'))]
                 : [];
 
             return view('curator::components.actions.picker-action', [
-                'acceptedFileTypes' => config('curator.accepted_file_types'),
-                'directory' => config('curator.directory'),
-                'diskName' => config('curator.disk_name'),
-                'imageCropAspectRatio' => config('curator.image_crop_aspect_ratio'),
-                'imageResizeTargetWidth' => config('curator.image_resize_target_width'),
-                'imageResizeTargetHeight' => config('curator.image_resize_target_height'),
-                'imageResizeMode' => config('curator.image_resize_mode'),
+                'acceptedFileTypes' => CuratorConfig::getAcceptedFileTypes(),
+                'directory' => CuratorConfig::getDirectory(),
+                'diskName' => CuratorConfig::getDiskName(),
+                'imageCropAspectRatio' => CuratorConfig::getImageCropAspectRatio(),
+                'imageResizeTargetWidth' => CuratorConfig::getImageResizeTargetWidth(),
+                'imageResizeTargetHeight' => CuratorConfig::getImageResizeTargetHeight(),
+                'imageResizeMode' => CuratorConfig::getImageResizeMode(),
                 'isLimitedToDirectory' => false,
                 'isMultiple' => false,
                 'maxItems' => 1,
-                'maxSize' => config('curator.max_size'),
-                'maxWidth' => config('curator.max_width'),
-                'minSize' => config('curator.min_size'),
+                'maxSize' => CuratorConfig::getMaxSize(),
+                'maxWidth' => CuratorConfig::getMaxWidth(),
+                'minSize' => CuratorConfig::getMinSize(),
                 'modalId' => $component->getLivewire()->id . '-form-component-action',
-                'pathGenerator' => config('curator.path_generator'),
+                'pathGenerator' => CuratorConfig::getPathGenerator(),
                 'rules' => [],
                 'selected' => $selected,
-                'shouldPreserveFilenames' => config('curator.should_preserve_filenames'),
+                'shouldPreserveFilenames' => CuratorConfig::shouldPreserveFilenames(),
                 'statePath' => $component->getStatePath(),
-                'visibility' => config('curator.visibility'),
+                'visibility' => CuratorConfig::getVisibility(),
             ]);
         });
     }

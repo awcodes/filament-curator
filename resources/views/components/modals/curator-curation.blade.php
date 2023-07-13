@@ -110,7 +110,7 @@
                             <x-filament::button
                                 type="button"
                                 size="sm"
-                                color="secondary"
+                                color="gray"
                                 class="!rounded-l-lg !rounded-r-none flex-1"
                                 x-on:click="cropper.setAspectRatio(16/9)"
                             >
@@ -119,7 +119,7 @@
                             <x-filament::button
                                 type="button"
                                 size="sm"
-                                color="secondary"
+                                color="gray"
                                 class="!rounded-none flex-1"
                                 x-on:click="cropper.setAspectRatio(4/3)"
                             >
@@ -128,7 +128,7 @@
                             <x-filament::button
                                 type="button"
                                 size="sm"
-                                color="secondary"
+                                color="gray"
                                 class="!rounded-none flex-1"
                                 x-on:click="cropper.setAspectRatio(1)"
                             >
@@ -137,7 +137,7 @@
                             <x-filament::button
                                 type="button"
                                 size="sm"
-                                color="secondary"
+                                color="gray"
                                 class="!rounded-r-lg !rounded-l-none flex-1"
                                 x-on:click="cropper.setAspectRatio(2/3)"
                             >
@@ -149,24 +149,32 @@
                             <x-filament::button
                                 type="button"
                                 size="sm"
-                                color="secondary"
+                                color="gray"
                                 class="!rounded-l-lg !rounded-r-none flex-1"
                                 x-on:click="cropper.zoom(0.1)"
                                 x-tooltip.raw="{{ __('curator::views.curation.zoom_in') }}"
                             >
                                 <span class="sr-only">{{ __('curator::views.curation.zoom_in') }}</span>
-                                @svg('heroicon-o-zoom-in', 'w-4 h-4')
+                                <x-filament::icon
+                                    alias="curator::curation.zoom_in"
+                                    name="heroicon-o-magnifying-glass-plus"
+                                    size="w-4 h-4"
+                                />
                             </x-filament::button>
                             <x-filament::button
                                 type="button"
                                 size="sm"
-                                color="secondary"
+                                color="gray"
                                 class="!rounded-r-lg !rounded-l-none flex-1"
                                 x-on:click="cropper.zoom(-0.1)"
                                 x-tooltip.raw="{{ __('curator::views.curation.zoom_out') }}"
                             >
                                 <span class="sr-only">{{ __('curator::views.curation.zoom_out') }}</span>
-                                @svg('heroicon-o-zoom-out', 'w-4 h-4')
+                                <x-filament::icon
+                                    alias="curator::curation.zoom_in"
+                                    name="heroicon-o-magnifying-glass-minus"
+                                    size="w-4 h-4"
+                                />
                             </x-filament::button>
                         </div>
 
@@ -174,7 +182,7 @@
                             <x-filament::button
                                 type="button"
                                 size="sm"
-                                color="secondary"
+                                color="gray"
                                 class="!rounded-l-lg !rounded-r-none flex-1"
                                 x-on:click="flipHorizontally"
                                 x-tooltip.raw="{{ __('curator::views.curation.flip_horizontally') }}"
@@ -189,7 +197,7 @@
                             <x-filament::button
                                 type="button"
                                 size="sm"
-                                color="secondary"
+                                color="gray"
                                 class="!rounded-r-lg !rounded-l-none flex-1" x-on:click="flipVertically"
                                 x-tooltip.raw="{{ __('curator::views.curation.flip_vertically') }}"
                             >
@@ -204,7 +212,7 @@
                             <x-filament::button
                                 type="button"
                                 size="sm"
-                                color="secondary"
+                                color="gray"
                                 class="!rounded-l-lg !rounded-r-none flex-1"
                                 x-on:click="cropper.setDragMode('move')"
                                 x-tooltip.raw="{{ __('curator::views.curation.drag_mode') }}"
@@ -217,7 +225,7 @@
                             <x-filament::button
                                 type="button"
                                 size="sm"
-                                color="secondary"
+                                color="gray"
                                 class="!rounded-r-lg !rounded-l-none flex-1"
                                 x-on:click="cropper.setDragMode('crop')"
                                 x-tooltip.raw="{{ __('curator::views.curation.crop_mode') }}"
@@ -233,7 +241,7 @@
                             <x-filament::button
                                 type="button"
                                 size="sm"
-                                color="secondary"
+                                color="gray"
                                 class="flex-1"
                                 x-on:click="cropper.reset()"
                             >

@@ -3,8 +3,9 @@
 namespace Awcodes\Curator\Components\Modals;
 
 use Awcodes\Curator\Components\Forms\Uploader;
-use Awcodes\Curator\Generators\PathGenerator;
-use Awcodes\Curator\Resources\MediaResource;
+use Awcodes\Curator\CuratorPlugin;
+use Awcodes\Curator\Facades\CuratorConfig;
+use Awcodes\Curator\Generators\Contracts\PathGenerator;
 use Exception;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
@@ -75,7 +76,7 @@ class CuratorPanel extends Component implements HasForms
                 });
             }
 
-            $media[] = config('curator.media_model')::create($item);
+            $media[] = resolve(CuratorConfig::getMediaModel())->create($item);
         }
 
         $this->addMediaForm->fill();
@@ -85,7 +86,7 @@ class CuratorPanel extends Component implements HasForms
     public function destroyFile(): void
     {
         try {
-            $item = config('curator.media_model')::find(Arr::first($this->selected)['id']);
+            $item = resolve(CuratorConfig::getMediaModel())->find(Arr::first($this->selected)['id']);
             if ($item) {
                 $item->update($this->editMediaForm->getState());
                 $this->editMediaForm->fill();
@@ -110,7 +111,7 @@ class CuratorPanel extends Component implements HasForms
 
     public function download(): StreamedResponse
     {
-        $item = config('curator.media_model')::where('id', $this->selected['id'])->first();
+        $item = resolve(CuratorConfig::getMediaModel())->where('id', $this->selected['id'])->first();
 
         return Storage::disk($item['disk'])->download($item['path']);
     }
@@ -142,7 +143,7 @@ class CuratorPanel extends Component implements HasForms
 
     protected function getEditMediaFormSchema(): array
     {
-        return MediaResource::getAdditionalInformationFormSchema();
+        return resolve(CuratorPlugin::get()->getResource())->getAdditionalInformationFormSchema();
     }
 
     protected function getForms(): array
@@ -174,7 +175,7 @@ class CuratorPanel extends Component implements HasForms
     public function setSelection(array $media): void
     {
         if (count($media) === 1) {
-            $item = config('curator.media_model')::find($media[0]['id']);
+            $item = resolve(CuratorConfig::getMediaModel())->find($media[0]['id']);
             if ($item) {
                 $this->editMediaForm->fill([
                     'name' => $item->name,
@@ -194,7 +195,7 @@ class CuratorPanel extends Component implements HasForms
     public function updateFile(): void
     {
         try {
-            $item = config('curator.media_model')::find(Arr::first($this->selected)['id']);
+            $item = resolve(CuratorConfig::getMediaModel())->find(Arr::first($this->selected)['id']);
             if ($item) {
                 $item->update($this->editMediaForm->getState());
 

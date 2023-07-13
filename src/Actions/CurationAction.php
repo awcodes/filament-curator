@@ -19,16 +19,16 @@ class CurationAction extends Action
 
         $this->modalWidth = 'screen';
 
-        $this->modalActions([]);
+        $this->modalFooterActions(fn() => []);
 
         $this->modalHeading(static function (CuratorEditor $component) {
-            return __('curator::views.curation.heading').' '.$component->getRecord()->name;
+            return __('curator::views.curation.heading') . ' ' . $component->getRecord()->name;
         });
 
         $this->modalContent(static function (CuratorEditor $component, Component $livewire) {
             return view('curator::components.actions.curation-action', [
                 'statePath' => $component->getStatePath(),
-                'modalId' => $livewire->id.'-form-component-action',
+                'modalId' => $livewire->id . '-form-component-action',
                 'media' => $component->getRecord(),
                 'presets' => $component->getPresets(),
             ]);

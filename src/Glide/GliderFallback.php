@@ -1,6 +1,6 @@
 <?php
 
-namespace Awcodes\Curator;
+namespace Awcodes\Curator\Glide;
 
 class GliderFallback
 {

@@ -1,64 +1,65 @@
 {
-    "name": "awcodes/filament-curator",
-    "description": "A media picker plugin for FilamentPHP.",
-    "keywords": [
-        "awcodes",
-        "laravel",
-        "curator",
-        "filament"
+  "name": "awcodes/filament-curator",
+  "description": "A media picker plugin for FilamentPHP.",
+  "keywords": [
+    "awcodes",
+    "laravel",
+    "curator",
+    "filament"
+  ],
+  "homepage": "https://github.com/awcodes/filament-curator",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "awcodes",
+      "email": "awcodes1@gmail.com",
+      "role": "Developer"
+    }
+  ],
+  "require": {
+    "php": "^8.1",
+    "filament/filament": "^3.0",
+    "illuminate/contracts": "^9.0|^10.0",
+    "intervention/image": "^2.7",
+    "league/glide-laravel": "^1.0",
+    "spatie/laravel-package-tools": "^1.13.5"
+  },
+  "require-dev": {
+    "laravel/pint": "^1.0",
+    "nunomaduro/collision": "^6.0|^7.0",
+    "spatie/laravel-ray": "^1.26"
+  },
+  "autoload": {
+    "files": [
+      "src/helpers.php"
     ],
-    "homepage": "https://github.com/awcodes/filament-curator",
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "awcodes",
-            "email": "awcodes1@gmail.com",
-            "role": "Developer"
-        }
-    ],
-    "require": {
-        "php": "^8.1",
-        "filament/filament": "^3.0",
-        "illuminate/contracts": "^9.0|^10.0",
-        "intervention/image": "^2.7",
-        "league/glide-laravel": "^1.0",
-        "spatie/laravel-package-tools": "^1.13.5"
-    },
-    "require-dev": {
-        "laravel/pint": "^1.0",
-        "nunomaduro/collision": "^6.0|^7.0",
-        "spatie/laravel-ray": "^1.26"
-    },
-    "autoload": {
-        "files": [
-            "src/helpers.php"
-        ],
-        "psr-4": {
-            "Awcodes\\Curator\\": "src",
-            "Awcodes\\Curator\\Database\\Factories\\": "database/factories"
-        }
-    },
-    "scripts": {
-        "pint": "vendor/bin/pint"
-    },
-    "config": {
-        "sort-packages": true,
-        "allow-plugins": {
-            "composer/package-versions-deprecated": true,
-            "pestphp/pest-plugin": true,
-            "phpstan/extension-installer": true
-        }
-    },
-    "extra": {
-        "laravel": {
-            "providers": [
-                "Awcodes\\Curator\\CuratorServiceProvider"
-            ],
-            "aliases": {
-                "Curator": "Awcodes\\Curator\\Facades\\Curator"
-            }
-        }
-    },
-    "minimum-stability": "dev",
-    "prefer-stable": true
+    "psr-4": {
+      "Awcodes\\Curator\\": "src",
+      "Awcodes\\Curator\\Database\\Factories\\": "database/factories"
+    }
+  },
+  "scripts": {
+    "pint": "vendor/bin/pint"
+  },
+  "config": {
+    "sort-packages": true,
+    "allow-plugins": {
+      "composer/package-versions-deprecated": true,
+      "pestphp/pest-plugin": true,
+      "phpstan/extension-installer": true
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Awcodes\\Curator\\CuratorServiceProvider"
+      ],
+      "aliases": {
+        "Curator": "Awcodes\\Curator\\Facades\\Curator",
+        "CuratorConfig": "Awcodes\\Curator\\Facades\\CuratorConfig"
+      }
+    }
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true
 }

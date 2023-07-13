@@ -111,6 +111,7 @@ class UpgradeCommand extends Command
     public static function generateMigrationName(string $migrationFileName, Carbon $now): string
     {
         $migrationsPath = 'migrations/';
+        $migrationFileName = Str::of($migrationFileName)->rtrim('.stub')->toString();
 
         $len = strlen($migrationFileName) + 4;
 

@@ -21,6 +21,7 @@ return [
         'edit' => 'Edit',
         'download' => 'Download',
         'remove' => 'Remove',
+        'clear' => 'Remove All',
     ],
     'panel' => [
         'button' => 'Add media',

@@ -4,7 +4,8 @@ namespace Awcodes\Curator\Components\Forms;
 
 use Awcodes\Curator\Concerns\CanNormalizePaths;
 use Awcodes\Curator\Facades\Curator;
-use Awcodes\Curator\Generators\PathGenerator;
+use Awcodes\Curator\Facades\CuratorConfig;
+use Awcodes\Curator\Generators\Contracts\PathGenerator;
 use Filament\Forms\Components\BaseFileUpload;
 use Filament\Forms\Components\FileUpload;
 use Illuminate\Support\Facades\Storage;
@@ -20,8 +21,8 @@ class Uploader extends FileUpload
 
     public function getDirectory(): ?string
     {
-        $directory = $this->directory ?? config('curator.directory');
-        $generator = $this->getPathGenerator() ?? config('curator.path_generator');
+        $directory = $this->directory ?? CuratorConfig::getDirectory();
+        $generator = $this->getPathGenerator() ?? CuratorConfig::getPathGenerator();
 
         if (
             class_exists($generator) &&
@@ -101,7 +102,7 @@ class Uploader extends FileUpload
             $storeMethod = $component->getVisibility() === 'public' ? 'storePubliclyAs' : 'storeAs';
 
             if (Curator::isResizable($extension)) {
-                if (in_array($file->disk, config('curator.cloud_disks'))) {
+                if (in_array($file->disk, CuratorConfig::getCloudDisks())) {
                     $content = Storage::disk($file->disk)->get($file->path());
                 } else {
                     $content = $file->getRealPath();

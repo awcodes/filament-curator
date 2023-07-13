@@ -9,7 +9,8 @@ A media picker/manager plugin for Filament Admin.
 > This package does not work with Spatie Media Library.
 
 > **Warning**
-> If you are using the Curator integration with Filament Tiptap Editor you will also need to update it to version 2.3.0 or higher.
+> If you are using the Curator integration with Filament Tiptap Editor you will also need to update it to version 2.3.0
+> or higher.
 
 ![curator-og](https://user-images.githubusercontent.com/3596800/225419661-a0431c1b-957d-466f-a94d-a73a40b11d72.png)
 
@@ -30,9 +31,11 @@ If you are upgrading from 1.x to 2.x you will also need to run:
 php artisan curator:upgrade
 ```
 
-This will update Curator's database schema and create a backup of your media table that can be deleted after upgrade should you choose to do so.
+This will update Curator's database schema and create a backup of your media table that can be deleted after upgrade
+should you choose to do so.
 
 ### Additional Steps
+
 1. Change any references in your codebase from `$media->filename` to `$media->path`.
 2. Change any use statements from `FilamentCurator` to `Awcodes\Curator`.
 3. Change `FilamentCurator\Forms\Components\MediaPicker` fields to
@@ -217,7 +220,8 @@ CuratorPicker::make(string $fieldName)
 
 ### Curator Column
 
-To render your media in a table Curator comes with a `CuratorColumn` which has the same methods as Filament's ImageColumn.
+To render your media in a table Curator comes with a `CuratorColumn` which has the same methods as Filament's
+ImageColumn.
 
 ```php
 CuratorColumn::make('featured_image')
@@ -235,9 +239,11 @@ CuratorColumn::make('product_pictures')
 
 #### Relationships
 
-If you are using a relationship to store your media then you will encounter n+1 issues on the column. In order to prevent this you should modify your table query to eager load the relationship.
+If you are using a relationship to store your media then you will encounter n+1 issues on the column. In order to
+prevent this you should modify your table query to eager load the relationship.
 
 For example when using the admin panel in your ListResource
+
 ```php
 protected function getTableQuery(): Builder
 {
@@ -247,11 +253,13 @@ protected function getTableQuery(): Builder
 
 ### Curations
 
-Curations are a way to create custom sizes and focal points for your images. 
-
+Curations are a way to create custom sizes and focal points for your images.
 
 #### Curation Presets
-If you have a curation that you are constantly using you can create Presets which will be available in the Curation modal for easier reuse. After creating curation presets, they can be referenced by their key to output them in your blade files.
+
+If you have a curation that you are constantly using you can create Presets which will be available in the Curation
+modal for easier reuse. After creating curation presets, they can be referenced by their key to output them in your
+blade files.
 
 ```php
 use Awcodes\Curator\CurationPreset;
@@ -279,7 +287,8 @@ Curator::curationPresets([
 To make it as easy as possible to output your media, Curator comes with an
 `<x-curator-glider>` blade component.
 
-See [Glide's quick reference](https://glide.thephpleague.com/2.0/api/quick-reference/) for more information about Glide's options.
+See [Glide's quick reference](https://glide.thephpleague.com/2.0/api/quick-reference/) for more information about
+Glide's options.
 
 **Special attributes**
 
@@ -331,12 +340,12 @@ See [Glide's quick reference](https://glide.thephpleague.com/2.0/api/quick-refer
 
 #### Fallback Images
 
-Glider allows for a fallback image to be used if the media item does not 
-exist. This can be set by passing in the `fallback` attribute referencing 
+Glider allows for a fallback image to be used if the media item does not
+exist. This can be set by passing in the `fallback` attribute referencing
 one of your registered `GliderFallback`s.
 
 ```php
-use Awcodes\Curator\GliderFallback;
+use Awcodes\Curator\Glide\GliderFallback;
 
 Curator::gliderFallbacks([
     GliderFallback::make(key: 'thumbnail')
@@ -348,7 +357,8 @@ Curator::gliderFallbacks([
 ```
 
 ```html
-<x-curator-glider :media="1" fallback="thumbnail" />
+
+<x-curator-glider :media="1" fallback="thumbnail"/>
 ```
 
 ### Curation Blade Component
@@ -361,12 +371,15 @@ To make it as easy as possible to output your curations, Curator comes with an
 - media: id (int) or model (Media) instance ***required***
 
 ```html
-<x-curator-curation :media="10" curation="thumbnail" loading="lazy" />
+
+<x-curator-curation :media="10" curation="thumbnail" loading="lazy"/>
 ```
 
 ### Practical use case
 
-Since curations may or may not exist for each media item it's good to use a fallback to the glider component in your blade file so images always get rendered appropriately. This also keeps you from having to create curations for every media item, only the ones where you're trying to change the focal point, etc.
+Since curations may or may not exist for each media item it's good to use a fallback to the glider component in your
+blade file so images always get rendered appropriately. This also keeps you from having to create curations for every
+media item, only the ones where you're trying to change the focal point, etc.
 
 ```html
 @if ($media->hasCuration('thumbnail'))
