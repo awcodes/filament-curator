@@ -8,7 +8,7 @@ use League\Glide\ServerFactory;
 
 class DefaultServerFactory implements Contracts\ServerFactory
 {
-    public function getFactory(): ServerFactory|Server
+    public function getFactory(): ServerFactory | Server
     {
         return ServerFactory::create([
             'driver' => 'gd',

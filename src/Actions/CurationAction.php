@@ -19,7 +19,7 @@ class CurationAction extends Action
 
         $this->modalWidth = 'screen';
 
-        $this->modalFooterActions(fn() => []);
+        $this->modalFooterActions(fn () => []);
 
         $this->modalHeading(static function (CuratorEditor $component) {
             return __('curator::views.curation.heading') . ' ' . $component->getRecord()->name;

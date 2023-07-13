@@ -39,7 +39,7 @@
                                 <x-curator::curation-select prefix="Preset" name="preset" x-model="preset">
                                     <option value="custom">{{ __('curator::views.curation.custom') }}</option>
                                     <template x-for="preset in presets">
-                                        <option x-bind:value="preset.key" x-bind:key="preset.key" x-text="preset.name"></option>
+                                        <option x-bind:value="preset.key" x-bind:key="preset.key" x-text="preset.label"></option>
                                     </template>
                                 </x-curator::curation-select>
                             </div>
@@ -156,7 +156,7 @@
                             >
                                 <span class="sr-only">{{ __('curator::views.curation.zoom_in') }}</span>
                                 <x-filament::icon
-                                    alias="curator::curation.zoom_in"
+                                    alias="curator::icons.zoom_in"
                                     name="heroicon-o-magnifying-glass-plus"
                                     size="w-4 h-4"
                                 />
@@ -171,7 +171,7 @@
                             >
                                 <span class="sr-only">{{ __('curator::views.curation.zoom_out') }}</span>
                                 <x-filament::icon
-                                    alias="curator::curation.zoom_in"
+                                    alias="curator::icons.zoom_out"
                                     name="heroicon-o-magnifying-glass-minus"
                                     size="w-4 h-4"
                                 />
@@ -250,7 +250,7 @@
                         </div>
                     </div>
 
-                    <div class="flex items-center justify-start gap-3 py-3 px-4 border-t border-gray-300 bg-gray-200 dark:border-gray-800 dark:bg-black/10">
+                    <div class="flex items-center justify-end gap-3 py-3 px-4 border-t border-gray-300 bg-gray-200 dark:border-gray-800 dark:bg-black/10">
                         <x-filament::button
                             type="button"
                             size="sm"

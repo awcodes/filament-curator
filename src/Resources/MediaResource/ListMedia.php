@@ -7,11 +7,23 @@ use Exception;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
-use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
 
 class ListMedia extends ListRecords
 {
+    public string $layoutView = 'grid';
+
+    protected $listeners = [
+        'changeLayoutView' => 'changeLayoutView',
+        'layoutViewChanged' => '$refresh',
+    ];
+
+    public function changeLayoutView(): void
+    {
+        $this->layoutView = $this->layoutView === 'list' ? 'grid' : 'list';
+        $this->emit('layoutViewChanged', $this->layoutView);
+    }
+
     public static function getResource(): string
     {
         return CuratorPlugin::get()->getResource();
@@ -19,7 +31,7 @@ class ListMedia extends ListRecords
 
     public function getTitle(): string
     {
-        return Str::headline(CuratorPlugin::get()->getPluralResourceLabel());
+        return Str::headline(CuratorPlugin::get()->getPluralLabel());
     }
 
     /**
@@ -31,20 +43,20 @@ class ListMedia extends ListRecords
             Action::make('toggle-table-view')
                 ->color('gray')
                 ->label(function (): string {
-                    return Session::get('tableLayout')
+                    return $this->layoutView === 'grid'
                         ? __('curator::tables.actions.toggle_table_list')
                         : __('curator::tables.actions.toggle_table_grid');
                 })
                 ->icon(function (): string {
-                    return Session::get('tableLayout')
+                    return $this->layoutView === 'grid'
                         ? 'heroicon-s-queue-list'
                         : 'heroicon-s-squares-2x2';
                 })
-                ->action(function (): void {
-                    ray(Session::get('tableLayout'));
-                    Session::put('tableLayout', !Session::get('tableLayout'));
+                ->action(function ($livewire): void {
+                    $livewire->emit('changeLayoutView');
                 }),
-            CreateAction::make(),
+            CreateAction::make()
+                ->label(fn (): string => __('filament-actions::create.single.label', ['label' => CuratorPlugin::get()->getLabel()])),
         ];
     }
 }

@@ -3,7 +3,7 @@
 namespace Awcodes\Curator\Components\Forms;
 
 use Awcodes\Curator\Actions\CurationAction;
-use Awcodes\Curator\Facades\CuratorConfig;
+use Awcodes\Curator\Concerns\HasCurationPresets;
 use Closure;
 use Exception;
 use Filament\Actions\Concerns\CanBeOutlined;
@@ -17,26 +17,22 @@ class CuratorEditor extends Field
     use CanBeOutlined;
     use HasColor;
     use HasSize;
+    use HasCurationPresets;
 
-    protected string|Htmlable|Closure|null $buttonLabel = null;
+    protected string | Htmlable | Closure | null $buttonLabel = null;
 
     protected string $view = 'curator::components.forms.curation';
 
-    public function buttonLabel(string|Htmlable|Closure|null $label): static
+    public function buttonLabel(string | Htmlable | Closure | null $label): static
     {
         $this->buttonLabel = $label;
 
         return $this;
     }
 
-    public function getButtonLabel(): string|Htmlable|null
+    public function getButtonLabel(): string | Htmlable | null
     {
         return $this->evaluate($this->buttonLabel);
-    }
-
-    public function getPresets(): array|null
-    {
-        return CuratorConfig::getCurationPresets();
     }
 
     /**

@@ -53,11 +53,7 @@
     "laravel": {
       "providers": [
         "Awcodes\\Curator\\CuratorServiceProvider"
-      ],
-      "aliases": {
-        "Curator": "Awcodes\\Curator\\Facades\\Curator",
-        "CuratorConfig": "Awcodes\\Curator\\Facades\\CuratorConfig"
-      }
+      ]
     }
   },
   "minimum-stability": "dev",

@@ -9,7 +9,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create(config('curator.media_model')->getTable(), function (Blueprint $table) {
+        Schema::create(app(config('curator.model')))->getTable(), function (Blueprint $table) {
             $table->id();
             $table->string('disk')->default('public');
             $table->string('directory')->default('media');
@@ -33,6 +33,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists(app(Curator::getMediaModel())->getTable());
+        Schema::dropIfExists(app(config('curator.model')))->getTable());
     }
 };

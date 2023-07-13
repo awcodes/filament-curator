@@ -8,10 +8,6 @@ A media picker/manager plugin for Filament Admin.
 > **Warning**
 > This package does not work with Spatie Media Library.
 
-> **Warning**
-> If you are using the Curator integration with Filament Tiptap Editor you will also need to update it to version 2.3.0
-> or higher.
-
 ![curator-og](https://user-images.githubusercontent.com/3596800/225419661-a0431c1b-957d-466f-a94d-a73a40b11d72.png)
 
 ## Installation
@@ -20,12 +16,15 @@ You can install the package via composer then run the installation command:
 
 ```bash
 composer require awcodes/filament-curator
+```
+
+```bash
 php artisan curator:install
 ```
 
 ## Upgrading
 
-If you are upgrading from 1.x to 2.x you will also need to run:
+If you are upgrading from 2.x to 3.x you will also need to run:
 
 ```bash
 php artisan curator:upgrade
@@ -36,55 +35,37 @@ should you choose to do so.
 
 ### Additional Steps
 
-1. Change any references in your codebase from `$media->filename` to `$media->path`.
-2. Change any use statements from `FilamentCurator` to `Awcodes\Curator`.
-3. Change `FilamentCurator\Forms\Components\MediaPicker` fields to
-   `Awcodes\Curator\Components\Forms\CuratorPicker`.
+1. `CurationPreset` will need to be updated to the [new format](#curation-presets).
+2. `GliderFallback` will need to be updated to the [new format](#glider-fallback-images).
+3. Custom Glide Server Factories will need to be updated to use the new `GlideServerFactoryProvider`.
 
 ## Usage
 
 ### Global Settings
 
-Global settings for Curator are handled through the `Curator` facade.
-Inside the `register()` method of a service provider you can customize the
-behaviour of Curator's resources. All methods are optional.
+Global settings can be managed through the plugin's config file. You can publish the config file using the following:
+
+```bash
+php artisan vendor:publish --tag="curator-config"
+```
+
+### With Filament Panels
+
+If you are using Filament Panels you will need to add the Plugin to you Panel's configuration. This will register the plugin's resources with the Panel. All methods are optional, and will be read from the config file if not provided.
 
 ```php
-use Awcodes\Curator\Facades\Curator;
-
-public function register()
+public function panel(Panel $panel): Panel
 {
-    Curator::acceptedFileTypes(array|Closure $types)
-        ->cloudDisks(array $disks)
-        ->curationPresets(array|null $presets)
-        ->directory(Closure|string|null $directory)
-        ->disableResourceRegistration()
-        ->disk(string|Closure|null $disk)
-        ->glideCachePathPrefix(string $prefix)
-        ->glideDriver(string $driver)
-        ->gliderFallbacks(array|null $fallbacks)
-        ->glideMaxImageSize(int $size)
-        ->glideServer(Server|ServerFactory|null $server)
-        ->glideSourcePathPrefix(string $prefix)
-        ->imageCropAspectRatio(string|Closure|null $ratio)
-        ->imageResizeTargetHeight(string|Closure|null $height)
-        ->imageResizeTargetWidth(string|Closure|null $width)
-        ->limitToDirectory(bool|Closure|null $condition = false)
-        ->maxSize(int|Closure $size)
-        ->maxWidth(int|Closure $width)
-        ->mediaModel(string $model)
-        ->minSize(int|Closure $size)
-        ->navigationGroup(string $group)
-        ->navigationIcon(string $label)
-        ->navigationSort(int $order)
-        ->pathGenerator(PathGenerator|string|null $generator)
-        ->pluralResourceLabel(string|Closure $label)
-        ->preserveFilenames(bool|Closure $condition)
-        ->registerNavigation(bool|Closure|null $condition)
-        ->resourceLabel(string|Closure $label)
-        ->tableHasGridLayout(bool|Closure|null $condition)
-        ->tableHasIconActions(bool|Closure|null $condition)
-        ->visibility(string|Closure|null $visibility)
+    return $panel
+        ->plugins([
+            \Awcodes\Curator\CuratorPlugin::make()
+                ->label('Media')
+                ->pluralLabel('Media')
+                ->navigationIcon('heroicon-o-photo')
+                ->navigationGroup('Content')
+                ->navigationSort(3)
+                ->resource(\App\Filament\Resources\CustomMediaResource::class)
+        ]);
 }
 ```
 
@@ -104,8 +85,7 @@ CuratorPicker::make(string $fieldName)
     ->color('primary|secondary|success|danger') // defaults to primary
     ->outlined(true|false) // defaults to true
     ->size('sm|md|lg') // defaults to md
-    ->constrained(true|false) // defaults to false (forces image to fit inside 
-    the preview area)
+    ->constrained(true|false) // defaults to false (forces image to fit inside the preview area)
     ->pathGenerator(DatePathGenerator::class|UserPathGenerator::class) // see path generators below
     // see https://filamentphp.com/docs/2.x/forms/fields#file-upload for more information about the following methods
     ->preserveFilenames()
@@ -177,12 +157,16 @@ public function productPictures(): BelongsTo
 By default, Curator will use the directory and disk set in the config to
 store your media. If you'd like to store the media in a different way
 Curator comes with Path Generators that can be used to modify the behavior.
-Just set the one you want to use the `register()` method of a service provider.
+Just set the one you want to use globally in the config or per instance on your `CuratorPicker` field.
 
 ```php
+use Awcodes\Curator\View\Components\CuratorPicker;
+use Awcodes\Curator\PathGenerators\DatePathGenerator;
+
 public function register()
 {
-    Curator::pathGenerator(DatePathGenerator::class);
+    CuratorPicker::make('image')
+        ->pathGenerator(DatePathGenerator::class);
 }
 ```
 
@@ -198,7 +182,7 @@ You are also free to use your own Path Generators by implementing the
 `PathGenerator` interface on your own classes.
 
 ```php
-use Awcodes\Curator\Generators;
+use Awcodes\Curator\PathGenerators;
 
 class CustomPathGenerator implements PathGenerator
 {
@@ -207,15 +191,6 @@ class CustomPathGenerator implements PathGenerator
         return ($baseDir ? $baseDir . '/' : '') . 'my/custom/path';
     }
 }
-```
-
-Path Generators can also be passed into the `directory()` method on the
-`CuratorPicker` field for per instance use.
-
-```php
-CuratorPicker::make(string $fieldName)
-    ->label(string $customLabel)
-    ->pathGenerator(CustomPathGenerator::class),
 ```
 
 ### Curator Column
@@ -262,24 +237,48 @@ modal for easier reuse. After creating curation presets, they can be referenced 
 blade files.
 
 ```php
-use Awcodes\Curator\CurationPreset;
+use Awcodes\Curator\Curations\CurationPreset;
 
-Curator::curationPresets([
-    CurationPreset::make('thumbnail')
-        ->label('Thumbnail')
-        ->width(200)
-        ->height(200)
-        ->format('webp')
-        ->quality(80),
-    CurationPreset::make('hero')
-        ->label('Hero')
-        ->width(960)
-        ->height(300),
-    CurationPreset::make(name: 'og-image')
-        ->label('OG Image')
-        ->width(1200)
-        ->height(630),
-]);
+class ThumbnailPreset extends CurationPreset
+{
+    public function getKey(): string
+    {
+        return 'thumbnail';
+    }
+
+    public function getLabel(): string
+    {
+        return 'Thumbnail';
+    }
+
+    public function getWidth(): int
+    {
+        return 200;
+    }
+
+    public function getHeight(): int
+    {
+        return 200;
+    }
+
+    public function getFormat(): string
+    {
+        return 'webp';
+    }
+
+    public function getQuality(): int
+    {
+        return 60;
+    }
+}
+```
+
+Then simply register your preset in the config.
+
+```php
+'curation_presets' => [
+    ThumbnailPreset::class,
+],
 ```
 
 ### Glider Blade Component
@@ -300,45 +299,46 @@ Glide's options.
   also be set.
 
 ```html
+
 <div class="aspect-video w-64">
     <x-curator-glider
-        class="object-cover w-auto"
-        :media="1"
-        glide=""
-        fallback=""
-        :srcset="['1024w','640w']"
-        sizes="(max-width: 1200px) 100vw, 1024px"
-        background=""
-        blur=""
-        border=""
-        brightness=""
-        contrast=""
-        crop=""
-        device-pixel-ratio=""
-        filter=""
-        fit=""
-        flip=""
-        format=""
-        gamma=""
-        height=""
-        quality=""
-        orientation=""
-        pixelate=""
-        sharpen=""
-        width=""
-        watermark-path=""
-        watermark-width=""
-        watermark-height=""
-        watermark-x-offset=""
-        watermark-y-offset=""
-        watermark-padding=""
-        watermark-position=""
-        watermark-alpha=""
+            class="object-cover w-auto"
+            :media="1"
+            glide=""
+            fallback=""
+            :srcset="['1024w','640w']"
+            sizes="(max-width: 1200px) 100vw, 1024px"
+            background=""
+            blur=""
+            border=""
+            brightness=""
+            contrast=""
+            crop=""
+            device-pixel-ratio=""
+            filter=""
+            fit=""
+            flip=""
+            format=""
+            gamma=""
+            height=""
+            quality=""
+            orientation=""
+            pixelate=""
+            sharpen=""
+            width=""
+            watermark-path=""
+            watermark-width=""
+            watermark-height=""
+            watermark-x-offset=""
+            watermark-y-offset=""
+            watermark-padding=""
+            watermark-position=""
+            watermark-alpha=""
     />
 </div>
 ```
 
-#### Fallback Images
+#### Glider Fallback Images
 
 Glider allows for a fallback image to be used if the media item does not
 exist. This can be set by passing in the `fallback` attribute referencing
@@ -347,18 +347,55 @@ one of your registered `GliderFallback`s.
 ```php
 use Awcodes\Curator\Glide\GliderFallback;
 
-Curator::gliderFallbacks([
-    GliderFallback::make(key: 'thumbnail')
-        ->source('defaults/thumbnail.jpg')
-        ->alt('party at LaraconIN')
-        ->width(200)
-        ->height(200),
-]);
+class MyCustomGliderFallback extends GliderFallback
+{
+    public function getAlt(): string
+    {
+        return 'boring fallback image';
+    };
+
+    public function getHeight(): int
+    {
+        return 640;
+    };
+
+    public function getKey(): string
+    {
+        return 'card_fallback';
+    };
+
+    public function getSource(): string
+    {
+        return 'https://via.placeholder.com/640x420.jpg';
+    };
+
+    public function getType(): string
+    {
+        return 'image/jpg';
+    };
+
+    public function getWidth(): int
+    {
+        return 420;
+    };
+}
 ```
+
+Then register your fallback in the config.
+
+```php
+'glide' => [
+    'fallbacks' => [
+        MyCustomGliderFallback::class,
+    ],
+],
+```
+
+Then you can reference your fallback in the blade component.
 
 ```html
 
-<x-curator-glider :media="1" fallback="thumbnail"/>
+<x-curator-glider :media="1" fallback="card_fallback"/>
 ```
 
 ### Curation Blade Component
@@ -382,68 +419,39 @@ blade file so images always get rendered appropriately. This also keeps you from
 media item, only the ones where you're trying to change the focal point, etc.
 
 ```html
+@php
+    $preset = new ThumbnailPreset();
+@endphp
+
 @if ($media->hasCuration('thumbnail'))
-    <x-curator-curation :media="$media" curation="thumbnail" />
+    <x-curator-curation :media="$media" curation="thumbnail"/>
 @else
     <x-curator-glider
         class="object-cover w-auto"
         :media="$media"
-        :width="curator()->preset('thumbnail')['width']"
-        :height="curator()->preset('thumbnail')['height']"
+        :width="$preset->getWidth()"
+        :height="$preset->getHeight()"
     />
 @endif
 ```
 
-### Custom Resource
 
-Should you need to override the default Resources, it is recommended
-that you use the service container to bind Curator's Resource name to your own extensions of them.
+
+### Custom Model
+
+If you want to use your own resource for your media model you can extend Curator's `Media` model with your own and set it in the config.
 
 ```php
-use Awcodes\Curator\Resources\MediaResource;
-use Awcodes\Curator\Facades\Curator;
+use Awcodes\Curator\Models\Media;
 
-class YourNotAsCoolMediaResource extends MediaResource
+class CustomMedia extends Media
 {
-    // ... custom methods and properties
-}
-
-class YourNotAsCoolEditMedia extends MediaResource\EditMedia
-{
-    // ... custom methods and properties
-}
-
-class YourNotAsCoolCreateMedia extends MediaResource\CreateMedia
-{
-    // ... custom methods and properties
-}
-
-class YourNotAsCoolListMedia extends MediaResource\ListMedia
-{
-    // ... custom methods and properties
-}
-
-// and in a service provider
-public function register()
-{
-    Curator::disableResourceRegistration();
-    $this->app->bind(MediaResource::class, fn() => new YourNotAsCoolMediaResource());
-    $this->app->bind(MediaResource\EditMedia::class, fn() => new YourNotAsCoolEditMedia());
-    $this->app->bind(MediaResource\CreateMedia::class, fn() => new YourNotAsCoolCreateMedia());
-    $this->app->bind(MediaResource\ListMedia::class, fn() => new YourNotAsCoolListMedia());
+    protected $table = 'media';
 }
 ```
 
-## Theming
-
-If you are using a custom theme for Filament you will need to add this plugin's
-views to your `tailwind.config.js`.
-
-```js
-content: [
-    ...
-    "./vendor/awcodes/curator/resources/views/**/*.blade.php",
-]
+```php
+'model' => \App\Models\Cms\Media::class,
 ```
 
 ## Testing

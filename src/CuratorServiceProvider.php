@@ -2,7 +2,7 @@
 
 namespace Awcodes\Curator;
 
-use Awcodes\Curator\Facades\CuratorConfig;
+use Awcodes\Curator\Models\Media;
 use Awcodes\Curator\Observers\MediaObserver;
 use Filament\Support\Assets\AlpineComponent;
 use Filament\Support\Assets\Css;
@@ -35,7 +35,9 @@ class CuratorServiceProvider extends PackageServiceProvider
 
     public function packageBooted(): void
     {
-        CuratorConfig::getMediaModel()::observe(MediaObserver::class);
+        app()->bind(Media::class, config('curator.model'));
+
+        app(Media::class)::observe(MediaObserver::class);
 
         Livewire::component('curator-panel', Components\Modals\CuratorPanel::class);
         Livewire::component('curator-curation', Components\Modals\CuratorCuration::class);

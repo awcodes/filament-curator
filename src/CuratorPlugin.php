@@ -2,32 +2,26 @@
 
 namespace Awcodes\Curator;
 
-use Awcodes\Curator\Resources\MediaResource;
 use Closure;
 use Filament\Contracts\Plugin;
 use Filament\Panel;
 use Filament\Support\Concerns\EvaluatesClosures;
-use Illuminate\Support\Facades\Session;
 
 class CuratorPlugin implements Plugin
 {
     use EvaluatesClosures;
 
-    protected string|null $navigationGroup = null;
+    protected string | Closure | null $label = null;
 
-    protected string $navigationIcon = 'heroicon-o-photo';
+    protected string | null $navigationGroup = null;
 
-    protected int|null $navigationSort = null;
+    protected string | null $navigationIcon = null;
 
-    protected string|Closure $pluralResourceLabel = 'Media';
+    protected int | null $navigationSort = null;
 
-    protected string|null $resource = null;
+    protected string | Closure | null $pluralLabel = null;
 
-    protected string|Closure $resourceLabel = 'Media';
-
-    protected bool|Closure|null $tableHasGridLayout = true;
-
-    protected bool|Closure|null $tableHasIconActions = false;
+    protected string | null $resource = null;
 
     public function getId(): string
     {
@@ -38,13 +32,13 @@ class CuratorPlugin implements Plugin
     {
         $panel
             ->resources([
-                $this->getResource()
+                $this->getResource(),
             ]);
     }
 
     public function boot(Panel $panel): void
     {
-        $this->shouldTableHaveGridLayout();
+        //
     }
 
     public static function make(): static
@@ -59,35 +53,35 @@ class CuratorPlugin implements Plugin
 
     public function getResource(): string
     {
-        return $this->resource ?? MediaResource::class;
+        return $this->resource ?? config('curator.resources.resource');
     }
 
-    public function getResourceLabel(): string
+    public function getLabel(): string
     {
-        return $this->evaluate($this->resourceLabel);
+        return $this->evaluate($this->label) ?? config('curator.resources.label');
     }
 
-    public function getPluralResourceLabel(): string
+    public function getPluralLabel(): string
     {
-        return $this->evaluate($this->pluralResourceLabel);
+        return $this->evaluate($this->pluralLabel) ?? config('curator.resources.plural_label');
     }
 
-    public function getNavigationGroup(): string|null
+    public function getNavigationGroup(): string | null
     {
-        return $this->navigationGroup;
+        return $this->navigationGroup ?? config('curator.resources.navigation_group');
     }
 
-    public function getNavigationIcon(): string|null
+    public function getNavigationIcon(): string | null
     {
-        return $this->navigationIcon;
+        return $this->navigationIcon ?? config('curator.resources.navigation_icon');
     }
 
-    public function getNavigationSort(): int|null
+    public function getNavigationSort(): int | null
     {
-        return $this->navigationSort;
+        return $this->navigationSort ?? config('curator.resources.navigation_sort');
     }
 
-    public function navigationGroup(string|null $group = null): static
+    public function navigationGroup(string | null $group = null): static
     {
         $this->navigationGroup = $group;
 
@@ -108,9 +102,9 @@ class CuratorPlugin implements Plugin
         return $this;
     }
 
-    public function pluralResourceLabel(string|Closure $label): static
+    public function pluralLabel(string | Closure $label): static
     {
-        $this->pluralResourceLabel = $label;
+        $this->pluralLabel = $label;
 
         return $this;
     }
@@ -122,37 +116,9 @@ class CuratorPlugin implements Plugin
         return $this;
     }
 
-    public function resourceLabel(string|Closure $label): static
+    public function label(string | Closure $label): static
     {
-        $this->resourceLabel = $label;
-
-        return $this;
-    }
-
-    public function shouldTableHaveGridLayout(): string
-    {
-        if (!Session::has('tableLayout')) {
-            Session::put('tableLayout', $this->evaluate($this->tableHasGridLayout));
-        }
-
-        return Session::get('tableLayout');
-    }
-
-    public function shouldTableHaveIconActions(): string
-    {
-        return $this->evaluate($this->tableHasIconActions);
-    }
-
-    public function tableHasGridLayout(bool|Closure|null $condition = true): static
-    {
-        $this->tableHasGridLayout = $condition;
-
-        return $this;
-    }
-
-    public function tableHasIconActions(bool|Closure|null $condition = false): static
-    {
-        $this->tableHasIconActions = $condition;
+        $this->label = $label;
 
         return $this;
     }

@@ -8,7 +8,7 @@ class MediaFactory extends Factory
 {
     public function modelName(): string
     {
-        return config('curator.media_model');
+        return config('curator.model');
     }
 
     public function asDocument(): Factory

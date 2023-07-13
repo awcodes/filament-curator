@@ -14,7 +14,7 @@ class CuratorCuration extends Component
 
     public string $modalId;
 
-    public array|null $presets;
+    public array | null $presets;
 
     public string $statePath;
 

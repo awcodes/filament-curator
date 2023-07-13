@@ -66,7 +66,7 @@
         @apply !p-0;
 
         .filament-modal-header {
-            @apply py-2 px-4;
+            @apply py-2 px-4 border-b border-gray-300 dark:border-gray-900/50;
 
             .filament-modal-heading {
                 @apply text-base;
@@ -78,7 +78,7 @@
 
             &:hover,
             &:focus {
-                @apply text-primary-500;
+                @apply text-primary-500 !bg-transparent;
             }
         }
 
@@ -92,6 +92,12 @@
 
         .curator-picker-grid {
             @apply grid grid-cols-3 gap-4 sm:grid-cols-4 md:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10;
+        }
+        
+        .filepond--panel {
+            border-style: dashed;
+            border-width: 2px;
+            background-color: transparent;
         }
     }
 }

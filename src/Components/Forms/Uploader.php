@@ -2,10 +2,10 @@
 
 namespace Awcodes\Curator\Components\Forms;
 
+use Awcodes\Curator\Concerns\CanGeneratePaths;
 use Awcodes\Curator\Concerns\CanNormalizePaths;
-use Awcodes\Curator\Facades\Curator;
-use Awcodes\Curator\Facades\CuratorConfig;
-use Awcodes\Curator\Generators\Contracts\PathGenerator;
+use function Awcodes\Curator\is_media_resizable;
+use Awcodes\Curator\PathGenerators\Contracts\PathGenerator;
 use Filament\Forms\Components\BaseFileUpload;
 use Filament\Forms\Components\FileUpload;
 use Illuminate\Support\Facades\Storage;
@@ -16,36 +16,23 @@ use Livewire\TemporaryUploadedFile;
 class Uploader extends FileUpload
 {
     use CanNormalizePaths;
-
-    protected string|null $pathGenerator = null;
+    use CanGeneratePaths;
 
     public function getDirectory(): ?string
     {
-        $directory = $this->directory ?? CuratorConfig::getDirectory();
-        $generator = $this->getPathGenerator() ?? CuratorConfig::getPathGenerator();
+        $directory = $this->directory ?? config('curator.directory');
+        $generator = $this->getPathGenerator() ?? config('curator.path_generator');
 
         if (
             class_exists($generator) &&
             (new \ReflectionClass($generator))->implementsInterface(PathGenerator::class)
         ) {
-            $path = resolve($generator)->getPath($directory);
+            $path = app($generator)->getPath($directory);
         } else {
             $path = $this->evaluate($this->directory);
         }
 
         return $this->normalizePath($path);
-    }
-
-    public function getPathGenerator(): ?string
-    {
-        return $this->pathGenerator;
-    }
-
-    public function pathGenerator(string|null $generator): static
-    {
-        $this->pathGenerator = $generator;
-
-        return $this;
     }
 
     public function saveUploadedFiles(): void
@@ -56,18 +43,18 @@ class Uploader extends FileUpload
             return;
         }
 
-        if (!is_array($this->getState())) {
+        if (! is_array($this->getState())) {
             $this->state([$this->getState()]);
         }
 
-        $state = array_map(function (TemporaryUploadedFile|array $file) {
-            if (!$file instanceof TemporaryUploadedFile) {
+        $state = array_map(function (TemporaryUploadedFile | array $file) {
+            if (! $file instanceof TemporaryUploadedFile) {
                 return $file;
             }
 
             $callback = $this->saveUploadedFileUsing;
 
-            if (!$callback) {
+            if (! $callback) {
                 $file->delete();
 
                 return $file;
@@ -82,12 +69,6 @@ class Uploader extends FileUpload
             return $storedFile;
         }, $this->getState());
 
-        if ($this->canReorder && ($callback = $this->reorderUploadedFilesUsing)) {
-            $state = $this->evaluate($callback, [
-                'state' => $state,
-            ]);
-        }
-
         $this->state($state);
     }
 
@@ -101,8 +82,8 @@ class Uploader extends FileUpload
 
             $storeMethod = $component->getVisibility() === 'public' ? 'storePubliclyAs' : 'storeAs';
 
-            if (Curator::isResizable($extension)) {
-                if (in_array($file->disk, CuratorConfig::getCloudDisks())) {
+            if (is_media_resizable($extension)) {
+                if (in_array($file->disk, config('curator.cloud_disks'))) {
                     $content = Storage::disk($file->disk)->get($file->path());
                 } else {
                     $content = $file->getRealPath();

@@ -18,7 +18,7 @@ class PickerAction extends Action
 
         $this->modalWidth = 'screen';
 
-        $this->modalFooterActions(fn() => []);
+        $this->modalFooterActions(fn () => []);
 
         $this->modalHeading(__('curator::views.panel.heading'));
 
@@ -40,7 +40,7 @@ class PickerAction extends Action
                 'modalId' => $component->getLivewire()->id . '-form-component-action',
                 'pathGenerator' => $component->getPathGenerator(),
                 'rules' => $component->getValidationRules(),
-                'selected' => array_values((array)$component->getState()),
+                'selected' => array_values((array) $component->getState()),
                 'shouldPreserveFilenames' => $component->shouldPreserveFilenames(),
                 'statePath' => $component->getStatePath(),
                 'visibility' => $component->getVisibility(),

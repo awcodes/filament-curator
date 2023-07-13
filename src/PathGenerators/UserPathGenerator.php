@@ -1,8 +1,8 @@
 <?php
 
-namespace Awcodes\Curator\Generators;
+namespace Awcodes\Curator\PathGenerators;
 
-use Awcodes\Curator\Generators\Contracts\PathGenerator;
+use Awcodes\Curator\PathGenerators\Contracts\PathGenerator;
 use Illuminate\Support\Facades\Auth;
 
 class UserPathGenerator implements PathGenerator

@@ -2,7 +2,7 @@
 
 namespace Awcodes\Curator\Http\Controllers;
 
-use Awcodes\Curator\Facades\CuratorConfig;
+use Awcodes\Curator\Models\Media;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Storage;
@@ -12,9 +12,8 @@ use League\Glide\Signatures\SignatureFactory;
 
 class MediaController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, Media $mediaModel)
     {
-        $mediaModel = CuratorConfig::getMediaModel();
         $selected = $request->has('media') ? explode(',', $request->media) : [];
 
         $files = $mediaModel::when($selected, function ($query, $selected) {
@@ -26,14 +25,15 @@ class MediaController extends Controller
             ->when($request->has('types'), function ($query) use ($request) {
                 $types = explode(',', $request->types);
                 $query = $query->whereIn('type', $types);
-                $wildcardTypes = collect($types)->filter(fn($type) => str_contains($type, '*'));
-                $wildcardTypes?->map(fn($type) => $query->orWhere('type', 'LIKE', str_replace('*', '%', $type)));
+                $wildcardTypes = collect($types)->filter(fn ($type) => str_contains($type, '*'));
+                $wildcardTypes?->map(fn ($type) => $query->orWhere('type', 'LIKE', str_replace('*', '%', $type)));
+
                 return $query;
             })
             ->latest()
             ->paginate(25);
 
-        if ($selected && !$request->has('page')) {
+        if ($selected && ! $request->has('page')) {
             $mediaModel::whereIn('id', $selected)
                 ->get()
                 ->sortBy(function ($model) use ($selected) {
@@ -48,9 +48,9 @@ class MediaController extends Controller
         return response()->json($files);
     }
 
-    public function search(Request $request)
+    public function search(Request $request, Media $mediaModel)
     {
-        $files = CuratorConfig::getMediaModel()
+        $files = $mediaModel->query()
             ->when($request->has('directory'), function ($query) use ($request) {
                 return $query->where('directory', $request->query('directory'));
             })
@@ -65,7 +65,7 @@ class MediaController extends Controller
         return response()->json($files);
     }
 
-    public function show(Request $request, $path)
+    public function show(Request $request, $path, Media $mediaModel)
     {
         try {
             SignatureFactory::create(config('app.key'))->validateRequest('/curator/' . $path, $request->all());
@@ -75,13 +75,13 @@ class MediaController extends Controller
             abort(404);
         }
 
-        $media = resolve(CuratorConfig::getMediaModel())->where('path', $path)->first();
+        $media = $mediaModel->where('path', $path)->first();
 
-        if ($media && !$media->resizable) {
+        if ($media && ! $media->resizable) {
             return Storage::disk($media->disk)->response($media->path);
         }
 
-        $server = CuratorConfig::getGlideServer();
+        $server = app(config('curator.glide.server'))->getFactory();
         $server->setBaseUrl('/curator/');
 
         return $server->getImageResponse($path, request()->all());

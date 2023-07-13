@@ -1,6 +1,6 @@
 <?php
 
-namespace Awcodes\Curator\Config\Concerns;
+namespace Awcodes\Curator\Concerns;
 
 use Awcodes\Curator\Glide\DefaultServerFactory;
 use League\Glide\Server;
@@ -8,9 +8,9 @@ use League\Glide\ServerFactory;
 
 trait HasGlideSettings
 {
-    protected array|null $gliderFallbacks = [];
+    protected array | null $gliderFallbacks = [];
 
-    protected Server|ServerFactory|null $glideServer = null;
+    protected Server | ServerFactory | null $glideServer = null;
 
     public function getGliderFallback(string $key): ?array
     {
@@ -24,23 +24,23 @@ trait HasGlideSettings
         })->toArray();
     }
 
-    public function getGlideServer(): Server|ServerFactory
+    public function getGlideServer(): Server | ServerFactory
     {
-        if (!$this->glideServer) {
+        if (! $this->glideServer) {
             return (new DefaultServerFactory())->getFactory();
         }
 
         return $this->glideServer;
     }
 
-    public function gliderFallbacks(array|null $fallbacks): static
+    public function gliderFallbacks(array | null $fallbacks): static
     {
         $this->gliderFallbacks = $fallbacks;
 
         return $this;
     }
 
-    public function glideServer(Server|ServerFactory|null $server): static
+    public function glideServer(Server | ServerFactory | null $server): static
     {
         $this->glideServer = $server;
 

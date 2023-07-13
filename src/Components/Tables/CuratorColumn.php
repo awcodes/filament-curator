@@ -2,7 +2,7 @@
 
 namespace Awcodes\Curator\Components\Tables;
 
-use Awcodes\Curator\Facades\Curator;
+use function Awcodes\Curator\get_media_items;
 use Awcodes\Curator\Models\Media;
 use Closure;
 use Filament\Tables\Columns\ImageColumn;
@@ -11,13 +11,13 @@ use Illuminate\Support\Arr;
 
 class CuratorColumn extends ImageColumn
 {
-    protected int|Closure|null $limit = null;
+    protected int | Closure | null $limit = null;
 
-    protected int|Closure|null $overlap = null;
+    protected int | Closure | null $overlap = null;
 
-    protected int|Closure|null $resolution = null;
+    protected int | Closure | null $resolution = null;
 
-    protected int|Closure|null $ring = null;
+    protected int | Closure | null $ring = null;
 
     protected string $view = 'curator::components.tables.curator-column';
 
@@ -26,11 +26,11 @@ class CuratorColumn extends ImageColumn
         return $this->evaluate($this->limit);
     }
 
-    public function getMedia(): Media|Collection|array|null
+    public function getMedia(): Media | Collection | array | null
     {
         $record = $this->getRecord();
 
-        if (!is_a($record, Media::class)) {
+        if (! is_a($record, Media::class)) {
             $state = $this->getState();
 
             if (is_a($state, Collection::class)) {
@@ -42,7 +42,8 @@ class CuratorColumn extends ImageColumn
             }
 
             $state = Arr::wrap($state);
-            return Curator::getMedia(array_slice($state, 0, $this->limit));
+
+            return get_media_items(array_slice($state, 0, $this->limit));
         }
 
         return Arr::wrap($record);
@@ -63,28 +64,28 @@ class CuratorColumn extends ImageColumn
         return $this->evaluate($this->ring);
     }
 
-    public function limit(int|Closure|null $limit = 3): static
+    public function limit(int | Closure | null $limit = 3): static
     {
         $this->limit = $limit;
 
         return $this;
     }
 
-    public function overlap(int|Closure|null $overlap): static
+    public function overlap(int | Closure | null $overlap): static
     {
         $this->overlap = $overlap;
 
         return $this;
     }
 
-    public function resolution(int|Closure|null $resolution): static
+    public function resolution(int | Closure | null $resolution): static
     {
         $this->resolution = $resolution;
 
         return $this;
     }
 
-    public function ring(string|Closure|null $ring): static
+    public function ring(string | Closure | null $ring): static
     {
         $this->ring = $ring;
 

@@ -3,13 +3,12 @@
 namespace Awcodes\Curator\Models;
 
 use Awcodes\Curator\Concerns\HasPackageFactory;
-use Awcodes\Curator\Facades\CuratorConfig;
+use function Awcodes\Curator\is_media_resizable;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
 use League\Glide\Urls\UrlBuilderFactory;
-use function Awcodes\Curator\is_media_resizable;
 
 class Media extends Model
 {
@@ -56,42 +55,42 @@ class Media extends Model
     protected function thumbnailUrl(): Attribute
     {
         return Attribute::make(
-            get: fn() => $this->getSignedUrl(['w' => 200, 'h' => 200, 'fit' => 'crop', 'fm' => 'webp']),
+            get: fn () => $this->getSignedUrl(['w' => 200, 'h' => 200, 'fit' => 'crop', 'fm' => 'webp']),
         );
     }
 
     protected function mediumUrl(): Attribute
     {
         return Attribute::make(
-            get: fn() => $this->getSignedUrl(['w' => 640, 'h' => 640, 'fit' => 'crop', 'fm' => 'webp']),
+            get: fn () => $this->getSignedUrl(['w' => 640, 'h' => 640, 'fit' => 'crop', 'fm' => 'webp']),
         );
     }
 
     protected function largeUrl(): Attribute
     {
         return Attribute::make(
-            get: fn() => $this->getSignedUrl(['w' => 1024, 'h' => 1024, 'fit' => 'contain', 'fm' => 'webp']),
+            get: fn () => $this->getSignedUrl(['w' => 1024, 'h' => 1024, 'fit' => 'contain', 'fm' => 'webp']),
         );
     }
 
     protected function fullPath(): Attribute
     {
         return Attribute::make(
-            get: fn() => Storage::disk($this->disk)->path($this->directory . '/' . $this->name . '.' . $this->ext),
+            get: fn () => Storage::disk($this->disk)->path($this->directory . '/' . $this->name . '.' . $this->ext),
         );
     }
 
     protected function resizable(): Attribute
     {
         return Attribute::make(
-            get: fn() => is_media_resizable($this->ext),
+            get: fn () => is_media_resizable($this->ext),
         );
     }
 
     protected function sizeForHumans(): Attribute
     {
         return Attribute::make(
-            get: fn() => $this->getSizeForHumans()
+            get: fn () => $this->getSizeForHumans()
         );
     }
 
@@ -109,8 +108,8 @@ class Media extends Model
     public function getSignedUrl(array $params = []): string
     {
         if (
-            !$this->resizable ||
-            in_array($this->disk, CuratorConfig::getCloudDisks())
+            ! $this->resizable ||
+            in_array($this->disk, config('curator.cloud_disks'))
         ) {
             return $this->url;
         }
@@ -129,8 +128,6 @@ class Media extends Model
 
     public function hasCuration(string $key): bool
     {
-        return (bool)Arr::first(collect($this->curations)->filter(function ($item) use ($key) {
-            return $item['curation']['key'] === $key;
-        }));
+        return filled($this->getCuration($key));
     }
 }
