@@ -1,7 +1,5 @@
 @import '../../node_modules/cropperjs/dist/cropper.css';
 
-@tailwind utilities;
-
 .curator-grid-container {
     /**
      * User input values.
@@ -59,8 +57,8 @@
     }
 }
 
-[wire\:key*="curator_picker"],
-[wire\:key*="curator_curation"],
+[wire\:key*="open_curator_picker"],
+[wire\:key*="open_curation_panel"],
 [wire\:key*="filament_tiptap_media"] {
     .fi-modal-window {
         @apply !p-0;

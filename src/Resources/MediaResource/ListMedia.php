@@ -21,7 +21,7 @@ class ListMedia extends ListRecords
     public function changeLayoutView(): void
     {
         $this->layoutView = $this->layoutView === 'list' ? 'grid' : 'list';
-        $this->emit('layoutViewChanged', $this->layoutView);
+        $this->dispatch('layoutViewChanged', $this->layoutView);
     }
 
     public static function getResource(): string
@@ -53,7 +53,7 @@ class ListMedia extends ListRecords
                         : 'heroicon-s-squares-2x2';
                 })
                 ->action(function ($livewire): void {
-                    $livewire->emit('changeLayoutView');
+                    $livewire->dispatch('changeLayoutView');
                 }),
             CreateAction::make()
                 ->label(fn (): string => __('filament-actions::create.single.label', ['label' => CuratorPlugin::get()->getLabel()])),

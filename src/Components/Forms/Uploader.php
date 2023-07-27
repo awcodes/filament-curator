@@ -4,6 +4,8 @@ namespace Awcodes\Curator\Components\Forms;
 
 use Awcodes\Curator\Concerns\CanGeneratePaths;
 use Awcodes\Curator\Concerns\CanNormalizePaths;
+use Illuminate\Support\Facades\App;
+use League\Flysystem\UnableToCheckFileExistence;
 use function Awcodes\Curator\is_media_resizable;
 use Awcodes\Curator\PathGenerators\Contracts\PathGenerator;
 use Filament\Forms\Components\BaseFileUpload;
@@ -11,7 +13,7 @@ use Filament\Forms\Components\FileUpload;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Intervention\Image\Facades\Image;
-use Livewire\TemporaryUploadedFile;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class Uploader extends FileUpload
 {
@@ -27,7 +29,7 @@ class Uploader extends FileUpload
             class_exists($generator) &&
             (new \ReflectionClass($generator))->implementsInterface(PathGenerator::class)
         ) {
-            $path = app($generator)->getPath($directory);
+            $path = App::make($generator)->getPath($directory);
         } else {
             $path = $this->evaluate($this->directory);
         }
@@ -76,15 +78,23 @@ class Uploader extends FileUpload
     {
         parent::setUp();
 
-        $this->saveUploadedFileUsing(function (BaseFileUpload $component, TemporaryUploadedFile $file, $state, $set) {
+        $this->saveUploadedFileUsing(function (BaseFileUpload $component, TemporaryUploadedFile $file): ?array {
+            try {
+                if (! $file->exists()) {
+                    return null;
+                }
+            } catch(UnableToCheckFileExistence $exception) {
+                return null;
+            }
+
             $filename = $component->shouldPreserveFilenames() ? Str::of(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME))->slug() : Str::uuid();
             $extension = $file->getClientOriginalExtension();
 
             $storeMethod = $component->getVisibility() === 'public' ? 'storePubliclyAs' : 'storeAs';
 
             if (is_media_resizable($extension)) {
-                if (in_array($file->disk, config('curator.cloud_disks'))) {
-                    $content = Storage::disk($file->disk)->get($file->path());
+                if (in_array($component->getDiskName(), config('curator.cloud_disks'))) {
+                    $content = Storage::disk($component->getDiskName())->get($file->path());
                 } else {
                     $content = $file->getRealPath();
                 }
@@ -96,11 +106,15 @@ class Uploader extends FileUpload
                 $exif = $image->exif();
             }
 
-            if (Storage::disk($component->getDiskName())->exists(ltrim($component->getDirectory() . '/' . $filename . '.' . $extension, '/'))) {
+            if ($file->exists()) {
                 $filename = $filename . '-' . time();
             }
 
-            $path = $file->{$storeMethod}($component->getDirectory(), $filename . '.' . $extension, $component->getDiskName());
+            $path = $file->{$storeMethod}(
+                $component->getDirectory(),
+                $filename . '.' . $extension,
+                $component->getDiskName()
+            );
 
             return [
                 'disk' => $component->getDiskName(),

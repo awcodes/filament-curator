@@ -102,7 +102,7 @@
         >
             @if ($itemsCount === 0 || $isMultiple)
                 @if (! $maxItems || $itemsCount < $maxItems)
-                    {{ $getAction('openPicker') }}
+                    {{ $getAction('open_curator_picker') }}
                 @endif
             @endif
             @if ($itemsCount > 1)

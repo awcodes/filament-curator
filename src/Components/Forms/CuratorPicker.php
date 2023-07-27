@@ -219,14 +219,12 @@ class CuratorPicker extends Field
 
     public function getPickerAction(): Action
     {
-        return Action::make('openPicker')
+        return Action::make('open_curator_picker')
             ->label($this->getButtonLabel())
             ->button()
             ->color($this->getColor())
             ->outlined($this->isOutlined())
             ->size($this->getSize())
-            ->extraModalAttributes(['class' => 'curator-modal'])
-            ->extraAttributes(['class' => 'test'])
             ->modalWidth('screen')
             ->modalFooterActions(fn() => [])
             ->modalHeading(__('curator::views.panel.heading'))
