@@ -157,8 +157,8 @@
                                 <span class="sr-only">{{ __('curator::views.curation.zoom_in') }}</span>
                                 <x-filament::icon
                                     alias="curator::icons.zoom_in"
-                                    name="heroicon-o-magnifying-glass-plus"
-                                    size="w-4 h-4"
+                                    icon="heroicon-o-magnifying-glass-plus"
+                                    class="w-4 h-4"
                                 />
                             </x-filament::button>
                             <x-filament::button
@@ -172,8 +172,8 @@
                                 <span class="sr-only">{{ __('curator::views.curation.zoom_out') }}</span>
                                 <x-filament::icon
                                     alias="curator::icons.zoom_out"
-                                    name="heroicon-o-magnifying-glass-minus"
-                                    size="w-4 h-4"
+                                    icon="heroicon-o-magnifying-glass-minus"
+                                    class="w-4 h-4"
                                 />
                             </x-filament::button>
                         </div>

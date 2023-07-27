@@ -4,6 +4,7 @@ namespace Awcodes\Curator\Actions;
 
 use Awcodes\Curator\Components\Forms\CuratorEditor;
 use Filament\Forms\Components\Actions\Action;
+use Illuminate\Support\Facades\View;
 use Livewire\Component;
 
 class CurationAction extends Action
@@ -17,21 +18,18 @@ class CurationAction extends Action
     {
         parent::setUp();
 
-        $this->modalWidth = 'screen';
-
-        $this->modalFooterActions(fn () => []);
-
-        $this->modalHeading(static function (CuratorEditor $component) {
-            return __('curator::views.curation.heading') . ' ' . $component->getRecord()->name;
-        });
-
-        $this->modalContent(static function (CuratorEditor $component, Component $livewire) {
-            return view('curator::components.actions.curation-action', [
-                'statePath' => $component->getStatePath(),
-                'modalId' => $livewire->id . '-form-component-action',
-                'media' => $component->getRecord(),
-                'presets' => $component->getPresets(),
-            ]);
-        });
+        $this
+            ->modalWidth('screen')
+            ->modalFooterActions(fn() => [])->modalHeading(static function (CuratorEditor $component) {
+                return __('curator::views.curation.heading') . ' ' . $component->getRecord()->name;
+            })
+            ->modalContent(static function (CuratorEditor $component, Component $livewire) {
+                return View::make('curator::components.actions.curation-action', [
+                    'statePath' => $component->getStatePath(),
+                    'modalId' => $livewire->getId() . '-form-component-action',
+                    'media' => $component->getRecord(),
+                    'presets' => $component->getPresets(),
+                ]);
+            });
     }
 }

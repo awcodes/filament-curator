@@ -4,6 +4,7 @@ namespace Awcodes\Curator;
 
 use Awcodes\Curator\Models\Media;
 use Awcodes\Curator\Observers\MediaObserver;
+use Awcodes\Curator\Resources\MediaResource;
 use Filament\Support\Assets\AlpineComponent;
 use Filament\Support\Assets\Css;
 use Filament\Support\Facades\FilamentAsset;
@@ -36,6 +37,7 @@ class CuratorServiceProvider extends PackageServiceProvider
     public function packageBooted(): void
     {
         app()->bind(Media::class, config('curator.model'));
+        app()->bind(MediaResource::class, config('curator.resources.resource'));
 
         app(Media::class)::observe(MediaObserver::class);
 

@@ -23,6 +23,26 @@ composer require awcodes/filament-curator
 php artisan curator:install
 ```
 
+In an effort to align with Filament's theming methodology you will need to use a custom theme to use this plugin.
+
+> **Note**
+> If you have not set up a custom theme and are using a Panel follow the instructions in the [Filament Docs](https://filamentphp.com/docs/3.x/panels/themes#creating-a-custom-theme) first. The following applies to both the Panels Package and the standalone Forms package.
+
+1. Import the plugin's stylesheet (if not already included) into your theme's css file.
+
+```css
+@import '<path-to-vendor>/awcodes/filament-curator/resources/css/plugin.css';
+```
+
+2. Add the plugin's views to your `tailwind.config.js` file.
+
+```js
+content: [
+    ...
+    './vendor/awcodes/filament-curator/resources/**/*.blade.php',
+]
+```
+
 ## Upgrading
 
 If you are upgrading from 2.x to 3.x you will also need to run:

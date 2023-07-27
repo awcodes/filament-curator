@@ -47,13 +47,13 @@
     background-image: repeating-linear-gradient(45deg, theme("colors.gray.700") 25%, transparent 25%, transparent 75%, theme("colors.gray.700") 75%, theme("colors.gray.700")), repeating-linear-gradient(45deg, theme("colors.gray.700") 25%, theme("colors.gray.800") 25%, theme("colors.gray.800") 75%, theme("colors.gray.700") 75%, theme("colors.gray.700"));
 }
 
-.filament-resources-media {
-    .filament-forms-tabs-component-header {
+.fi-resources-media {
+    .fi-forms-tabs-component-header {
         @apply bg-gray-100 dark:bg-gray-900;
     }
 
-    .filament-tables-component {
-        .filament-tables-record-checkbox {
+    .fi-tables-component {
+        .fi-tables-record-checkbox {
             z-index: 1;
         }
     }
@@ -62,18 +62,18 @@
 [wire\:key*="curator_picker"],
 [wire\:key*="curator_curation"],
 [wire\:key*="filament_tiptap_media"] {
-    .filament-modal-window {
+    .fi-modal-window {
         @apply !p-0;
 
-        .filament-modal-header {
+        .fi-modal-header {
             @apply py-2 px-4 border-b border-gray-300 dark:border-gray-900/50;
 
-            .filament-modal-heading {
+            .fi-modal-heading {
                 @apply text-base;
             }
         }
 
-        .filament-modal-close-button {
+        .fi-modal-close-button {
             margin-block-start: -1rem;
 
             &:hover,
@@ -82,18 +82,18 @@
             }
         }
 
-        .filament-modal-content {
+        .fi-modal-content {
             position: relative;
         }
 
-        .filament-modal-footer {
+        .fi-modal-footer {
             @apply pb-0;
         }
 
         .curator-picker-grid {
             @apply grid grid-cols-3 gap-4 sm:grid-cols-4 md:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10;
         }
-        
+
         .filepond--panel {
             border-style: dashed;
             border-width: 2px;
