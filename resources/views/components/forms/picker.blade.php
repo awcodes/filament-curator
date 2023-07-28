@@ -4,6 +4,8 @@
     $itemsCount = count($items);
     $isMultiple = $isMultiple();
     $maxItems = $getMaxItems();
+
+//    ray($items);
 @endphp
 
 <x-dynamic-component :component="$getFieldWrapperView()" :field="$field">
@@ -25,11 +27,12 @@
                 'curator-grid-container' => $itemsCount >= 3,
             ])
             x-sortable
-            wire:end.stop="{{ 'mountFormComponentAction(\'' . $statePath . '\', \'reorder\', { items: $event.target.sortable.toArray() })' }}"
+            wire:end.stop="mountFormComponentAction('{{ $statePath }}', 'reorder', { items: $event.target.sortable.toArray() })"
             style="{{ $itemsCount === 1 ? '--grid-column-count: 1' : '' }}"
         >
             @foreach ($items as $uuid => $item)
                 <div
+                    wire:key="{{ $this->getId() }}.{{ $uuid }}.{{ $field::class }}.item"
                     {{ $attributes->merge($getExtraAttributes())->class([
                         'relative block w-full overflow-hidden transition duration-75 border border-gray-300 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 dark:text-white flex justify-center checkered',
                         'h-64' => ! str($item['type'])->contains('video'),

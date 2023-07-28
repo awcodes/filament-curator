@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Str;
+use Livewire\Attributes\Computed;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use function Awcodes\Curator\get_media_items;
 
@@ -65,13 +66,14 @@ class CuratorPicker extends Field
             ->outlined();
 
         $this->afterStateHydrated(static function (CuratorPicker $component, array|int|null $state): void {
-            $items = [];
 
-            if (!filled($state)) {
-                $component->state($items);
+            if (blank($state)) {
+                $component->state([]);
 
                 return;
             }
+
+            $items = [];
 
             if (is_array($state) && isset($state[0]['id'])) {
                 $media = $state;
@@ -182,6 +184,10 @@ class CuratorPicker extends Field
             ->livewireClickHandlerEnabled(false)
             ->extraAttributes(['style' => 'cursor: move;'])
             ->action(function (array $arguments, CuratorPicker $component): void {
+                if (empty($arguments['items'])) {
+                    return;
+                }
+
                 $items = [
                     ...array_flip($arguments['items']),
                     ...$component->getState(),
@@ -246,7 +252,7 @@ class CuratorPicker extends Field
                     'modalId' => $component->getLivewire()->getId() . '-form-component-action',
                     'pathGenerator' => $component->getPathGenerator(),
                     'rules' => $component->getValidationRules(),
-                    'selected' => array_values((array)$component->getState()),
+                    'selected' => (array)$component->getState(),
                     'shouldPreserveFilenames' => $component->shouldPreserveFilenames(),
                     'statePath' => $component->getStatePath(),
                     'visibility' => $component->getVisibility(),

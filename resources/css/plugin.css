@@ -71,8 +71,8 @@
             }
         }
 
-        .fi-modal-close-button {
-            margin-block-start: -1rem;
+        .fi-modal-close-btn {
+            margin-block-start: -0.75rem;
 
             &:hover,
             &:focus {

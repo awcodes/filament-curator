@@ -1,18 +1,4 @@
 <div
-{{--    x-ignore--}}
-{{--    ax-load="visible"--}}
-{{--    ax-load-src="{{ \Filament\Support\Facades\FilamentAsset::getAlpineComponentSrc('curator', 'awcodes/curator') }}"--}}
-{{--    x-data="curator({--}}
-{{--        statePath: '{{ $statePath }}',--}}
-{{--        types: @js($acceptedFileTypes),--}}
-{{--        initialSelection: @js($selected),--}}
-{{--        isMultiple: {{ $isMultiple ? 'true' : 'false' }},--}}
-{{--        directory: '{{ $isLimitedToDirectory ? $directory : null }}',--}}
-{{--    })"--}}
-{{--    x-on:clear-selected="selected = null"--}}
-{{--    x-on:insert-media.window="$dispatch('close-modal', { id: '{{ $modalId }}' })"--}}
-{{--    x-on:new-media-added.window="addNewFile($event.detail.media)"--}}
-{{--    x-on:remove-media.window="removeFile($event.detail.media)"--}}
     x-data="{
         handleItemClick: function (mediaId = null, event) {
             if (! mediaId) return;
@@ -29,14 +15,14 @@
             }
 
             $wire.addToSelection(mediaId);
-            console.log($wire.context);
         },
         isSelected: function (mediaId = null) {
             if ($wire.selected.length === 0) return false;
 
-            return $wire.selected.find((obj) => obj.id === mediaId) !== undefined;
+            return Object.values($wire.selected).find((obj) => obj.id === mediaId) !== undefined;
         },
     }"
+    x-on:insert-media.window="$dispatch('close-modal', { id: '{{ $modalId }}' })"
     class="curator h-full absolute inset-0 flex flex-col"
 >
     <!-- Toolbar -->
@@ -61,7 +47,7 @@
                 <p class="text-xs">Cmd + Click to select multiple files.</p>
             @endif
         </div>
-        <label class="border border-gray-300 dark:border-gray-700 rounded-md relative">
+        <label class="border border-gray-300 dark:border-gray-700 rounded-md relative flex items-center">
             <span class="sr-only">{{ __('curator::views.panel.search_label') }}</span>
             <x-filament::icon
                 alias="curator::icons.check"
@@ -74,25 +60,15 @@
                 wire:model.live.debounce.500ms="search"
                 class="block w-full transition text-sm py-1 !ps-8 !pe-3 duration-75 border-none focus:ring-1 focus:ring-inset focus:ring-primary-600 disabled:opacity-70 bg-transparent placeholder-gray-700 dark:placeholder-gray-400"
             />
+            <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="animate-spin h-4 w-4 text-gray-400 dark:text-gray-500 sm absolute right-2" wire:loading.delay wire:target="search">
+                <path clip-rule="evenodd" d="M12 19C15.866 19 19 15.866 19 12C19 8.13401 15.866 5 12 5C8.13401 5 5 8.13401 5 12C5 15.866 8.13401 19 12 19ZM12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" fill-rule="evenodd" fill="currentColor" opacity="0.2"></path>
+                <path d="M2 12C2 6.47715 6.47715 2 12 2V5C8.13401 5 5 8.13401 5 12H2Z" fill="currentColor"></path>
+            </svg>
         </label>
     </div>
     <!-- End Toolbar -->
 
     <div class="flex-1 relative flex flex-col lg:flex-row overflow-hidden">
-
-        <!-- Loading Indicator -->
-        <div
-            wire:loading="getFiles"
-            class="curator-loading-indicator absolute inset-0 z-10 grid place-content-center bg-gray-300/50 dark:bg-gray-900/50"
-            style="display: none;"
-        >
-            <svg class="w-12 h-12 text-gray-700 dark:text-white animate-spin" xmlns="http://www.w3.org/2000/svg"
-                 fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-        </div>
-        <!-- End Loading Indicator -->
 
         <!-- Gallery -->
         <div class="flex-1 h-full overflow-auto p-4">
@@ -190,21 +166,28 @@
                     <div class="flex-1 overflow-auto px-4 pb-4">
                         <div class="h-full">
                             {{ $this->form }}
+                            <x-filament-actions::modals />
                         </div>
                     </div>
                     @endif
 
                     <div class="flex items-center justify-start gap-3 py-3 px-4 border-t border-gray-300 bg-gray-200 dark:border-gray-800 dark:bg-black/10">
-                        <div x-show="$wire.selected.length === 0">
+                        @if (count($selected) === 0)
+                            <div>
                             {{ $this->addFilesAction }}
-                        </div>
-                        <div x-show="$wire.selected.length === 1" class="flex gap-3">
-                            {{ $this->updateFileAction }}
-                            {{ $this->cancelEditAction }}
-                        </div>
-                        <div x-show="$wire.selected.length > 0" class="ml-auto">
-                            {{ $this->insertMediaAction }}
-                        </div>
+                            </div>
+                        @endif
+                        @if (count($selected) === 1)
+                            <div class="flex gap-3">
+                                {{ $this->updateFileAction }}
+                                {{ $this->cancelEditAction }}
+                            </div>
+                        @endif
+                        @if (count($selected) > 0)
+                            <div class="ml-auto">
+                                {{ $this->insertMediaAction }}
+                            </div>
+                        @endif
                     </div>
 
                 </div>
