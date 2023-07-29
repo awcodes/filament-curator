@@ -22,7 +22,6 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Str;
-use Livewire\Attributes\Computed;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use function Awcodes\Curator\get_media_items;
 
@@ -92,6 +91,10 @@ class CuratorPicker extends Field
         });
 
         $this->afterStateUpdated(static function (CuratorPicker $component, array|int|null $state): void {
+            if (!filled($state)) {
+                $component->state([]);
+            }
+
             $items = [];
 
             $state = array_values($state);
@@ -393,11 +396,12 @@ class CuratorPicker extends Field
         });
 
         $this->saveRelationshipsUsing(static function (CuratorPicker $component, Model $record, $state) {
-            if (blank($state)) {
-                return;
-            }
 
             $relationship = $component->getRelationship();
+
+            if (blank($state) && !$relationship->exists()) {
+                return;
+            }
 
             if ($component->isMultiple()) {
                 if (
@@ -417,6 +421,11 @@ class CuratorPicker extends Field
                 $state = Arr::pluck($state, 'id');
                 $relationship->sync($state ?? []);
 
+                return;
+            }
+
+            if (blank($state) && $relationship->exists()) {
+                $relationship->disassociate();
                 return;
             }
 
