@@ -1,5 +1,5 @@
 <div
-    {{ $attributes->merge($getExtraAttributes())->class(['curator-column pb-[165px] rounded-t-xl overflow-hidden']) }}
+    {{ $attributes->merge($getExtraAttributes())->class(['curator-grid-column pb-[155px] rounded-t-xl overflow-hidden']) }}
 >
     @php
         $record = $getRecord();

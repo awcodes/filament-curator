@@ -74,13 +74,15 @@ class CuratorPicker extends Field
 
             $items = [];
 
+            $state = is_array($state) ? array_values($state) : $state;
+
             if (is_array($state) && isset($state[0]['id'])) {
                 $media = $state;
             } elseif (isset($state['id'])) {
                 $media = [$state];
             } else {
                 $state = Arr::wrap($state);
-                $media = get_media_items($state);
+                $media = get_media_items($state)->toArray();
             }
 
             foreach ($media as $itemData) {
@@ -90,7 +92,7 @@ class CuratorPicker extends Field
             $component->state($items);
         });
 
-        $this->afterStateUpdated(static function (CuratorPicker $component, array|int|null $state): void {
+        $this->afterStateUpdated(function (CuratorPicker $component, array|int|null $state): void {
             if (!filled($state)) {
                 $component->state([]);
             }
@@ -191,9 +193,20 @@ class CuratorPicker extends Field
                     return;
                 }
 
+                $state = $component->getState();
+
+                foreach ($arguments['items'] as $key => $item) {
+                    if (!str_contains($item, '-')) {
+                        $uuid = (string)Str::uuid();
+                        $arguments['items'][$key] = $uuid;
+                        $state[$uuid] = $state[(int)$item];
+                        unset($state[(int)$item]);
+                    }
+                }
+
                 $items = [
                     ...array_flip($arguments['items']),
-                    ...$component->getState(),
+                    ...$state,
                 ];
 
                 $component->state($items);

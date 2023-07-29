@@ -1,18 +1,19 @@
 <div
-    x-ignore
-    ax-load
-    ax-load-src="{{ \Filament\Support\Facades\FilamentAsset::getAlpineComponentSrc('curation', 'awcodes/curator') }}"
-    x-data="curation({
-        statePath: '{{ $statePath }}',
-        fileName: '{{ $media->name }}',
-        fileType: '{{ $media->type }}',
-        presets: @js($presets)
-    })"
     class="curator curation h-full absolute inset-0 flex flex-col"
-    x-on:add-curation.window="$dispatch('close-modal', { id: '{{ $modalId }}' })"
 >
-
-    <div class="flex-1 relative flex flex-col lg:flex-row overflow-hidden">
+    <div
+        class="flex-1 relative flex flex-col lg:flex-row overflow-hidden"
+        x-ignore
+        ax-load="visible"
+        ax-load-src="{{ \Filament\Support\Facades\FilamentAsset::getAlpineComponentSrc('curation', 'awcodes/curator') }}"
+        x-data="curation({
+            statePath: '{{ $statePath }}',
+            fileName: '{{ $media->name }}',
+            fileType: '{{ $media->type }}',
+            presets: @js($presets)
+        })"
+        x-on:add-curation.window="$dispatch('close-modal', { id: '{{ $modalId }}' })"
+    >
 
         <div class="flex-1 w-full lg:h-full overflow-auto p-4">
             <div class="h-full w-full">
@@ -257,7 +258,6 @@
                             color="success"
                             x-on:click="saveCuration()"
                             wire:target="saveCuration"
-                            wire:loading="saveCuration"
                         >
                             {{ __('curator::views.curation.save_curation') }}
                         </x-filament::button>

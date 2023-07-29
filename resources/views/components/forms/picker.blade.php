@@ -5,17 +5,16 @@
     $isMultiple = $isMultiple();
     $maxItems = $getMaxItems();
 
-//    ray($items);
+    ray($getState());
 @endphp
 
 <x-dynamic-component :component="$getFieldWrapperView()" :field="$field">
 
     <div
         x-data="{
-            state: $wire.entangle('{{ $statePath }}'),
             insertMedia: function (event) {
                 if (event.detail.statePath !== '{{ $statePath }}') return;
-                this.state = event.detail.media;
+                $wire.$set(event.detail.statePath, event.detail.media);
             },
         }"
         x-on:insert-media.window="insertMedia($event)"

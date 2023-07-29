@@ -7,9 +7,9 @@ use Awcodes\Curator\Models\Media;
 use Awcodes\Curator\PathGenerators\Contracts\PathGenerator;
 use Awcodes\Curator\Resources\MediaResource;
 use Exception;
+use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
-use Filament\Actions\Action;
 use Filament\Forms\Components\Group;
 use Filament\Forms\Components\View as FormView;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -20,8 +20,6 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
-use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -91,7 +89,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
         return $form
             ->schema([
                 Uploader::make('files_to_add')
-                    ->visible(fn () => $this->context === 'create')
+                    ->visible(fn() => $this->context === 'create')
                     ->hiddenLabel()
                     ->required()
                     ->multiple()
@@ -122,7 +120,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
                             ]
                         ]),
                     ...App::make(MediaResource::class)->getAdditionalInformationFormSchema(),
-                ])->visible(fn () => $this->context === 'edit'),
+                ])->visible(fn() => $this->context === 'edit'),
             ])->statePath('data');
     }
 
@@ -353,14 +351,9 @@ class CuratorPanel extends Component implements HasForms, HasActions
             ->color('success')
             ->label(__('curator::views.panel.use_selected_image'))
             ->action(function (): void {
-                ray(collect($this->selected)->mapWithKeys(function($item) {
-                    return [(string) Str::uuid() => $item];
-                })->toArray());
                 $this->dispatch('insert-media',
                     statePath: $this->statePath,
-                    media: collect($this->selected)->mapWithKeys(function($item) {
-                        return [(string) Str::uuid() => $item];
-                    })->toArray()
+                    media: $this->selected
                 );
             });
     }

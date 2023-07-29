@@ -171,7 +171,7 @@
                     </div>
                     @endif
 
-                    <div class="flex items-center justify-start gap-3 py-3 px-4 border-t border-gray-300 bg-gray-200 dark:border-gray-800 dark:bg-black/10">
+                    <div class="flex items-center justify-start mt-auto gap-3 py-3 px-4 border-t border-gray-300 bg-gray-200 dark:border-gray-800 dark:bg-black/10">
                         @if (count($selected) === 0)
                             <div>
                             {{ $this->addFilesAction }}

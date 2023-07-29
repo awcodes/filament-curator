@@ -5,20 +5,19 @@
 <x-dynamic-component :component="$getFieldWrapperView()" :field="$field">
 
     <div
-        x-data="{ state: $wire.entangle('{{ $statePath }}') }"
-        x-on:add-curation.window="$event.detail.statePath == '{{ $statePath }}' ? state = $event.detail.curation : null"
+        x-data="{
+            state: $wire.entangle('{{ $statePath }}'),
+            insertPreview(event) {
+                if (event.detail.statePath !== '{{ $statePath }}') return;
+                this.state = event.detail.curation;
+            }
+        }"
+        x-on:add-curation.window="insertPreview($event)"
         class="w-full curator-curation-form-component"
     >
-        <x-filament::button
-            type="button"
-            color="{{ $getColor() }}"
-            outlined="{{ $isOutlined() }}"
-            size="{{ $getSize() }}"
-            wire:click="mountFormComponentAction('{{ $statePath }}', 'curator_curation')"
-            x-show="! state"
-        >
-            {{ $getButtonLabel() }}
-        </x-filament::button>
+        <div x-show="!state">
+            {{ $getAction('open_curation_panel') }}
+        </div>
 
         <div x-show="state" x-cloak>
             <div class="transition duration-75 overflow-hidden border border-gray-300 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 dark:text-white grid md:grid-cols-2 gap-3">

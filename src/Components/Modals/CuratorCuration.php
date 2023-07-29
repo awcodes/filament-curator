@@ -14,7 +14,7 @@ class CuratorCuration extends Component
 
     public string $modalId;
 
-    public array | null $presets;
+    public array|null $presets;
 
     public string $statePath;
 
@@ -73,7 +73,10 @@ class CuratorCuration extends Component
             'url' => Storage::disk($this->media->disk)->url($curationPath),
         ];
 
-        $this->dispatchBrowserEvent('add-curation', ['curation' => $curation, 'statePath' => $this->statePath]);
+        $this->dispatch('add-curation',
+            statePath: $this->statePath,
+            curation: $curation
+        );
     }
 
     public function render(): View

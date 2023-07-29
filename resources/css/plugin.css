@@ -93,9 +93,7 @@
         }
 
         .filepond--panel {
-            border-style: dashed;
-            border-width: 2px;
-            background-color: transparent;
+            @apply bg-transparent border-dashed border-2 border-gray-950/5 dark:border-white/20;
         }
     }
 }
