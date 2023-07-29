@@ -2,6 +2,14 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.8.4 - 2023-07-29
+
+### What's Changed
+
+- Fix: relationship saving in picker by @awcodes in https://github.com/awcodes/filament-curator/pull/244
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.8.3...v2.8.4
+
 ## v2.8.3 - 2023-07-06
 
 ### What's Changed
