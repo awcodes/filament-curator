@@ -319,42 +319,41 @@ Glide's options.
   Must be an array of srcset widths and requires the 'sizes' attribute to
   also be set.
 
-```html
-
+```blade
 <div class="aspect-video w-64">
     <x-curator-glider
-            class="object-cover w-auto"
-            :media="1"
-            glide=""
-            fallback=""
-            :srcset="['1024w','640w']"
-            sizes="(max-width: 1200px) 100vw, 1024px"
-            background=""
-            blur=""
-            border=""
-            brightness=""
-            contrast=""
-            crop=""
-            device-pixel-ratio=""
-            filter=""
-            fit=""
-            flip=""
-            format=""
-            gamma=""
-            height=""
-            quality=""
-            orientation=""
-            pixelate=""
-            sharpen=""
-            width=""
-            watermark-path=""
-            watermark-width=""
-            watermark-height=""
-            watermark-x-offset=""
-            watermark-y-offset=""
-            watermark-padding=""
-            watermark-position=""
-            watermark-alpha=""
+        class="object-cover w-auto"
+        :media="1"
+        glide=""
+        fallback=""
+        :srcset="['1024w','640w']"
+        sizes="(max-width: 1200px) 100vw, 1024px"
+        background=""
+        blur=""
+        border=""
+        brightness=""
+        contrast=""
+        crop=""
+        device-pixel-ratio=""
+        filter=""
+        fit=""
+        flip=""
+        format=""
+        gamma=""
+        height=""
+        quality=""
+        orientation=""
+        pixelate=""
+        sharpen=""
+        width=""
+        watermark-path=""
+        watermark-width=""
+        watermark-height=""
+        watermark-x-offset=""
+        watermark-y-offset=""
+        watermark-padding=""
+        watermark-position=""
+        watermark-alpha=""
     />
 </div>
 ```
@@ -414,8 +413,7 @@ Then register your fallback in the config.
 
 Then you can reference your fallback in the blade component.
 
-```html
-
+```blade
 <x-curator-glider :media="1" fallback="card_fallback"/>
 ```
 
@@ -428,8 +426,7 @@ To make it as easy as possible to output your curations, Curator comes with an
 
 - media: id (int) or model (Media) instance ***required***
 
-```html
-
+```blade
 <x-curator-curation :media="10" curation="thumbnail" loading="lazy"/>
 ```
 
@@ -439,7 +436,7 @@ Since curations may or may not exist for each media item it's good to use a fall
 blade file so images always get rendered appropriately. This also keeps you from having to create curations for every
 media item, only the ones where you're trying to change the focal point, etc.
 
-```html
+```blade
 @php
     $preset = new ThumbnailPreset();
 @endphp
@@ -460,7 +457,7 @@ media item, only the ones where you're trying to change the focal point, etc.
 
 ### Custom Model
 
-If you want to use your own resource for your media model you can extend Curator's `Media` model with your own and set it in the config.
+If you want to use your own model for your media you can extend Curator's `Media` model with your own and set it in the config.
 
 ```php
 use Awcodes\Curator\Models\Media;
