@@ -3,12 +3,12 @@
 namespace Awcodes\Curator\Models;
 
 use Awcodes\Curator\Concerns\HasPackageFactory;
-use function Awcodes\Curator\is_media_resizable;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
 use League\Glide\Urls\UrlBuilderFactory;
+use function Awcodes\Curator\is_media_resizable;
 
 class Media extends Model
 {
@@ -37,17 +37,22 @@ class Media extends Model
     {
         return Attribute::make(
             get: function () {
-                if (
-                    Storage::disk($this->disk)->exists($this->path) &&
-                    Storage::disk($this->disk)->getVisibility($this->path) === 'private'
-                ) {
-                    return Storage::disk($this->disk)->temporaryUrl(
-                        $this->path,
-                        now()->addMinutes(5)
-                    );
+                if (Storage::disk($this->disk)->exists($this->path) === false) {
+                    return null;
                 }
 
-                return Storage::disk($this->disk)->url($this->path);
+                try {
+                    $isPrivate = Storage::disk($this->disk)->getVisibility($this->path) === 'private';
+                } catch (\Throwable) {
+                    // ACL not supported on Storage Bucket, Laravel only throws exception here so need to be careful.
+                    // so we assume it's private
+                    $isPrivate = true;
+                }
+
+                return $isPrivate ? Storage::disk($this->disk)->temporaryUrl(
+                    $this->path,
+                    now()->addMinutes(5)
+                ) : Storage::disk($this->disk)->url($this->path);
             },
         );
     }
@@ -55,42 +60,42 @@ class Media extends Model
     protected function thumbnailUrl(): Attribute
     {
         return Attribute::make(
-            get: fn () => $this->getSignedUrl(['w' => 200, 'h' => 200, 'fit' => 'crop', 'fm' => 'webp']),
+            get: fn() => $this->getSignedUrl(['w' => 200, 'h' => 200, 'fit' => 'crop', 'fm' => 'webp']),
         );
     }
 
     protected function mediumUrl(): Attribute
     {
         return Attribute::make(
-            get: fn () => $this->getSignedUrl(['w' => 640, 'h' => 640, 'fit' => 'crop', 'fm' => 'webp']),
+            get: fn() => $this->getSignedUrl(['w' => 640, 'h' => 640, 'fit' => 'crop', 'fm' => 'webp']),
         );
     }
 
     protected function largeUrl(): Attribute
     {
         return Attribute::make(
-            get: fn () => $this->getSignedUrl(['w' => 1024, 'h' => 1024, 'fit' => 'contain', 'fm' => 'webp']),
+            get: fn() => $this->getSignedUrl(['w' => 1024, 'h' => 1024, 'fit' => 'contain', 'fm' => 'webp']),
         );
     }
 
     protected function fullPath(): Attribute
     {
         return Attribute::make(
-            get: fn () => Storage::disk($this->disk)->path($this->directory . '/' . $this->name . '.' . $this->ext),
+            get: fn() => Storage::disk($this->disk)->path($this->directory . '/' . $this->name . '.' . $this->ext),
         );
     }
 
     protected function resizable(): Attribute
     {
         return Attribute::make(
-            get: fn () => is_media_resizable($this->ext),
+            get: fn() => is_media_resizable($this->ext),
         );
     }
 
     protected function sizeForHumans(): Attribute
     {
         return Attribute::make(
-            get: fn () => $this->getSizeForHumans()
+            get: fn() => $this->getSizeForHumans()
         );
     }
 
@@ -108,7 +113,7 @@ class Media extends Model
     public function getSignedUrl(array $params = []): string
     {
         if (
-            ! $this->resizable ||
+            !$this->resizable ||
             in_array($this->disk, config('curator.cloud_disks'))
         ) {
             return $this->url;
