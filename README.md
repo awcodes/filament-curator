@@ -8,7 +8,7 @@ A media picker/manager plugin for Filament Admin.
 > **Warning**
 > This package does not work with Spatie Media Library.
 
-![curator-og](https://github.com/awcodes/filament-curator/assets/3596800/804e2c8a-ea25-4001-9d91-95b21c059b78)
+![curator-og](https://res.cloudinary.com/aw-codes/image/upload/w_1200,f_auto,q_auto/plugins/curator/awcodes-curator.jpg)
 
 
 ## Installation
