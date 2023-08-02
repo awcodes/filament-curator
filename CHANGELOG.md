@@ -2,6 +2,19 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.8.5 - 2023-08-02
+
+### What's Changed
+
+- fixes visiblity issue on s3 storage by @phpsa in https://github.com/awcodes/filament-curator/pull/247
+- Feat: Better Media factory by @awcodes in https://github.com/awcodes/filament-curator/pull/248
+
+### New Contributors
+
+- @phpsa made their first contribution in https://github.com/awcodes/filament-curator/pull/247
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.8.4...v2.8.5
+
 ## v2.8.4 - 2023-07-29
 
 ### What's Changed
