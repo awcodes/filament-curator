@@ -11,7 +11,7 @@
         @if (str($file['type'])->contains('image'))
             <img
                 src="{{ $file['url'] }}"
-                alt="{{ $file['alt'] }}"
+                alt="{{ $file['alt'] ?? '' }}"
                 width="{{ $file['width'] }}"
                 height="{{ $file['height'] }}"
                 loading="lazy"

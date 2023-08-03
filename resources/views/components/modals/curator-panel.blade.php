@@ -89,7 +89,7 @@
                             @if (str_contains($file['type'], 'image'))
                                 <img
                                     src="{{ $file['thumbnail_url'] }}"
-                                    alt="{{ $file['alt'] }}"
+                                    alt="{{ $file['alt'] ?? '' }}"
                                     width="300"
                                     height="300"
                                     class="block w-full h-full checkered"
