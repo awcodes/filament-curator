@@ -4,8 +4,6 @@
     $itemsCount = count($items);
     $isMultiple = $isMultiple();
     $maxItems = $getMaxItems();
-
-    ray($getState());
 @endphp
 
 <x-dynamic-component :component="$getFieldWrapperView()" :field="$field">
