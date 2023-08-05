@@ -2,6 +2,14 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.8.6 - 2023-08-05
+
+### What's Changed
+
+- Fix: signed url returning null if file not exists by @awcodes in https://github.com/awcodes/filament-curator/pull/254
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.8.5...v2.8.6
+
 ## v2.8.5 - 2023-08-02
 
 ### What's Changed
