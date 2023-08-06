@@ -2,6 +2,14 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.8.7 - 2023-08-06
+
+### What's Changed
+
+- Fix: allow static asset glider fallbacks by @awcodes in https://github.com/awcodes/filament-curator/pull/258
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.8.6...v2.8.7
+
 ## v2.8.6 - 2023-08-05
 
 ### What's Changed
