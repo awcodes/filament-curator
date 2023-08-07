@@ -25,7 +25,7 @@ class MediaController extends Controller
                 return $query->where('directory', $request->directory);
             })
             ->when($request->has('types'), function($query) use ($request) {
-                $types = explode(',', $request->types);
+                $types = explode(',', str_replace(' ', '+', $request->types));
                 $query = $query->whereIn('type', $types);
                 $wildcardTypes = collect($types)->filter(fn ($type) => str_contains($type, '*'));
                 $wildcardTypes?->map(fn($type) => $query->orWhere('type', 'LIKE', str_replace('*', '%', $type)));
