@@ -4,15 +4,15 @@ namespace Awcodes\Curator\Components\Forms;
 
 use Awcodes\Curator\Concerns\CanGeneratePaths;
 use Awcodes\Curator\Concerns\CanNormalizePaths;
-use Illuminate\Support\Facades\App;
-use League\Flysystem\UnableToCheckFileExistence;
 use function Awcodes\Curator\is_media_resizable;
 use Awcodes\Curator\PathGenerators\Contracts\PathGenerator;
 use Filament\Forms\Components\BaseFileUpload;
 use Filament\Forms\Components\FileUpload;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Intervention\Image\Facades\Image;
+use League\Flysystem\UnableToCheckFileExistence;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class Uploader extends FileUpload
@@ -83,7 +83,7 @@ class Uploader extends FileUpload
                 if (! $file->exists()) {
                     return null;
                 }
-            } catch(UnableToCheckFileExistence $exception) {
+            } catch (UnableToCheckFileExistence $exception) {
                 return null;
             }
 

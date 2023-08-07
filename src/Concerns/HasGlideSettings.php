@@ -8,7 +8,7 @@ use League\Glide\ServerFactory;
 
 trait HasGlideSettings
 {
-    protected array | null $gliderFallbacks = [];
+    protected ?array $gliderFallbacks = [];
 
     protected Server | ServerFactory | null $glideServer = null;
 
@@ -33,7 +33,7 @@ trait HasGlideSettings
         return $this->glideServer;
     }
 
-    public function gliderFallbacks(array | null $fallbacks): static
+    public function gliderFallbacks(?array $fallbacks): static
     {
         $this->gliderFallbacks = $fallbacks;
 

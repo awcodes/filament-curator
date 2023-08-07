@@ -25,8 +25,8 @@ class MediaAction extends Action
         $this
             ->modalWidth('screen')
             ->modalHeading(__('curator::views.panel.heading'))
-            ->modalFooterActions(fn() => [])
-            ->modalContent(static function (Scribe|CuratorPicker $component) {
+            ->modalFooterActions(fn () => [])
+            ->modalContent(static function (Scribe | CuratorPicker $component) {
 
                 $src = $component->getLivewire()->mediaProps['src'];
                 $selected = $src !== ''
