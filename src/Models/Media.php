@@ -38,7 +38,7 @@ class Media extends Model
         return Attribute::make(
             get: function () {
                 if (Storage::disk($this->disk)->exists($this->path) === false) {
-                    return null;
+                    return '';
                 }
 
                 try {
@@ -114,7 +114,8 @@ class Media extends Model
     {
         if (
             ! $this->resizable ||
-            in_array($this->disk, config('curator.cloud_disks'))
+            in_array($this->disk, config('curator.cloud_disks')) ||
+            ! Storage::disk($this->disk)->exists($this->path)
         ) {
             return $this->url;
         }
