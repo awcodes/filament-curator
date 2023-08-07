@@ -145,7 +145,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
             })
             ->latest()
             ->offset($offset)
-            ->limit(8)
+            ->limit(25)
             ->get();
 
         if ($this->selected) {

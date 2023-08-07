@@ -12,60 +12,7 @@ use League\Glide\Signatures\SignatureFactory;
 
 class MediaController extends Controller
 {
-    public function index(Request $request, Media $mediaModel)
-    {
-        $selected = $request->has('media') ? explode(',', $request->media) : [];
-
-        $files = $mediaModel::when($selected, function ($query, $selected) {
-            return $query->whereNotIn('id', $selected);
-        })
-            ->when($request->has('directory'), function ($query) use ($request) {
-                return $query->where('directory', $request->directory);
-            })
-            ->when($request->has('types'), function ($query) use ($request) {
-                $types = explode(',', $request->types);
-                $query = $query->whereIn('type', $types);
-                $wildcardTypes = collect($types)->filter(fn ($type) => str_contains($type, '*'));
-                $wildcardTypes?->map(fn ($type) => $query->orWhere('type', 'LIKE', str_replace('*', '%', $type)));
-
-                return $query;
-            })
-            ->latest()
-            ->paginate(25);
-
-        if ($selected && ! $request->has('page')) {
-            $mediaModel::whereIn('id', $selected)
-                ->get()
-                ->sortBy(function ($model) use ($selected) {
-                    return array_search($model->id, $selected);
-                })
-                ->reverse()
-                ->map(function ($item) use ($files) {
-                    $files->prepend($item);
-                });
-        }
-
-        return response()->json($files);
-    }
-
-    public function search(Request $request, Media $mediaModel)
-    {
-        $files = $mediaModel->query()
-            ->when($request->has('directory'), function ($query) use ($request) {
-                return $query->where('directory', $request->query('directory'));
-            })
-            ->when($request->query('q'), function ($query) use ($request) {
-                return $query->where('name', 'like', '%' . $request->query('q') . '%')
-                    ->orWhere('alt', 'like', '%' . $request->query('q') . '%')
-                    ->orWhere('caption', 'like', '%' . $request->query('q') . '%')
-                    ->orWhere('description', 'like', '%' . $request->query('q') . '%');
-            })
-            ->paginate(50);
-
-        return response()->json($files);
-    }
-
-    public function show(Request $request, $path, Media $mediaModel)
+    public function show(Request $request, $path)
     {
         try {
             SignatureFactory::create(config('app.key'))->validateRequest('/curator/' . $path, $request->all());
@@ -75,7 +22,7 @@ class MediaController extends Controller
             abort(404);
         }
 
-        $media = $mediaModel->where('path', $path)->first();
+        $media = Media::query()->where('path', $path)->first();
 
         if ($media && ! $media->resizable) {
             return Storage::disk($media->disk)->response($media->path);

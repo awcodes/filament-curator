@@ -1,11 +1,11 @@
 <div
-    {{ $attributes->merge($getExtraAttributes())->class(['curator-grid-column pb-[155px] rounded-t-xl overflow-hidden']) }}
+    {{ $attributes->merge($getExtraAttributes())->class(['curator-grid-column relative rounded-t-xl overflow-hidden -mx-4 -mt-4 aspect-video']) }}
 >
     @php
         $record = $getRecord();
     @endphp
 
-    <div class="absolute inset-0 h-[175px] z-0 rounded-t-xl overflow-hidden bg-gray-200 dark:bg-gray-700">
+    <div class="rounded-t-xl h-full overflow-hidden bg-gray-200 dark:bg-gray-700">
         @if (str($record->type)->contains('image'))
             <img
                 src="{{ $record->getSignedUrl(['w' => 640, 'h' => 320, 'fit' => 'crop', 'fm' => 'webp']) }}"
