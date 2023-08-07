@@ -2,6 +2,18 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.8.9 - 2023-08-07
+
+### What's Changed
+
+- Fix: handling of urlencoded mime types. by @danielbehrendt in https://github.com/awcodes/filament-curator/pull/263
+
+### New Contributors
+
+- @danielbehrendt made their first contribution in https://github.com/awcodes/filament-curator/pull/263
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.8.8...v2.8.9
+
 ## v2.8.8 - 2023-08-07
 
 ### What's Changed
