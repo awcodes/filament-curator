@@ -14,46 +14,47 @@ class Glider extends Component
 {
     public string $source;
 
-    public string | null $sourceSet = null;
+    public string|null $sourceSet = null;
 
     public function __construct(
-        public int | Media | stdClass | null $media,
-        public string | null $glide = null,
-        public array | null $srcset = null,
-        public string | null $sizes = null,
-        public string | null $background = null,
-        public string | null $blur = null,
-        public string | null $border = null,
-        public string | null $brightness = null,
-        public string | null $contrast = null,
-        public string | null $crop = null,
-        public string | null $devicePixelRatio = null,
-        public string | null $filter = null,
-        public string | null $fit = null,
-        public string | null $flip = null,
-        public string | null $format = null,
-        public string | null $gamma = null,
-        public string | null $height = null,
-        public string | null $quality = null,
-        public string | null $orientation = null,
-        public string | null $pixelate = null,
-        public string | null $sharpen = null,
-        public string | null $width = null,
-        public string | null $watermarkPath = null,
-        public string | null $watermarkWidth = null,
-        public string | null $watermarkHeight = null,
-        public string | null $watermarkXOffset = null,
-        public string | null $watermarkYOffset = null,
-        public string | null $watermarkPadding = null,
-        public string | null $watermarkPosition = null,
-        public string | null $watermarkAlpha = null,
-        public string | null $fallback = null,
-    ) {
-        if (! $media instanceof Media) {
+        public int|Media|stdClass|null $media,
+        public string|null             $glide = null,
+        public array|null              $srcset = null,
+        public string|null             $sizes = null,
+        public string|null             $background = null,
+        public string|null             $blur = null,
+        public string|null             $border = null,
+        public string|null             $brightness = null,
+        public string|null             $contrast = null,
+        public string|null             $crop = null,
+        public string|null             $devicePixelRatio = null,
+        public string|null             $filter = null,
+        public string|null             $fit = null,
+        public string|null             $flip = null,
+        public string|null             $format = null,
+        public string|null             $gamma = null,
+        public string|null             $height = null,
+        public string|null             $quality = null,
+        public string|null             $orientation = null,
+        public string|null             $pixelate = null,
+        public string|null             $sharpen = null,
+        public string|null             $width = null,
+        public string|null             $watermarkPath = null,
+        public string|null             $watermarkWidth = null,
+        public string|null             $watermarkHeight = null,
+        public string|null             $watermarkXOffset = null,
+        public string|null             $watermarkYOffset = null,
+        public string|null             $watermarkPadding = null,
+        public string|null             $watermarkPosition = null,
+        public string|null             $watermarkAlpha = null,
+        public string|null             $fallback = null,
+    )
+    {
+        if (!$media instanceof Media) {
             $this->media = app(Media::class)::where('id', $media)->first();
 
-            if (! $this->media && $this->fallback) {
-                $this->media = (object) $this->getGliderFallback($this->fallback);
+            if (!$this->media && $this->fallback) {
+                $this->media = (object)$this->getGliderFallback($this->fallback);
             }
         }
     }
@@ -94,6 +95,10 @@ class Glider extends Component
 
         if ($this->media) {
             if (is_a($this->media, stdClass::class)) {
+                if (str_starts_with($this->media->path, 'http')) {
+                    return $this->media->path;
+                }
+
                 $urlBuilder = UrlBuilderFactory::create('/curator/', config('app.key'));
 
                 return $urlBuilder->getUrl($this->media->path, $params);
@@ -147,7 +152,7 @@ class Glider extends Component
             ->toArray();
     }
 
-    public function render(): View | Closure | string
+    public function render(): View|Closure|string
     {
         if ($this->glide) {
             $this->source = $this->media->resizable ? '/curator/' . $this->media->path . '?' . $this->glide : $this->media->url;
