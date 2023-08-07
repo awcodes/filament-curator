@@ -2,6 +2,14 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.8.8 - 2023-08-07
+
+### What's Changed
+
+- Fix: signed url returning null by @awcodes in https://github.com/awcodes/filament-curator/pull/262
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.8.7...v2.8.8
+
 ## v2.8.7 - 2023-08-06
 
 ### What's Changed
