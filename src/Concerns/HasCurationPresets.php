@@ -4,7 +4,7 @@ namespace Awcodes\Curator\Concerns;
 
 trait HasCurationPresets
 {
-    public function getPresets(): array | null
+    public function getPresets(): ?array
     {
         return collect(config('curator.curation_presets'))->map(function ($preset) {
             $preset = new $preset;

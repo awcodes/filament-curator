@@ -20,18 +20,18 @@ class CuratorEditor extends Field
     use HasSize;
     use HasCurationPresets;
 
-    protected string|Htmlable|Closure|null $buttonLabel = null;
+    protected string | Htmlable | Closure | null $buttonLabel = null;
 
     protected string $view = 'curator::components.forms.curation';
 
-    public function buttonLabel(string|Htmlable|Closure|null $label): static
+    public function buttonLabel(string | Htmlable | Closure | null $label): static
     {
         $this->buttonLabel = $label;
 
         return $this;
     }
 
-    public function getButtonLabel(): string|Htmlable|null
+    public function getButtonLabel(): string | Htmlable | null
     {
         return $this->evaluate($this->buttonLabel);
     }
@@ -47,7 +47,7 @@ class CuratorEditor extends Field
             ->outlined();
 
         $this->registerActions([
-            fn(CuratorEditor $component): Action => $component->getCurationAction(),
+            fn (CuratorEditor $component): Action => $component->getCurationAction(),
         ]);
     }
 
@@ -60,7 +60,7 @@ class CuratorEditor extends Field
             ->outlined($this->isOutlined())
             ->size($this->getSize())
             ->modalWidth('screen')
-            ->modalFooterActions(fn() => [])->modalHeading(static function (CuratorEditor $component) {
+            ->modalFooterActions(fn () => [])->modalHeading(static function (CuratorEditor $component) {
                 return __('curator::views.curation.heading') . ' ' . $component->getRecord()->name;
             })
             ->modalContent(static function (CuratorEditor $component, Component $livewire) {
