@@ -143,7 +143,7 @@ class CuratorPanel extends Component implements HasForms
 
     protected function getEditMediaFormSchema(): array
     {
-        return MediaResource::getAdditionalInformationFormSchema();
+        return app(MediaResource::class)->getAdditionalInformationFormSchema();
     }
 
     protected function getForms(): array
