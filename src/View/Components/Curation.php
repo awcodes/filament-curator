@@ -10,11 +10,11 @@ use Illuminate\View\Component;
 
 class Curation extends Component
 {
-    public array | null $curatedMedia = null;
+    public ?array $curatedMedia = null;
 
     public function __construct(
         public int | Media | null $media,
-        public string | null $curation = null,
+        public ?string $curation = null,
     ) {
         if (! $media instanceof Media) {
             $this->media = app(Media::class)::where('id', $media)->first();

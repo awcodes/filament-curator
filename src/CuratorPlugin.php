@@ -13,15 +13,15 @@ class CuratorPlugin implements Plugin
 
     protected string | Closure | null $label = null;
 
-    protected string | null $navigationGroup = null;
+    protected ?string $navigationGroup = null;
 
-    protected string | null $navigationIcon = null;
+    protected ?string $navigationIcon = null;
 
-    protected int | null $navigationSort = null;
+    protected ?int $navigationSort = null;
 
     protected string | Closure | null $pluralLabel = null;
 
-    protected string | null $resource = null;
+    protected ?string $resource = null;
 
     public function getId(): string
     {
@@ -66,22 +66,22 @@ class CuratorPlugin implements Plugin
         return $this->evaluate($this->pluralLabel) ?? config('curator.resources.plural_label');
     }
 
-    public function getNavigationGroup(): string | null
+    public function getNavigationGroup(): ?string
     {
         return $this->navigationGroup ?? config('curator.resources.navigation_group');
     }
 
-    public function getNavigationIcon(): string | null
+    public function getNavigationIcon(): ?string
     {
         return $this->navigationIcon ?? config('curator.resources.navigation_icon');
     }
 
-    public function getNavigationSort(): int | null
+    public function getNavigationSort(): ?int
     {
         return $this->navigationSort ?? config('curator.resources.navigation_sort');
     }
 
-    public function navigationGroup(string | null $group = null): static
+    public function navigationGroup(string $group = null): static
     {
         $this->navigationGroup = $group;
 

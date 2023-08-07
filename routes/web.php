@@ -8,7 +8,7 @@ $panel = Filament::getCurrentPanel();
 
 if ($panel) {
     $domains = $panel->getDomains();
-    
+
     foreach ((empty($domains) ? [null] : $domains) as $domain) {
         Route::domain($domain)
             ->middleware($panel->getMiddleware())
