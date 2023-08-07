@@ -148,8 +148,7 @@ class Glider extends Component
                 ];
             })
             ->where('key', $key)
-            ->first()
-            ->toArray();
+            ->first();
     }
 
     public function render(): View|Closure|string
