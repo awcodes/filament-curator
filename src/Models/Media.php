@@ -38,7 +38,7 @@ class Media extends Model
             get: function () {
 
                 if (Storage::disk($this->disk)->exists($this->path) === false) {
-                    return null;
+                    return '';
                 }
 
                 try {
