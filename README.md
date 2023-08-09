@@ -140,7 +140,7 @@ Form component
 
 ```php
 CuratorPicker::make('featured_image_id')
-    ->relationship('featured_image', 'id'),
+    ->relationship('featuredImage', 'id'),
 ```
 
 Model
@@ -161,7 +161,7 @@ Form component
 ```php
 CuratorPicker::make('product_picture_ids')
     ->multiple()
-    ->relationship('product_pictures', 'id')
+    ->relationship('productPictures', 'id')
     ->orderColumn('order'), // only necessary if you need to rename the order column
 ```
 
@@ -226,14 +226,14 @@ To render your media in a table Curator comes with a `CuratorColumn` which has t
 ImageColumn.
 
 ```php
-CuratorColumn::make('featured_image')
+CuratorColumn::make('featuredImage')
     ->size(40)
 ```
 
 For multiple images you can control the number of images shown, the ring size and the overlap.
 
 ```php
-CuratorColumn::make('product_pictures')
+CuratorColumn::make('productPictures')
     ->ring(2) // options 0,1,2,4
     ->overlap(4) // options 0,2,3,4
     ->limit(3),
