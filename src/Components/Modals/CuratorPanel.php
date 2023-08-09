@@ -177,7 +177,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
         ];
     }
 
-    public function addToSelection(int $id): void
+    public function addToSelection(int|string $id): void
     {
         $item = collect($this->files)->firstWhere('id', $id);
 
