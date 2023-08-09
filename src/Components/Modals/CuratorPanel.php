@@ -191,7 +191,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
         $this->setMediaForm();
     }
 
-    public function removeFromSelection(int $id): void
+    public function removeFromSelection(int|string $id): void
     {
         $this->selected = collect($this->selected)->reject(function ($selectedItem) use ($id) {
             return $selectedItem['id'] === $id;
@@ -200,7 +200,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
         $this->context = filled($this->selected) ? 'edit' : 'create';
     }
 
-    public function removeFromFiles(int $id): void
+    public function removeFromFiles(int|string $id): void
     {
         $this->files = collect($this->files)->reject(function ($selectedItem) use ($id) {
             return $selectedItem['id'] === $id;
