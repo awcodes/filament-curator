@@ -52,6 +52,12 @@ class MediaResource extends Resource
         return CuratorPlugin::get()->getNavigationGroup();
     }
 
+    public static function getNavigationBadge(): ?string
+    {
+        return CuratorPlugin::get()->getNavigationCountBadge() ?
+            number_format(static::getModel()::count()) : null;
+    }
+
     public static function form(Form $form): Form
     {
         return $form

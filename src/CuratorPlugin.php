@@ -19,6 +19,8 @@ class CuratorPlugin implements Plugin
 
     protected ?int $navigationSort = null;
 
+    protected ?bool $navigationCountBadge = null;
+
     protected string | Closure | null $pluralLabel = null;
 
     protected ?string $resource = null;
@@ -81,6 +83,11 @@ class CuratorPlugin implements Plugin
         return $this->navigationSort ?? config('curator.resources.navigation_sort');
     }
 
+    public function getNavigationCountBadge(): ?bool
+    {
+        return $this->navigationCountBadge ?? config('curator.resources.navigation_count_badge');
+    }
+
     public function navigationGroup(string $group = null): static
     {
         $this->navigationGroup = $group;
@@ -98,6 +105,13 @@ class CuratorPlugin implements Plugin
     public function navigationSort(int $order): static
     {
         $this->navigationSort = $order;
+
+        return $this;
+    }
+
+    public function navigationCountBadge(bool $show = true): static
+    {
+        $this->navigationCountBadge = $show;
 
         return $this;
     }
