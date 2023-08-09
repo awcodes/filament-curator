@@ -91,6 +91,7 @@ public function panel(Panel $panel): Panel
                 ->navigationIcon('heroicon-o-photo')
                 ->navigationGroup('Content')
                 ->navigationSort(3)
+                ->navigationCountBadge()
                 ->resource(\App\Filament\Resources\CustomMediaResource::class)
         ]);
 }
