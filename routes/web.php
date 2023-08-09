@@ -1,6 +1,6 @@
 <?php
 
-use Awcodes\Curator\Http\Controllers\MediaController;
+use RocketFirm\Curator\Http\Controllers\MediaController;
 use Illuminate\Support\Facades\Route;
 
 Route::domain(config('filament.domain'))

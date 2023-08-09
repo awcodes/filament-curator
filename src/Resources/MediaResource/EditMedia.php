@@ -1,8 +1,8 @@
 <?php
 
-namespace Awcodes\Curator\Resources\MediaResource;
+namespace RocketFirm\Curator\Resources\MediaResource;
 
-use Awcodes\Curator\Resources\MediaResource;
+use RocketFirm\Curator\Resources\MediaResource;
 use Exception;
 use Filament\Pages\Actions\Action;
 use Filament\Pages\Actions\DeleteAction;

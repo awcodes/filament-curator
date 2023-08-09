@@ -1,10 +1,10 @@
 <?php
 
-namespace Awcodes\Curator\Components\Forms;
+namespace RocketFirm\Curator\Components\Forms;
 
-use Awcodes\Curator\Concerns\CanNormalizePaths;
-use Awcodes\Curator\Facades\Curator;
-use Awcodes\Curator\Generators\PathGenerator;
+use RocketFirm\Curator\Concerns\CanNormalizePaths;
+use RocketFirm\Curator\Facades\Curator;
+use RocketFirm\Curator\Generators\PathGenerator;
 use Filament\Forms\Components\BaseFileUpload;
 use Filament\Forms\Components\FileUpload;
 use Illuminate\Support\Facades\Storage;

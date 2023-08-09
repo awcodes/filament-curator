@@ -1,8 +1,8 @@
 <?php
 
-namespace Awcodes\Curator\Facades;
+namespace RocketFirm\Curator\Facades;
 
-use Awcodes\Curator\Generators\PathGenerator;
+use RocketFirm\Curator\Generators\PathGenerator;
 use Closure;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Facade;
@@ -80,7 +80,7 @@ use League\Glide\ServerFactory;
  * @method static static tableHasIconActions(bool|Closure|null $condition)
  * @method static static visibility(string|Closure|null $visibility)
  *
- * @see \Awcodes\Curator\Curator
+ * @see \RocketFirm\Curator\Curator
  */
 class Curator extends Facade
 {

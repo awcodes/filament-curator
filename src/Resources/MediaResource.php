@@ -1,11 +1,11 @@
 <?php
 
-namespace Awcodes\Curator\Resources;
+namespace RocketFirm\Curator\Resources;
 
-use Awcodes\Curator\Components\Forms\CuratorEditor;
-use Awcodes\Curator\Components\Forms\Uploader;
-use Awcodes\Curator\Components\Tables\CuratorColumn;
-use Awcodes\Curator\Facades\Curator;
+use RocketFirm\Curator\Components\Forms\CuratorEditor;
+use RocketFirm\Curator\Components\Forms\Uploader;
+use RocketFirm\Curator\Components\Tables\CuratorColumn;
+use RocketFirm\Curator\Facades\Curator;
 use Exception;
 use Filament\Forms;
 use Filament\Resources\Form;

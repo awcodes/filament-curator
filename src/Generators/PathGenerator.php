@@ -1,6 +1,6 @@
 <?php
 
-namespace Awcodes\Curator\Generators;
+namespace RocketFirm\Curator\Generators;
 
 interface PathGenerator
 {

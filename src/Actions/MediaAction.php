@@ -1,9 +1,9 @@
 <?php
 
-namespace Awcodes\Curator\Actions;
+namespace RocketFirm\Curator\Actions;
 
-use Awcodes\Curator\Components\Forms\CuratorPicker;
-use Awcodes\Curator\Facades\Curator;
+use RocketFirm\Curator\Components\Forms\CuratorPicker;
+use RocketFirm\Curator\Facades\Curator;
 use Filament\Forms\ComponentContainer;
 use Filament\Forms\Components\Actions\Action;
 use FilamentTiptapEditor\TiptapEditor;

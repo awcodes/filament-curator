@@ -1,6 +1,6 @@
 <?php
 
-use Awcodes\Curator\Curator;
+use RocketFirm\Curator\Curator;
 
 if (! function_exists('curator')) {
     function curator(): Curator

@@ -1,5 +1,5 @@
 <?php
 
-use Awcodes\Curator\Tests\TestCase;
+use RocketFirm\Curator\Tests\TestCase;
 
 uses(TestCase::class)->in(__DIR__);

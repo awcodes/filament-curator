@@ -1,8 +1,8 @@
 <?php
 
-namespace Awcodes\Curator\Actions;
+namespace RocketFirm\Curator\Actions;
 
-use Awcodes\Curator\Components\Forms\CuratorEditor;
+use RocketFirm\Curator\Components\Forms\CuratorEditor;
 use Filament\Forms\Components\Actions\Action;
 use Livewire\Component;
 

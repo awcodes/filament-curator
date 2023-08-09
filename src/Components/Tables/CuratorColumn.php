@@ -1,9 +1,9 @@
 <?php
 
-namespace Awcodes\Curator\Components\Tables;
+namespace RocketFirm\Curator\Components\Tables;
 
-use Awcodes\Curator\Facades\Curator;
-use Awcodes\Curator\Models\Media;
+use RocketFirm\Curator\Facades\Curator;
+use RocketFirm\Curator\Models\Media;
 use Closure;
 use Filament\Tables\Columns\ImageColumn;
 use Illuminate\Database\Eloquent\Collection;

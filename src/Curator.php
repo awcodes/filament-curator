@@ -1,9 +1,9 @@
 <?php
 
-namespace Awcodes\Curator;
+namespace RocketFirm\Curator;
 
-use Awcodes\Curator\Generators\PathGenerator;
-use Awcodes\Curator\Models\Media;
+use RocketFirm\Curator\Generators\PathGenerator;
+use RocketFirm\Curator\Models\Media;
 use Closure;
 use Filament\Facades\Filament;
 use Filament\Support\Concerns\EvaluatesClosures;

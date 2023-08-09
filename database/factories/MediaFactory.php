@@ -1,8 +1,8 @@
 <?php
 
-namespace Awcodes\Curator\Database\Factories;
+namespace RocketFirm\Curator\Database\Factories;
 
-use Awcodes\Curator\Facades\Curator;
+use RocketFirm\Curator\Facades\Curator;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Facades\Image;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Awcodes\Curator\Concerns;
+namespace RocketFirm\Curator\Concerns;
 
 use Illuminate\Support\Str;
 

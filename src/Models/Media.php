@@ -1,9 +1,9 @@
 <?php
 
-namespace Awcodes\Curator\Models;
+namespace RocketFirm\Curator\Models;
 
-use Awcodes\Curator\Concerns\HasPackageFactory;
-use Awcodes\Curator\Facades\Curator;
+use RocketFirm\Curator\Concerns\HasPackageFactory;
+use RocketFirm\Curator\Facades\Curator;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;

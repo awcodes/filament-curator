@@ -1,8 +1,8 @@
 <?php
 
-namespace Awcodes\Curator\Actions;
+namespace RocketFirm\Curator\Actions;
 
-use Awcodes\Curator\Components\Forms\CuratorPicker;
+use RocketFirm\Curator\Components\Forms\CuratorPicker;
 use Filament\Forms\Components\Actions\Action;
 
 class PickerAction extends Action

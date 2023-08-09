@@ -1,8 +1,8 @@
 <?php
 
-namespace Awcodes\Curator\Http\Controllers;
+namespace RocketFirm\Curator\Http\Controllers;
 
-use Awcodes\Curator\Facades\Curator;
+use RocketFirm\Curator\Facades\Curator;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Storage;

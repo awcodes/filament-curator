@@ -1,8 +1,8 @@
 <?php
 
-namespace Awcodes\Curator\Components\Modals;
+namespace RocketFirm\Curator\Components\Modals;
 
-use Awcodes\Curator\Models\Media;
+use RocketFirm\Curator\Models\Media;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Facades\Image;

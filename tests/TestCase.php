@@ -1,8 +1,8 @@
 <?php
 
-namespace Awcodes\Curator\Tests;
+namespace RocketFirm\Curator\Tests;
 
-use Awcodes\Curator\CuratorServiceProvider;
+use RocketFirm\Curator\CuratorServiceProvider;
 use Filament\FilamentServiceProvider;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Livewire\LivewireServiceProvider;
@@ -15,7 +15,7 @@ class TestCase extends Orchestra
         parent::setUp();
 
         Factory::guessFactoryNamesUsing(
-            fn (string $modelName) => 'Awcodes\\CuratorPanel\\Database\\Factories\\'.class_basename($modelName).'Factory'
+            fn (string $modelName) => 'RocketFirm\\CuratorPanel\\Database\\Factories\\'.class_basename($modelName).'Factory'
         );
     }
 

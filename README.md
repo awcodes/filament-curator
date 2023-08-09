@@ -34,9 +34,9 @@ This will update Curator's database schema and create a backup of your media tab
 
 ### Additional Steps
 1. Change any references in your codebase from `$media->filename` to `$media->path`.
-2. Change any use statements from `FilamentCurator` to `Awcodes\Curator`.
+2. Change any use statements from `FilamentCurator` to `RocketFirm\Curator`.
 3. Change `FilamentCurator\Forms\Components\MediaPicker` fields to
-   `Awcodes\Curator\Components\Forms\CuratorPicker`.
+   `RocketFirm\Curator\Components\Forms\CuratorPicker`.
 
 ## Usage
 
@@ -47,7 +47,7 @@ Inside the `register()` method of a service provider you can customize the
 behaviour of Curator's resources. All methods are optional.
 
 ```php
-use Awcodes\Curator\Facades\Curator;
+use RocketFirm\Curator\Facades\Curator;
 
 public function register()
 {
@@ -93,7 +93,7 @@ from Filament's `FileUpload` component can be used to help with sizing,
 validation, etc. for specific instances of each CuratorPicker.
 
 ```php
-use Awcodes\Curator\Components\Forms\CuratorPicker;
+use RocketFirm\Curator\Components\Forms\CuratorPicker;
 
 CuratorPicker::make(string $fieldName)
     ->label(string $customLabel)
@@ -136,7 +136,7 @@ CuratorPicker::make('featured_image_id')
 Model
 
 ```php
-use Awcodes\Curator\Models\Media;
+use RocketFirm\Curator\Models\Media;
 
 public function featuredImage(): BelongsTo
 {
@@ -158,7 +158,7 @@ CuratorPicker::make('product_picture_ids')
 Model
 
 ```php
-use Awcodes\Curator\Models\Media;
+use RocketFirm\Curator\Models\Media;
 
 public function productPictures(): BelongsTo
 {
@@ -195,7 +195,7 @@ You are also free to use your own Path Generators by implementing the
 `PathGenerator` interface on your own classes.
 
 ```php
-use Awcodes\Curator\Generators;
+use RocketFirm\Curator\Generators;
 
 class CustomPathGenerator implements PathGenerator
 {
@@ -254,7 +254,7 @@ Curations are a way to create custom sizes and focal points for your images.
 If you have a curation that you are constantly using you can create Presets which will be available in the Curation modal for easier reuse. After creating curation presets, they can be referenced by their key to output them in your blade files.
 
 ```php
-use Awcodes\Curator\CurationPreset;
+use RocketFirm\Curator\CurationPreset;
 
 Curator::curationPresets([
     CurationPreset::make('thumbnail')
@@ -336,7 +336,7 @@ exist. This can be set by passing in the `fallback` attribute referencing
 one of your registered `GliderFallback`s.
 
 ```php
-use Awcodes\Curator\GliderFallback;
+use RocketFirm\Curator\GliderFallback;
 
 Curator::gliderFallbacks([
     GliderFallback::make(key: 'thumbnail')
@@ -387,8 +387,8 @@ Should you need to override the default Resources, it is recommended
 that you use the service container to bind Curator's Resource name to your own extensions of them.
 
 ```php
-use Awcodes\Curator\Resources\MediaResource;
-use Awcodes\Curator\Facades\Curator;
+use RocketFirm\Curator\Resources\MediaResource;
+use RocketFirm\Curator\Facades\Curator;
 
 class YourNotAsCoolMediaResource extends MediaResource
 {
@@ -429,7 +429,7 @@ views to your `tailwind.config.js`.
 ```js
 content: [
     ...
-    "./vendor/awcodes/curator/resources/views/**/*.blade.php",
+    "./vendor/rocket-firm/curator/resources/views/**/*.blade.php",
 ]
 ```
 

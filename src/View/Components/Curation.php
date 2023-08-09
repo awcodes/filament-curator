@@ -1,9 +1,9 @@
 <?php
 
-namespace Awcodes\Curator\View\Components;
+namespace RocketFirm\Curator\View\Components;
 
-use Awcodes\Curator\Facades\Curator;
-use Awcodes\Curator\Models\Media;
+use RocketFirm\Curator\Facades\Curator;
+use RocketFirm\Curator\Models\Media;
 use Closure;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Storage;

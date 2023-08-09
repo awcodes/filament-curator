@@ -1,11 +1,11 @@
 <?php
 
-namespace Awcodes\Curator\Components\Forms;
+namespace RocketFirm\Curator\Components\Forms;
 
-use Awcodes\Curator\Actions\DownloadAction;
-use Awcodes\Curator\Actions\PickerAction;
-use Awcodes\Curator\Facades\Curator;
-use Awcodes\Curator\Generators\PathGenerator;
+use RocketFirm\Curator\Actions\DownloadAction;
+use RocketFirm\Curator\Actions\PickerAction;
+use RocketFirm\Curator\Facades\Curator;
+use RocketFirm\Curator\Generators\PathGenerator;
 use Closure;
 use Exception;
 use Filament\Forms\Components\Component;

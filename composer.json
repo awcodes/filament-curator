@@ -1,13 +1,13 @@
 {
-    "name": "awcodes/filament-curator",
+    "name": "rocket-firm/filament-curator",
     "description": "A media picker plugin for FilamentPHP.",
     "keywords": [
-        "awcodes",
+        "rocket-firm",
         "laravel",
         "curator",
         "filament"
     ],
-    "homepage": "https://github.com/awcodes/filament-curator",
+    "homepage": "https://github.com/rocket-firm/filament-curator",
     "license": "MIT",
     "authors": [
         {
@@ -44,13 +44,13 @@
             "src/helpers.php"
         ],
         "psr-4": {
-            "Awcodes\\Curator\\": "src",
-            "Awcodes\\Curator\\Database\\Factories\\": "database/factories"
+            "RocketFirm\\Curator\\": "src",
+            "RocketFirm\\Curator\\Database\\Factories\\": "database/factories"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Awcodes\\Curator\\Tests\\": "tests"
+            "RocketFirm\\Curator\\Tests\\": "tests"
         }
     },
     "scripts": {
@@ -73,10 +73,10 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Awcodes\\Curator\\CuratorServiceProvider"
+                "RocketFirm\\Curator\\CuratorServiceProvider"
             ],
             "aliases": {
-                "Curator": "Awcodes\\Curator\\Facades\\Curator"
+                "Curator": "RocketFirm\\Curator\\Facades\\Curator"
             }
         }
     },

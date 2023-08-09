@@ -1,8 +1,8 @@
 <?php
 
-namespace Awcodes\Curator\Observers;
+namespace RocketFirm\Curator\Observers;
 
-use Awcodes\Curator\Models\Media;
+use RocketFirm\Curator\Models\Media;
 use Illuminate\Support\Facades\Storage;
 use stdClass;
 

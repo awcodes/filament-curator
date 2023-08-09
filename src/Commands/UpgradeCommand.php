@@ -1,6 +1,6 @@
 <?php
 
-namespace Awcodes\Curator\Commands;
+namespace RocketFirm\Curator\Commands;
 
 use Carbon\Carbon;
 use Illuminate\Console\Command;

@@ -1,11 +1,11 @@
 <?php
 
-namespace Awcodes\Curator\Components\Modals;
+namespace RocketFirm\Curator\Components\Modals;
 
-use Awcodes\Curator\Components\Forms\Uploader;
-use Awcodes\Curator\Facades\Curator;
-use Awcodes\Curator\Generators\PathGenerator;
-use Awcodes\Curator\Resources\MediaResource;
+use RocketFirm\Curator\Components\Forms\Uploader;
+use RocketFirm\Curator\Facades\Curator;
+use RocketFirm\Curator\Generators\PathGenerator;
+use RocketFirm\Curator\Resources\MediaResource;
 use Exception;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
@@ -68,13 +68,14 @@ class CuratorPanel extends Component implements HasForms
 
         foreach ($this->addMediaForm->getState()['files'] as $item) {
             // Fix malformed utf-8 characters
-            if (! empty($item['exif'])) {
+            /*if (! empty($item['exif'])) {
                 array_walk_recursive($item['exif'], function (&$entry) {
                     if (! mb_detect_encoding($entry, 'utf-8', true)) {
                         $entry = utf8_encode($entry);
                     }
                 });
-            }
+            }*/
+            $item['exif'] = null;
 
             $media[] = Curator::getMediaModel()::create($item);
         }

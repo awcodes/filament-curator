@@ -1,9 +1,9 @@
 <?php
 
-namespace Awcodes\Curator;
+namespace RocketFirm\Curator;
 
-use Awcodes\Curator\Commands\UpgradeCommand;
-use Awcodes\Curator\Observers\MediaObserver;
+use RocketFirm\Curator\Commands\UpgradeCommand;
+use RocketFirm\Curator\Observers\MediaObserver;
 use Composer\InstalledVersions;
 use Filament\PluginServiceProvider;
 use Illuminate\Support\Facades\Blade;
@@ -19,7 +19,7 @@ class CuratorServiceProvider extends PluginServiceProvider
 
     public function configurePackage(Package $package): void
     {
-        static::$version = InstalledVersions::getVersion('awcodes/filament-curator');
+        static::$version = InstalledVersions::getVersion('rocket-firm/filament-curator');
 
         $package->name(static::$name)
             ->hasRoute('web')

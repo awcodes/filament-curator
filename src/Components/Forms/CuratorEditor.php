@@ -1,8 +1,8 @@
 <?php
 
-namespace Awcodes\Curator\Components\Forms;
+namespace RocketFirm\Curator\Components\Forms;
 
-use Awcodes\Curator\Actions\CurationAction;
+use RocketFirm\Curator\Actions\CurationAction;
 use Closure;
 use Exception;
 use Filament\Forms\Components\Field;
