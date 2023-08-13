@@ -8,7 +8,7 @@
                 return;
             }
 
-            if ($wire.selected.length === 1 && $wire.selected[0].id !== mediaId) {
+            if ($wire.selected.length === 1 && $wire.selected[0].id != mediaId) {
                 $wire.removeFromSelection($wire.selected[0].id);
                 $wire.addToSelection(mediaId);
                 return;
@@ -19,7 +19,7 @@
         isSelected: function (mediaId = null) {
             if ($wire.selected.length === 0) return false;
 
-            return Object.values($wire.selected).find((obj) => obj.id === mediaId) !== undefined;
+            return Object.values($wire.selected).find(obj => obj.id == mediaId) !== undefined;
         },
     }"
     x-on:insert-media.window="$dispatch('close-modal', { id: '{{ $modalId }}' })"
