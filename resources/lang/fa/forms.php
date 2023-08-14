@@ -24,6 +24,6 @@ return [
         'success' => 'با موفقیت آپدیت شد',
     ],
     'curations' => [
-        'button_label' => 'ساختن Curation'
-    ]
+        'button_label' => 'ساختن Curation',
+    ],
 ];

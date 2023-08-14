@@ -4,25 +4,17 @@ namespace Awcodes\Curator;
 
 class GliderFallback
 {
+    protected string $alt;
+
+    protected int $height;
+
     protected string $key;
 
     protected string $source;
 
-    protected int $width;
-
-    protected int $height;
-
-    protected string $alt;
-
     protected string $type = 'image';
 
-    public static function make(string $key): static
-    {
-        $static = app(static::class, ['key' => $key]);
-        $static->key = $key;
-
-        return $static;
-    }
+    protected int $width;
 
     public function alt(string $alt): static
     {
@@ -31,11 +23,31 @@ class GliderFallback
         return $this;
     }
 
+    public function getFallback(): array
+    {
+        return [
+            'key' => $this->key,
+            'path' => $this->source,
+            'alt' => $this->alt,
+            'width' => $this->width,
+            'height' => $this->height,
+            'type' => $this->type,
+        ];
+    }
+
     public function height(int $height): static
     {
         $this->height = $height;
 
         return $this;
+    }
+
+    public static function make(string $key): static
+    {
+        $static = app(static::class, ['key' => $key]);
+        $static->key = $key;
+
+        return $static;
     }
 
     public function source(string $source): static
@@ -57,17 +69,5 @@ class GliderFallback
         $this->width = $width;
 
         return $this;
-    }
-
-    public function getFallback(): array
-    {
-        return [
-            'key' => $this->key,
-            'path' => $this->source,
-            'alt' => $this->alt,
-            'width' => $this->width,
-            'height' => $this->height,
-            'type' => $this->type,
-        ];
     }
 }

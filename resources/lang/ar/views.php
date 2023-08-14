@@ -14,6 +14,7 @@ return [
     ],
     'picker' => [
         'button' => 'إضافة وسائط',
+        'reorder' => 'إعادة ترتيب',
         'view' => 'عرض',
         'edit' => 'تعديل',
         'download' => 'تنزيل',

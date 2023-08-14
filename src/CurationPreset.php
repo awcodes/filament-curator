@@ -4,19 +4,52 @@ namespace Awcodes\Curator;
 
 class CurationPreset
 {
-    protected string $key;
-
-    protected string $name;
-
-    protected string $label;
-
     protected string $format = 'jpg';
 
     protected int $height;
 
+    protected string $key;
+
+    protected string $label;
+
+    protected string $name;
+
     protected int $quality = 60;
 
     protected int $width;
+
+    public function format(string $format): static
+    {
+        $this->format = $format;
+
+        return $this;
+    }
+
+    public function getPreset(): array
+    {
+        return [
+            'key' => $this->key,
+            'name' => $this->label ?? $this->name,
+            'width' => $this->width,
+            'height' => $this->height,
+            'format' => $this->format,
+            'quality' => $this->quality,
+        ];
+    }
+
+    public function height(int $height): static
+    {
+        $this->height = $height;
+
+        return $this;
+    }
+
+    public function label(string $label): static
+    {
+        $this->label = $label;
+
+        return $this;
+    }
 
     public static function make(string $name): static
     {
@@ -36,27 +69,6 @@ class CurationPreset
         return $this;
     }
 
-    public function format(string $format): static
-    {
-        $this->format = $format;
-
-        return $this;
-    }
-
-    public function height(int $height): static
-    {
-        $this->height = $height;
-
-        return $this;
-    }
-
-    public function label(string $label): static
-    {
-        $this->label = $label;
-
-        return $this;
-    }
-
     public function quality(int $quality): static
     {
         $this->quality = $quality;
@@ -69,17 +81,5 @@ class CurationPreset
         $this->width = $width;
 
         return $this;
-    }
-
-    public function getPreset(): array
-    {
-        return [
-            'key' => $this->key,
-            'name' => $this->label ?? $this->name,
-            'width' => $this->width,
-            'height' => $this->height,
-            'format' => $this->format,
-            'quality' => $this->quality,
-        ];
     }
 }

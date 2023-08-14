@@ -16,6 +16,7 @@ return [
     ],
     'picker' => [
         'button' => 'Add media',
+        'reorder' => 'Reorder',
         'view' => 'View',
         'edit' => 'Edit',
         'download' => 'Download',

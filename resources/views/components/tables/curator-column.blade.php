@@ -1,41 +1,85 @@
-<div
-    {{ $attributes->merge($getExtraAttributes())->class(['px-4 py-3 curator-column']) }}
->
-    @php
-        $height = $getHeight();
-        $width = $getWidth() ?? ($isRounded() ? $height : null);
-        $media = $getMedia();
-    @endphp
+@php
+    $items = $getMedia();
+    $overlap = $getOverlap() ?? 'sm';
+    $imageCount = count($items);
+    $ring = match ($getRing()) {
+        0 => 'ring-0',
+        1 => 'ring-1',
+        2 => 'ring-2',
+        4 => 'ring-4',
+        default => 'ring',
+    };
 
-    @if ($media)
+    $overlap = match ($overlap) {
+        0 => 'space-x-0',
+        2 => '-space-x-2',
+        3 => '-space-x-3',
+        4 => '-space-x-4',
+        default => '-space-x-1',
+    };
+
+    $resolution = $getResolution();
+
+    $height = $getHeight();
+    $width = $getWidth() ?? ($isRounded() ? $height : null);
+@endphp
+
+<div
+    {{ $attributes->merge($getExtraAttributes())->class([
+        'curator-column px-4 py-3',
+        $overlap . ' flex items-center' => $imageCount > 1,
+    ]) }}
+>
+    @if ($items)
+        @foreach ($items as $item)
         <div style="
                 {!! $height !== null ? "height: {$height};" : null !!}
                 {!! $width !== null ? "width: {$width};" : null !!}
             "
-            @class(['rounded-full overflow-hidden grid place-content-center' => $isRounded()])
+            @class([
+                'rounded-full overflow-hidden' => $isRounded(),
+                $ring . ' ring-white dark:ring-gray-800' => $imageCount > 1,
+            ])
         >
-            @if ($isImage())
+            @if (app('curator')->isResizable($item->ext))
                 @php
-                    $urlBuilder = \League\Glide\Urls\UrlBuilderFactory::create('/curator/', config('app.key'));
-                    $url = $urlBuilder->getUrl($media->path, ['w' => $width, 'h' => $height, 'fit' => 'crop', 'fm' => 'webp']);
+                    $img_width = $width ? (int)$width : null;
+                    $img_height = $height ? (int)$height : null;
+
+                    if ($resolution) {
+                        $img_width *= $resolution;
+                        $img_height *= $resolution;
+                    }
                 @endphp
                 <img
-                    src="{{ $url }}"
+                    src="{{ $item->getSignedUrl([
+                        'w' => $img_width,
+                        'h' => $img_height,
+                        'fit' => 'crop',
+                        'fm' => 'webp'
+                    ]) }}"
+                    alt="{{ $item->alt }}"
                     style="
                         {!! $height !== null ? "height: {$height};" : null !!}
                         {!! $width !== null ? "width: {$width};" : null !!}
                     "
-                    @class(['object-cover object-center' => $isRounded() || $width || $height])
+                    @class([
+                        'h-full w-auto' => str($item->type)->contains('svg'),
+                        'max-w-none' => $height && ! $width,
+                        'object-cover object-center' => ! str($item->type)->contains('svg') && ($isRounded() || $width || $height)
+                    ])
                     {{ $getExtraImgAttributeBag() }}
                 />
             @else
                 <x-curator::document-image
-                    :label="$media->name"
+                    :label="$item->name"
                     icon-size="md"
-                    :type="$media->type"
-                    :extension="$media->ext"
+                    :type="$item->type"
+                    :extension="$item->ext"
+                    class="h-full w-full"
                 />
             @endif
         </div>
+        @endforeach
     @endif
 </div>

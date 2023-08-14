@@ -8,6 +8,9 @@ A media picker/manager plugin for Filament Admin.
 > **Warning**
 > This package does not work with Spatie Media Library.
 
+> **Warning**
+> If you are using the Curator integration with Filament Tiptap Editor you will also need to update it to version 2.3.0 or higher.
+
 ![curator-og](https://user-images.githubusercontent.com/3596800/225419661-a0431c1b-957d-466f-a94d-a73a40b11d72.png)
 
 ## Installation
@@ -48,35 +51,37 @@ use Awcodes\Curator\Facades\Curator;
 
 public function register()
 {
-    Curator::resourceLabel(string|Closure)
-        ->pluralResourceLabel(string|Closure)
-        ->navigationIcon(string)
-        ->navigationSort(int)
-        ->navigationGroup(string)
-        ->registerNavigation(bool|Closure|null)
-        ->tableHasIconActions(bool|Closure|null)
-        ->tableHasGridLayout(bool|Closure|null)
-        ->curationPresets(array|null)        
-        ->gliderFallbacks(array|null)
-        ->preserveFilenames(bool|Closure)
-        ->acceptedFileTypes(array|Closure)
-        ->maxWidth(int|Closure)
-        ->minSize(int|Closure)
-        ->maxSize(int|Closure)
-        ->disk(string|Closure)
-        ->directory(string|Closure)
-        ->pathGenerator(string|null)
-        ->visibility(string|Closure)
-        ->cloudDisks(array)
-        ->imageCropAspectRatio(string|Closure|null)
-        ->imageResizeTargetHeight(string|Closure|null)
-        ->imageResizeTargetWidth(string|Closure|null)
-        ->glideSourcePathPrefix(string)
-        ->glideCachePathPrefix(string)
-        ->glideServer(Server|ServerFactory)
-        ->glideMaxImageSize(int)
-        ->glideDriver(string)
-        ->mediaModel(string);
+    Curator::acceptedFileTypes(array|Closure $types)
+        ->cloudDisks(array $disks)
+        ->curationPresets(array|null $presets)
+        ->directory(Closure|string|null $directory)
+        ->disableResourceRegistration()
+        ->disk(string|Closure|null $disk)
+        ->glideCachePathPrefix(string $prefix)
+        ->glideDriver(string $driver)
+        ->gliderFallbacks(array|null $fallbacks)
+        ->glideMaxImageSize(int $size)
+        ->glideServer(Server|ServerFactory|null $server)
+        ->glideSourcePathPrefix(string $prefix)
+        ->imageCropAspectRatio(string|Closure|null $ratio)
+        ->imageResizeTargetHeight(string|Closure|null $height)
+        ->imageResizeTargetWidth(string|Closure|null $width)
+        ->limitToDirectory(bool|Closure|null $condition = false)
+        ->maxSize(int|Closure $size)
+        ->maxWidth(int|Closure $width)
+        ->mediaModel(string $model)
+        ->minSize(int|Closure $size)
+        ->navigationGroup(string $group)
+        ->navigationIcon(string $label)
+        ->navigationSort(int $order)
+        ->pathGenerator(PathGenerator|string|null $generator)
+        ->pluralResourceLabel(string|Closure $label)
+        ->preserveFilenames(bool|Closure $condition)
+        ->registerNavigation(bool|Closure|null $condition)
+        ->resourceLabel(string|Closure $label)
+        ->tableHasGridLayout(bool|Closure|null $condition)
+        ->tableHasIconActions(bool|Closure|null $condition)
+        ->visibility(string|Closure|null $visibility)
 }
 ```
 
@@ -112,17 +117,55 @@ CuratorPicker::make(string $fieldName)
     ->imageCropAspectRatio()
     ->imageResizeTargetWidth()
     ->imageResizeTargetHeight()
+    ->multiple() // required if using a relationship with multiple media
+    ->relationship(string $relationshipName, string 'titleColumnName')
+    ->orderColumn('order') // only necessary to rename the order column if using a relationship with multiple media
 ```
 
-Media can also be related to models by simply adding the relationship to your
-model.
+### Relationships
+
+#### Single
+
+Form component
+
+```php
+CuratorPicker::make('featured_image_id')
+    ->relationship('featured_image', 'id'),
+```
+
+Model
 
 ```php
 use Awcodes\Curator\Models\Media;
 
-public function featuredImage(): HasOne
+public function featuredImage(): BelongsTo
 {
-    return $this->hasOne(Media::class, 'id', 'featured_image');
+    return $this->belongsTo(Media::class, 'featured_image_id', 'id');
+}
+```
+
+#### Multiple
+
+Form component
+
+```php
+CuratorPicker::make('product_picture_ids')
+    ->multiple()
+    ->relationship('product_pictures', 'id')
+    ->orderColumn('order'), // only necessary if you need to rename the order column
+```
+
+Model
+
+```php
+use Awcodes\Curator\Models\Media;
+
+public function productPictures(): BelongsTo
+{
+    return $this
+        ->belongsToMany(Media::class, 'media_post', 'post_id', 'media_id')
+        ->withPivot('order')
+        ->orderBy('order');
 }
 ```
 
@@ -174,16 +217,41 @@ CuratorPicker::make(string $fieldName)
 
 ### Curator Column
 
-To render your media in a table Curator comes with an `CuratorColumn` which has the same methods as Filament's ImageColumn.
+To render your media in a table Curator comes with a `CuratorColumn` which has the same methods as Filament's ImageColumn.
 
 ```php
 CuratorColumn::make('featured_image')
     ->size(40)
 ```
 
+For multiple images you can control the number of images shown, the ring size and the overlap.
+
+```php
+CuratorColumn::make('product_pictures')
+    ->ring(2) // options 0,1,2,4
+    ->overlap(4) // options 0,2,3,4
+    ->limit(3),
+```
+
+#### Relationships
+
+If you are using a relationship to store your media then you will encounter n+1 issues on the column. In order to prevent this you should modify your table query to eager load the relationship.
+
+For example when using the admin panel in your ListResource
+```php
+protected function getTableQuery(): Builder
+{
+    return parent::getTableQuery()->with(['featured_image', 'product_pictures']);
+}
+```
+
 ### Curations
 
-Curations are a way to create custom sizes and focal points for your images. After creating curation, they can be referenced by their key to output them in your blade files.
+Curations are a way to create custom sizes and focal points for your images. 
+
+
+#### Curation Presets
+If you have a curation that you are constantly using you can create Presets which will be available in the Curation modal for easier reuse. After creating curation presets, they can be referenced by their key to output them in your blade files.
 
 ```php
 use Awcodes\Curator\CurationPreset;
@@ -315,13 +383,29 @@ Since curations may or may not exist for each media item it's good to use a fall
 
 ### Custom Resource
 
-Should you need to override the default Resource, it is recommended
-that you use the service container.
+Should you need to override the default Resources, it is recommended
+that you use the service container to bind Curator's Resource name to your own extensions of them.
 
 ```php
 use Awcodes\Curator\Resources\MediaResource;
+use Awcodes\Curator\Facades\Curator;
 
 class YourNotAsCoolMediaResource extends MediaResource
+{
+    // ... custom methods and properties
+}
+
+class YourNotAsCoolEditMedia extends MediaResource\EditMedia
+{
+    // ... custom methods and properties
+}
+
+class YourNotAsCoolCreateMedia extends MediaResource\CreateMedia
+{
+    // ... custom methods and properties
+}
+
+class YourNotAsCoolListMedia extends MediaResource\ListMedia
 {
     // ... custom methods and properties
 }
@@ -329,14 +413,18 @@ class YourNotAsCoolMediaResource extends MediaResource
 // and in a service provider
 public function register()
 {
+    Curator::disableResourceRegistration();
     $this->app->bind(MediaResource::class, fn() => new YourNotAsCoolMediaResource());
+    $this->app->bind(MediaResource\EditMedia::class, fn() => new YourNotAsCoolEditMedia());
+    $this->app->bind(MediaResource\CreateMedia::class, fn() => new YourNotAsCoolCreateMedia());
+    $this->app->bind(MediaResource\ListMedia::class, fn() => new YourNotAsCoolListMedia());
 }
 ```
 
 ## Theming
 
 If you are using a custom theme for Filament you will need to add this plugin's
-views to your Tailwind CSS config.
+views to your `tailwind.config.js`.
 
 ```js
 content: [

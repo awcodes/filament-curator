@@ -2,6 +2,284 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.8.9 - 2023-08-07
+
+### What's Changed
+
+- Fix: handling of urlencoded mime types. by @danielbehrendt in https://github.com/awcodes/filament-curator/pull/263
+
+### New Contributors
+
+- @danielbehrendt made their first contribution in https://github.com/awcodes/filament-curator/pull/263
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.8.8...v2.8.9
+
+## v2.8.8 - 2023-08-07
+
+### What's Changed
+
+- Fix: signed url returning null by @awcodes in https://github.com/awcodes/filament-curator/pull/262
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.8.7...v2.8.8
+
+## v2.8.7 - 2023-08-06
+
+### What's Changed
+
+- Fix: allow static asset glider fallbacks by @awcodes in https://github.com/awcodes/filament-curator/pull/258
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.8.6...v2.8.7
+
+## v2.8.6 - 2023-08-05
+
+### What's Changed
+
+- Fix: signed url returning null if file not exists by @awcodes in https://github.com/awcodes/filament-curator/pull/254
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.8.5...v2.8.6
+
+## v2.8.5 - 2023-08-02
+
+### What's Changed
+
+- fixes visiblity issue on s3 storage by @phpsa in https://github.com/awcodes/filament-curator/pull/247
+- Feat: Better Media factory by @awcodes in https://github.com/awcodes/filament-curator/pull/248
+
+### New Contributors
+
+- @phpsa made their first contribution in https://github.com/awcodes/filament-curator/pull/247
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.8.4...v2.8.5
+
+## v2.8.4 - 2023-07-29
+
+### What's Changed
+
+- Fix: relationship saving in picker by @awcodes in https://github.com/awcodes/filament-curator/pull/244
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.8.3...v2.8.4
+
+## v2.8.3 - 2023-07-06
+
+### What's Changed
+
+- Fix: curation data and saving by @awcodes in https://github.com/awcodes/filament-curator/pull/238
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.8.2...v2.8.3
+
+## v2.8.2 - 2023-07-05
+
+### What's Changed
+
+- Fix: check if path exist before get visibility by @lotarbo in https://github.com/awcodes/filament-curator/pull/235
+
+### New Contributors
+
+- @lotarbo made their first contribution in https://github.com/awcodes/filament-curator/pull/235
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.8.1...v2.8.2
+
+## v2.8.1 - 2023-07-04
+
+### What's Changed
+
+- Fix: Tiptap action with latest attributes by @awcodes in https://github.com/awcodes/filament-curator/pull/234
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.8.0...v2.8.1
+
+## v2.8.0 - 2023-07-03
+
+### What's Changed
+
+- Chore: reorganize properties and methods to be alphabetical by @awcodes in https://github.com/awcodes/filament-curator/pull/227
+- Feat: add imageResizeMode for fileUpload by @awcodes in https://github.com/awcodes/filament-curator/pull/228
+- Feat: max items on picker field by @awcodes in https://github.com/awcodes/filament-curator/pull/229
+- Feat: allow wildcard mimetypes by @awcodes in https://github.com/awcodes/filament-curator/pull/232
+- Fix: use glide for image src on picker by @awcodes in https://github.com/awcodes/filament-curator/pull/230
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.7.7...v2.8.0
+
+## v2.7.7 - 2023-06-30
+
+### What's Changed
+
+- Fix: keep state as array if multiple and only has one item by @awcodes in https://github.com/awcodes/filament-curator/pull/221
+- Fix: allow default disk from forms config by @awcodes in https://github.com/awcodes/filament-curator/pull/222
+- Chore: Allow signed URLs for cloud disks by @martin-ro in https://github.com/awcodes/filament-curator/pull/218
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.7.6...v2.7.7
+
+## v2.7.6 - 2023-06-24
+
+### What's Changed
+
+- Fix: ordering of multiple images with relationship by @awcodes in https://github.com/awcodes/filament-curator/pull/213
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.7.5...v2.7.6
+
+## v2.7.5 - 2023-06-24
+
+### What's Changed
+
+- Fix: toString error in MediaObserver by @awcodes in https://github.com/awcodes/filament-curator/pull/212
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.7.4...v2.7.5
+
+## v2.7.4 - 2023-06-23
+
+### What's Changed
+
+- Fix CuratorColumn image size with px by @howdu in https://github.com/awcodes/filament-curator/pull/211
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.7.3...v2.7.4
+
+## v2.7.3 - 2023-06-20
+
+### What's Changed
+
+- Fix: missing vars on Tiptap Media action by @awcodes in https://github.com/awcodes/filament-curator/pull/209
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.7.2...v2.7.3
+
+## v2.7.2 - 2023-06-12
+
+### What's Changed
+
+- Fix: images not showing if on cloud in list view by @awcodes in https://github.com/awcodes/filament-curator/pull/205
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.7.1...v2.7.2
+
+## v2.7.1 - 2023-06-09
+
+### What's Changed
+
+- Fix null state by @howdu in https://github.com/awcodes/filament-curator/pull/204
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.7.0...v2.7.1
+
+## v2.7.0 - 2023-06-09
+
+### What's Changed
+
+- Chore: enforce multiple method to allow only single item selection by @awcodes in https://github.com/awcodes/filament-curator/pull/202
+- Feat: add option to limit picker to field's directory by @awcodes in https://github.com/awcodes/filament-curator/pull/203
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.6.5...v2.7.0
+
+## v2.6.5 - 2023-06-09
+
+### What's Changed
+
+- Fix: null state check on picker component by @awcodes in https://github.com/awcodes/filament-curator/pull/201
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.6.4...v2.6.5
+
+## v2.6.4 - 2023-06-05
+
+### What's Changed
+
+- Chore: Add missing properties to CuratorPicker by @howdu in https://github.com/awcodes/filament-curator/pull/198
+- Fix:  empty array offset by @howdu in https://github.com/awcodes/filament-curator/pull/199
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.6.3...v2.6.4
+
+## v2.6.3 - 2023-06-04
+
+### What's Changed
+
+- Fix: undefined keys on insert to picker by @awcodes in https://github.com/awcodes/filament-curator/pull/196
+- Fix: path generator errors on picker and panel by @awcodes in https://github.com/awcodes/filament-curator/pull/197
+- Feature: Add auto height for srcset resized images by @howdu in https://github.com/awcodes/filament-curator/pull/194
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.6.2...v2.6.3
+
+## v2.6.2 - 2023-05-31
+
+### What's Changed
+
+- Fix: updating and deleting records in Picker panel by @awcodes in https://github.com/awcodes/filament-curator/pull/192
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.6.1...v2.6.2
+
+## v2.6.1 - 2023-05-29
+
+### What's Changed
+
+- Bump dependabot/fetch-metadata from 1.4.0 to 1.5.1 by @dependabot in https://github.com/awcodes/filament-curator/pull/188
+- Bump aglipanci/laravel-pint-action from 2.2.0 to 2.3.0 by @dependabot in https://github.com/awcodes/filament-curator/pull/189
+- Fix: resolve media resource for edit url by @awcodes in https://github.com/awcodes/filament-curator/pull/190
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.6.0...v2.6.1
+
+## v2.6.0 - 2023-05-27
+
+### What's Changed
+
+- Feat: Add support for multiple images by @awcodes in https://github.com/awcodes/filament-curator/pull/185
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.5.11...v2.6.0
+
+## v2.5.11 - 2023-05-23
+
+### What's Changed
+
+- Fix: glider fallback urls and null curation error by @awcodes in https://github.com/awcodes/filament-curator/pull/184
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.5.10...v2.5.11
+
+## v2.5.10 - 2023-05-19
+
+### What's Changed
+
+- Feat: add support to disable resource registration by @awcodes in https://github.com/awcodes/filament-curator/pull/183
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.5.9...v2.5.10
+
+## v2.5.9 - 2023-05-19
+
+### What's Changed
+
+- Fix: signed urls for non-resizeable formats like svg by @awcodes in https://github.com/awcodes/filament-curator/pull/182
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.5.8...v2.5.9
+
+## v2.5.8 - 2023-05-15
+
+### What's Changed
+
+- Fix: add setTimeout to help with cropper initialization by @awcodes in https://github.com/awcodes/filament-curator/pull/175
+- Chore: refactor fall backs for Picker component by @awcodes in https://github.com/awcodes/filament-curator/pull/176
+- Fix: add array check to exif utf-8 encoding in Media Observer by @awcodes in https://github.com/awcodes/filament-curator/pull/179
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.5.7...v2.5.8
+
+## v2.5.7 - 2023-05-08
+
+### What's Changed
+
+- Chore: add static return types to facade for intelephense by @awcodes in https://github.com/awcodes/filament-curator/pull/170
+- Feat: add czech translations by @JarkaP in https://github.com/awcodes/filament-curator/pull/173
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.5.6...v2.5.7
+
+## v2.5.6 - 2023-04-24
+
+### What's Changed
+
+- Fix: exif malformed utf-8 characters by @howdu in https://github.com/awcodes/filament-curator/pull/168
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.5.5...v2.5.6
+
+## v2.5.5 - 2023-04-21
+
+### What's Changed
+
+- Fix translation for button by @martinmildner in https://github.com/awcodes/filament-curator/pull/162
+- Feature: Glider use passed width/height for image size by @howdu in https://github.com/awcodes/filament-curator/pull/161
+- Fix: curation component url generation by @awcodes in https://github.com/awcodes/filament-curator/pull/163
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.5.4...v2.5.5
+
 ## v2.5.4 - 2023-04-13
 
 ### What's Changed

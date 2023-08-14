@@ -24,21 +24,26 @@ class PickerAction extends Action
 
         $this->modalContent(static function (CuratorPicker $component) {
             return view('curator::components.actions.picker-action', [
-                'statePath' => $component->getStatePath(),
-                'modalId' => $component->getLivewire()->id.'-form-component-action',
-                'directory' => $component->getDirectory(),
-                'pathGenerator' => $component->getPathGenerator(),
-                'shouldPreserveFilenames' => $component->shouldPreserveFilenames(),
-                'maxWidth' => $component->getMaxWidth(),
-                'minSize' => $component->getMinSize(),
-                'maxSize' => $component->getMaxSize(),
-                'rules' => $component->getValidationRules(),
                 'acceptedFileTypes' => $component->getAcceptedFileTypes(),
+                'directory' => $component->getDirectory(),
                 'diskName' => $component->getDiskName(),
-                'visibility' => $component->getVisibility(),
                 'imageCropAspectRatio' => $component->getImageCropAspectRatio(),
+                'imageResizeMode' => $component->getImageResizeMode(),
                 'imageResizeTargetWidth' => $component->getImageResizeTargetWidth(),
                 'imageResizeTargetHeight' => $component->getImageResizeTargetHeight(),
+                'isLimitedToDirectory' => $component->isLimitedToDirectory(),
+                'isMultiple' => $component->isMultiple(),
+                'maxItems' => $component->getMaxItems(),
+                'maxSize' => $component->getMaxSize(),
+                'maxWidth' => $component->getMaxWidth(),
+                'minSize' => $component->getMinSize(),
+                'modalId' => $component->getLivewire()->id.'-form-component-action',
+                'pathGenerator' => $component->getPathGenerator(),
+                'rules' => $component->getValidationRules(),
+                'selected' => array_values((array)$component->getState()),
+                'shouldPreserveFilenames' => $component->shouldPreserveFilenames(),
+                'statePath' => $component->getStatePath(),
+                'visibility' => $component->getVisibility(),
             ]);
         });
     }

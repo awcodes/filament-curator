@@ -20,13 +20,6 @@ class MediaAction extends Action
     {
         parent::setUp();
 
-        $this->mountUsing(function (TiptapEditor|CuratorPicker $component, ComponentContainer $form) {
-            $src = $component->getLivewire()->mediaProps['src'];
-            $media = $src !== ''
-                ? Curator::getMediaModel()::firstWhere('name', Str::of($src)->afterLast('/')->beforeLast('.'))
-                : null;
-        });
-
         $this->modalWidth('screen');
 
         $this->modalHeading(__('curator::views.panel.heading'));
@@ -34,27 +27,33 @@ class MediaAction extends Action
         $this->modalActions(fn () => []);
 
         $this->modalContent(static function (TiptapEditor|CuratorPicker $component) {
+
             $src = $component->getLivewire()->mediaProps['src'];
             $selected = $src !== ''
-                ? Curator::getMediaModel()::firstWhere('name', Str::of($src)->afterLast('/')->beforeLast('.'))
-                : null;
+                ? [app('curator')->getMediaModel()::firstWhere('name', Str::of($src)->afterLast('/')->beforeLast('.'))]
+                : [];
+
             return view('curator::components.actions.picker-action', [
-                'statePath' => $component->getStatePath(),
-                'modalId' => $component->getLivewire()->id.'-form-component-action',
-                'directory' => app('curator')->getDirectory(),
-                'pathGenerator' => app('curator')->getPathGenerator(),
-                'shouldPreserveFilenames' => app('curator')->shouldPreserveFilenames(),
-                'maxWidth' => app('curator')->getMaxWidth(),
-                'minSize' => app('curator')->getMinSize(),
-                'maxSize' => app('curator')->getMaxSize(),
-                'rules' => [],
                 'acceptedFileTypes' => app('curator')->getAcceptedFileTypes(),
+                'directory' => app('curator')->getDirectory(),
                 'diskName' => app('curator')->getDiskName(),
-                'visibility' => app('curator')->getVisibility(),
                 'imageCropAspectRatio' => app('curator')->getImageCropAspectRatio(),
                 'imageResizeTargetWidth' => app('curator')->getImageResizeTargetWidth(),
                 'imageResizeTargetHeight' => app('curator')->getImageResizeTargetHeight(),
-                'selected' => $selected
+                'imageResizeMode' => app('curator')->getImageResizeMode(),
+                'isLimitedToDirectory' => false,
+                'isMultiple' => false,
+                'maxItems' => 1,
+                'maxSize' => app('curator')->getMaxSize(),
+                'maxWidth' => app('curator')->getMaxWidth(),
+                'minSize' => app('curator')->getMinSize(),
+                'modalId' => $component->getLivewire()->id.'-form-component-action',
+                'pathGenerator' => app('curator')->getPathGenerator(),
+                'rules' => [],
+                'selected' => $selected,
+                'shouldPreserveFilenames' => app('curator')->shouldPreserveFilenames(),
+                'statePath' => $component->getStatePath(),
+                'visibility' => app('curator')->getVisibility(),
             ]);
         });
     }

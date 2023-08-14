@@ -5,16 +5,15 @@
         $record = $getRecord();
     @endphp
 
-    <div class="absolute inset-0 h-[175px] z-0 rounded-t-xl overflow-hidden">
-        @if (\Awcodes\Curator\Facades\Curator::isResizable($record->ext))
-            @php
-                $urlBuilder = \League\Glide\Urls\UrlBuilderFactory::create('/curator/', config('app.key'));
-                $url = $urlBuilder->getUrl($record->path, ['w' => 640, 'h' => 320, 'fit' => 'crop', 'fm' => 'webp']);
-            @endphp
+    <div class="absolute inset-0 h-[175px] z-0 rounded-t-xl overflow-hidden bg-gray-200 dark:bg-gray-700">
+        @if (str($record->type)->contains('image'))
             <img
-                src="{{ $url }}"
+                src="{{ $record->getSignedUrl(['w' => 640, 'h' => 320, 'fit' => 'crop', 'fm' => 'webp']) }}"
                 alt="{{ $record->alt }}"
-                class="object-cover h-full w-full"
+                @class([
+                    'h-full w-auto' => str($record->type)->contains('svg'),
+                    'object-cover h-full w-full' => ! str($record->type)->contains('svg'),
+                ])
             />
         @else
             <x-curator::document-image

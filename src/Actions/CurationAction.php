@@ -22,7 +22,7 @@ class CurationAction extends Action
         $this->modalActions([]);
 
         $this->modalHeading(static function (CuratorEditor $component) {
-            return __('curator::views.curation.heading') . ' ' . $component->getRecord()->name;
+            return __('curator::views.curation.heading').' '.$component->getRecord()->name;
         });
 
         $this->modalContent(static function (CuratorEditor $component, Component $livewire) {
