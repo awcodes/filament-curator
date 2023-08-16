@@ -41,6 +41,9 @@
                         <img
                             src="{{ $item['large_url'] }}"
                             alt="{{ $item['alt'] ?? $item['name'] }}"
+                            @if ($shouldLazyLoad())
+                                loading="lazy"
+                            @endif
                             @class([
                                'h-full',
                                'object-contain' => $isConstrained(),
@@ -48,7 +51,13 @@
                            ])
                         />
                     @elseif (str($item['type'])->contains('video'))
-                        <video controls src="{{ $item['url'] }}"></video>
+                        <video
+                            controls
+                            src="{{ $item['url'] }}"
+                            @if ($shouldLazyLoad())
+                                preload="none"
+                            @endif
+                        ></video>
                     @else
                         <x-curator::document-image
                             label="{{ $item['name'] }}"
