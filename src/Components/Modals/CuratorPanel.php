@@ -62,7 +62,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
 
     public string $modalId;
 
-    public PathGenerator | string | null $pathGenerator = null;
+    public PathGenerator|string|null $pathGenerator = null;
 
     public string $search = '';
 
@@ -89,7 +89,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
         return $form
             ->schema([
                 Uploader::make('files_to_add')
-                    ->visible(fn () => $this->context === 'create')
+                    ->visible(fn() => $this->context === 'create')
                     ->hiddenLabel()
                     ->required()
                     ->multiple()
@@ -120,7 +120,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
                             ],
                         ]),
                     ...App::make(MediaResource::class)->getAdditionalInformationFormSchema(),
-                ])->visible(fn () => $this->context === 'edit'),
+                ])->visible(fn() => $this->context === 'edit'),
             ])->statePath('data');
     }
 
@@ -138,8 +138,8 @@ class CuratorPanel extends Component implements HasForms, HasActions
             ->when($this->types, function ($query) {
                 $types = $this->types;
                 $query = $query->whereIn('type', $types);
-                $wildcardTypes = collect($types)->filter(fn ($type) => str_contains($type, '*'));
-                $wildcardTypes?->map(fn ($type) => $query->orWhere('type', 'LIKE', str_replace('*', '%', $type)));
+                $wildcardTypes = collect($types)->filter(fn($type) => str_contains($type, '*'));
+                $wildcardTypes?->map(fn($type) => $query->orWhere('type', 'LIKE', str_replace('*', '%', $type)));
 
                 return $query;
             })
@@ -248,9 +248,9 @@ class CuratorPanel extends Component implements HasForms, HasActions
 
                 foreach ($this->form->getState()['files_to_add'] as $item) {
                     // Fix malformed utf-8 characters
-                    if (! empty($item['exif'])) {
+                    if (!empty($item['exif'])) {
                         array_walk_recursive($item['exif'], function (&$entry) {
-                            if (! mb_detect_encoding($entry, 'utf-8', true)) {
+                            if (!mb_detect_encoding($entry, 'utf-8', true)) {
                                 $entry = utf8_encode($entry);
                             }
                         });
