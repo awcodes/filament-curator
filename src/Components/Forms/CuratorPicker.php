@@ -495,7 +495,7 @@ class CuratorPicker extends Field
 
     public function shouldLazyLoad(): bool
     {
-        return $this->evaluate($this->shouldLazyLoad);
+        return $this->evaluate($this->shouldLazyLoad) ?? false;
     }
 
     public function shouldPreserveFilenames(): bool
