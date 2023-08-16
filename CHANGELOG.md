@@ -2,6 +2,15 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.9.0 - 2023-08-16
+
+### What's Changed
+
+- Fixed a bug where binding didn't work for MediaResource. by @danielbehrendt in https://github.com/awcodes/filament-curator/pull/264
+- Feat/lazy load on picker by @awcodes in https://github.com/awcodes/filament-curator/pull/273
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.8.9...v2.9.0
+
 ## v2.8.9 - 2023-08-07
 
 ### What's Changed
