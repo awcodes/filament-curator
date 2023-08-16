@@ -7,7 +7,6 @@
                 if (this.isSelected(mediaId)) {
                     let toRemove = Object.values($wire.selected).find(obj => obj.id == mediaId)
                     $wire.removeFromSelection(toRemove.id);
-                    console.log($wire.selected);
                     return;
                 }
 
