@@ -62,6 +62,8 @@ class CuratorPicker extends Field
 
     protected bool|Closure|null $isMultiple = false;
 
+    protected bool|Closure|null $shouldLazyLoad = null;
+
     protected int|Closure|null $maxItems = null;
 
     protected string|null $orderColumn = null;
@@ -344,6 +346,13 @@ class CuratorPicker extends Field
         return $this->evaluate($this->isMultiple);
     }
 
+    public function lazyLoad(bool|Closure $condition = true): static
+    {
+        $this->shouldLazyLoad = $condition;
+
+        return $this;
+    }
+
     public function limitToDirectory(bool|Closure|null $condition = true): static
     {
         $this->isLimitedToDirectory = $condition;
@@ -482,6 +491,11 @@ class CuratorPicker extends Field
         $this->dehydrated(fn(CuratorPicker $component): bool => !$component->isMultiple());
 
         return $this;
+    }
+
+    public function shouldLazyLoad(): bool
+    {
+        return $this->evaluate($this->shouldLazyLoad) ?? false;
     }
 
     public function shouldPreserveFilenames(): bool
