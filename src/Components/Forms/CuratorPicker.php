@@ -64,7 +64,7 @@ class CuratorPicker extends Field
             ->color('primary')
             ->outlined();
 
-        $this->afterStateHydrated(static function (CuratorPicker $component, array | int | null $state): void {
+        $this->afterStateHydrated(static function (CuratorPicker $component, array | int | string | null $state): void {
 
             if (blank($state)) {
                 $component->state([]);

@@ -15,7 +15,7 @@
                 width="{{ $file['width'] }}"
                 height="{{ $file['height'] }}"
                 loading="lazy"
-                class="overflow-hidden border border-gray-300 rounded dark:border-gray-900 checkered"
+                class="overflow-hidden h-full w-auto border border-gray-300 rounded dark:border-gray-900 checkered"
             />
         @elseif (str($file['type'])->contains('video'))
             <video controls src="{{ $file['url'] }}"></video>

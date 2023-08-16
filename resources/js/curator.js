@@ -96,30 +96,30 @@ export default function curator({statePath, types, initialSelection = null, isMu
         },
         removeFile: function (media = null) {
             if (media) {
-                this.files = this.files.filter((obj) => obj.id !== media.id);
+                this.files = this.files.filter(obj => obj.id != media.id);
                 this.removeFromSelection(media.id);
             }
         },
         addToSelection: function (mediaId = null, event = null) {
             if (this.selected.length === 1 && !this.isMultiple) {
-                this.selected = [this.files.find(obj => obj.id === mediaId)];
+                this.selected = [this.files.find(obj => obj.id == mediaId)];
                 return;
             }
 
             if (event && event.metaKey) {
-                this.selected.push(this.files.find(obj => obj.id === mediaId));
+                this.selected.push(this.files.find(obj => obj.id == mediaId));
                 return;
             }
 
-            this.selected = [this.files.find(obj => obj.id === mediaId)];
+            this.selected = [this.files.find(obj => obj.id == mediaId)];
         },
         removeFromSelection: function (mediaId = null) {
-            this.selected = this.selected.filter((obj) => obj.id !== mediaId);
+            this.selected = this.selected.filter(obj => obj.id != mediaId);
         },
         isSelected: function (mediaId = null) {
             if (this.selected.length === 0) return false;
 
-            return this.selected.find((obj) => obj.id === mediaId) !== undefined;
+            return this.selected.find((obj) => obj.id == mediaId) !== undefined;
         },
         insertMedia: function () {
             this.$dispatch('insert-media', {

@@ -4,11 +4,18 @@
             if (! mediaId) return;
 
             if ($wire.isMultiple && event && event.metaKey) {
+                if (this.isSelected(mediaId)) {
+                    let toRemove = Object.values($wire.selected).find(obj => obj.id == mediaId)
+                    $wire.removeFromSelection(toRemove.id);
+                    return;
+                }
+
                 $wire.addToSelection(mediaId);
+
                 return;
             }
 
-            if ($wire.selected.length === 1 && $wire.selected[0].id !== mediaId) {
+            if ($wire.selected.length === 1 && $wire.selected[0].id != mediaId) {
                 $wire.removeFromSelection($wire.selected[0].id);
                 $wire.addToSelection(mediaId);
                 return;
@@ -19,7 +26,7 @@
         isSelected: function (mediaId = null) {
             if ($wire.selected.length === 0) return false;
 
-            return Object.values($wire.selected).find((obj) => obj.id === mediaId) !== undefined;
+            return Object.values($wire.selected).find(obj => obj.id == mediaId) !== undefined;
         },
     }"
     x-on:insert-media.window="$dispatch('close-modal', { id: '{{ $modalId }}' })"
@@ -77,13 +84,13 @@
                     <li
                         wire:key="media-{{ $file['id'] }}" class="relative aspect-square"
                         x-bind:class="{
-                            'opacity-40': $wire.selected.length > 0 && !isSelected({{ $file['id'] }})
+                            'opacity-40': $wire.selected.length > 0 && !isSelected('{{ $file['id'] }}')
                         }"
                     >
 
                         <button
                             type="button"
-                            x-on:click="handleItemClick({{ $file['id'] }}, $event)"
+                            x-on:click="handleItemClick('{{ $file['id'] }}', $event)"
                             class="block w-full h-full overflow-hidden bg-gray-700 rounded-sm"
                         >
                             @if (str_contains($file['type'], 'image'))
@@ -122,8 +129,8 @@
 
                         <button
                             type="button"
-                            wire:click="removeFromSelection({{ $file['id'] }})"
-                            x-show="isSelected({{ $file['id'] }})"
+                            x-on:click="handleItemClick('{{ $file['id'] }}', $event)"
+                            x-show="isSelected('{{ $file['id'] }}')"
                             x-cloak
                             class="absolute inset-0 flex items-center justify-center w-full h-full rounded shadow text-primary-600 bg-primary-500/20 ring-2 ring-primary-500"
                         >
