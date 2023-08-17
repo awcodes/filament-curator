@@ -13,7 +13,7 @@ class CuratorPlugin implements Plugin
 
     protected string | Closure | null $label = null;
 
-    protected ?string $navigationGroup = null;
+    protected string | Closure | null $navigationGroup = null;
 
     protected ?string $navigationIcon = null;
 
@@ -68,9 +68,9 @@ class CuratorPlugin implements Plugin
         return $this->evaluate($this->pluralLabel) ?? config('curator.resources.plural_label');
     }
 
-    public function getNavigationGroup(): ?string
+    public function getNavigationGroup(): string
     {
-        return $this->navigationGroup ?? config('curator.resources.navigation_group');
+        return $this->evaluate($this->navigationGroup) ?? config('curator.resources.navigation_group');
     }
 
     public function getNavigationIcon(): ?string
@@ -88,7 +88,7 @@ class CuratorPlugin implements Plugin
         return $this->navigationCountBadge ?? config('curator.resources.navigation_count_badge');
     }
 
-    public function navigationGroup(string $group = null): static
+    public function navigationGroup(string | Closure $group = null): static
     {
         $this->navigationGroup = $group;
 
