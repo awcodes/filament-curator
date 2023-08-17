@@ -68,7 +68,7 @@ class CuratorPlugin implements Plugin
         return $this->evaluate($this->pluralLabel) ?? config('curator.resources.plural_label');
     }
 
-    public function getNavigationGroup(): string
+    public function getNavigationGroup(): ?string
     {
         return $this->evaluate($this->navigationGroup) ?? config('curator.resources.navigation_group');
     }
