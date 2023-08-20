@@ -50,7 +50,9 @@ class Glider extends Component
         public ?string $fallback = null,
     ) {
         if (! $media instanceof Media) {
-            $this->media = app(Media::class)::where('id', $media)->first();
+            if (is_int($media)) {
+                $this->media = app(Media::class)::where('id', $media)->first();
+            }
 
             if (! $this->media && $this->fallback) {
                 $this->media = (object) $this->getGliderFallback($this->fallback);
