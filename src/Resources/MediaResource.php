@@ -83,7 +83,7 @@ class MediaResource extends Resource
                                             }),
                                     ]),
                                 Forms\Components\Tabs\Tab::make(__('curator::forms.sections.curation'))
-                                    ->visible(fn ($record) => Str::of($record->type)->contains('image'))
+                                    ->visible(fn ($record) => Str::of($record->type)->contains('image') && ! Str::of($record->type)->contains('svg'))
                                     ->schema([
                                         Forms\Components\Repeater::make('curations')
                                             ->label(__('curator::forms.sections.curation'))
