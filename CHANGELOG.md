@@ -2,6 +2,14 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.9.1 - 2023-08-23
+
+### What's Changed
+
+- Fix: disabled curations for SVG files by @danielbehrendt in https://github.com/awcodes/filament-curator/pull/278
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.9.0...v2.9.1
+
 ## v2.9.0 - 2023-08-16
 
 ### What's Changed
