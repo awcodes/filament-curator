@@ -22,7 +22,7 @@ class MediaController extends Controller
             abort(404);
         }
 
-        $media = Media::query()->where('path', $path)->first();
+        $media = app(Media::class)::query()->where('path', $path)->first();
 
         if ($media && ! $media->resizable) {
             return Storage::disk($media->disk)->response($media->path);
