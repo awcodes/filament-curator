@@ -4,8 +4,8 @@ namespace Awcodes\Curator\Actions;
 
 use Awcodes\Curator\Components\Forms\CuratorPicker;
 use Awcodes\Curator\Models\Media;
-use Awcodes\Scribe\Scribe;
 use Filament\Forms\Components\Actions\Action;
+use FilamentTiptapEditor\TiptapEditor;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\View;
@@ -23,14 +23,17 @@ class MediaAction extends Action
         parent::setUp();
 
         $this
+            ->arguments([
+                'src' => '',
+            ])
             ->modalWidth('screen')
             ->modalHeading(__('curator::views.panel.heading'))
-            ->modalFooterActions(fn () => [])
-            ->modalContent(static function (Scribe | CuratorPicker $component) {
+            ->modalFooterActions(fn() => [])
+            ->modalContent(static function (TiptapEditor|CuratorPicker $component, array $arguments) {
 
-                $src = $component->getLivewire()->mediaProps['src'];
-                $selected = $src !== ''
-                    ? [App::get(Media::class)->firstWhere('name', Str::of($src)->afterLast('/')->beforeLast('.'))]
+                $selected = $arguments['src'] !== ''
+                    ? [App::get(Media::class)->firstWhere('name', Str::of($arguments['src'])->afterLast('/')->beforeLast
+                    ('.'))]
                     : [];
 
                 return View::make('curator::components.actions.picker-action', [
