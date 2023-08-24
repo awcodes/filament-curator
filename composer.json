@@ -24,6 +24,7 @@
     "spatie/laravel-package-tools": "^1.13.5"
   },
   "require-dev": {
+    "awcodes/filament-tiptap-editor": "^3.0",
     "laravel/pint": "^1.0",
     "nunomaduro/collision": "^7.0",
     "spatie/laravel-ray": "^1.26"
