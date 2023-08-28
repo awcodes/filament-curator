@@ -16,7 +16,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::table(app(config('curator.model')), function(Blueprint $table) {
+        Schema::table(app(config('curator.model'))->getTable(), function(Blueprint $table) {
             $table->dropColumn(['visibility']);
         });
     }
