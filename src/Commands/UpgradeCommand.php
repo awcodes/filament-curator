@@ -31,7 +31,7 @@ class UpgradeCommand extends Command
             Schema::dropIfExists('media_tmp');
         }
 
-        $tableName = app(config('curator.media_model'))->getTable();
+        $tableName = app(config('curator.model'))->getTable();
 
         // get db driver
         $driver = Arr::get(DB::connection()->getConfig(), 'driver');
