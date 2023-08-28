@@ -84,7 +84,7 @@ class CuratorPicker extends Field
         $this->color = 'primary';
         $this->isOutlined = true;
 
-        $this->afterStateHydrated(static function (CuratorPicker $component, array|int|null $state): void {
+        $this->afterStateHydrated(static function (CuratorPicker $component, array|int|null|string $state): void {
             $items = [];
 
             if (!filled($state)) {
