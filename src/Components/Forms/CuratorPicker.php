@@ -6,6 +6,7 @@ use Awcodes\Curator\Actions\DownloadAction;
 use Awcodes\Curator\Actions\PickerAction;
 use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Generators\PathGenerator;
+use Awcodes\Curator\Models\Media;
 use Closure;
 use Exception;
 use Filament\Forms\Components\Component;
@@ -102,6 +103,10 @@ class CuratorPicker extends Field
             }
 
             foreach ($media as $itemData) {
+                if ($itemData instanceof Media) {
+                    $itemData->loadPrettyName();
+                }
+
                 $items[(string)Str::uuid()] = $itemData;
             }
 
@@ -431,6 +436,7 @@ class CuratorPicker extends Field
 
             if ($component->isMultiple()) {
                 $relatedModels = $relationship->getResults();
+                $relatedModels->each->loadPrettyName();
 
                 $component->state($relatedModels);
 
@@ -443,6 +449,8 @@ class CuratorPicker extends Field
             if (!$relatedModel) {
                 return;
             }
+
+            $relatedModel->loadPrettyName();
 
             $component->state(
                 $relatedModel->getAttribute(

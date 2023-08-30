@@ -76,6 +76,8 @@ class Uploader extends FileUpload
                 'file' => $file,
             ]);
 
+            $this->storeFileName($storedFile['path'], $file->getClientOriginalName());
+
             $file->delete();
 
             return $storedFile;
