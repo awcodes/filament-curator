@@ -272,6 +272,7 @@ class MediaResource extends Resource
             ->pathGenerator(app('curator')->getPathGenerator())
             ->visibility(app('curator')->getVisibility())
             ->maxFiles(1)
-            ->panelAspectRatio('24:9');
+            ->panelAspectRatio('24:9')
+            ->storeFileNamesIn('originalFilename');
     }
 }

@@ -5,6 +5,7 @@ namespace Awcodes\Curator\Components\Modals;
 use Awcodes\Curator\Components\Forms\Uploader;
 use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Generators\PathGenerator;
+use Awcodes\Curator\Models\Media;
 use Awcodes\Curator\Resources\MediaResource;
 use Exception;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -62,11 +63,15 @@ class CuratorPanel extends Component implements HasForms
 
     public string $visibility = 'public';
 
+    public array $originalFilenames = [];
+
     public function addFiles(): void
     {
         $media = [];
 
-        foreach ($this->addMediaForm->getState()['files'] as $item) {
+        $formData = $this->addMediaForm->getState();
+
+        foreach ($formData['files'] as $item) {
             // Fix malformed utf-8 characters
             if (! empty($item['exif'])) {
                 array_walk_recursive($item['exif'], function (&$entry) {
@@ -76,7 +81,12 @@ class CuratorPanel extends Component implements HasForms
                 });
             }
 
-            $media[] = Curator::getMediaModel()::create($item);
+            $item['title'] = pathinfo($formData['originalFilenames'][$item['path']] ?? null, PATHINFO_FILENAME);
+
+            $media[] = tap(
+                Curator::getMediaModel()::create($item),
+                fn (Media $media) => $media->loadPrettyName(),
+            );
         }
 
         $this->addMediaForm->fill();
@@ -137,7 +147,8 @@ class CuratorPanel extends Component implements HasForms
                 ->imageCropAspectRatio($this->imageCropAspectRatio)
                 ->imageResizeMode($this->imageResizeMode)
                 ->imageResizeTargetWidth($this->imageResizeTargetWidth)
-                ->imageResizeTargetHeight($this->imageResizeTargetHeight),
+                ->imageResizeTargetHeight($this->imageResizeTargetHeight)
+                ->storeFileNamesIn('originalFilenames'),
         ];
     }
 

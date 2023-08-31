@@ -26,7 +26,7 @@
         <div
             class="absolute inset-x-0 bottom-0 flex items-center justify-between px-1.5 pt-10 pb-1.5 text-xs text-white bg-gradient-to-t from-black/80 to-transparent gap-3"
         >
-            <p class="truncate">{{ $record->title ?? $record->name . '.' . $record->ext }}</p>
+            <p class="truncate">{{ $record->getPrettyName() }}</p>
             <p class="flex-shrink-0">{{ $record->size_for_humans }}</p>
         </div>
     </div>

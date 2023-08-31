@@ -178,7 +178,7 @@
                             class="absolute inset-x-0 bottom-0 flex items-center justify-between gap-3 bg-gradient-to-t from-black/80 to-transparent px-2 pb-1 pt-10 text-xs text-white"
                         >
                             <p class="truncate">
-                                {{ $item["name"] }}.{{ $item["ext"] }}
+                                {{ $item["prettyName"] }}
                             </p>
                             <p class="flex-shrink-0">
                                 {{ $item["size_for_humans"] }}

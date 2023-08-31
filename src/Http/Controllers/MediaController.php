@@ -3,6 +3,7 @@
 namespace Awcodes\Curator\Http\Controllers;
 
 use Awcodes\Curator\Facades\Curator;
+use Awcodes\Curator\Models\Media;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Storage;
@@ -46,6 +47,8 @@ class MediaController extends Controller
                 });
         }
 
+        $files->getCollection()->each->loadPrettyName();
+
         return response()->json($files);
     }
 
@@ -62,6 +65,8 @@ class MediaController extends Controller
                     ->orWhere('description', 'like', '%'.$request->query('q').'%');
             })
             ->paginate(50);
+
+        $files->getCollection()->each->loadPrettyName();
 
         return response()->json($files);
     }
