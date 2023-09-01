@@ -10,6 +10,7 @@ return [
         'upload_new' => 'Upload New',
         'upload_new_helper' => 'If you have any curations for this media you will possibly need to recreate them, it will not happen automatically.',
         'curation' => 'Curation',
+        'created_for' => 'Created For or Used In',
     ],
     'fields' => [
         'alt' => 'Alt Text',

@@ -139,6 +139,10 @@ class MediaResource extends Resource
                             ->schema(
                                 static::getAdditionalInformationFormSchema()
                             ),
+                        Forms\Components\Section::make(__('curator::forms.sections.created_for'))
+                            ->schema(
+                                static::getCreatedForFormSchema()
+                            ),
                     ])->columnSpan([
                         'md' => 'full',
                         'lg' => 1,
@@ -255,6 +259,20 @@ class MediaResource extends Resource
             Forms\Components\Textarea::make('description')
                 ->label(__('curator::forms.fields.description'))
                 ->rows(2),
+        ];
+    }
+
+    public static function getCreatedForFormSchema(): array
+    {
+        return [
+            Forms\Components\ViewField::make('details')
+                ->view('curator::components.forms.created-for')
+                ->hiddenLabel()
+                ->dehydrated(false)
+                ->columnSpan('full')
+                ->afterStateHydrated(function ($component, $state, $record) {
+                    $component->state($record);
+                }),
         ];
     }
 
