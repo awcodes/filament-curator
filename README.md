@@ -10,7 +10,6 @@ A media picker/manager plugin for Filament Admin.
 
 ![curator-og](https://res.cloudinary.com/aw-codes/image/upload/w_1200,f_auto,q_auto/plugins/curator/awcodes-curator.jpg)
 
-
 ## Installation
 
 You can install the package via composer then run the installation command:
@@ -423,6 +422,40 @@ Then you can reference your fallback in the blade component.
 
 ```blade
 <x-curator-glider :media="1" fallback="card_fallback"/>
+```
+
+### Custom Glide Server
+
+If you want to use your own Glide Server for handling served media with Glide you can implement the `ServerFactory` interface on your own classes and set it to the config.
+
+```php
+use League\Glide\Responses\LaravelResponseFactory;
+use League\Glide\Server;
+use League\Glide\ServerFactory;
+
+class CustomServerFactory implements Contracts\ServerFactory
+{
+    public function getFactory(): ServerFactory | Server
+    {
+        return ServerFactory::create([
+            'driver' => 'imagick',
+            'response' => new LaravelResponseFactory(app('request')),
+            'source' => storage_path('app'),
+            'source_path_prefix' => 'public',
+            'cache' => storage_path('app'),
+            'cache_path_prefix' => '.cache',
+            'max_image_size' => 2000 * 2000,
+        ]);
+    }
+}
+```
+
+Then register your server in the config.
+
+```php
+'glide' => [
+    'server' => \App\Glide\CustomServerFactory::class,
+],
 ```
 
 ### Curation Blade Component
