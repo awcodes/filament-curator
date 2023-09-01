@@ -63,7 +63,7 @@ should you choose to do so.
 
 1. `CurationPreset` will need to be updated to the [new format](#curation-presets).
 2. `GliderFallback` will need to be updated to the [new format](#glider-fallback-images).
-3. Custom Glide Server Factories will need to be updated to use the new `GlideServerFactoryProvider`.
+3. Custom Glide Server Factories will need to be updated to use the [new format](#custom-glide-server).
 
 ## Usage
 
