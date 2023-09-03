@@ -4,7 +4,6 @@ namespace Awcodes\Curator\Components\Forms;
 
 use Awcodes\Curator\Concerns\CanGeneratePaths;
 use Awcodes\Curator\Concerns\CanNormalizePaths;
-use function Awcodes\Curator\is_media_resizable;
 use Awcodes\Curator\PathGenerators\Contracts\PathGenerator;
 use Filament\Forms\Components\BaseFileUpload;
 use Filament\Forms\Components\FileUpload;
@@ -14,6 +13,7 @@ use Illuminate\Support\Str;
 use Intervention\Image\Facades\Image;
 use League\Flysystem\UnableToCheckFileExistence;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
+use function Awcodes\Curator\is_media_resizable;
 
 class Uploader extends FileUpload
 {
@@ -45,18 +45,18 @@ class Uploader extends FileUpload
             return;
         }
 
-        if (! is_array($this->getState())) {
+        if (!is_array($this->getState())) {
             $this->state([$this->getState()]);
         }
 
-        $state = array_map(function (TemporaryUploadedFile | array $file) {
-            if (! $file instanceof TemporaryUploadedFile) {
+        $state = array_map(function (TemporaryUploadedFile|array $file) {
+            if (!$file instanceof TemporaryUploadedFile) {
                 return $file;
             }
 
             $callback = $this->saveUploadedFileUsing;
 
-            if (! $callback) {
+            if (!$callback) {
                 $file->delete();
 
                 return $file;
@@ -65,6 +65,8 @@ class Uploader extends FileUpload
             $storedFile = $this->evaluate($callback, [
                 'file' => $file,
             ]);
+
+            $this->storeFileName($storedFile['path'], $file->getClientOriginalName());
 
             $file->delete();
 
@@ -80,7 +82,7 @@ class Uploader extends FileUpload
 
         $this->saveUploadedFileUsing(function (BaseFileUpload $component, TemporaryUploadedFile $file): ?array {
             try {
-                if (! $file->exists()) {
+                if (!$file->exists()) {
                     return null;
                 }
             } catch (UnableToCheckFileExistence $exception) {

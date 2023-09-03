@@ -11,4 +11,15 @@ class CreateMedia extends CreateRecord
     {
         return CuratorPlugin::get()->getResource();
     }
+
+    protected function mutateFormDataBeforeCreate(array $data): array
+    {
+        if (blank($data['title'])) {
+            $data['title'] = pathinfo($data['originalFilename'], PATHINFO_FILENAME);
+        }
+
+        unset($data['originalFilename']);
+
+        return $data;
+    }
 }
