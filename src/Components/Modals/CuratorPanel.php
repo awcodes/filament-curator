@@ -78,6 +78,8 @@ class CuratorPanel extends Component implements HasForms, HasActions
 
     public string $visibility = 'public';
 
+    public array $originalFilenames = [];
+
     public function mount(): void
     {
         $this->form->fill();
@@ -108,7 +110,8 @@ class CuratorPanel extends Component implements HasForms, HasActions
                     ->imageCropAspectRatio($this->imageCropAspectRatio)
                     ->imageResizeMode($this->imageResizeMode)
                     ->imageResizeTargetWidth($this->imageResizeTargetWidth)
-                    ->imageResizeTargetHeight($this->imageResizeTargetHeight),
+                    ->imageResizeTargetHeight($this->imageResizeTargetHeight)
+                    ->storeFileNamesIn('originalFilenames'),
                 Group::make([
                     FormView::make('preview')
                         ->view('curator::components.forms.edit-preview', [
@@ -245,8 +248,9 @@ class CuratorPanel extends Component implements HasForms, HasActions
             ->label(__('curator::views.panel.add_files'))
             ->action(function (): void {
                 $media = [];
+                $formData = $this->form->getState();
 
-                foreach ($this->form->getState()['files_to_add'] as $item) {
+                foreach ($formData['files_to_add'] as $item) {
                     // Fix malformed utf-8 characters
                     if (!empty($item['exif'])) {
                         array_walk_recursive($item['exif'], function (&$entry) {
@@ -256,7 +260,12 @@ class CuratorPanel extends Component implements HasForms, HasActions
                         });
                     }
 
-                    $media[] = App::make(Media::class)->create($item)->toArray();
+                    $item['title'] = pathinfo($formData['originalFilenames'][$item['path']] ?? null, PATHINFO_FILENAME);
+
+                    $media[] = tap(
+                        App::make(Media::class)->create($item),
+                        fn(Media $media) => $media->getPrettyName(),
+                    )->toArray();
                 }
 
                 $this->form->fill();

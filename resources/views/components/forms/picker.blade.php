@@ -95,7 +95,7 @@
 
                     @if (! str($item['type'])->contains('video'))
                         <div class="absolute inset-x-0 bottom-0 flex items-center justify-between px-2 pt-10 pb-1 text-xs text-white bg-gradient-to-t from-black/80 to-transparent gap-3">
-                            <p class="truncate">{{ $item['name'] }}.{{ $item['ext'] }}</p>
+                            <p class="truncate">{{ $item['pretty_name'] }}</p>
                             <p class="flex-shrink-0">{{ $item['size_for_humans'] }}</p>
                         </div>
                     @endif
