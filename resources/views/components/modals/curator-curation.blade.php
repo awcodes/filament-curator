@@ -27,7 +27,7 @@
             </div>
         </div>
 
-        <div class="w-full h-96 lg:h-full lg:max-w-xs overflow-auto bg-gray-100 dark:bg-gray-900/30 flex flex-col shadow-top lg:shadow-none z-[1]">
+        <div class="w-full h-96 lg:h-full lg:max-w-xs overflow-auto bg-gray-50 dark:bg-gray-950/30 flex flex-col shadow-top lg:shadow-none z-[1]">
             <div class="flex-1 overflow-hidden">
                 <div class="flex flex-col h-full overflow-y-auto">
                     <h2 class="font-bold py-2 px-4 mb-0">
@@ -251,7 +251,15 @@
                         </div>
                     </div>
 
-                    <div class="flex items-center justify-end gap-3 py-3 px-4 border-t border-gray-300 bg-gray-200 dark:border-gray-800 dark:bg-black/10">
+                    <div class="flex items-center justify-between gap-3 py-3 px-4 border-t border-gray-300 bg-gray-200 dark:border-gray-800 dark:bg-black/10">
+                        <x-filament::button
+                            type="button"
+                            size="sm"
+                            color="gray"
+                            wire:click="$dispatch('close-modal', { id: '{{ $modalId }}' })"
+                        >
+                            {{ __('curator::views.curation.cancel') }}
+                        </x-filament::button>
                         <x-filament::button
                             type="button"
                             size="sm"

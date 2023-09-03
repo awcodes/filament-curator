@@ -48,6 +48,7 @@ return [
     'curation' => [
         'heading' => 'Curating',
         'adjustments' => 'Adjustments',
+        'cancel' => 'Cancel',
         'custom' => 'Custom',
         'key' => 'Key',
         'key_helper' => 'This is the reference used to retrieve your curation for display.',

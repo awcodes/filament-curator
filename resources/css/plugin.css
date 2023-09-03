@@ -55,6 +55,16 @@
     }
 }
 
+.curator-panel-sidebar {
+    .fi-fo-component-ctn {
+        @apply gap-4;
+
+        label {
+            @apply text-sm;
+        }
+    }
+}
+
 [wire\:key*="open_curator_picker"],
 [wire\:key*="open_curation_panel"],
 [wire\:key*="filament_tiptap_media"] {
@@ -62,7 +72,7 @@
         @apply !p-0;
 
         .fi-modal-header {
-            @apply py-2 px-4 border-b border-gray-300 dark:border-gray-900/50;
+            @apply py-2 px-4 border-b border-gray-300 dark:border-gray-800;
 
             .fi-modal-heading {
                 @apply text-base;

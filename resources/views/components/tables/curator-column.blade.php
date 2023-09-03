@@ -38,7 +38,7 @@
             "
             @class([
                 'rounded-full overflow-hidden' => $isRounded(),
-                $ring . ' ring-white dark:ring-gray-800' => $imageCount > 1,
+                $ring . ' ring-white dark:ring-gray-900' => $imageCount > 1,
             ])
         >
             @if (\Awcodes\Curator\is_media_resizable($item->ext))

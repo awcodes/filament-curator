@@ -24,7 +24,7 @@
                 'w-full',
                 'flex items-center gap-6 flex-wrap' => $itemsCount <= 3 && ! $shouldDisplayAsList,
                 'curator-grid-container' => $itemsCount >= 3 && ! $shouldDisplayAsList,
-                'overflow-hidden bg-white border border-gray-300 rounded-lg shadow-sm divide-y divide-gray-300 dark:border-gray-700 dark:text-white dark:divide-gray-700 dark:bg-white/5' => $shouldDisplayAsList,
+                'overflow-hidden bg-white border border-gray-300 rounded-lg shadow-sm divide-y divide-gray-300 dark:border-gray-700 dark:text-white dark:divide-gray-700 dark:bg-white/5' => $itemsCount > 0 && $shouldDisplayAsList,
             ])
             x-sortable
             wire:end.stop="mountFormComponentAction('{{ $statePath }}', 'reorder', { items: $event.target.sortable.toArray() })"
@@ -131,7 +131,7 @@
                         @endif
 
                         <div class="absolute top-0 right-0">
-                            <div class="relative flex items-center bg-gray-900 divide-x divide-gray-700 rounded-bl-lg shadow-md">
+                            <div class="relative flex items-center bg-gray-950 divide-x divide-gray-700 rounded-bl-lg shadow-md">
                                 @if ($isMultiple)
                                     <div
                                         x-sortable-handle
