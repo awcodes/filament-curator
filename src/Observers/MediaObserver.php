@@ -24,7 +24,7 @@ class MediaObserver
                 } elseif ($k === 'exif' && is_array($v)) {
                     // Fix malformed utf-8 characters
                     array_walk_recursive($v, function (&$entry) {
-                        if (! mb_detect_encoding($entry, 'utf-8', true)) {
+                        if (!mb_detect_encoding($entry, 'utf-8', true)) {
                             $entry = utf8_encode($entry);
                         }
                     });
@@ -61,7 +61,7 @@ class MediaObserver
         }
 
         // Rename file name
-        if ($media->isDirty(['name']) && ! blank($media->name)) {
+        if ($media->isDirty(['name']) && !blank($media->name)) {
             if (Storage::disk($media->disk)->exists($media->directory . '/' . $media->name . '.' . $media->ext)) {
                 $media->name = $media->name . '-' . time();
             }
@@ -70,6 +70,7 @@ class MediaObserver
         }
 
         $media->__unset('file');
+        $media->__unset('originalFilename');
     }
 
     /**

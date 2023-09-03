@@ -94,11 +94,11 @@ export default function curation({statePath, fileName, fileType, presets = {}}) 
             this.cropper.setCropBoxData({...currentCropBox, height: parseInt($event.target.value)})
         },
         flipHorizontally() {
-            this.cropper.scaleX(this.flippedHorizontally ? 1 : -1);
+            this.cropper.scaleY(this.flippedHorizontally ? 1 : -1);
             this.flippedHorizontally = !this.flippedHorizontally
         },
         flipVertically() {
-            this.cropper.scaleY(this.flippedVertically ? 1 : -1);
+            this.cropper.scaleX(this.flippedVertically ? 1 : -1);
             this.flippedVertically = !this.flippedVertically
         },
         saveCuration() {

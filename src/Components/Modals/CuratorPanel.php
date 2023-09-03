@@ -123,7 +123,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
                             ],
                         ]),
                     ...App::make(MediaResource::class)->getAdditionalInformationFormSchema(),
-                ])->visible(fn() => $this->context === 'edit'),
+                ])->visible(fn() => $this->context === 'edit' && count($this->selected) === 1),
             ])->statePath('data');
     }
 
@@ -190,7 +190,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
             $this->selected = [$item];
         }
 
-        $this->context = filled($this->selected) ? 'edit' : 'create';
+        $this->context = count($this->selected) === 1 ? 'edit' : 'create';
         $this->setMediaForm();
     }
 
@@ -200,7 +200,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
             return $selectedItem['id'] === $id;
         })->toArray();
 
-        $this->context = filled($this->selected) ? 'edit' : 'create';
+        $this->context = count($this->selected) === 1 ? 'edit' : 'create';
     }
 
     public function removeFromFiles(int|string $id): void
@@ -246,6 +246,9 @@ class CuratorPanel extends Component implements HasForms, HasActions
             ->size('sm')
             ->color('primary')
             ->label(__('curator::views.panel.add_files'))
+            ->disabled(function (): bool {
+                return count($this->form->getRawState()['files_to_add'] ?? []) === 0;
+            })
             ->action(function (): void {
                 $media = [];
                 $formData = $this->form->getState();

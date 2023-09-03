@@ -21,6 +21,11 @@
                 return;
             }
 
+            if ($wire.selected.length === 1 && $wire.selected[0].id == mediaId) {
+                $wire.removeFromSelection($wire.selected[0].id);
+                return;
+            }
+
             $wire.addToSelection(mediaId);
         },
         isSelected: function (mediaId = null) {
@@ -30,10 +35,10 @@
         },
     }"
     x-on:insert-media.window="$dispatch('close-modal', { id: '{{ $modalId }}' })"
-    class="curator h-full absolute inset-0 flex flex-col"
+    class="curator-panel h-full absolute inset-0 flex flex-col"
 >
     <!-- Toolbar -->
-    <div class="curator-picker-toolbar px-4 py-2 flex items-center justify-between bg-gray-200/70 dark:bg-black/20 dark:text-white">
+    <div class="curator-panel-toolbar px-4 py-2 flex items-center justify-between bg-gray-200/70 dark:bg-black/20 dark:text-white">
         <div class="flex items-center gap-2">
             <x-filament::button
                 size="xs"
@@ -78,7 +83,7 @@
     <div class="flex-1 relative flex flex-col lg:flex-row overflow-hidden">
 
         <!-- Gallery -->
-        <div class="flex-1 h-full overflow-auto p-4">
+        <div class="curator-panel-gallery flex-1 h-full overflow-auto p-4">
             <ul class="curator-picker-grid">
                 @forelse ($files as $file)
                     <li
@@ -156,10 +161,9 @@
         <!-- End Gallery -->
 
         <!-- Sidebar -->
-        <div class="w-full lg:h-full lg:max-w-xs overflow-auto bg-gray-100 dark:bg-gray-900/30 flex flex-col shadow-top lg:shadow-none z-[1]">
+        <div class="curator-panel-sidebar w-full lg:h-full lg:max-w-xs overflow-auto bg-gray-100 dark:bg-gray-900/30 flex flex-col shadow-top lg:shadow-none z-[1]">
             <div class="flex-1 overflow-hidden">
                 <div class="flex flex-col h-full overflow-y-auto">
-                    @if (count($selected) <= 1)
                     <h4 class="font-bold py-2 px-4 mb-0">
                         <span>
                             {{
@@ -172,14 +176,15 @@
 
                     <div class="flex-1 overflow-auto px-4 pb-4">
                         <div class="h-full">
-                            {{ $this->form }}
+                            <div class="mb-4">
+                                {{ $this->form }}
+                            </div>
                             <x-filament-actions::modals />
                         </div>
                     </div>
-                    @endif
 
                     <div class="flex items-center justify-start mt-auto gap-3 py-3 px-4 border-t border-gray-300 bg-gray-200 dark:border-gray-800 dark:bg-black/10">
-                        @if (count($selected) === 0)
+                        @if (count($selected) !== 1)
                             <div>
                             {{ $this->addFilesAction }}
                             </div>

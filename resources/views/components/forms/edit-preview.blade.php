@@ -7,7 +7,7 @@
 <x-dynamic-component
     :component="$getFieldWrapperView()"
 >
-    <div class="flex justify-center mb-4 overflow-hidden border border-gray-300 rounded dark:border-gray-700 checkered h-48 flex-shrink-0 relative">
+    <div class="flex justify-center overflow-hidden border border-gray-300 rounded dark:border-gray-700 checkered h-48 flex-shrink-0 relative">
         @if (str($file['type'])->contains('image'))
             <img
                 src="{{ $file['url'] }}"

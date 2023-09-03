@@ -44,6 +44,10 @@
                             <dt class="font-bold">{{ __('curator::views.curation.height') }}: </dt>
                             <dd x-text="state?.height"></dd>
                         </div>
+                        <div class="flex gap-2">
+                            <dt class="font-bold">{{ __('curator::views.curation.format') }}: </dt>
+                            <dd x-text="state?.ext"></dd>
+                        </div>
                     </dl>
                 </div>
             </div>

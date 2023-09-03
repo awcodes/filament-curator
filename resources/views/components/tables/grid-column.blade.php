@@ -1,5 +1,5 @@
 <div
-    {{ $attributes->merge($getExtraAttributes())->class(['curator-grid-column relative rounded-t-xl overflow-hidden -mx-4 -mt-4 aspect-video']) }}
+    {{ $attributes->merge($getExtraAttributes())->class(['curator-grid-column relative rounded-t-xl overflow-hidden -mx-4 -mt-4 mb-1 aspect-video']) }}
 >
     @php
         $record = $getRecord();
@@ -11,8 +11,9 @@
                 src="{{ $record->getSignedUrl(['w' => 640, 'h' => 320, 'fit' => 'crop', 'fm' => 'webp']) }}"
                 alt="{{ $record->alt }}"
                 @class([
-                    'h-full w-auto' => str($record->type)->contains('svg'),
-                    'object-cover h-full w-full' => ! str($record->type)->contains('svg'),
+                    'h-full',
+                    'w-auto' => str($record->type)->contains('svg'),
+                    'object-cover w-full' => ! str($record->type)->contains('svg'),
                 ])
             />
         @else
