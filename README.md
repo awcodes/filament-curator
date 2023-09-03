@@ -15,7 +15,7 @@ A media picker/manager plugin for Filament Admin.
 You can install the package via composer then run the installation command:
 
 ```bash
-composer require awcodes/filament-curator:"^3.0"
+composer require awcodes/filament-curator
 ```
 
 ```bash
