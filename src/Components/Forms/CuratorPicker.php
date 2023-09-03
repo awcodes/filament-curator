@@ -53,6 +53,8 @@ class CuratorPicker extends Field
 
     protected string|Closure|null $relationshipTitleColumnName = null;
 
+    protected bool|Closure|null $shouldDisplayAsList = null;
+
     /**
      * @throws Exception
      */
@@ -464,5 +466,17 @@ class CuratorPicker extends Field
     public function shouldLazyLoad(): bool
     {
         return $this->evaluate($this->shouldLazyLoad) ?? false;
+    }
+
+    public function listDisplay(bool|Closure $condition = true): static
+    {
+        $this->shouldDisplayAsList = $condition;
+
+        return $this;
+    }
+
+    public function shouldDisplayAsList(): bool
+    {
+        return $this->evaluate($this->shouldDisplayAsList) ?? false;
     }
 }
