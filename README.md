@@ -10,6 +10,8 @@ A media picker/manager plugin for Filament Admin.
 
 ![curator-og](https://res.cloudinary.com/aw-codes/image/upload/w_1200,f_auto,q_auto/plugins/curator/awcodes-curator.jpg)
 
+<!-- docs_start -->
+
 ## Installation
 
 You can install the package via composer then run the installation command:
@@ -513,6 +515,8 @@ class CustomMedia extends Media
 ```php
 'model' => \App\Models\Cms\Media::class,
 ```
+
+<!-- docs_end -->
 
 ## Testing
 
