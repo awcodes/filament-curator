@@ -70,6 +70,7 @@ class MediaObserver
         }
 
         $media->__unset('file');
+        $media->__unset('originalFilename');
     }
 
     /**
