@@ -2,6 +2,14 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.10.1 - 2023-09-07
+
+### What's Changed
+
+- Fix: unset originalFilename during updating observer by @awcodes in https://github.com/awcodes/filament-curator/pull/303
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.10.0...v2.10.1
+
 ## v2.10.0 - 2023-08-31
 
 ### What's Changed
