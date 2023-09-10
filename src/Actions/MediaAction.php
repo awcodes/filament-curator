@@ -56,6 +56,7 @@ class MediaAction extends Action
                     'selected' => $selected,
                     'shouldPreserveFilenames' => Config::get('curator.should_preserve_filenames'),
                     'statePath' => $component->getStatePath(),
+                    'types' => $component->getAcceptedFileTypes(),
                     'visibility' => Config::get('curator.visibility'),
                 ]);
             });

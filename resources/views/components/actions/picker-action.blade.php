@@ -18,5 +18,6 @@
     :selected="$selected ?? []"
     :should-preserve-filenames="$shouldPreserveFilenames"
     :state-path="$statePath"
+    :types="$types"
     :visibility="$visibility"
 />
