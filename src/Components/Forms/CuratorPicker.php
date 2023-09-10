@@ -275,6 +275,7 @@ class CuratorPicker extends Field
                     'selected' => (array)$component->getState(),
                     'shouldPreserveFilenames' => $component->shouldPreserveFilenames(),
                     'statePath' => $component->getStatePath(),
+                    'types' => $component->getAcceptedFileTypes(),
                     'visibility' => $component->getVisibility(),
                 ]);
             });
