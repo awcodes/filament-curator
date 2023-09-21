@@ -13,6 +13,13 @@ return [
         'cloudinary',
         'imgix',
     ],
+    'curation_formats' => [
+        'jpg',
+        'jpeg',
+        'webp',
+        'png',
+        'avif',
+    ],
     'curation_presets' => [
         \Awcodes\Curator\Curations\ThumbnailPreset::class,
     ],

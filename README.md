@@ -312,6 +312,18 @@ Then simply register your preset in the config.
 ],
 ```
 
+You can also change which formats are available for curations by changing the `curation_formats` in the config file. These should be compatible with Intervention Image's encoding types.
+
+```php
+'curation_formats' => [
+    'jpg',
+    'jpeg',
+    'webp',
+    'png',
+    'avif',
+],
+```
+
 ### Glider Blade Component
 
 To make it as easy as possible to output your media, Curator comes with an

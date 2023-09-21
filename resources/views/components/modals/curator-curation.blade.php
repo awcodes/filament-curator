@@ -10,7 +10,7 @@
             statePath: '{{ $statePath }}',
             fileName: '{{ $media->name }}',
             fileType: '{{ $media->type }}',
-            presets: @js($presets)
+            presets: @js($presets),
         })"
         x-on:add-curation.window="$dispatch('close-modal', { id: '{{ $modalId }}' })"
     >
@@ -60,11 +60,9 @@
                                 <p class="text-xs mt-1 pl-2">{{ __('curator::views.curation.key_helper') }}</p>
                             </div>
                             <x-curator::curation-select prefix="{{ __('curator::views.curation.format') }}" name="format" x-model="format">
-                                <option value="jpg">jpg</option>
-                                <option value="jpeg">jpeg</option>
-                                <option value="webp">webp</option>
-                                <option value="png">png</option>
-                                <option value="avif">avif</option>
+                                @foreach ($formats as $format)
+                                    <option value="{{ $format }}">{{ $format }}</option>
+                                @endforeach
                             </x-curator::curation-select>
                             <x-curator::curation-input
                                 type="number"

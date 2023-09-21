@@ -22,6 +22,8 @@ class CuratorEditor extends Field
 
     protected string | Htmlable | Closure | null $buttonLabel = null;
 
+    protected array | Closure | null $formats = null;
+
     protected string $view = 'curator::components.forms.curation';
 
     public function buttonLabel(string | Htmlable | Closure | null $label): static
@@ -31,9 +33,21 @@ class CuratorEditor extends Field
         return $this;
     }
 
+    public function formats(array | Closure $formats): static
+    {
+        $this->formats = $formats;
+
+        return $this;
+    }
+
     public function getButtonLabel(): string | Htmlable | null
     {
         return $this->evaluate($this->buttonLabel);
+    }
+
+    public function getFormats(): array
+    {
+        return $this->evaluate($this->formats) ?? config('curator.curation_formats');
     }
 
     protected function setUp(): void
@@ -69,6 +83,7 @@ class CuratorEditor extends Field
                     'modalId' => $livewire->getId() . '-form-component-action',
                     'media' => $component->getRecord(),
                     'presets' => $component->getPresets(),
+                    'formats' => $component->getFormats(),
                 ]);
             });
     }

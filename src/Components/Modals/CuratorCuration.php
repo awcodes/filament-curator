@@ -16,6 +16,8 @@ class CuratorCuration extends Component
 
     public ?array $presets;
 
+    public ?array $formats;
+
     public string $statePath;
 
     public function saveCuration($data = null): void
