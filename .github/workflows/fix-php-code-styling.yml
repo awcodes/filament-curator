@@ -2,6 +2,8 @@ name: "Fix PHP code styling"
 
 on:
   pull_request:
+    branches:
+      - 3.x
     types:
       - closed
 
@@ -13,6 +15,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
 
       - name: Fix PHP code style issues
         uses: aglipanci/laravel-pint-action@2.3.0
