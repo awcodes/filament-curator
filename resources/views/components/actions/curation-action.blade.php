@@ -3,4 +3,5 @@
     :modal-id="$modalId"
     :media="$media"
     :presets="$presets"
+    :formats="$formats"
 />
