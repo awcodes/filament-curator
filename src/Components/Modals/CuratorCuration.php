@@ -22,7 +22,13 @@ class CuratorCuration extends Component
 
     public function saveCuration($data = null): void
     {
-        $image = Image::make(Storage::disk($this->media->disk)->path($this->media->path));
+        if (in_array($this->media->disk, config('curator.cloud_disks'))) {
+            $filePath = Storage::disk($this->media->disk)->url($this->media->path);
+        } else {
+            $filePath = Storage::disk($this->media->disk)->path($this->media->path);
+        }
+
+        $image = Image::make($filePath);
         $extension = $data['format'] ?? $image->extension;
 
         $aspectWidth = floor(($data['canvasData']['width'] / $data['canvasData']['naturalWidth']) * $data['width']);
