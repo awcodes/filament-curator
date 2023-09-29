@@ -2,6 +2,14 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.10.2 - 2023-09-29
+
+### What's Changed
+
+- Fix: curation path when using cloud disks by @awcodes in https://github.com/awcodes/filament-curator/pull/315
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.10.1...v2.10.2
+
 ## v2.10.1 - 2023-09-07
 
 ### What's Changed
