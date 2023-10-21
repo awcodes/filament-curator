@@ -2,6 +2,7 @@
 
 namespace Awcodes\Curator\Resources\MediaResource;
 
+use Awcodes\Curator\Actions\MultiUploadAction;
 use Awcodes\Curator\CuratorPlugin;
 use Exception;
 use Filament\Actions\Action;
@@ -55,8 +56,9 @@ class ListMedia extends ListRecords
                 ->action(function ($livewire): void {
                     $livewire->dispatch('changeLayoutView');
                 }),
+            MultiUploadAction::make(),
             CreateAction::make()
-                ->label(fn (): string => __('filament-actions::create.single.label', ['label' => CuratorPlugin::get()->getLabel()])),
+                ->label(fn(): string => __('filament-actions::create.single.label', ['label' => CuratorPlugin::get()->getLabel()])),
         ];
     }
 }

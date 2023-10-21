@@ -167,6 +167,7 @@ class MediaResource extends Resource
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])
+            ->bulkActions(static::getBulkActions($livewire->layoutView))
             ->defaultSort('created_at', 'desc')
             ->contentGrid(function () use ($livewire) {
                 if ($livewire->layoutView === 'grid') {
@@ -291,5 +292,16 @@ class MediaResource extends Resource
             ->preserveFilenames(config('curator.should_preserve_filenames'))
             ->visibility(config('curator.visibility'))
             ->storeFileNamesIn('originalFilename');
+    }
+
+    public static function getBulkActions(string $view): array
+    {
+        if ($view === 'list') {
+            return [
+                Tables\Actions\DeleteBulkAction::make(),
+            ];
+        }
+        
+        return [];
     }
 }

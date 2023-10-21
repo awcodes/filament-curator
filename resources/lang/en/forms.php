@@ -26,4 +26,9 @@ return [
     'curations' => [
         'button_label' => 'Create Curation',
     ],
+    'multi_upload' => [
+        'action_label' => 'Upload Multiple',
+        'modal_heading' => 'Upload Multiple Files',
+        'modal_file_label' => 'Files',
+    ],
 ];
