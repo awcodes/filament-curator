@@ -68,31 +68,31 @@
 [wire\:key*="open_curator_picker"],
 [wire\:key*="open_curation_panel"],
 [wire\:key*="filament_tiptap_media"] {
-    .fi-modal-window {
+    > .fi-modal-window {
         @apply !p-0;
 
-        .fi-modal-header {
+        > .fi-modal-header {
             @apply py-2 px-4 border-b border-gray-300 dark:border-gray-800;
 
             .fi-modal-heading {
                 @apply text-base;
             }
-        }
 
-        .fi-modal-close-btn {
-            margin-block-start: -0.75rem;
+            .fi-modal-close-btn {
+                margin-block-start: -0.75rem;
 
-            &:hover,
-            &:focus {
-                @apply text-primary-500 !bg-transparent;
+                &:hover,
+                &:focus {
+                    @apply text-primary-500 !bg-transparent;
+                }
             }
         }
 
-        .fi-modal-content {
+        > .fi-modal-content {
             position: relative;
         }
 
-        .fi-modal-footer {
+        > .fi-modal-footer {
             @apply pb-0;
         }
 
