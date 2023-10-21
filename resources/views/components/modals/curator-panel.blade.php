@@ -48,6 +48,7 @@
             >
                 {{ __('curator::views.panel.deselect_all') }}
             </x-filament::button>
+            @if($currentPage < $lastPage)
             <x-filament::button
                 size="xs"
                 color="gray"
@@ -55,6 +56,7 @@
             >
                 {{ __('curator::views.panel.load_more') }}
             </x-filament::button>
+            @endif
             @if ($isMultiple)
                 <p class="text-xs">Cmd + Click to select multiple files.</p>
             @endif
