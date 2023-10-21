@@ -89,13 +89,22 @@ class Uploader extends FileUpload
                 return null;
             }
 
-            $filename = $component->shouldPreserveFilenames() ? Str::of(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME))->slug() : Str::uuid();
+            $filename = $component->shouldPreserveFilenames()
+                ? Str::of(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME))->slug()
+                : Str::uuid();
+
             $extension = $file->getClientOriginalExtension();
 
             $storeMethod = $component->getVisibility() === 'public' ? 'storePubliclyAs' : 'storeAs';
 
             if (is_media_resizable($extension)) {
-                if (in_array($component->getDiskName(), config('curator.cloud_disks'))) {
+                if (
+                    (
+                        in_array($component->getDiskName(), config('curator.cloud_disks'))
+                        && config('livewire.temporary_file_upload.directory') !== null
+                    )
+                    || in_array(config('livewire.temporary_file_upload.disk'), config('curator.cloud_disks'))
+                ) {
                     $content = Storage::disk($component->getDiskName())->get($file->path());
                 } else {
                     $content = $file->getRealPath();
