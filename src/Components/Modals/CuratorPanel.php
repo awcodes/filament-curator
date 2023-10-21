@@ -21,12 +21,14 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
+use Livewire\WithPagination;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class CuratorPanel extends Component implements HasForms, HasActions
 {
     use InteractsWithActions;
     use InteractsWithForms;
+    use WithPagination;
 
     public array $acceptedFileTypes = [];
 
@@ -68,6 +70,8 @@ class CuratorPanel extends Component implements HasForms, HasActions
 
     public array $selected = [];
 
+    public int $defaultLimit = 25;
+
     public ?string $statePath;
 
     public bool $shouldPreserveFilenames = false;
@@ -79,6 +83,12 @@ class CuratorPanel extends Component implements HasForms, HasActions
     public string $visibility = 'public';
 
     public array $originalFilenames = [];
+
+    public int $currentPage = 0;
+
+    public int $mediaCount = 0;
+
+    public int $lastPage = 0;
 
     public function mount(): void
     {
@@ -127,9 +137,9 @@ class CuratorPanel extends Component implements HasForms, HasActions
             ])->statePath('data');
     }
 
-    public function getFiles(int $offset = 0): array
+    public function getFiles(int $page = 0, bool $excludeSelected = false): array
     {
-        $files = App::make(Media::class)
+        $files = App::make(Media::class)->query()
             ->when($this->selected, function ($query, $selected) {
                 $selected = collect($selected)->pluck('id')->toArray();
 
@@ -145,38 +155,46 @@ class CuratorPanel extends Component implements HasForms, HasActions
                 $wildcardTypes?->map(fn($type) => $query->orWhere('type', 'LIKE', str_replace('*', '%', $type)));
 
                 return $query;
-            })
-            ->latest()
-            ->offset($offset)
-            ->limit(25)
-            ->get();
+            });
 
-        if ($this->selected) {
+        $paginator = $files->paginate($this->defaultLimit, page: $page);
+
+        $this->currentPage = $paginator->currentPage();
+        $this->mediaCount = $paginator->total();
+        $this->lastPage = $paginator->lastPage();
+
+        $items = $paginator->items();
+
+        if (!$excludeSelected && $this->selected) {
             $selected = collect($this->selected)->pluck('id')->toArray();
 
-            App::make(Media::class)
+            $selectedItems = App::make(Media::class)
                 ->whereIn('id', $selected)
                 ->get()
                 ->sortBy(function ($model) use ($selected) {
                     return array_search($model->id, $selected);
-                })
-                ->reverse()
-                ->map(function ($item) use ($files) {
-                    $files->prepend($item);
                 });
+
+            array_unshift($items, ...$selectedItems);
 
             $this->setMediaForm();
             $this->context = count($this->selected) === 1 ? 'edit' : 'create';
         }
 
-        return $files->toArray();
+        return collect($items)->map(function ($item) {
+            return $item->toArray();
+        })->toArray();
     }
 
     public function loadMoreFiles(): void
     {
+        if ($this->currentPage === $this->lastPage) {
+            return;
+        }
+
         $this->files = [
             ...$this->files,
-            ...$this->getFiles(count($this->files)),
+            ...$this->getFiles($this->currentPage + 1, true),
         ];
     }
 
