@@ -47,7 +47,7 @@ return [
     'curation' => [
         'heading' => 'Curating',
         'adjustments' => 'Anpassungen',
-		'cancel' => 'Abbrechen',
+        'cancel' => 'Abbrechen',
         'custom' => 'Benutzerdefiniert',
         'key' => 'Key',
         'key_helper' => 'Dies ist die Referenz, die zum Abruf der Curation verwendet wird.',
