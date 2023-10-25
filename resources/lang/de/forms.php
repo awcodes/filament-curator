@@ -26,4 +26,9 @@ return [
     'curations' => [
         'button_label' => 'Variante erstellen',
     ],
+    'multi_upload' => [
+        'action_label' => 'Mehrere hochladen',
+        'modal_heading' => 'Mehrere Dateien hochladen',
+        'modal_file_label' => 'Dateien',
+    ],
 ];
