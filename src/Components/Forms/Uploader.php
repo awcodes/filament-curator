@@ -91,7 +91,7 @@ class Uploader extends FileUpload
 
             $filename = $component->shouldPreserveFilenames()
                 ? Str::of(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME))->slug()
-                : Str::uuid();
+                : (string)Str::uuid();
 
             $extension = $file->getClientOriginalExtension();
 
@@ -117,7 +117,7 @@ class Uploader extends FileUpload
                 $exif = $image->exif();
             }
 
-            if ($file->exists()) {
+            if (Storage::disk($component->getDiskName())->exists(ltrim($component->getDirectory().'/'.$filename.'.'.$extension, '/'))) {
                 $filename = $filename . '-' . time();
             }
 
