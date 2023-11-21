@@ -384,7 +384,8 @@ class CuratorPanel extends Component implements HasForms, HasActions
             ->label(__('curator::views.panel.use_selected_image'))
             ->action(function (): void {
                 $this->dispatch(
-                    'insert-media',
+                    'insert-content',
+                    type: 'media',
                     statePath: $this->statePath,
                     media: $this->selected
                 );

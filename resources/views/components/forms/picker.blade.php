@@ -16,7 +16,7 @@
                 $wire.$set(event.detail.statePath, event.detail.media);
             },
         }"
-        x-on:insert-media.window="insertMedia($event)"
+        x-on:insert-content.window="insertMedia($event)"
         class="curator-media-picker w-full"
     >
         <ul

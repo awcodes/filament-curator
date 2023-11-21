@@ -34,7 +34,7 @@
             return Object.values($wire.selected).find(obj => obj.id == mediaId) !== undefined;
         },
     }"
-    x-on:insert-media.window="$dispatch('close-modal', { id: '{{ $modalId }}' })"
+    x-on:insert-content.window="$dispatch('close-modal', { id: '{{ $modalId }}' })"
     class="curator-panel h-full absolute inset-0 flex flex-col"
 >
     <!-- Toolbar -->
