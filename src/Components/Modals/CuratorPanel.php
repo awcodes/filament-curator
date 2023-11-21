@@ -324,7 +324,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
             ->icon('heroicon-s-trash')
             ->iconButton()
             ->extraAttributes([
-                'style' => 'border: none;',
+                'style' => 'border: none; margin: 0;',
             ])
             ->requiresConfirmation()
             ->action(function (array $arguments): void {
@@ -364,7 +364,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
             ->color('gray')
             ->iconButton()
             ->extraAttributes([
-                'style' => 'border: none;',
+                'style' => 'border: none; margin: 0;',
             ])
             ->action(function (array $arguments): ?StreamedResponse {
                 if (empty($arguments)) {
@@ -429,7 +429,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
             ->color('gray')
             ->iconButton()
             ->extraAttributes([
-                'style' => 'border: none;',
+                'style' => 'border: none; margin: 0;',
             ])
             ->url(function (array $arguments): ?string {
                 if (empty($arguments)) {
