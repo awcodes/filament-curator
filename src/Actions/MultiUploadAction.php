@@ -49,7 +49,7 @@ class MultiUploadAction extends Action
                         });
                     }
 
-                    $item['title'] = pathinfo($data['originalFilenames'][$item['path']] ?? null, PATHINFO_FILENAME);
+                    $item['title'] = pathinfo($data['originalFilename'][$item['path']] ?? null, PATHINFO_FILENAME);
 
                     tap(
                         App::make(Media::class)->create($item),
