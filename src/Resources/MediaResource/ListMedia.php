@@ -56,7 +56,7 @@ class ListMedia extends ListRecords
                 ->action(function ($livewire): void {
                     $livewire->dispatch('changeLayoutView');
                 }),
-            MultiUploadAction::make(),
+            MultiUploadAction::make()->translateLabel(),
             CreateAction::make()
                 ->label(fn(): string => __('filament-actions::create.single.label', ['label' => CuratorPlugin::get()->getLabel()])),
         ];
