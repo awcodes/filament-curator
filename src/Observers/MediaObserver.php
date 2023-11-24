@@ -58,6 +58,10 @@ class MediaObserver
 
             $media->name = $media->getOriginal()['name'];
             $media->path = $media->directory . '/' . $media->getOriginal()['name'] . '.' . $media->ext;
+
+            // Delete glide-cache for replaced image
+            $server = app(config('curator.glide.server'))->getFactory();
+            $server->deleteCache($media->path);
         }
 
         // Rename file name
