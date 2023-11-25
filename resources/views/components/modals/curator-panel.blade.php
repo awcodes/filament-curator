@@ -34,7 +34,6 @@
             return Object.values($wire.selected).find(obj => obj.id == mediaId) !== undefined;
         },
     }"
-    x-on:insert-content.window="$dispatch('close-modal', { id: '{{ $modalId }}' })"
     class="curator-panel h-full absolute inset-0 flex flex-col"
 >
     <!-- Toolbar -->
@@ -169,7 +168,7 @@
                     <h4 class="font-bold py-2 px-4 mb-0">
                         <span>
                             {{
-                                $context === 'create'
+                                empty($selected)
                                     ? __('curator::views.panel.add_files')
                                     : __('curator::views.panel.edit_media')
                             }}

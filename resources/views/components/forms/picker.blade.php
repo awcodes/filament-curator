@@ -184,6 +184,16 @@
                 {{ $getAction('removeAll') }}
             @endif
         </div>
-    </div>
 
+        @once
+        <template x-teleport="body">
+            <x-filament::modal id="curator-panel" width="screen" class="curator-panel">
+                <x-slot name="heading">
+                    {{ __('curator::views.panel.heading') }}
+                </x-slot>
+                <livewire:curator-panel/>
+            </x-filament::modal>
+        </template>
+        @endonce
+    </div>
 </x-dynamic-component>
