@@ -20,6 +20,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Storage;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -36,7 +37,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
 
     public ?array $data = [];
 
-    public ?string $directory;
+    public string $directory = 'media';
 
     public string $diskName = 'public';
 
@@ -54,6 +55,8 @@ class CuratorPanel extends Component implements HasForms, HasActions
 
     public bool $isMultiple = false;
 
+    public ?int $maxItems = null;
+
     public ?int $maxSize = null;
 
     public ?int $maxWidth = null;
@@ -62,8 +65,6 @@ class CuratorPanel extends Component implements HasForms, HasActions
 
     public ?int $mediaId = null;
 
-    public string $modalId;
-
     public PathGenerator|string|null $pathGenerator = null;
 
     public string $search = '';
@@ -71,6 +72,8 @@ class CuratorPanel extends Component implements HasForms, HasActions
     public array $selected = [];
 
     public int $defaultLimit = 25;
+
+    public ?string $modalId = null;
 
     public ?string $statePath;
 
@@ -96,12 +99,39 @@ class CuratorPanel extends Component implements HasForms, HasActions
         $this->files = $this->getFiles();
     }
 
+    #[On('open-modal')]
+    public function openModal(string $id, array $settings = []): void
+    {
+        if ($id === 'curator-panel') {
+            $this->acceptedFileTypes = $settings['acceptedFileTypes'];
+            $this->directory = $settings['directory'];
+            $this->diskName = $settings['diskName'];
+            $this->imageCropAspectRatio = $settings['imageCropAspectRatio'];
+            $this->imageResizeMode = $settings['imageResizeMode'];
+            $this->imageResizeTargetWidth = $settings['imageResizeTargetWidth'];
+            $this->imageResizeTargetHeight = $settings['imageResizeTargetHeight'];
+            $this->isLimitedToDirectory = $settings['isLimitedToDirectory'];
+            $this->isMultiple = $settings['isMultiple'];
+            $this->maxItems = $settings['maxItems'];
+            $this->maxSize = $settings['maxSize'];
+            $this->maxWidth = $settings['maxWidth'];
+            $this->minSize = $settings['minSize'];
+            $this->pathGenerator = $settings['pathGenerator'];
+            $this->validationRules = $settings['rules'];
+            $this->selected = (array)$settings['selected'];
+            $this->shouldPreserveFilenames = $settings['shouldPreserveFilenames'];
+            $this->statePath = $settings['statePath'];
+            $this->types = $settings['types'];
+            $this->visibility = $settings['visibility'];
+        }
+    }
+
     public function form(Form $form): Form
     {
         return $form
             ->schema([
                 Uploader::make('files_to_add')
-                    ->visible(fn() => $this->context === 'create')
+                    ->visible(fn() => empty($this->selected))
                     ->hiddenLabel()
                     ->required()
                     ->multiple()
@@ -133,7 +163,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
                             ],
                         ]),
                     ...App::make(MediaResource::class)->getAdditionalInformationFormSchema(),
-                ])->visible(fn() => $this->context === 'edit' && count($this->selected) === 1),
+                ])->visible(fn() => filled($this->selected) && count($this->selected) === 1),
             ])->statePath('data');
     }
 
@@ -389,6 +419,8 @@ class CuratorPanel extends Component implements HasForms, HasActions
                     statePath: $this->statePath,
                     media: $this->selected
                 );
+
+                $this->dispatch('close-modal', id: $this->modalId ?? 'curator-panel');
             });
     }
 

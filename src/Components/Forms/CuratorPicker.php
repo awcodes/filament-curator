@@ -20,7 +20,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\View;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use function Awcodes\Curator\get_media_items;
@@ -251,11 +250,8 @@ class CuratorPicker extends Field
             ->color($this->getColor())
             ->outlined($this->isOutlined())
             ->size($this->getSize())
-            ->modalWidth('screen')
-            ->modalFooterActions(fn() => [])
-            ->modalHeading(__('curator::views.panel.heading'))
-            ->modalContent(static function (CuratorPicker $component) {
-                return View::make('curator::components.actions.picker-action', [
+            ->action(function (CuratorPicker $component, \Livewire\Component $livewire) {
+                $livewire->dispatch('open-modal', id: 'curator-panel', settings: [
                     'acceptedFileTypes' => $component->getAcceptedFileTypes(),
                     'directory' => $component->getDirectory(),
                     'diskName' => $component->getDiskName(),
@@ -269,7 +265,6 @@ class CuratorPicker extends Field
                     'maxSize' => $component->getMaxSize(),
                     'maxWidth' => $component->getMaxWidth(),
                     'minSize' => $component->getMinSize(),
-                    'modalId' => $component->getLivewire()->getId() . '-form-component-action',
                     'pathGenerator' => $component->getPathGenerator(),
                     'rules' => $component->getValidationRules(),
                     'selected' => (array)$component->getState(),
