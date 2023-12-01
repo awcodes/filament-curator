@@ -127,14 +127,16 @@ class Media extends Model
         return round($size, $precision) . ' ' . $units[$i];
     }
 
-    public function getSignedUrl(array $params = []): string
+    public function getSignedUrl(array $params = [], bool $force = false): string
     {
-        if (
-            !$this->resizable ||
-            in_array($this->disk, config('curator.cloud_disks')) ||
-            !Storage::disk($this->disk)->exists($this->path)
-        ) {
-            return $this->url;
+        if (! $force) {
+            if (
+                ! $this->resizable ||
+                in_array($this->disk, config('curator.cloud_disks')) ||
+                ! Storage::disk($this->disk)->exists($this->path)
+            ) {
+                return $this->url;
+            }
         }
 
         $urlBuilder = UrlBuilderFactory::create('/curator/', config('app.key'));
