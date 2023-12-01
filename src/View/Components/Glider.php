@@ -48,9 +48,10 @@ class Glider extends Component
         public ?string $watermarkPosition = null,
         public ?string $watermarkAlpha = null,
         public ?string $fallback = null,
+        public bool $force = false,
     ) {
         if (! $media instanceof Media) {
-            if(! is_null($media)) {
+            if (! is_null($media)) {
                 $this->media = app(Media::class)::where('id', $media)->first();
             }
 
@@ -105,7 +106,7 @@ class Glider extends Component
                 return $urlBuilder->getUrl($this->media->path, $params);
             }
 
-            return $this->media->getSignedUrl($params);
+            return $this->media->getSignedUrl($params, $this->force);
         }
 
         return '';

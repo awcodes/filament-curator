@@ -340,6 +340,7 @@ Glide's options.
 - srcset: this will output the necessary srcset with glide generated urls.
   Must be an array of srcset widths and requires the 'sizes' attribute to
   also be set.
+- force: (bool) this can be used to force glider to return a signed url and is helpful when returning urls from cloud disks. This should be used with the knowledge that it could have performance implications.
 
 ```blade
 <div class="aspect-video w-64">
