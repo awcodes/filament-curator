@@ -80,15 +80,15 @@
 
                                     <div class="flex items-center justify-center flex-none w-8 h-8">
                                         <x-filament-actions::group
-                                        :actions="[
-                                            $getAction('view')(['url' => $item['url']]),
-                                            $getAction('edit')(['id' => $item['id']]),
-                                            $getAction('download')(['uuid' => $uuid]),
-                                            $getAction('remove')(['uuid' => $uuid]),
-                                        ]"
-                                        color="gray"
-                                        size="xs"
-                                        dropdown-placement="bottom-end"
+                                            :actions="[
+                                                $getAction('view')(['url' => $item['url']]),
+                                                $getAction('edit')(['id' => $item['id']]),
+                                                $getAction('download')(['uuid' => $uuid]),
+                                                $getAction('remove')(['uuid' => $uuid]),
+                                            ]"
+                                            color="gray"
+                                            size="xs"
+                                            dropdown-placement="bottom-end"
                                         />
                                     </div>
                                 </div>
@@ -184,16 +184,5 @@
                 {{ $getAction('removeAll') }}
             @endif
         </div>
-
-        @once
-        <template x-teleport="body">
-            <x-filament::modal id="curator-panel" width="screen" class="curator-panel" displayClasses="block">
-                <x-slot name="heading">
-                    {{ __('curator::views.panel.heading') }}
-                </x-slot>
-                <livewire:curator-panel/>
-            </x-filament::modal>
-        </template>
-        @endonce
     </div>
 </x-dynamic-component>

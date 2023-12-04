@@ -24,6 +24,12 @@ composer require awcodes/filament-curator
 php artisan curator:install
 ```
 
+***If you are using the stand-alone forms package then you will need to include the Curator modal in your layout file, typically you would place this, before the closing `body` tag.***
+
+```html
+<x-curator::modals.modal />
+```
+
 In an effort to align with Filament's theming methodology you will need to use a custom theme to use this plugin.
 
 > **Note**
@@ -509,8 +515,6 @@ media item, only the ones where you're trying to change the focal point, etc.
     />
 @endif
 ```
-
-
 
 ### Custom Model
 
