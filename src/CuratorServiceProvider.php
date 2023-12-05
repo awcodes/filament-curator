@@ -57,7 +57,7 @@ class CuratorServiceProvider extends PackageServiceProvider
             Css::make('curator', __DIR__ . '/../resources/dist/curator.css')->loadedOnRequest(),
         ], 'awcodes/curator');
 
-        if (Filament::getCurrentPanel()) {
+        if (Filament::getCurrentPanel() && Filament::getCurrentPanel()->hasPlugin('awcodes/curator')) {
             FilamentView::registerRenderHook(
                 'panels::body.end',
                 fn (): View => view('curator::components.modals.modal')
