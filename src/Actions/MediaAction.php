@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Str;
+use Livewire\Component;
 
 class MediaAction extends Action
 {
@@ -26,17 +27,14 @@ class MediaAction extends Action
             ->arguments([
                 'src' => '',
             ])
-            ->modalWidth('screen')
-            ->modalHeading(__('curator::views.panel.heading'))
-            ->modalFooterActions(fn() => [])
-            ->modalContent(static function (TiptapEditor|CuratorPicker $component, array $arguments) {
+            ->action(function (TiptapEditor|CuratorPicker $component, Component $livewire, array $arguments) {
 
                 $selected = $arguments['src'] !== ''
                     ? [App::get(Media::class)->firstWhere('name', Str::of($arguments['src'])->afterLast('/')->beforeLast
                     ('.'))]
                     : [];
 
-                return View::make('curator::components.actions.picker-action', [
+                $livewire->dispatch('open-modal', id: 'curator-panel', settings: [
                     'acceptedFileTypes' => Config::get('curator.accepted_file_types'),
                     'directory' => Config::get('curator.directory'),
                     'diskName' => Config::get('curator.disk'),
