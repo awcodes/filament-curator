@@ -437,6 +437,14 @@ class CuratorPanel extends Component implements HasForms, HasActions
                     if ($item) {
                         $item->update($this->form->getState());
 
+                        $this->selected = collect($this->selected)->map(function ($selectedItem) use ($item) {
+                            if ($selectedItem['id'] === $item->id) {
+                                return $item->refresh();
+                            }
+
+                            return $selectedItem;
+                        })->toArray();
+
                         Notification::make('curator_update_success')
                             ->success()
                             ->body(__('curator::notifications.update_success'))
