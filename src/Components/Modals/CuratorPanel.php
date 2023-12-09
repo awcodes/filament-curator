@@ -267,6 +267,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
                 return $query->where('directory', $this->directory);
             })
             ->where('name', 'like', '%' . $this->search . '%')
+            ->orWhere('title', 'like', '%' . $this->search . '%')
             ->orWhere('alt', 'like', '%' . $this->search . '%')
             ->orWhere('caption', 'like', '%' . $this->search . '%')
             ->orWhere('description', 'like', '%' . $this->search . '%')
