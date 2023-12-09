@@ -67,7 +67,6 @@
 
 [wire\:key*="open_curator_picker"],
 [wire\:key*="open_curation_panel"],
-[wire\:key*="filament_tiptap_media"],
 .curator-panel {
     > .fi-modal-window {
         @apply !p-0;
