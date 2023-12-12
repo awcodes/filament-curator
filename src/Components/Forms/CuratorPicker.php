@@ -260,6 +260,7 @@ class CuratorPicker extends Field
                     'imageResizeTargetWidth' => $component->getImageResizeTargetWidth(),
                     'imageResizeTargetHeight' => $component->getImageResizeTargetHeight(),
                     'isLimitedToDirectory' => $component->isLimitedToDirectory(),
+                    'isTenantAware' => $component->isTenantAware(),
                     'isMultiple' => $component->isMultiple(),
                     'maxItems' => $component->getMaxItems(),
                     'maxSize' => $component->getMaxSize(),
@@ -331,6 +332,12 @@ class CuratorPicker extends Field
         }
 
         return $this->evaluate($this->isLimitedToDirectory) ?? config('curator.is_limited_to_directory');
+    }
+
+    public function isTenantAware(): bool
+    {
+        return filament()->hasTenancy();
+
     }
 
     public function isMultiple(): bool
