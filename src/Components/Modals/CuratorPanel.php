@@ -138,7 +138,6 @@ class CuratorPanel extends Component implements HasForms, HasActions
                     ->required()
                     ->multiple()
                     ->label(__('curator::forms.fields.file'))
-                    ->panelAspectRatio('4:3')
                     ->preserveFilenames($this->shouldPreserveFilenames)
                     ->maxWidth($this->maxWidth)
                     ->minSize($this->minSize)

@@ -177,7 +177,7 @@
 
                     <div class="flex-1 overflow-auto px-4 pb-4">
                         <div class="h-full">
-                            <div class="mb-4">
+                            <div class="mb-4 mt-px">
                                 {{ $this->form }}
                             </div>
                             <x-filament-actions::modals />
