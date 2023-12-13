@@ -55,6 +55,8 @@ class CuratorPanel extends Component implements HasForms, HasActions
 
     public bool $isLimitedToDirectory = false;
 
+    public bool $isTenantAware = false;
+
     public bool $isMultiple = false;
 
     public ?int $maxItems = null;
@@ -113,6 +115,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
             $this->imageResizeTargetWidth = $settings['imageResizeTargetWidth'];
             $this->imageResizeTargetHeight = $settings['imageResizeTargetHeight'];
             $this->isLimitedToDirectory = $settings['isLimitedToDirectory'];
+            $this->isTenantAware = $settings['isTenantAware'];
             $this->isMultiple = $settings['isMultiple'];
             $this->maxItems = $settings['maxItems'];
             $this->maxSize = $settings['maxSize'];
@@ -171,6 +174,9 @@ class CuratorPanel extends Component implements HasForms, HasActions
     public function getFiles(int $page = 0, bool $excludeSelected = false): array
     {
         $files = App::make(Media::class)->query()
+            ->when(filament()->hasTenancy(), function ($query) {
+                return $query->where(filament()->getTenantOwnershipRelationshipName().'_id',filament()->getTenant()->id);
+            })
             ->when($this->selected, function ($query, $selected) {
                 $selected = collect($selected)->pluck('id')->toArray();
 
