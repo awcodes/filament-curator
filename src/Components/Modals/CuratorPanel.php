@@ -115,7 +115,6 @@ class CuratorPanel extends Component implements HasForms, HasActions
             $this->imageResizeTargetWidth = $settings['imageResizeTargetWidth'];
             $this->imageResizeTargetHeight = $settings['imageResizeTargetHeight'];
             $this->isLimitedToDirectory = $settings['isLimitedToDirectory'];
-            $this->isTenantAware = $settings['isTenantAware'];
             $this->isMultiple = $settings['isMultiple'];
             $this->maxItems = $settings['maxItems'];
             $this->maxSize = $settings['maxSize'];
