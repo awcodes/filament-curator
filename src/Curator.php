@@ -71,7 +71,7 @@ class Curator
 
     protected bool|Closure $shouldPreserveFilenames = false;
 
-    protected bool $shouldRegisterNavigation = true;
+    protected bool|Closure|null $shouldRegisterNavigation = true;
 
     protected bool|Closure|null $tableHasGridLayout = true;
 
@@ -179,7 +179,7 @@ class Curator
 
     public function getGlideServer(): Server|ServerFactory
     {
-        if (! $this->glideServer) {
+        if (!$this->glideServer) {
             return ServerFactory::create([
                 'driver' => $this->getGlideDriver(),
                 'response' => new LaravelResponseFactory(app('request')),
@@ -495,7 +495,7 @@ class Curator
 
     public function shouldTableHaveGridLayout(): string
     {
-        if (! Session::has('tableLayout')) {
+        if (!Session::has('tableLayout')) {
             Session::put('tableLayout', $this->evaluate($this->tableHasGridLayout));
         }
 
