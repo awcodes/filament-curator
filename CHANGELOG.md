@@ -2,6 +2,14 @@
 
 All notable changes to `curator` will be documented in this file.
 
+## v2.10.3 - 2023-12-16
+
+### What's Changed
+
+* Fix: allow closure in navigation registration by @awcodes in https://github.com/awcodes/filament-curator/pull/382
+
+**Full Changelog**: https://github.com/awcodes/filament-curator/compare/v2.10.2...v2.10.3
+
 ## v2.10.2 - 2023-09-29
 
 ### What's Changed
