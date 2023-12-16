@@ -8,7 +8,6 @@ use Filament\Forms\Components\Actions\Action;
 use FilamentTiptapEditor\TiptapEditor;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\View;
 use Illuminate\Support\Str;
 use Livewire\Component;
 
@@ -43,6 +42,7 @@ class MediaAction extends Action
                     'imageResizeTargetHeight' => Config::get('curator.image_resize_target_height'),
                     'imageResizeMode' => Config::get('curator.image_resize_mode'),
                     'isLimitedToDirectory' => false,
+                    'isTenantAware' => Config::get('curator.is_tenant_aware'),
                     'isMultiple' => false,
                     'maxItems' => 1,
                     'maxSize' => Config::get('curator.max_size'),
