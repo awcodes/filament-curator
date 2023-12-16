@@ -42,6 +42,8 @@ class CuratorPicker extends Field
 
     protected bool|Closure|null $isMultiple = false;
 
+    protected bool|Closure|null $isTenantAware = null;
+
     protected bool|Closure|null $shouldLazyLoad = null;
 
     protected int|Closure|null $maxItems = null;
@@ -165,7 +167,7 @@ class CuratorPicker extends Field
         return $this->orderColumn ?? 'order';
     }
 
-    public function getRelationship(): BelongsTo|BelongsToMany|\Znck\Eloquent\Relations\BelongsToThrough|null
+    public function getRelationship(): BelongsTo|BelongsToMany|null
     {
         $name = $this->getRelationshipName();
 
@@ -260,6 +262,7 @@ class CuratorPicker extends Field
                     'imageResizeTargetWidth' => $component->getImageResizeTargetWidth(),
                     'imageResizeTargetHeight' => $component->getImageResizeTargetHeight(),
                     'isLimitedToDirectory' => $component->isLimitedToDirectory(),
+                    'isTenantAware' => $component->isTenantAware(),
                     'isMultiple' => $component->isMultiple(),
                     'maxItems' => $component->getMaxItems(),
                     'maxSize' => $component->getMaxSize(),
@@ -336,6 +339,11 @@ class CuratorPicker extends Field
     public function isMultiple(): bool
     {
         return $this->evaluate($this->isMultiple);
+    }
+
+    public function isTenantAware(): bool
+    {
+        return $this->evaluate($this->isTenantAware) ?? config('curator.is_tenant_aware');
     }
 
     public function lazyLoad(bool|Closure $condition = true): static
@@ -462,6 +470,13 @@ class CuratorPicker extends Field
     public function shouldLazyLoad(): bool
     {
         return $this->evaluate($this->shouldLazyLoad) ?? false;
+    }
+
+    public function tenantAware(bool|Closure $condition = true): static
+    {
+        $this->isTenantAware = $condition;
+
+        return $this;
     }
 
     public function listDisplay(bool|Closure $condition = true): static

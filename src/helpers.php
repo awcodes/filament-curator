@@ -5,15 +5,15 @@ namespace Awcodes\Curator;
 use Awcodes\Curator\Models\Media;
 use Illuminate\Database\Eloquent\Collection;
 
-if (! function_exists('Curator\is_media_resizable')) {
+if (!function_exists('is_media_resizable')) {
     function is_media_resizable(string $ext): bool
     {
         return in_array($ext, ['jpeg', 'jpg', 'png', 'webp', 'bmp']);
     }
 }
 
-if (! function_exists('Curator\get_media_items')) {
-    function get_media_items(array | Media | int $ids): Collection | array
+if (!function_exists('get_media_items')) {
+    function get_media_items(array|Media|int $ids): Collection|array
     {
         if ($ids instanceof Media) {
             return [$ids];

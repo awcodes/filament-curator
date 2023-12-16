@@ -124,6 +124,7 @@ CuratorPicker::make(string $fieldName)
     ->pathGenerator(DatePathGenerator::class|UserPathGenerator::class) // see path generators below
     ->lazyLoad(bool | Closure $condition) // defaults to true
     ->listDisplay(bool | Closure $condition) // defaults to true
+    ->tenantAware(bool | Closure $condition) // defaults to true
     // see https://filamentphp.com/docs/2.x/forms/fields#file-upload for more information about the following methods
     ->preserveFilenames()
     ->maxWidth()
