@@ -22,7 +22,6 @@ return [
         'download' => 'Download',
         'remove' => 'Remove',
         'clear' => 'Remove All',
-        'add_multiple_file' => 'Cmd + Click to select multiple files.'
     ],
     'panel' => [
         'button' => 'Add media',
@@ -45,6 +44,7 @@ return [
         'download' => 'Download',
         'remove' => 'Remove',
         'deselect_all' => 'Deselect All',
+        'add_multiple_file' => 'Cmd + Click to select multiple files.'
     ],
     'curation' => [
         'heading' => 'Curating',
