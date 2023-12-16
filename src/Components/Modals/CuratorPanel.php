@@ -129,6 +129,8 @@ class CuratorPanel extends Component implements HasForms, HasActions
             $this->statePath = $settings['statePath'];
             $this->types = $settings['types'];
             $this->visibility = $settings['visibility'];
+
+            $this->form->fill();
         }
     }
 
