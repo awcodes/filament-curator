@@ -22,6 +22,7 @@ return [
         'download' => 'Download',
         'remove' => 'Remove',
         'clear' => 'Remove All',
+        'add_multiple_file' => 'Cmd + Click to select multiple files.'
     ],
     'panel' => [
         'button' => 'Add media',

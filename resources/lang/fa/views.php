@@ -22,6 +22,7 @@ return [
         'download' => 'دانلود',
         'remove' => 'حذف',
         'clear' => 'حذف همه',
+        'add_multiple' => 'استفاده کنید Cmd + Click برای انتخاب چند فایل از.'
     ],
     'panel' => [
         'button' => 'افزودن مدیا',
