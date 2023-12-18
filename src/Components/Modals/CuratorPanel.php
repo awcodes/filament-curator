@@ -21,13 +21,11 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Storage;
-use Livewire\Attributes\Lazy;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-#[Lazy]
 class CuratorPanel extends Component implements HasForms, HasActions
 {
     use InteractsWithActions;
