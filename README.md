@@ -447,6 +447,16 @@ Then you can reference your fallback in the blade component.
 <x-curator-glider :media="1" fallback="card_fallback"/>
 ```
 
+### Custom Glide Route
+
+By default, Curator will use the route `curator` when serving images through Glide. If you want to change this you can update the `glide.route_path` setting in the Curator config file.
+
+```php
+'glide' => [
+    'route_path' => 'uploads',
+],
+```
+
 ### Custom Glide Server
 
 If you want to use your own Glide Server for handling served media with Glide you can implement the `ServerFactory` interface on your own classes and set it to the config.

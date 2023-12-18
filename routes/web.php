@@ -3,5 +3,6 @@
 use Awcodes\Curator\Http\Controllers\MediaController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/curator/{path}', [MediaController::class, 'show'])
+Route::prefix(config('curator.glide.route_path', 'curator'))
+    ->get('/{path}', [MediaController::class, 'show'])
     ->where('path', '.*');
