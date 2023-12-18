@@ -91,6 +91,10 @@ class MediaObserver
         if (count(Storage::disk($media->disk)->allFiles($media->directory)) == 0) {
             Storage::disk($media->disk)->deleteDirectory($media->directory);
         }
+
+        // Delete glide-cache for delete image
+        $server = app(config('curator.glide.server'))->getFactory();
+        $server->deleteCache($media->path);
     }
 
     private function hasMediaUpload($media): bool
