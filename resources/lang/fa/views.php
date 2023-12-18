@@ -40,9 +40,10 @@ return [
         'use_selected_image' => 'اضافه کردن',
         'add_files' => 'افزودن فایل',
         'view' => 'نمایش',
-        'edit' => 'ادیت',
+        'edit' => 'ویرایش',
         'download' => 'دانلود',
         'remove' => 'حذف',
+        'deselect_all' => 'لغو انتخاب همه',
         'add_multiple' => 'استفاده کنید Cmd + Click برای انتخاب چند فایل از.'
     ],
     'curation' => [
@@ -54,7 +55,7 @@ return [
         'key_helper' => 'برای اسفاده از curation در آینده باید از این استفاده کنید',
         'zoom_in' => 'افزایش زوم',
         'zoom_out' => 'کاهش زوم',
-        'flip_horizontally' => 'برگردپندن به صورت افقی',
+        'flip_horizontally' => 'برگردوندن به صورت افقی',
         'flip_vertically' => 'برگردوندن به صورت عمودی',
         'drag_mode' => 'حالت کشیدن',
         'crop_mode' => 'حالت بریدن',
