@@ -57,7 +57,7 @@
             </x-filament::button>
             @endif
             @if ($isMultiple)
-                <p class="text-xs">Cmd + Click to select multiple files.</p>
+                <p class="text-xs">{{ __('curator::views.panel.add_multiple_file') }}</p>
             @endif
         </div>
         <label class="border border-gray-300 dark:border-gray-700 rounded-md relative flex items-center">

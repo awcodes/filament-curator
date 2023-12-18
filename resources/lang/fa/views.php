@@ -21,6 +21,7 @@ return [
         'edit' => 'ویرایش',
         'download' => 'دانلود',
         'remove' => 'حذف',
+        'clear' => 'حذف همه',
     ],
     'panel' => [
         'button' => 'افزودن مدیا',
@@ -42,10 +43,12 @@ return [
         'edit' => 'ادیت',
         'download' => 'دانلود',
         'remove' => 'حذف',
+        'add_multiple' => 'استفاده کنید Cmd + Click برای انتخاب چند فایل از.'
     ],
     'curation' => [
         'heading' => 'Curating',
         'adjustments' => 'تنظیمات',
+        'cancel' => 'لغو',
         'custom' => 'سفارشی',
         'key' => 'کلید',
         'key_helper' => 'برای اسفاده از curation در آینده باید از این استفاده کنید',
