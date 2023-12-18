@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use League\Glide\Urls\UrlBuilderFactory;
 use function Awcodes\Curator\is_media_resizable;
 
@@ -139,7 +140,13 @@ class Media extends Model
             }
         }
 
-        $urlBuilder = UrlBuilderFactory::create('/curator/', config('app.key'));
+        $routeBasePath = Str::of(config('curator.glide.route_path', 'curator'))
+            ->trim('/')
+            ->prepend('/')
+            ->append('/')
+            ->toString();
+
+        $urlBuilder = UrlBuilderFactory::create($routeBasePath, config('app.key'));
 
         return $urlBuilder->getUrl($this->path, $params);
     }
