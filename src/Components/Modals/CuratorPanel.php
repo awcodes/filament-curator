@@ -105,7 +105,6 @@ class CuratorPanel extends Component implements HasForms, HasActions
     public function openModal(string $id, array $settings = []): void
     {
         if ($id === 'curator-panel') {
-            $this->files = $this->getFiles();
             $this->acceptedFileTypes = $settings['acceptedFileTypes'];
             $this->directory = $settings['directory'];
             $this->diskName = $settings['diskName'];
@@ -127,6 +126,8 @@ class CuratorPanel extends Component implements HasForms, HasActions
             $this->statePath = $settings['statePath'];
             $this->types = $settings['types'];
             $this->visibility = $settings['visibility'];
+
+            $this->files = $this->getFiles();
 
             $this->form->fill();
         }
