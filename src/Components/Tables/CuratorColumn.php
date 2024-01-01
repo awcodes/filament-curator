@@ -55,6 +55,12 @@ class CuratorColumn extends ImageColumn
 
     public function applyEagerLoading(EloquentBuilder|Relation $query): EloquentBuilder|Relation
     {
+        $model = $query->getModel();
+
+        if ($model instanceof Media || is_subclass_of(Media::class, $model)) {
+            return $query;
+        }
+
         if (str($this->getName())->contains('.')) {
             if (!$this->queriesRelationships($query->getModel())) {
                 return $query;
