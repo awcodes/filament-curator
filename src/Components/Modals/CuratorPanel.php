@@ -96,6 +96,8 @@ class CuratorPanel extends Component implements HasForms, HasActions
 
     public int $lastPage = 0;
 
+    public string $defaultSort = 'desc';
+
     public function mount(): void
     {
         $this->form->fill();
@@ -106,6 +108,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
     {
         if ($id === 'curator-panel') {
             $this->acceptedFileTypes = $settings['acceptedFileTypes'];
+            $this->defaultSort = $settings['defaultSort'];
             $this->directory = $settings['directory'];
             $this->diskName = $settings['diskName'];
             $this->imageCropAspectRatio = $settings['imageCropAspectRatio'];
@@ -194,7 +197,8 @@ class CuratorPanel extends Component implements HasForms, HasActions
                 $wildcardTypes?->map(fn($type) => $query->orWhere('type', 'LIKE', str_replace('*', '%', $type)));
 
                 return $query;
-            });
+            })
+            ->orderBy('created_at', $this->defaultSort);
 
         $paginator = $files->paginate($this->defaultLimit, page: $page);
 

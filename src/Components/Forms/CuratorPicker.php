@@ -56,6 +56,8 @@ class CuratorPicker extends Field
 
     protected bool|Closure|null $shouldDisplayAsList = null;
 
+    protected string|Closure|null $defaultPanelSort = null;
+
     /**
      * @throws Exception
      */
@@ -150,6 +152,18 @@ class CuratorPicker extends Field
         $this->isConstrained = $condition;
 
         return $this;
+    }
+
+    public function defaultPanelSort(string|Closure|null $direction = 'desc'): static
+    {
+        $this->defaultPanelSort = $direction;
+
+        return $this;
+    }
+
+    public function getDefaultPanelSort(): string
+    {
+        return $this->evaluate($this->defaultPanelSort) ?? 'desc';
     }
 
     public function getButtonLabel(): string
@@ -255,6 +269,7 @@ class CuratorPicker extends Field
             ->action(function (CuratorPicker $component, \Livewire\Component $livewire) {
                 $livewire->dispatch('open-modal', id: 'curator-panel', settings: [
                     'acceptedFileTypes' => $component->getAcceptedFileTypes(),
+                    'defaultSort' => $component->getDefaultPanelSort(),
                     'directory' => $component->getDirectory(),
                     'diskName' => $component->getDiskName(),
                     'imageCropAspectRatio' => $component->getImageCropAspectRatio(),

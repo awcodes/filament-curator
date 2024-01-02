@@ -125,6 +125,7 @@ CuratorPicker::make(string $fieldName)
     ->lazyLoad(bool | Closure $condition) // defaults to true
     ->listDisplay(bool | Closure $condition) // defaults to true
     ->tenantAware(bool | Closure $condition) // defaults to true
+    ->defaultPanelSort(string | Closure $direction) // defaults to 'desc'
     // see https://filamentphp.com/docs/2.x/forms/fields#file-upload for more information about the following methods
     ->preserveFilenames()
     ->maxWidth()
