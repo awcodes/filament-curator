@@ -35,6 +35,7 @@ class MediaAction extends Action
 
                 $livewire->dispatch('open-modal', id: 'curator-panel', settings: [
                     'acceptedFileTypes' => Config::get('curator.accepted_file_types'),
+                    'defaultSort' => 'desc',
                     'directory' => Config::get('curator.directory'),
                     'diskName' => Config::get('curator.disk'),
                     'imageCropAspectRatio' => Config::get('curator.image_crop_aspect_ratio'),
