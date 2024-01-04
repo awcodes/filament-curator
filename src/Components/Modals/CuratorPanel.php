@@ -142,6 +142,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
         if ($this->maxItems) {
             $this->validationRules = array_filter($this->validationRules, function ($value) {
                 if ($value === 'array' || str_starts_with($value, 'max:')) { return false; }
+                return true;
             });
         }
 
