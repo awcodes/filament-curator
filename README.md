@@ -182,7 +182,7 @@ Model
 ```php
 use Awcodes\Curator\Models\Media;
 
-public function productPictures(): BelongsTo
+public function productPictures(): BelongsToMany
 {
     return $this
         ->belongsToMany(Media::class, 'media_post', 'post_id', 'media_id')
