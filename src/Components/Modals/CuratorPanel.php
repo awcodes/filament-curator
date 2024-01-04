@@ -21,6 +21,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -138,6 +139,12 @@ class CuratorPanel extends Component implements HasForms, HasActions
 
     public function form(Form $form): Form
     {
+        if ($this->maxItems) {
+            $this->validationRules = array_filter($this->validationRules, function ($value) {
+                if ($value === 'array' || str_starts_with($value, 'max:')) { return false; }
+            });
+        }
+
         return $form
             ->schema([
                 Uploader::make('files_to_add')
