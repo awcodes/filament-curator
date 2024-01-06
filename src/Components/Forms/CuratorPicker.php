@@ -66,7 +66,7 @@ class CuratorPicker extends Field
         parent::setUp();
 
         $this
-            ->buttonLabel(__('curator::views.picker.button'))
+            ->buttonLabel(trans('curator::views.picker.button'))
             ->size('md')
             ->color('primary')
             ->outlined();
@@ -200,7 +200,7 @@ class CuratorPicker extends Field
     public function getReorderAction(): Action
     {
         return Action::make('reorder')
-            ->label(__('curator::views.picker.reorder'))
+            ->label(trans('curator::views.picker.reorder'))
             ->icon('heroicon-s-arrows-up-down')
             ->iconButton()
             ->size('xs')
@@ -235,7 +235,7 @@ class CuratorPicker extends Field
     public function getDownloadAction(): Action
     {
         return Action::make('download')
-            ->label(__('curator::views.picker.download'))
+            ->label(trans('curator::views.picker.download'))
             ->icon('heroicon-s-arrow-down-tray')
             ->color('gray')
             ->action(function (array $arguments, CuratorPicker $component): StreamedResponse {
@@ -248,7 +248,7 @@ class CuratorPicker extends Field
     public function getEditAction(): Action
     {
         return Action::make('edit')
-            ->label(__('curator::views.picker.edit'))
+            ->label(trans('curator::views.picker.edit'))
             ->icon('heroicon-s-pencil')
             ->color('gray')
             ->hidden(fn(CuratorPicker $component): bool => $component->isDisabled())
@@ -297,7 +297,7 @@ class CuratorPicker extends Field
     public function getRemoveAction(): Action
     {
         return Action::make('remove')
-            ->label(__('curator::views.picker.remove'))
+            ->label(trans('curator::views.picker.remove'))
             ->icon('heroicon-s-minus-circle')
             ->color('gray')
             ->hidden(fn(CuratorPicker $component): bool => $component->isDisabled())
@@ -311,7 +311,7 @@ class CuratorPicker extends Field
     public function getRemoveAllAction(): Action
     {
         return Action::make('removeAll')
-            ->label(__('curator::views.picker.clear'))
+            ->label(trans('curator::views.picker.clear'))
             ->button()
             ->outlined($this->isOutlined())
             ->color('danger')
@@ -324,7 +324,7 @@ class CuratorPicker extends Field
     public function getViewAction(): Action
     {
         return Action::make('view')
-            ->label(__('curator::views.picker.view'))
+            ->label(trans('curator::views.picker.view'))
             ->icon('heroicon-s-eye')
             ->color('gray')
             ->url(function (array $arguments): string {

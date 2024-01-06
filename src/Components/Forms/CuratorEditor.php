@@ -55,7 +55,7 @@ class CuratorEditor extends Field
         parent::setUp();
 
         $this
-            ->buttonLabel(__('curator::views.picker.button'))
+            ->buttonLabel(trans('curator::views.picker.button'))
             ->size('md')
             ->color('primary')
             ->outlined();
@@ -75,7 +75,7 @@ class CuratorEditor extends Field
             ->size($this->getSize())
             ->modalWidth('screen')
             ->modalFooterActions(fn () => [])->modalHeading(static function (CuratorEditor $component) {
-                return __('curator::views.curation.heading') . ' ' . $component->getRecord()->name;
+                return trans('curator::views.curation.heading') . ' ' . $component->getRecord()->name;
             })
             ->modalContent(static function (CuratorEditor $component, Component $livewire) {
                 return View::make('curator::components.actions.curation-action', [

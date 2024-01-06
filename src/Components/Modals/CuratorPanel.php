@@ -153,7 +153,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
                     ->hiddenLabel()
                     ->required()
                     ->multiple()
-                    ->label(__('curator::forms.fields.file'))
+                    ->label(trans('curator::forms.fields.file'))
                     ->preserveFilenames($this->shouldPreserveFilenames)
                     ->maxWidth($this->maxWidth)
                     ->minSize($this->minSize)
@@ -315,7 +315,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
             ->button()
             ->size('sm')
             ->color('primary')
-            ->label(__('curator::views.panel.add_files'))
+            ->label(trans('curator::views.panel.add_files'))
             ->disabled(function (): bool {
                 return count($this->form->getRawState()['files_to_add'] ?? []) === 0;
             })
@@ -360,7 +360,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
             ->button()
             ->size('sm')
             ->color('gray')
-            ->label(__('curator::views.panel.edit_cancel'))
+            ->label(trans('curator::views.panel.edit_cancel'))
             ->action(function (): void {
                 $this->form->fill();
                 $this->selected = [];
@@ -371,7 +371,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
     public function destroyAction(): Action
     {
         return Action::make('destroy')
-            ->label(__('curator::views.panel.edit_delete'))
+            ->label(trans('curator::views.panel.edit_delete'))
             ->color('danger')
             ->icon('heroicon-s-trash')
             ->iconButton()
@@ -394,7 +394,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
 
                         Notification::make('curator_delete_success')
                             ->success()
-                            ->body(__('curator::notifications.delete_success'))
+                            ->body(trans('curator::notifications.delete_success'))
                             ->send();
                     } else {
                         throw new Exception();
@@ -402,7 +402,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
                 } catch (Exception) {
                     Notification::make('curator_delete_error')
                         ->danger()
-                        ->body(__('curator::notifications.delete_error'))
+                        ->body(trans('curator::notifications.delete_error'))
                         ->send();
                 }
             });
@@ -411,7 +411,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
     public function downloadAction(): Action
     {
         return Action::make('download')
-            ->label(__('curator::views.panel.download'))
+            ->label(trans('curator::views.panel.download'))
             ->icon('heroicon-s-arrow-down-tray')
             ->color('gray')
             ->iconButton()
@@ -433,7 +433,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
             ->button()
             ->size('sm')
             ->color('success')
-            ->label(__('curator::views.panel.use_selected_image'))
+            ->label(trans('curator::views.panel.use_selected_image'))
             ->action(function (): void {
                 $this->dispatch(
                     'insert-content',
@@ -452,7 +452,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
             ->button()
             ->size('sm')
             ->color('primary')
-            ->label(__('curator::views.panel.edit_save'))
+            ->label(trans('curator::views.panel.edit_save'))
             ->action(function (): void {
                 try {
                     $item = App::make(Media::class)->find(Arr::first($this->selected)['id']);
@@ -469,7 +469,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
 
                         Notification::make('curator_update_success')
                             ->success()
-                            ->body(__('curator::notifications.update_success'))
+                            ->body(trans('curator::notifications.update_success'))
                             ->send();
                     } else {
                         throw new Exception();
@@ -477,7 +477,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
                 } catch (Exception) {
                     Notification::make('curator_update_error')
                         ->danger()
-                        ->body(__('curator::notifications.update_error'))
+                        ->body(trans('curator::notifications.update_error'))
                         ->send();
                 }
             });
@@ -486,7 +486,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
     public function viewAction(): Action
     {
         return Action::make('view')
-            ->label(__('curator::views.panel.view'))
+            ->label(trans('curator::views.panel.view'))
             ->icon('heroicon-s-eye')
             ->color('gray')
             ->iconButton()

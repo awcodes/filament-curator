@@ -12,7 +12,7 @@
     <dl class="grid md:grid-cols-3 gap-6">
         <div>
             <dt class="{{ $labelClasses }}">
-                {{ __('curator::views.details.uploaded_on') }}
+                {{ trans('curator::views.details.uploaded_on') }}
             </dt>
             <dd class="{{ $dataClasses }}">
                 {{ filled($record) ? $record->created_at->format('M j, Y') : '-' }}
@@ -20,7 +20,7 @@
         </div>
         <div>
             <dt class="{{ $labelClasses }}">
-                {{ __('curator::views.details.file_type') }}
+                {{ trans('curator::views.details.file_type') }}
             </dt>
             <dd class="{{ $dataClasses }}">
                 {{ filled($record) ? $record->type : '-' }}
@@ -28,7 +28,7 @@
         </div>
         <div>
             <dt class="{{ $labelClasses }}">
-                {{ __('curator::views.details.file_size') }}
+                {{ trans('curator::views.details.file_size') }}
             </dt>
             <dd class="{{ $dataClasses }}">
                 {{ filled($record) ? $record->size_for_humans : '-' }}
@@ -36,7 +36,7 @@
         </div>
         <div>
             <dt class="{{ $labelClasses }}">
-                {{ __('curator::views.details.dimensions') }}
+                {{ trans('curator::views.details.dimensions') }}
             </dt>
             <dd class="{{ $dataClasses }}">
                 {{ $dimensions }}
@@ -44,7 +44,7 @@
         </div>
         <div>
             <dt class="{{ $labelClasses }}">
-                {{ __('curator::views.details.disk') }}
+                {{ trans('curator::views.details.disk') }}
             </dt>
             <dd class="{{ $dataClasses }}">
                 {{ filled($record) ? $record->disk : '-' }}
@@ -52,7 +52,7 @@
         </div>
         <div>
             <dt class="{{ $labelClasses }}">
-                {{ __('curator::views.details.directory') }}
+                {{ trans('curator::views.details.directory') }}
             </dt>
             <dd class="{{ $dataClasses }}">
                 {{ filled($record) ? $record->directory : '-' }}
@@ -60,7 +60,7 @@
         </div>
         <div class="md:col-span-3">
             <dt class="{{ $labelClasses }}">
-                {{ __('curator::views.details.file_url') }}
+                {{ trans('curator::views.details.file_url') }}
             </dt>
             <dd class="{{ $dataClasses }}">
                 @if (filled($record))
@@ -90,7 +90,7 @@
                                     class="w-4 h-4"
                                 />
                             </span>
-                            <span x-show="! showMessage" class="filament-link">{{ __('curator::views.details.copy_url') }}</span>
+                            <span x-show="! showMessage" class="filament-link">{{ trans('curator::views.details.copy_url') }}</span>
                             <span x-show="showMessage" class="text-success-500 font-bold" style="display:none;">
                                 <x-filament::icon
                                     alias="curator::copy-link"
@@ -98,7 +98,7 @@
                                     class="w-4 h-4"
                                 />
                             </span>
-                            <span x-show="showMessage" class="text-success-500 font-bold" style="display:none;">{{ __('curator::views.details.url_copied') }}</span>
+                            <span x-show="showMessage" class="text-success-500 font-bold" style="display:none;">{{ trans('curator::views.details.url_copied') }}</span>
                         </button>
                     </div>
                 @else

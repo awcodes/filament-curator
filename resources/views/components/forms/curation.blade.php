@@ -33,19 +33,19 @@
                 <div>
                     <dl class="px-3 pb-3 md:py-3">
                         <div class="flex gap-2">
-                            <dt class="font-bold">{{ __('curator::views.curation.key') }}: </dt>
+                            <dt class="font-bold">{{ trans('curator::views.curation.key') }}: </dt>
                             <dd x-text="state?.key"></dd>
                         </div>
                         <div class="flex gap-2">
-                            <dt class="font-bold">{{ __('curator::views.curation.width') }}: </dt>
+                            <dt class="font-bold">{{ trans('curator::views.curation.width') }}: </dt>
                             <dd x-text="state?.width"></dd>
                         </div>
                         <div class="flex gap-2">
-                            <dt class="font-bold">{{ __('curator::views.curation.height') }}: </dt>
+                            <dt class="font-bold">{{ trans('curator::views.curation.height') }}: </dt>
                             <dd x-text="state?.height"></dd>
                         </div>
                         <div class="flex gap-2">
-                            <dt class="font-bold">{{ __('curator::views.curation.format') }}: </dt>
+                            <dt class="font-bold">{{ trans('curator::views.curation.format') }}: </dt>
                             <dd x-text="state?.ext"></dd>
                         </div>
                     </dl>
