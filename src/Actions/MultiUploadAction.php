@@ -21,14 +21,14 @@ class MultiUploadAction extends Action
         $this
             ->button()
             ->color('gray')
-            ->label(__('curator::forms.multi_upload.action_label'))
-            ->modalHeading(__('curator::forms.multi_upload.modal_heading'))
+            ->label(trans('curator::forms.multi_upload.action_label'))
+            ->modalHeading(trans('curator::forms.multi_upload.modal_heading'))
             ->form([
                 Uploader::make('files')
                     ->acceptedFileTypes(config('curator.accepted_file_types'))
                     ->directory(config('curator.directory'))
                     ->disk(config('curator.disk'))
-                    ->label(__('curator::forms.multi_upload.modal_file_label'))
+                    ->label(trans('curator::forms.multi_upload.modal_file_label'))
                     ->minSize(config('curator.min_size'))
                     ->maxSize(config('curator.max_size'))
                     ->multiple()

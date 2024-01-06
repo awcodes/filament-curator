@@ -45,7 +45,7 @@
                 x-on:click="$wire.selected = []"
                 x-show="$wire.selected.length > 1"
             >
-                {{ __('curator::views.panel.deselect_all') }}
+                {{ trans('curator::views.panel.deselect_all') }}
             </x-filament::button>
             @if($currentPage < $lastPage)
             <x-filament::button
@@ -53,15 +53,15 @@
                 color="gray"
                 wire:click="loadMoreFiles()"
             >
-                {{ __('curator::views.panel.load_more') }}
+                {{ trans('curator::views.panel.load_more') }}
             </x-filament::button>
             @endif
             @if ($isMultiple)
-                <p class="text-xs">{{ __('curator::views.panel.add_multiple_file') }}</p>
+                <p class="text-xs">{{ trans('curator::views.panel.add_multiple_file') }}</p>
             @endif
         </div>
         <label class="border border-gray-300 dark:border-gray-700 rounded-md relative flex items-center">
-            <span class="sr-only">{{ __('curator::views.panel.search_label') }}</span>
+            <span class="sr-only">{{ trans('curator::views.panel.search_label') }}</span>
             <x-filament::icon
                 alias="curator::icons.check"
                 icon="heroicon-s-magnifying-glass"
@@ -69,7 +69,7 @@
             />
             <input
                 type="search"
-                placeholder="{{ __('curator::views.panel.search_placeholder') }}"
+                placeholder="{{ trans('curator::views.panel.search_placeholder') }}"
                 wire:model.live.debounce.500ms="search"
                 class="block w-full transition text-sm py-1 !ps-8 !pe-3 duration-75 border-none focus:ring-1 focus:ring-inset focus:ring-primary-600 disabled:opacity-70 bg-transparent placeholder-gray-700 dark:placeholder-gray-400"
             />
@@ -148,13 +148,13 @@
                                 />
                             </span>
                             <span class="sr-only">
-                                {{ __('curator::views.panel.deselect') }}
+                                {{ trans('curator::views.panel.deselect') }}
                             </span>
                         </button>
                     </li>
                 @empty
                     <li class="col-span-3 sm:col-span-4 md:col-span-6 lg:col-span-8">
-                        {{ __('curator::views.panel.empty') }}
+                        {{ trans('curator::views.panel.empty') }}
                     </li>
                 @endforelse
             </ul>
@@ -169,8 +169,8 @@
                         <span>
                             {{
                                 empty($selected)
-                                    ? __('curator::views.panel.add_files')
-                                    : __('curator::views.panel.edit_media')
+                                    ? trans('curator::views.panel.add_files')
+                                    : trans('curator::views.panel.edit_media')
                             }}
                         </span>
                     </h4>

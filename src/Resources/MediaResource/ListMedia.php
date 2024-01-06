@@ -45,8 +45,8 @@ class ListMedia extends ListRecords
                 ->color('gray')
                 ->label(function (): string {
                     return $this->layoutView === 'grid'
-                        ? __('curator::tables.actions.toggle_table_list')
-                        : __('curator::tables.actions.toggle_table_grid');
+                        ? trans('curator::tables.actions.toggle_table_list')
+                        : trans('curator::tables.actions.toggle_table_grid');
                 })
                 ->icon(function (): string {
                     return $this->layoutView === 'grid'
@@ -58,7 +58,7 @@ class ListMedia extends ListRecords
                 }),
             MultiUploadAction::make(),
             CreateAction::make()
-                ->label(fn(): string => __('filament-actions::create.single.label', ['label' => CuratorPlugin::get()->getLabel()])),
+                ->label(fn(): string => trans('filament-actions::create.single.label', ['label' => CuratorPlugin::get()->getLabel()])),
         ];
     }
 }
