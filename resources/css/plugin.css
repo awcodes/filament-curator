@@ -69,6 +69,14 @@
     }
 }
 
+.curator-picker-grid {
+    @apply grid grid-cols-3 gap-4 sm:grid-cols-4 md:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10;
+}
+
+.filepond--panel {
+    @apply bg-transparent border-dashed border-2 border-gray-950/5 dark:border-white/20;
+}
+
 [wire\:key*="open_curator_picker"],
 [wire\:key*="open_curation_panel"],
 .curator-panel {
@@ -98,14 +106,6 @@
 
         > .fi-modal-footer {
             @apply pb-0;
-        }
-
-        .curator-picker-grid {
-            @apply grid grid-cols-3 gap-4 sm:grid-cols-4 md:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10;
-        }
-
-        .filepond--panel {
-            @apply bg-transparent border-dashed border-2 border-gray-950/5 dark:border-white/20;
         }
     }
 }

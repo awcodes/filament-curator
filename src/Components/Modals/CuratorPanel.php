@@ -3,6 +3,8 @@
 namespace Awcodes\Curator\Components\Modals;
 
 use Awcodes\Curator\Components\Forms\Uploader;
+use Awcodes\Curator\Components\Modals\Concerns\InteractsWithStorage;
+use Awcodes\Curator\Components\Modals\Concerns\HasBreadcrumbs;
 use Awcodes\Curator\Models\Media;
 use Awcodes\Curator\PathGenerators\Contracts\PathGenerator;
 use Awcodes\Curator\Resources\MediaResource;
@@ -21,7 +23,6 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -31,6 +32,8 @@ class CuratorPanel extends Component implements HasForms, HasActions
 {
     use InteractsWithActions;
     use InteractsWithForms;
+    use InteractsWithStorage;
+    use HasBreadcrumbs;
     use WithPagination;
 
     public array $acceptedFileTypes = [];
@@ -39,7 +42,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
 
     public ?array $data = [];
 
-    public string $directory = 'media';
+    public ?string $directory = null;
 
     public string $diskName = 'public';
 
@@ -99,9 +102,17 @@ class CuratorPanel extends Component implements HasForms, HasActions
 
     public string $defaultSort = 'desc';
 
+    public bool $shouldPrefetchFiles = false;
+
     public function mount(): void
     {
         $this->form->fill();
+
+        $this->getDirectories();
+
+        if ($this->shouldPrefetchFiles) {
+            $this->files = $this->getFiles();
+        }
     }
 
     #[On('open-modal')]
@@ -131,6 +142,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
             $this->types = $settings['types'];
             $this->visibility = $settings['visibility'];
 
+            $this->breadcrumbs[] = $this->directory;
             $this->files = $this->getFiles();
 
             $this->form->fill();
@@ -198,11 +210,15 @@ class CuratorPanel extends Component implements HasForms, HasActions
             ->when($this->isLimitedToDirectory, function ($query) {
                 return $query->where('directory', $this->directory);
             })
-            ->when($this->types, function ($query) {
+            ->when(filled($this->types), function ($query) {
                 $types = $this->types;
                 $query = $query->whereIn('type', $types);
                 $wildcardTypes = collect($types)->filter(fn($type) => str_contains($type, '*'));
                 $wildcardTypes?->map(fn($type) => $query->orWhere('type', 'LIKE', str_replace('*', '%', $type)));
+
+                if ($this->isLimitedToDirectory) {
+                    $query->where('directory', $this->directory);
+                }
 
                 return $query;
             })
@@ -231,6 +247,9 @@ class CuratorPanel extends Component implements HasForms, HasActions
             $this->setMediaForm();
             $this->context = count($this->selected) === 1 ? 'edit' : 'create';
         }
+
+        $this->getSubDirectories();
+        $this->getBreadCrumbs();
 
         return collect($items)->map(function ($item) {
             return $item->toArray();

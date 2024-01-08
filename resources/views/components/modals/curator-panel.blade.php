@@ -37,7 +37,7 @@
     class="curator-panel h-full absolute inset-0 flex flex-col"
 >
     <!-- Toolbar -->
-    <div class="curator-panel-toolbar px-4 py-2 flex items-center justify-between bg-gray-200/70 dark:bg-black/20 dark:text-white">
+    <div class="curator-panel-toolbar px-4 py-2 flex items-center justify-between bg-gray-200/70 dark:bg-black/20 dark:text-white border-b border-gray-300 dark:border-gray-800">
         <div class="flex items-center gap-2">
             <x-filament::button
                 size="xs"
@@ -81,10 +81,35 @@
     </div>
     <!-- End Toolbar -->
 
-    <div class="flex-1 relative flex flex-col lg:flex-row overflow-hidden">
+    <div class="flex-1 relative flex flex-col lg:flex-row overflow-hidden dark:bg-gray-950/30">
 
         <!-- Gallery -->
         <div class="curator-panel-gallery flex-1 h-full overflow-auto p-4">
+            <ul @class([
+                'text-sm flex items-center ',
+                'mb-4' => filled($breadcrumbs),
+            ])>
+                @if ($breadcrumbs)
+                    @foreach($breadcrumbs as $breadcrumb)
+                        <li wire:key="{{ $breadcrumb['path'] }}">
+                            <div>
+                                @if ($loop->last)
+                                    <span class="opacity-50">{{ $breadcrumb['label'] }}</span>
+                                @else
+                                    <button
+                                        type="button"
+                                        wire:click.prevent="handleDirectoryChange('{{ $breadcrumb['path'] }}')"
+                                        class="hover:text-primary-500 focus:text-primary-500"
+                                    >
+                                        {{ $breadcrumb['label'] }}
+                                    </button>
+                                    <span>/&nbsp;</span>
+                                @endif
+                            </div>
+                        </li>
+                    @endforeach
+                @endif
+            </ul>
             <ul class="curator-picker-grid">
                 @forelse ($files as $file)
                     <li
@@ -153,16 +178,41 @@
                         </button>
                     </li>
                 @empty
+                    @empty($subDirectories))
                     <li class="col-span-3 sm:col-span-4 md:col-span-6 lg:col-span-8">
                         {{ trans('curator::views.panel.empty') }}
                     </li>
+                    @endempty
                 @endforelse
+
+                @if ($subDirectories)
+                    @foreach($subDirectories as $dir)
+                        <li
+                            wire:key="dir-{{ $dir['name'] }}" class="relative aspect-square"
+                        >
+                            <button
+                                type="button"
+                                wire:click="handleDirectoryChange('{{ $dir['path'] }}')"
+                                class="block w-full h-full overflow-hidden bg-gray-200 rounded-sm dark:bg-gray-900 hover:text-primary-600 hover:bg-primary-500/20 hover:ring-2 hover:ring-primary-500 dark:hover:text-white dark:hover:bg-primary-500/20 focus:text-primary-600 focus:bg-primary-500/20 focus:ring-2 focus:ring-primary-500"
+                            >
+                                <div class="grid place-content-center place-items-center w-full h-full text-xs relative">
+                                    <x-filament::icon
+                                        alias="curator::icons.folder"
+                                        icon="heroicon-o-folder"
+                                        class="w-12 h-12 opacity-20"
+                                    />
+                                    <span>{{ $dir['label'] }}</span>
+                                </div>
+                            </button>
+                        </li>
+                    @endforeach
+                @endif
             </ul>
         </div>
         <!-- End Gallery -->
 
         <!-- Sidebar -->
-        <div class="curator-panel-sidebar w-full lg:h-full lg:max-w-xs overflow-auto bg-gray-100 dark:bg-gray-900/30 flex flex-col shadow-top lg:shadow-none z-[1]">
+        <div class="curator-panel-sidebar w-full lg:h-full lg:max-w-xs overflow-auto bg-gray-100 dark:bg-gray-900/30 flex flex-col shadow-top lg:shadow-none z-[1] lg:border-l border-gray-300 dark:border-gray-800">
             <div class="flex-1 overflow-hidden">
                 <div class="flex flex-col h-full overflow-y-auto">
                     <h4 class="font-bold py-2 px-4 mb-0">
@@ -170,7 +220,7 @@
                             {{
                                 empty($selected)
                                     ? trans('curator::views.panel.add_files')
-                                    : trans('curator::views.panel.edit_media')
+                                    : (count($selected) === 1 ? trans('curator::views.panel.edit_media') : null)
                             }}
                         </span>
                     </h4>

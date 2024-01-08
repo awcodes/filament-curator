@@ -59,7 +59,7 @@ trait CanUploadFiles
         return $this->evaluate($this->diskName) ?? config('curator.disk');
     }
 
-    public function getDirectory(): string
+    public function getDirectory(): ?string
     {
         return $this->evaluate($this->directory) ?? config('curator.directory');
     }

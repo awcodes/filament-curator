@@ -344,10 +344,6 @@ class CuratorPicker extends Field
 
     public function isLimitedToDirectory(): bool
     {
-        if (!$this->getDirectory()) {
-            return false;
-        }
-
         return $this->evaluate($this->isLimitedToDirectory) ?? config('curator.is_limited_to_directory');
     }
 
