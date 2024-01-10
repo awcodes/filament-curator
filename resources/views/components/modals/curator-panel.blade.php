@@ -168,9 +168,9 @@
                     <h4 class="font-bold py-2 px-4 mb-0">
                         <span>
                             {{
-                                empty($selected)
-                                    ? trans('curator::views.panel.add_files')
-                                    : trans('curator::views.panel.edit_media')
+                                count($selected) === 1
+                                    ? trans('curator::views.panel.edit_media')
+                                    : trans('curator::views.panel.add_files')
                             }}
                         </span>
                     </h4>
