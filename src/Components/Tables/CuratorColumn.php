@@ -68,7 +68,7 @@ class CuratorColumn extends ImageColumn
 
             $relationshipName = $this->getRelationshipName();
         } else {
-            $relationshipName = $this->getName();
+            return $query;
         }
 
         if (array_key_exists($relationshipName, $query->getEagerLoads())) {
