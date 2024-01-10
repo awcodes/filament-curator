@@ -149,7 +149,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
         return $form
             ->schema([
                 Uploader::make('files_to_add')
-                    ->visible(fn() => empty($this->selected))
+                    ->visible(fn() => count($this->selected) !== 1)
                     ->hiddenLabel()
                     ->required()
                     ->multiple()
