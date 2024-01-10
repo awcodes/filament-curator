@@ -1,8 +1,17 @@
 name: "Tests"
 
 on:
-  push:
   pull_request:
+    types:
+      - opened
+    branches:
+      - 3.x
+    paths:
+      - '**.php'
+      - '.github/workflows/run-tests.yml'
+      - 'phpunit.xml.dist'
+      - 'composer.json'
+      - 'composer.lock'
 
 jobs:
   run-tests:

@@ -6,6 +6,8 @@ on:
       - 3.x
     types:
       - closed
+    paths:
+      - '**.php'
 
 jobs:
   if_merged:
