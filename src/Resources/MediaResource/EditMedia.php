@@ -31,4 +31,16 @@ class EditMedia extends EditRecord
             DeleteAction::make(),
         ];
     }
+
+    protected function afterSave(): void
+    {
+        $state = $this->getForm('form')->getRawState();
+
+        if ($state['file'] !== null) {
+            $livewire = $this->getForm('form')->getLivewire();
+            $statePath = $this->getForm('form')->getStatePath();
+
+            data_set($livewire, $statePath . '.file', null);
+        }
+    }
 }

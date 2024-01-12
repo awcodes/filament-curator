@@ -6,6 +6,10 @@ on:
       - 3.x
     types:
       - closed
+    paths:
+      - 'resources/views/**.php'
+      - 'resources/js/**.js'
+      - 'resources/css/**.css'
 
 jobs:
   if_merged:

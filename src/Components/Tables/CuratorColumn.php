@@ -57,49 +57,20 @@ class CuratorColumn extends ImageColumn
     {
         $model = $query->getModel();
 
+        if (!$this->queriesRelationships($query->getModel())) {
+            return $query;
+        }
+
         if ($model instanceof Media || is_subclass_of(Media::class, $model)) {
             return $query;
         }
 
-        if (str($this->getName())->contains('.')) {
-            if (!$this->queriesRelationships($query->getModel())) {
-                return $query;
-            }
-
-            $relationshipName = $this->getRelationshipName();
-        } else {
-            $relationshipName = $this->getName();
-        }
+        $relationshipName = $this->getRelationshipName();
 
         if (array_key_exists($relationshipName, $query->getEagerLoads())) {
             return $query;
         }
 
         return $query->with([$relationshipName]);
-    }
-
-    public function getRelationship(Model $record, ?string $name = null): ?Relation
-    {
-        $relationship = null;
-
-        if (str($this->getName())->contains('.')) {
-            foreach (explode('.', $name ?? $this->getRelationshipName()) as $nestedRelationshipName) {
-                if (!$record->isRelation($nestedRelationshipName)) {
-                    $relationship = null;
-
-                    break;
-                }
-
-                $relationship = $record->{$nestedRelationshipName}();
-                $record = $relationship->getRelated();
-            }
-        } else {
-            $nestedRelationshipName = $name ?? $this->getRelationshipName();
-            if ($record->isRelation($nestedRelationshipName)) {
-                $relationship = $record->{$nestedRelationshipName}();
-            }
-        }
-
-        return $relationship;
     }
 }
