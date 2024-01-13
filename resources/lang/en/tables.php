@@ -7,6 +7,11 @@ return [
         'ext' => 'Extension',
         'disk' => 'Disk',
         'directory' => 'Directory',
+        'visibility' => 'Visibility',
+        'size' => 'Size',
+        'width' => 'Width',
+        'height' => 'Height',
+        'dimensions' => 'Dimensions',
         'created_at' => 'Created At',
     ],
     'actions' => [

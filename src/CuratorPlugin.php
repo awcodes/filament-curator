@@ -2,28 +2,24 @@
 
 namespace Awcodes\Curator;
 
+use Awcodes\Curator\Resources\MediaResource;
 use Closure;
 use Filament\Contracts\Plugin;
 use Filament\Panel;
 use Filament\Support\Concerns\EvaluatesClosures;
+use Illuminate\Support\Facades\Blade;
 
 class CuratorPlugin implements Plugin
 {
     use EvaluatesClosures;
 
     protected string | Closure | null $label = null;
-
     protected string | Closure | null $navigationGroup = null;
-
     protected ?string $navigationIcon = null;
-
     protected ?int $navigationSort = null;
-
-    protected ?bool $navigationCountBadge = null;
-
     protected string | Closure | null $pluralLabel = null;
-
-    protected ?string $resource = null;
+    protected bool | Closure | null $shouldRegisterNavigation = null;
+    protected bool | Closure | null $shouldShowBadge = null;
 
     public function getId(): string
     {
@@ -34,8 +30,15 @@ class CuratorPlugin implements Plugin
     {
         $panel
             ->resources([
-                $this->getResource(),
+                MediaResource::class,
             ]);
+
+        if (! $panel->hasPlugin('pouncePlugin')) {
+            $panel->renderHook(
+                name: 'panels::body.end',
+                hook: fn (): string => Blade::render("@livewire('pounce')")
+            );
+        }
     }
 
     public function boot(Panel $panel): void
@@ -48,44 +51,59 @@ class CuratorPlugin implements Plugin
         return app(static::class);
     }
 
-    public static function get(): static
+    public static function get(): Plugin
     {
         return filament(app(static::class)->getId());
     }
 
-    public function getResource(): string
-    {
-        return $this->resource ?? config('curator.resources.resource');
-    }
+    /**
+     * Getters
+     */
 
     public function getLabel(): string
     {
-        return $this->evaluate($this->label) ?? config('curator.resources.label');
+        return $this->evaluate($this->label) ?? 'Media';
     }
 
     public function getPluralLabel(): string
     {
-        return $this->evaluate($this->pluralLabel) ?? config('curator.resources.plural_label');
+        return $this->evaluate($this->pluralLabel) ?? 'Media';
     }
 
     public function getNavigationGroup(): ?string
     {
-        return $this->evaluate($this->navigationGroup) ?? config('curator.resources.navigation_group');
+        return $this->evaluate($this->navigationGroup) ?? null;
     }
 
     public function getNavigationIcon(): ?string
     {
-        return $this->navigationIcon ?? config('curator.resources.navigation_icon');
+        return $this->navigationIcon ?? 'heroicon-o-photo';
     }
 
     public function getNavigationSort(): ?int
     {
-        return $this->navigationSort ?? config('curator.resources.navigation_sort');
+        return $this->navigationSort ?? null;
     }
 
-    public function getNavigationCountBadge(): ?bool
+    public function shouldRegisterNavigation(): ?bool
     {
-        return $this->navigationCountBadge ?? config('curator.resources.navigation_count_badge');
+        return $this->evaluate($this->shouldRegisterNavigation) ?? true;
+    }
+
+    public function shouldShowBadge(): ?bool
+    {
+        return $this->evaluate($this->shouldShowBadge) ?? false;
+    }
+
+    /**
+     * Setters
+     */
+
+    public function label(string | Closure $label): static
+    {
+        $this->label = $label;
+
+        return $this;
     }
 
     public function navigationGroup(string | Closure $group = null): static
@@ -95,23 +113,16 @@ class CuratorPlugin implements Plugin
         return $this;
     }
 
-    public function navigationIcon(string $icon): static
+    public function navigationIcon(string | Closure $icon): static
     {
         $this->navigationIcon = $icon;
 
         return $this;
     }
 
-    public function navigationSort(int $order): static
+    public function navigationSort(int | Closure $order): static
     {
         $this->navigationSort = $order;
-
-        return $this;
-    }
-
-    public function navigationCountBadge(bool $show = true): static
-    {
-        $this->navigationCountBadge = $show;
 
         return $this;
     }
@@ -123,16 +134,16 @@ class CuratorPlugin implements Plugin
         return $this;
     }
 
-    public function resource(string $resource): static
+    public function registerNavigation(bool | Closure $condition = true): static
     {
-        $this->resource = $resource;
+        $this->shouldRegisterNavigation = $condition;
 
         return $this;
     }
 
-    public function label(string | Closure $label): static
+    public function showBadge(bool | Closure $condition = true): static
     {
-        $this->label = $label;
+        $this->shouldShowBadge = $condition;
 
         return $this;
     }

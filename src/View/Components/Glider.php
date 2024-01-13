@@ -2,13 +2,16 @@
 
 namespace Awcodes\Curator\View\Components;
 
+use Awcodes\Curator\Config\GlideManager;
+use Awcodes\Curator\CuratorUtils;
+use Awcodes\Curator\DTO\MediaDTO;
+use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Models\Media;
 use Closure;
+use Exception;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Str;
 use Illuminate\View\Component;
-use League\Glide\Urls\UrlBuilderFactory;
-use stdClass;
 
 class Glider extends Component
 {
@@ -16,11 +19,14 @@ class Glider extends Component
 
     public ?string $sourceSet = null;
 
-    protected ?string $basePath = null;
+    public ?MediaDTO $mediaItem = null;
 
+    /**
+     * @throws Exception
+     */
     public function __construct(
-        public int | Media | stdClass | null $media,
-        public ?string $glide = null,
+        public int | Media | string $media,
+        public ?string $fallback = null,
         public ?array $srcset = null,
         public ?string $sizes = null,
         public ?string $background = null,
@@ -49,24 +55,81 @@ class Glider extends Component
         public ?string $watermarkPadding = null,
         public ?string $watermarkPosition = null,
         public ?string $watermarkAlpha = null,
-        public ?string $fallback = null,
-        public bool $force = false,
     ) {
-        $this->basePath = Str::of(config('curator.glide.route_path', 'curator'))
-            ->trim('/')
-            ->prepend('/')
-            ->append('/')
-            ->toString();
-
-        if (! $media instanceof Media) {
-            if (! is_null($media)) {
-                $this->media = app(Media::class)::where('id', $media)->first();
-            }
-
-            if (! $this->media && $this->fallback) {
-                $this->media = (object) $this->getGliderFallback($this->fallback);
-            }
+        if (is_string($media)) {
+            $this->handleString($media);
         }
+
+        if (is_int($media)) {
+            $this->handleInt($media);
+        }
+
+        if (is_a($media, Media::class)) {
+            $this->handleMedia($media);
+        }
+
+        if (! $this->mediaItem) {
+            throw new Exception(message: 'Invalid media item provided to Glider component.');
+        }
+    }
+
+    public function handleString(string $media): void
+    {
+        $extension = (string) Str::of($media)->afterLast('.');
+
+        $this->mediaItem = new MediaDTO(
+            path: $media,
+            isResizable: CuratorUtils::isResizable($extension),
+            isPreviewable: CuratorUtils::isPreviewable($extension),
+        );
+    }
+
+    public function handleInt(int $media): void
+    {
+        $media = Curator::getModel()->where('id', $media)->first();
+
+        if (! $this->media && $this->fallback) {
+            $fallback = app(GlideManager::class)->getGliderFallback($this->fallback);
+            $dto = new MediaDTO(
+                path: $fallback->getSource(),
+                alt: $fallback->getAlt(),
+                width: $fallback->getWidth(),
+                height: $fallback->getHeight(),
+                isResizable: $fallback->isResizable(),
+                isPreviewable: $fallback->isPreviewable(),
+            );
+        } else {
+            $dto = new MediaDTO(
+                path: $media->path,
+                alt: $media->alt,
+                title: $media->title,
+                description: $media->description,
+                caption: $media->caption,
+                width: $media->width,
+                height: $media->height,
+                isResizable: $media->is_resizable,
+                isPreviewable: $media->is_previewable,
+            );
+        }
+
+        $this->mediaItem = $dto;
+    }
+
+    public function handleMedia(Media $media): void
+    {
+        $dto = new MediaDTO(
+            path: $media->path,
+            alt: $media->alt,
+            title: $media->title,
+            description: $media->description,
+            caption: $media->caption,
+            width: $media->width,
+            height: $media->height,
+            isResizable: $media->is_resizable,
+            isPreviewable: $media->is_previewable,
+        );
+
+        $this->mediaItem = $dto;
     }
 
     public function buildGlideSource(array $overrides = []): string
@@ -103,21 +166,11 @@ class Glider extends Component
             $overrides
         ));
 
-        if ($this->media) {
-            if (is_a($this->media, stdClass::class)) {
-                if (str_starts_with($this->media->path, 'http')) {
-                    return $this->media->path;
-                }
-
-                $urlBuilder = UrlBuilderFactory::create($this->basePath, config('app.key'));
-
-                return $urlBuilder->getUrl($this->media->path, $params);
-            }
-
-            return $this->media->getSignedUrl($params, $this->force);
+        if (str_starts_with($this->mediaItem->getPath(), 'http')) {
+            return $this->mediaItem->getPath();
         }
 
-        return '';
+        return app(GlideManager::class)->getUrl($this->mediaItem->getPath(), $params);
     }
 
     public function buildSrcSet(): ?string
@@ -142,32 +195,9 @@ class Glider extends Component
         return null;
     }
 
-    public function getGliderFallback(string $key): ?array
-    {
-        return collect(config('curator.glide.fallbacks'))
-            ->map(function ($fallback) {
-                $fallback = new $fallback;
-
-                return [
-                    'alt' => $fallback->getAlt(),
-                    'height' => $fallback->getHeight(),
-                    'key' => $fallback->getKey(),
-                    'path' => $fallback->getSource(),
-                    'width' => $fallback->getWidth(),
-                    'type' => $fallback->getType(),
-                ];
-            })
-            ->where('key', $key)
-            ->first();
-    }
-
     public function render(): View | Closure | string
     {
-        if ($this->glide) {
-            $this->source = $this->media->resizable ? $this->basePath . $this->media->path . '?' . $this->glide : $this->media->url;
-        } else {
-            $this->source = $this->buildGlideSource();
-        }
+        $this->source = $this->buildGlideSource();
 
         if ($this->srcset) {
             $this->sourceSet = $this->buildSrcSet();

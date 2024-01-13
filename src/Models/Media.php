@@ -3,19 +3,40 @@
 namespace Awcodes\Curator\Models;
 
 use Awcodes\Curator\Concerns\HasPackageFactory;
+use Awcodes\Curator\Config\GlideManager;
+use Awcodes\Curator\CuratorUtils;
+use Awcodes\Curator\Glide\GlideBuilder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
-use League\Glide\Urls\UrlBuilderFactory;
+use Illuminate\Support\Number;
 use function Awcodes\Curator\is_media_resizable;
 
 class Media extends Model
 {
     use HasPackageFactory;
 
-    protected $guarded = [];
+    protected $table = 'curator';
+
+    protected $fillable = [
+        'disk',
+        'directory',
+        'visibility',
+        'name',
+        'path',
+        'width',
+        'height',
+        'size',
+        'type',
+        'ext',
+        'alt',
+        'title',
+        'description',
+        'caption',
+        'exif',
+        'curations',
+    ];
 
     protected $casts = [
         'width' => 'integer',
@@ -25,36 +46,23 @@ class Media extends Model
         'exif' => 'array',
     ];
 
-    protected $appends = [
-        'url',
-        'thumbnail_url',
-        'medium_url',
-        'large_url',
-        'resizable',
-        'size_for_humans',
-        'pretty_name',
-    ];
-
     protected function url(): Attribute
     {
         return Attribute::make(
-            get: function () {
-                if (Storage::disk($this->disk)->exists($this->path) === false) {
-                    return '';
-                }
+            get: function (): string | null {
+                $storage = Storage::disk($this->disk);
 
                 try {
-                    $isPrivate = Storage::disk($this->disk)->getVisibility($this->path) === 'private';
+                    $isPrivate = $storage->getVisibility($this->path) === 'private';
                 } catch (\Throwable) {
                     // ACL not supported on Storage Bucket, Laravel only throws exception here so need to be careful.
                     // so we assume it's private
                     $isPrivate = true;
                 }
 
-                return $isPrivate ? Storage::disk($this->disk)->temporaryUrl(
-                    $this->path,
-                    now()->addMinutes(5)
-                ) : Storage::disk($this->disk)->url($this->path);
+                return $isPrivate
+                    ? $storage->temporaryUrl($this->path, now()->addMinutes(5))
+                    : $storage->url($this->path);
             },
         );
     }
@@ -62,50 +70,86 @@ class Media extends Model
     protected function thumbnailUrl(): Attribute
     {
         return Attribute::make(
-            get: fn() => $this->getSignedUrl(['w' => 200, 'h' => 200, 'fit' => 'crop', 'fm' => 'webp']),
+            get: fn(): string => $this->is_resizable && $this->isLocal()
+                ? GlideBuilder::make()
+                    ->width(200)
+                    ->height(200)
+                    ->fit('crop')
+                    ->format('webp')
+                    ->toUrl($this->path)
+                : $this->url,
         );
     }
 
     protected function mediumUrl(): Attribute
     {
         return Attribute::make(
-            get: fn() => $this->getSignedUrl(['w' => 640, 'h' => 640, 'fit' => 'crop', 'fm' => 'webp']),
+            get: fn(): string => $this->is_resizable && $this->isLocal()
+                ? GlideBuilder::make()
+                    ->width(640)
+                    ->height(640)
+                    ->fit('crop')
+                    ->format('webp')
+                    ->toUrl($this->path)
+                : $this->url,
         );
     }
 
     protected function largeUrl(): Attribute
     {
         return Attribute::make(
-            get: fn() => $this->getSignedUrl(['w' => 1024, 'h' => 1024, 'fit' => 'contain', 'fm' => 'webp']),
+            get: fn(): string => $this->is_resizable && $this->isLocal()
+                ? GlideBuilder::make()
+                    ->width(1024)
+                    ->height(1024)
+                    ->fit('contain')
+                    ->format('webp')
+                    ->toUrl($this->path)
+                : $this->url,
         );
     }
 
     protected function fullPath(): Attribute
     {
         return Attribute::make(
-            get: fn() => Storage::disk($this->disk)->path($this->directory . '/' . $this->name . '.' . $this->ext),
+            get: fn(): string => Storage::disk($this->disk)->path($this->path),
         );
     }
 
-    protected function resizable(): Attribute
+    protected function isResizable(): Attribute
     {
         return Attribute::make(
-            get: fn() => is_media_resizable($this->ext),
+            get: fn(): bool => CuratorUtils::isResizable($this->ext),
+        );
+    }
+
+    protected function isPreviewable(): Attribute
+    {
+        return Attribute::make(
+            get: fn(): bool => CuratorUtils::isPreviewable($this->ext),
         );
     }
 
     protected function sizeForHumans(): Attribute
     {
         return Attribute::make(
-            get: fn() => $this->getSizeForHumans()
+            get: fn(): string => Number::fileSize(
+                bytes: $this->size,
+                precision: 2
+            )
         );
     }
 
     protected function prettyName(): Attribute
     {
         return Attribute::make(
-            get: fn() => $this->getPrettyName()
+            get: fn(): string => $this->getPrettyName()
         );
+    }
+
+    public function getGlideUrl(array $params = []): string
+    {
+        return app(GlideManager::class)->getUrl($this->path, $params);
     }
 
     public function getPrettyName(): string
@@ -117,38 +161,9 @@ class Media extends Model
         return $this->name . '.' . $this->ext;
     }
 
-    public function getSizeForHumans(int $precision = 1): string
+    public function isLocal(): bool
     {
-        $units = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'];
-        $size = $this->size;
-        for ($i = 0; $size > 1024; $i++) {
-            $size /= 1024;
-        }
-
-        return round($size, $precision) . ' ' . $units[$i];
-    }
-
-    public function getSignedUrl(array $params = [], bool $force = false): string
-    {
-        if (! $force) {
-            if (
-                ! $this->resizable ||
-                in_array($this->disk, config('curator.cloud_disks')) ||
-                ! Storage::disk($this->disk)->exists($this->path)
-            ) {
-                return $this->url;
-            }
-        }
-
-        $routeBasePath = Str::of(config('curator.glide.route_path', 'curator'))
-            ->trim('/')
-            ->prepend('/')
-            ->append('/')
-            ->toString();
-
-        $urlBuilder = UrlBuilderFactory::create($routeBasePath, config('app.key'));
-
-        return $urlBuilder->getUrl($this->path, $params);
+        return ! CuratorUtils::isUsingCloudDisk();
     }
 
     public function getCuration(string $key): array

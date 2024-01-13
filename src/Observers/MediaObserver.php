@@ -2,6 +2,8 @@
 
 namespace Awcodes\Curator\Observers;
 
+use Awcodes\Curator\Config\GlideManager;
+use Awcodes\Curator\CuratorUtils;
 use Awcodes\Curator\Models\Media;
 use Illuminate\Support\Facades\Storage;
 use stdClass;
@@ -22,14 +24,7 @@ class MediaObserver
                         $media->{$k} = $v->toString();
                     }
                 } elseif ($k === 'exif' && is_array($v)) {
-                    // Fix malformed utf-8 characters
-                    array_walk_recursive($v, function (&$entry) {
-                        if (!mb_detect_encoding($entry, 'utf-8', true)) {
-                            $entry = utf8_encode($entry);
-                        }
-                    });
-
-                    $media->{$k} = $v;
+                    $media->{$k} = CuratorUtils::sanitizeExif($v);
                 } else {
                     $media->{$k} = $v;
                 }
@@ -42,34 +37,36 @@ class MediaObserver
     /**
      * Handle the Media "updating" event.
      */
-    public function updating(Media $media): void
+    public function updating(Media $media, GlideManager $glideManager): void
     {
+        $storage = Storage::disk($media->disk);
+
         // Replace image
         if ($this->hasMediaUpload($media)) {
-            if (Storage::disk($media->disk)->exists($media->directory . '/' . $media->getOriginal()['name'] . '.' . $media->getOriginal()['ext'])) {
-                Storage::disk($media->disk)->delete($media->directory . '/' . $media->getOriginal()['name'] . '.' . $media->getOriginal()['ext']);
+            if ($storage->exists($media->directory . '/' . $media->getOriginal()['name'] . '.' . $media->getOriginal()['ext'])) {
+                $storage->delete($media->directory . '/' . $media->getOriginal()['name'] . '.' . $media->getOriginal()['ext']);
             }
 
             foreach ($media->file as $k => $v) {
                 $media->{$k} = $v;
             }
 
-            Storage::disk($media->disk)->move($media->path, $media->directory . '/' . $media->getOriginal()['name'] . '.' . $media->ext);
+            $storage->move($media->path, $media->directory . '/' . $media->getOriginal()['name'] . '.' . $media->ext);
 
             $media->name = $media->getOriginal()['name'];
             $media->path = $media->directory . '/' . $media->getOriginal()['name'] . '.' . $media->ext;
 
             // Delete glide-cache for replaced image
-            $server = app(config('curator.glide.server'))->getFactory();
+            $server = $glideManager->getServer();
             $server->deleteCache($media->path);
         }
 
         // Rename file name
         if ($media->isDirty(['name']) && !blank($media->name)) {
-            if (Storage::disk($media->disk)->exists($media->directory . '/' . $media->name . '.' . $media->ext)) {
+            if ($storage->exists($media->directory . '/' . $media->name . '.' . $media->ext)) {
                 $media->name = $media->name . '-' . time();
             }
-            Storage::disk($media->disk)->move($media->path, $media->directory . '/' . $media->name . '.' . $media->ext);
+            $storage->move($media->path, $media->directory . '/' . $media->name . '.' . $media->ext);
             $media->path = $media->directory . '/' . $media->name . '.' . $media->ext;
         }
 
@@ -80,20 +77,22 @@ class MediaObserver
     /**
      * Handle the Media "deleted" event.
      */
-    public function deleted(Media $media): void
+    public function deleted(Media $media, GlideManager $glideManager): void
     {
-        Storage::disk($media->disk)->delete($media->path);
+        $storage = Storage::disk($media->disk);
 
-        if (Storage::disk($media->disk)->allFiles($media->directory . '/' . $media->name)) {
-            Storage::disk($media->disk)->deleteDirectory($media->directory . '/' . $media->name);
+        $storage->delete($media->path);
+
+        if ($storage->allFiles($media->directory . '/' . $media->name)) {
+            $storage->deleteDirectory($media->directory . '/' . $media->name);
         }
 
-        if (count(Storage::disk($media->disk)->allFiles($media->directory)) == 0) {
-            Storage::disk($media->disk)->deleteDirectory($media->directory);
+        if (count($storage->allFiles($media->directory)) == 0) {
+            $storage->deleteDirectory($media->directory);
         }
 
         // Delete glide-cache for delete image
-        $server = app(config('curator.glide.server'))->getFactory();
+        $server = $glideManager->getServer();
         $server->deleteCache($media->path);
     }
 

@@ -2,7 +2,7 @@
 
 namespace Awcodes\Curator\Resources\MediaResource;
 
-use Awcodes\Curator\CuratorPlugin;
+use Awcodes\Curator\Resources\MediaResource;
 use Exception;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
@@ -10,10 +10,7 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditMedia extends EditRecord
 {
-    public static function getResource(): string
-    {
-        return CuratorPlugin::get()->getResource();
-    }
+    protected static string $resource = MediaResource::class;
 
     /**
      * @throws Exception

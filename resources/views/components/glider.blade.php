@@ -1,15 +1,10 @@
-@if ($media)
-    @if (str($media->type)->contains('image'))
+@if ($mediaItem)
+    @if ($mediaItem->isPreviewable())
         <img
             src="{{ $source }}"
-            alt="{{ $media->alt }}"
-            @if ($width && $height)
-                width="{{ $width }}"
-                height="{{ $height }}"
-            @else
-                width="{{ $media->width }}"
-                height="{{ $media->height }}"
-            @endif
+            alt="{{ $mediaItem->getAlt() }}"
+            width="{{ $width ?? $mediaItem->getWidth() }}"
+            height="{{ $height ?? $mediaItem->getHeight() }}"
             @if ($sourceSet)
                 srcset="{{ $sourceSet }}"
                 sizes="{{ $sizes }}"
@@ -18,7 +13,7 @@
         />
     @else
         <x-curator::document-image
-            label="{{ $media->name }}"
+            label="{{ $mediaItem->getName() }}"
             icon-size="xl"
             {{ $attributes->merge(['class' => 'p-4']) }}
         />

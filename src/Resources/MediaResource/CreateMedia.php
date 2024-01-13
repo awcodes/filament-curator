@@ -2,15 +2,12 @@
 
 namespace Awcodes\Curator\Resources\MediaResource;
 
-use Awcodes\Curator\CuratorPlugin;
+use Awcodes\Curator\Resources\MediaResource;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateMedia extends CreateRecord
 {
-    public static function getResource(): string
-    {
-        return CuratorPlugin::get()->getResource();
-    }
+    protected static string $resource = MediaResource::class;
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {

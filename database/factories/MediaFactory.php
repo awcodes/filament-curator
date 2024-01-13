@@ -2,7 +2,10 @@
 
 namespace Awcodes\Curator\Database\Factories;
 
+use Awcodes\Curator\Config\CuratorManager;
+use Awcodes\Curator\CuratorUtils;
 use Awcodes\Curator\Models\Media;
+use Exception;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -73,12 +76,12 @@ class MediaFactory extends Factory
 
     public function getDirectory(): ?string
     {
-        return $this->directory ?? config('curator.directory');
+        return $this->directory ?? app(CuratorManager::class)->getDirectory();
     }
 
     public function getDisk(): ?string
     {
-        return $this->disk ?? config('curator.disk');
+        return $this->disk ?? app(CuratorManager::class)->getDiskName();
     }
 
     public function getType(): string
@@ -86,6 +89,9 @@ class MediaFactory extends Factory
         return $this->type ?? 'jpg';
     }
 
+    /**
+     * @throws Exception
+     */
     public function handleJpg(): array
     {
         $filename = collect([
@@ -113,34 +119,19 @@ class MediaFactory extends Factory
                 'tim-swaan-eOpewngf68w-unsplash',
             ])->random() . '.jpg';
 
-        $disk = $this->getDisk();
-        $directory = $this->getDirectory();
-
-        if (!Storage::disk($disk)->exists($directory . '/' . $filename)) {
-            $fileContents = file_get_contents('https://res.cloudinary.com/aw-codes/image/upload/curator/seed-data/' . $filename);
-            Storage::disk($disk)->put($directory . '/' . $filename, $fileContents);
-        }
-
-        $data = Image::make(Storage::disk($disk)->path($directory . '/' . $filename));
-
-        return [
-            'name' => $data->filename,
-            'path' => $directory ? $directory . '/' . $filename : $filename,
-            'ext' => $data->extension,
-            'type' => $data->mime(),
-            'alt' => $this->faker->words(rand(3, 8), true),
-            'title' => null,
-            'caption' => null,
-            'description' => null,
-            'width' => $data->getWidth() ?? null,
-            'height' => $data->getHeight() ?? null,
-            'disk' => $disk,
-            'directory' => $directory,
-            'size' => $data->filesize() ?? null,
-            'visibility' => 'public',
-        ];
+        return CuratorUtils::importMedia(
+            path: 'https://res.cloudinary.com/aw-codes/image/upload/curator/seed-data/' . $filename,
+            disk: $this->getDisk(),
+            directory: $this->getDirectory(),
+            alt: $this->faker->words(rand(3, 8), true),
+            caption: $this->faker->words(rand(3, 8), true),
+            description: $this->faker->words(rand(3, 8), true),
+        );
     }
 
+    /**
+     * @throws Exception
+     */
     public function handleSvg(): array
     {
         $filename = collect([
@@ -152,30 +143,14 @@ class MediaFactory extends Factory
             'link',
         ])->random() . '.svg';
 
-        $disk = $this->getDisk();
-        $directory = $this->getDirectory();
-
-        if (!Storage::disk($disk)->exists($directory . '/' . $filename)) {
-            $fileContents = file_get_contents('https://res.cloudinary.com/aw-codes/image/upload/curator/seed-data/' . $filename);
-            Storage::disk($disk)->put($directory . '/' . $filename, $fileContents);
-        }
-
-        return [
-            'name' => Str::of($filename)->before('.svg')->toString(),
-            'path' => $directory ? $directory . '/' . $filename : $filename,
-            'ext' => 'svg',
-            'type' => Storage::disk($disk)->mimeType($directory . '/' . $filename),
-            'alt' => $this->faker->words(rand(3, 8), true),
-            'title' => null,
-            'caption' => null,
-            'description' => null,
-            'width' => null,
-            'height' => null,
-            'disk' => $disk,
-            'directory' => $directory,
-            'size' => Storage::disk($disk)->size($directory . '/' . $filename) ?? null,
-            'visibility' => 'public',
-        ];
+        return CuratorUtils::importMedia(
+            path: 'https://res.cloudinary.com/aw-codes/image/upload/curator/seed-data/' . $filename,
+            disk: $this->getDisk(),
+            directory: $this->getDirectory(),
+            alt: $this->faker->words(rand(3, 8), true),
+            caption: $this->faker->words(rand(3, 8), true),
+            description: $this->faker->words(rand(3, 8), true),
+        );
     }
 
     public function handlePdf(): array

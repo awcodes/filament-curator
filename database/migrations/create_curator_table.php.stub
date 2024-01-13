@@ -9,17 +9,17 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create(app(config('curator.model'))->getTable(), function (Blueprint $table) {
+        Schema::create('curator', function (Blueprint $table) {
             $table->id();
             $table->string('disk')->default('public');
             $table->string('directory')->nullable();
             $table->string('visibility')->default('public');
             $table->string('name');
-            $table->string('path');
+            $table->string('path')->index();
             $table->unsignedInteger('width')->nullable();
             $table->unsignedInteger('height')->nullable();
             $table->unsignedInteger('size')->nullable();
-            $table->string('type')->default('image');
+            $table->string('mime')->default('image');
             $table->string('ext');
             $table->string('alt')->nullable();
             $table->string('title')->nullable();
@@ -33,6 +33,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists(app(config('curator.model'))->getTable());
+        Schema::dropIfExists('curator');
     }
 };

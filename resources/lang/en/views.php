@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'resource' => [
+        'label' => 'Media',
+        'plural_label' => 'Media',
+    ],
     'details' => [
         'uploaded_on' => 'Uploaded On',
         'file_type' => 'File Type',

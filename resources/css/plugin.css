@@ -43,13 +43,16 @@
     background-image: repeating-linear-gradient(45deg, theme("colors.gray.700") 25%, transparent 25%, transparent 75%, theme("colors.gray.700") 75%, theme("colors.gray.700")), repeating-linear-gradient(45deg, theme("colors.gray.700") 25%, theme("colors.gray.800") 25%, theme("colors.gray.800") 75%, theme("colors.gray.700") 75%, theme("colors.gray.700"));
 }
 
-.fi-resources-media {
+.fi-resource-media {
     .fi-forms-tabs-component-header {
         @apply bg-gray-100 dark:bg-gray-900;
     }
 
-    .fi-tables-component {
-        .fi-tables-record-checkbox {
+    .fi-ta {
+        .fi-ta-record:has(.curator-grid-column) label {
+            position: absolute;
+            top: 0;
+            left: 0;
             z-index: 1;
         }
     }

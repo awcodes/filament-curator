@@ -4,8 +4,9 @@ namespace Awcodes\Curator\Resources;
 
 use Awcodes\Curator\Components\Forms\CuratorEditor;
 use Awcodes\Curator\Components\Forms\Uploader;
-use Awcodes\Curator\Components\Tables\CuratorColumn;
+use Awcodes\Curator\Config\CuratorManager;
 use Awcodes\Curator\CuratorPlugin;
+use Awcodes\Curator\Models\Media;
 use Exception;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -14,14 +15,10 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
-use function Awcodes\Curator\is_media_resizable;
 
 class MediaResource extends Resource
 {
-    public static function getModel(): string
-    {
-        return config('curator.model');
-    }
+    protected static ?string $model = Media::class;
 
     public static function getModelLabel(): string
     {
@@ -55,8 +52,14 @@ class MediaResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return CuratorPlugin::get()->getNavigationCountBadge() ?
-            number_format(static::getModel()::count()) : null;
+        return CuratorPlugin::get()->shouldShowBadge()
+            ? number_format(static::getModel()::count())
+            : null;
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return CuratorPlugin::get()->shouldRegisterNavigation();
     }
 
     public static function form(Form $form): Form
@@ -167,7 +170,9 @@ class MediaResource extends Resource
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])
-            ->bulkActions(static::getBulkActions($livewire->layoutView))
+            ->bulkActions([
+                Tables\Actions\DeleteBulkAction::make(),
+            ])
             ->defaultSort('created_at', 'desc')
             ->contentGrid(function () use ($livewire) {
                 if ($livewire->layoutView === 'grid') {
@@ -181,7 +186,8 @@ class MediaResource extends Resource
                 return null;
             })
             ->defaultPaginationPageOption(12)
-            ->paginationPageOptions([6, 12, 24, 48, 'all']);
+            ->paginationPageOptions([6, 12, 24, 48, 'all'])
+            ->recordUrl(false);
     }
 
     public static function getPages(): array
@@ -196,7 +202,7 @@ class MediaResource extends Resource
     public static function getDefaultTableColumns(): array
     {
         return [
-            CuratorColumn::make('url')
+            Tables\Columns\ImageColumn::make('url')
                 ->label(trans('curator::tables.columns.url'))
                 ->size(40),
             Tables\Columns\TextColumn::make('name')
@@ -206,18 +212,16 @@ class MediaResource extends Resource
             Tables\Columns\TextColumn::make('ext')
                 ->label(trans('curator::tables.columns.ext'))
                 ->sortable(),
-            Tables\Columns\IconColumn::make('disk')
-                ->label(trans('curator::tables.columns.disk'))
-                ->icons([
-                    'heroicon-o-server',
-                    'heroicon-o-cloud' => fn($state): bool => in_array($state, config('curator.cloud_disks')),
-                ])
-                ->colors([
-                    'gray',
-                    'success' => fn($state): bool => in_array($state, config('curator.cloud_disks')),
-                ]),
+            Tables\Columns\TextColumn::make('size')
+                ->label(trans('curator::tables.columns.size'))
+                ->formatStateUsing(fn ($record): string => $record->size_for_humans)
+                ->sortable(),
+            Tables\Columns\TextColumn::make('dimensions')
+                ->label(trans('curator::tables.columns.dimensions'))
+                ->getStateUsing(fn ($record): ?string => $record->width ? $record->width . 'x' . $record->height : null),
             Tables\Columns\TextColumn::make('directory')
                 ->label(trans('curator::tables.columns.directory'))
+                ->extraAttributes(['class' => 'hidden'])
                 ->sortable(),
             Tables\Columns\TextColumn::make('created_at')
                 ->label(trans('curator::tables.columns.created_at'))
@@ -279,29 +283,19 @@ class MediaResource extends Resource
 
     public static function getUploaderField(): Uploader
     {
-        return Uploader::make('file')
-            ->acceptedFileTypes(config('curator.accepted_file_types'))
-            ->directory(config('curator.directory'))
-            ->disk(config('curator.disk'))
-            ->hiddenLabel()
-            ->minSize(config('curator.min_size'))
-            ->maxFiles(1)
-            ->maxSize(config('curator.max_size'))
-            ->panelAspectRatio('24:9')
-            ->pathGenerator(config('curator.path_generator'))
-            ->preserveFilenames(config('curator.should_preserve_filenames'))
-            ->visibility(config('curator.visibility'))
-            ->storeFileNamesIn('originalFilename');
-    }
+        $config = app(CuratorManager::class);
 
-    public static function getBulkActions(string $view): array
-    {
-        if ($view === 'list') {
-            return [
-                Tables\Actions\DeleteBulkAction::make(),
-            ];
-        }
-        
-        return [];
+        return Uploader::make('file')
+            ->acceptedFileTypes($config->getAcceptedFileTypes())
+            ->directory($config->getDirectory())
+            ->disk($config->getDiskName())
+            ->hiddenLabel()
+            ->minSize($config->getMinSize())
+            ->maxFiles(1)
+            ->maxSize($config->getMaxSize())
+            ->panelAspectRatio('24:9')
+            ->preserveFilenames($config->shouldPreserveFilenames())
+            ->visibility($config->getVisibility())
+            ->storeFileNamesIn('originalFilename');
     }
 }

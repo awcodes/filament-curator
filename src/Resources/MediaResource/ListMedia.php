@@ -4,6 +4,7 @@ namespace Awcodes\Curator\Resources\MediaResource;
 
 use Awcodes\Curator\Actions\MultiUploadAction;
 use Awcodes\Curator\CuratorPlugin;
+use Awcodes\Curator\Resources\MediaResource;
 use Exception;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
@@ -12,6 +13,8 @@ use Illuminate\Support\Str;
 
 class ListMedia extends ListRecords
 {
+    protected static string $resource = MediaResource::class;
+
     public string $layoutView = 'grid';
 
     protected $listeners = [
@@ -23,11 +26,6 @@ class ListMedia extends ListRecords
     {
         $this->layoutView = $this->layoutView === 'list' ? 'grid' : 'list';
         $this->dispatch('layoutViewChanged', $this->layoutView);
-    }
-
-    public static function getResource(): string
-    {
-        return CuratorPlugin::get()->getResource();
     }
 
     public function getTitle(): string

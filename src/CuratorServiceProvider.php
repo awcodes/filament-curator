@@ -2,18 +2,19 @@
 
 namespace Awcodes\Curator;
 
+use Awcodes\Curator\Commands\GenerateGlideTokenCommand;
+use Awcodes\Curator\Config\CurationManager;
+use Awcodes\Curator\Config\CuratorManager;
+use Awcodes\Curator\Config\GlideManager;
 use Awcodes\Curator\Models\Media;
 use Awcodes\Curator\Observers\MediaObserver;
-use Awcodes\Curator\Resources\MediaResource;
-use Awcodes\Curator\View\Components\Glider;
 use Awcodes\Curator\View\Components\Curation;
-use Filament\Facades\Filament;
+use Awcodes\Curator\View\Components\Glider;
 use Filament\Support\Assets\AlpineComponent;
 use Filament\Support\Assets\Css;
 use Filament\Support\Facades\FilamentAsset;
-use Filament\Support\Facades\FilamentView;
-use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Blade;
+use Livewire\Features\SupportFileUploads\FileUploadConfiguration;
 use Livewire\Livewire;
 use Spatie\LaravelPackageTools\Commands\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
@@ -28,22 +29,40 @@ class CuratorServiceProvider extends PackageServiceProvider
             ->hasRoute('web')
             ->hasViews()
             ->hasTranslations()
-            ->hasMigration('create_media_table')
+            ->hasMigration('create_curator_table')
             ->hasCommands([
-                Commands\UpgradeCommand::class,
+                GenerateGlideTokenCommand::class,
             ])
             ->hasInstallCommand(function (InstallCommand $command) {
                 $command
                     ->publishMigrations()
-                    ->askToRunMigrations();
+                    ->askToRunMigrations()
+                    ->endWith(function (InstallCommand $command) {
+                        $command->call('curator:token');
+                    });
             });
+    }
+
+    public function packageRegistered(): void
+    {
+        $this->app->scoped(
+            CuratorManager::class,
+            fn () => new CuratorManager(),
+        );
+
+        $this->app->scoped(
+            GlideManager::class,
+            fn () => new GlideManager(),
+        );
+
+        $this->app->scoped(
+            CurationManager::class,
+            fn () => new CurationManager(),
+        );
     }
 
     public function packageBooted(): void
     {
-        app()->bind(Media::class, config('curator.model'));
-        app()->bind(MediaResource::class, config('curator.resources.resource'));
-
         app(Media::class)::observe(MediaObserver::class);
 
         Livewire::component('curator-panel', Components\Modals\CuratorPanel::class);
@@ -56,12 +75,5 @@ class CuratorServiceProvider extends PackageServiceProvider
             AlpineComponent::make('curation', __DIR__ . '/../resources/dist/curation.js'),
             Css::make('curator', __DIR__ . '/../resources/dist/curator.css')->loadedOnRequest(),
         ], 'awcodes/curator');
-
-        if (Filament::getCurrentPanel() && Filament::getCurrentPanel()->hasPlugin('awcodes/curator')) {
-            FilamentView::registerRenderHook(
-                'panels::body.end',
-                fn (): View => view('curator::components.modals.modal')
-            );
-        }
     }
 }

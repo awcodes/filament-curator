@@ -3,6 +3,7 @@
 namespace Awcodes\Curator\Actions;
 
 use Awcodes\Curator\Components\Forms\Uploader;
+use Awcodes\Curator\Config\CuratorManager;
 use Awcodes\Curator\Models\Media;
 use Filament\Actions\Action;
 use Illuminate\Support\Facades\App;
@@ -18,6 +19,8 @@ class MultiUploadAction extends Action
     {
         parent::setUp();
 
+        $config = app(CuratorManager::class);
+
         $this
             ->button()
             ->color('gray')
@@ -25,17 +28,17 @@ class MultiUploadAction extends Action
             ->modalHeading(trans('curator::forms.multi_upload.modal_heading'))
             ->form([
                 Uploader::make('files')
-                    ->acceptedFileTypes(config('curator.accepted_file_types'))
-                    ->directory(config('curator.directory'))
-                    ->disk(config('curator.disk'))
+                    ->acceptedFileTypes($config->getAcceptedFileTypes())
+                    ->directory($config->getDirectory())
+                    ->disk($config->getDiskName())
                     ->label(trans('curator::forms.multi_upload.modal_file_label'))
-                    ->minSize(config('curator.min_size'))
-                    ->maxSize(config('curator.max_size'))
+                    ->minSize($config->getMinSize())
+                    ->maxSize($config->getMaxSize())
                     ->multiple()
-                    ->pathGenerator(config('curator.path_generator'))
-                    ->preserveFilenames(config('curator.should_preserve_filenames'))
+//                    ->pathGenerator(config('curator.path_generator'))
+                    ->preserveFilenames($config->shouldPreserveFilenames())
                     ->required()
-                    ->visibility(config('curator.visibility'))
+                    ->visibility($config->getVisibility())
                     ->storeFileNamesIn('originalFilename'),
             ])
             ->action(function ($data) {

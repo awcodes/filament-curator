@@ -51,52 +51,58 @@ trait CanUploadFiles
 
     public function getAcceptedFileTypes(): array
     {
-        return $this->evaluate($this->acceptedFileTypes) ?? config('curator.accepted_file_types');
+        return $this->evaluate($this->acceptedFileTypes) ?? [
+            'image/jpeg',
+            'image/png',
+            'image/webp',
+            'image/svg+xml',
+            'application/pdf',
+        ];
     }
 
     public function getDiskName(): string
     {
-        return $this->evaluate($this->diskName) ?? config('curator.disk');
+        return $this->evaluate($this->diskName) ?? config('filament.default_filesystem_disk');
     }
 
     public function getDirectory(): ?string
     {
-        return $this->evaluate($this->directory) ?? config('curator.directory');
+        return $this->evaluate($this->directory) ?? null;
     }
 
     public function getImageCropAspectRatio(): ?string
     {
-        return $this->evaluate($this->imageCropAspectRatio) ?? config('curator.image_crop_aspect_ratio');
+        return $this->evaluate($this->imageCropAspectRatio) ?? null;
     }
 
     public function getImageResizeMode(): ?string
     {
-        return $this->evaluate($this->imageResizeMode) ?? config('curator.image_resize_mode');
+        return $this->evaluate($this->imageResizeMode) ?? null;
     }
 
     public function getImageResizeTargetHeight(): ?string
     {
-        return $this->evaluate($this->imageResizeTargetHeight) ?? config('curator.image_resize_target_height');
+        return $this->evaluate($this->imageResizeTargetHeight) ?? null;
     }
 
     public function getImageResizeTargetWidth(): ?string
     {
-        return $this->evaluate($this->imageResizeTargetWidth) ?? config('curator.image_resize_target_width');
+        return $this->evaluate($this->imageResizeTargetWidth) ?? null;
     }
 
     public function getMaxSize(): ?string
     {
-        return $this->evaluate($this->maxSize) ?? config('curator.max_size');
+        return $this->evaluate($this->maxSize) ?? 5000;
     }
 
     public function getMinSize(): ?string
     {
-        return $this->evaluate($this->minSize) ?? config('curator.min_size');
+        return $this->evaluate($this->minSize) ?? 0;
     }
 
     public function getVisibility(): string
     {
-        return $this->evaluate($this->visibility) ?? config('curator.visibility');
+        return $this->evaluate($this->visibility) ?? 'public';
     }
 
     public function imageCropAspectRatio(string | Closure | null $ratio): static
@@ -150,7 +156,7 @@ trait CanUploadFiles
 
     public function shouldPreserveFilenames(): bool
     {
-        return $this->evaluate($this->shouldPreserveFilenames) ?? config('curator.preserve_filenames');
+        return $this->evaluate($this->shouldPreserveFilenames) ?? false;
     }
 
     public function visibility(string | Closure $visibility): static
