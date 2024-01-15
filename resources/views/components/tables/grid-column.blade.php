@@ -2,7 +2,7 @@
     $record = $getRecord();
 @endphp
 
-<div {{ $attributes->merge($getExtraAttributes())->class(['curator-grid-column relative rounded-t-xl overflow-hidden -mx-4 -mt-4 mb-1 aspect-video']) }}>
+<div {{ $attributes->merge($getExtraAttributes())->class(['curator-grid-column absolute inset-0 rounded-t-xl overflow-hidden aspect-video']) }}>
     <div class="rounded-t-xl h-full overflow-hidden bg-gray-200 dark:bg-gray-700">
         <x-curator-glider
             :media="$record"

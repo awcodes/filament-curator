@@ -49,11 +49,29 @@
     }
 
     .fi-ta {
-        .fi-ta-record:has(.curator-grid-column) label {
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 1;
+        .fi-ta-record:has(.curator-grid-column) {
+            @apply block;
+
+            > div {
+                @apply flex-col p-0;
+
+                > div {
+                    @apply p-0;
+                }
+            }
+
+            label {
+                @apply w-full h-auto aspect-video;
+                z-index: 1;
+            }
+
+            input:not(:checked) {
+                background-color: theme('colors.gray.800')
+            }
+
+            .fi-ta-actions {
+                @apply pb-3 px-3;
+            }
         }
     }
 }
