@@ -7,9 +7,7 @@ use Awcodes\Curator\CuratorUtils;
 use Awcodes\Curator\Models\Media;
 use Exception;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Intervention\Image\Facades\Image;
 use \Illuminate\Http\UploadedFile;
 
 class MediaFactory extends Factory
@@ -168,7 +166,7 @@ class MediaFactory extends Factory
             'name' => Str::of($filename)->before('.pdf')->toString(),
             'path' => $directory ? $directory . '/' . $filename : $filename,
             'ext' => 'pdf',
-            'type' => 'application/pdf',
+            'mime' => 'application/pdf',
             'alt' => $this->faker->words(rand(3, 8), true),
             'title' => null,
             'caption' => null,
@@ -197,7 +195,7 @@ class MediaFactory extends Factory
             'name' => Str::of($filename)->before('.pdf')->toString(),
             'path' => $directory ? $directory . '/' . $filename : $filename,
             'ext' => 'mp4',
-            'type' => 'video/mp4',
+            'mime' => 'video/mp4',
             'alt' => $this->faker->words(rand(3, 8), true),
             'title' => null,
             'caption' => null,

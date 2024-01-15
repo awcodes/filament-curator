@@ -22,7 +22,6 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-use function Awcodes\Curator\get_media_items;
 
 class CuratorPicker extends Field
 {
