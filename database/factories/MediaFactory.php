@@ -4,7 +4,9 @@ namespace Awcodes\Curator\Database\Factories;
 
 use Awcodes\Curator\Config\CuratorManager;
 use Awcodes\Curator\CuratorUtils;
+use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Models\Media;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
@@ -20,13 +22,18 @@ class MediaFactory extends Factory
 
     protected ?string $type = null;
 
+    protected ?string $fixturesPath = null;
+
+    /**
+     * @throws Exception
+     */
     public function definition(): array
     {
        return match ($this->getType()) {
             'svg' => $this->handleSvg(),
-            'pdf' => $this->handlePdf(),
+            'document' => $this->handleDocument(),
             'video' => $this->handleVideo(),
-            default => $this->handleJpg(),
+            default => $this->handleImage(),
         };
     }
 
@@ -43,12 +50,19 @@ class MediaFactory extends Factory
     {
         return $this->state(function (array $attributes) {
             return [
-                'created_at' => \Carbon\Carbon::now()->addDays(rand(-800, 0))->addMinutes(rand(0,
+                'created_at' => Carbon::now()->addDays(rand(-800, 0))->addMinutes(rand(0,
                     60 * 23))->addSeconds(rand(0, 60)),
-                'updated_at' => \Carbon\Carbon::now()->addDays(rand(-799, 0))->addMinutes(rand(0,
+                'updated_at' => Carbon::now()->addDays(rand(-799, 0))->addMinutes(rand(0,
                     60 * 23))->addSeconds(rand(0, 60))
             ];
         });
+    }
+
+    public function fixturesPath(string $path): static
+    {
+        $this->fixturesPath = $path;
+
+        return $this;
     }
 
     public function directory(string $directory): static
@@ -72,25 +86,30 @@ class MediaFactory extends Factory
         return $this;
     }
 
+    public function getFixturesPath(): ?string
+    {
+        return $this->fixturesPath ?? database_path('seeders/fixtures/');
+    }
+
     public function getDirectory(): ?string
     {
-        return $this->directory ?? app(CuratorManager::class)->getDirectory();
+        return $this->directory ?? Curator::getDirectory();
     }
 
     public function getDisk(): ?string
     {
-        return $this->disk ?? app(CuratorManager::class)->getDiskName();
+        return $this->disk ?? Curator::getDiskName();
     }
 
     public function getType(): string
     {
-        return $this->type ?? 'jpg';
+        return $this->type ?? 'image';
     }
 
     /**
      * @throws Exception
      */
-    public function handleJpg(): array
+    public function handleImage(): array
     {
         $filename = collect([
                 'alberto-restifo-Ni4NgA64TFQ-unsplash',
@@ -118,7 +137,7 @@ class MediaFactory extends Factory
             ])->random() . '.jpg';
 
         return CuratorUtils::importMedia(
-            path: 'https://res.cloudinary.com/aw-codes/image/upload/curator/seed-data/' . $filename,
+            path: $this->getFixturesPath() . $filename,
             disk: $this->getDisk(),
             directory: $this->getDirectory(),
             alt: $this->faker->words(rand(3, 8), true),
@@ -142,7 +161,7 @@ class MediaFactory extends Factory
         ])->random() . '.svg';
 
         return CuratorUtils::importMedia(
-            path: 'https://res.cloudinary.com/aw-codes/image/upload/curator/seed-data/' . $filename,
+            path: $this->getFixturesPath() . $filename,
             disk: $this->getDisk(),
             directory: $this->getDirectory(),
             alt: $this->faker->words(rand(3, 8), true),
@@ -151,61 +170,40 @@ class MediaFactory extends Factory
         );
     }
 
-    public function handlePdf(): array
+    /**
+     * @throws Exception
+     */
+    public function handleDocument(): array
     {
-        $filename = Str::uuid() . '.pdf';
-        $filesize = mt_rand(1000, 2000);
-        $disk = $this->getDisk();
-        $directory = $this->getDirectory();
+        $filename = collect([
+            'curator-sucks-excel.xlsx',
+            'curator-rocks-excel.xlsx',
+            'curator-rocks-word.docx',
+            'curator-sucks-word.docx',
+        ])->random();
 
-        UploadedFile::fake()->create($filename, $filesize, 'application/pdf')->storeAs($directory . '/' . $filename, [
-            'disk' => $disk,
-        ]);
-
-        return [
-            'name' => Str::of($filename)->before('.pdf')->toString(),
-            'path' => $directory ? $directory . '/' . $filename : $filename,
-            'ext' => 'pdf',
-            'mime' => 'application/pdf',
-            'alt' => $this->faker->words(rand(3, 8), true),
-            'title' => null,
-            'caption' => null,
-            'description' => null,
-            'width' => null,
-            'height' => null,
-            'disk' => $disk,
-            'directory' => $directory,
-            'size' => $filesize,
-            'visibility' => 'public',
-        ];
+        return CuratorUtils::importMedia(
+            path: $this->getFixturesPath() . $filename,
+            disk: $this->getDisk(),
+            directory: $this->getDirectory(),
+        );
     }
 
+    /**
+     * @throws Exception
+     */
     public function handleVideo(): array
     {
-        $filename = Str::uuid() . '.mp4';
-        $filesize = mt_rand(1000, 2000);
-        $disk = $this->getDisk();
-        $directory = $this->getDirectory();
+        $filename = collect([
+            'panel-video.mp4',
+            'generic-video.mov',
+            'generic-video-2.mov',
+        ])->random();
 
-        UploadedFile::fake()->create($filename, $filesize, 'video/mp4')->storeAs($directory . '/' . $filename, [
-            'disk' => $disk,
-        ]);
-
-        return [
-            'name' => Str::of($filename)->before('.pdf')->toString(),
-            'path' => $directory ? $directory . '/' . $filename : $filename,
-            'ext' => 'mp4',
-            'mime' => 'video/mp4',
-            'alt' => $this->faker->words(rand(3, 8), true),
-            'title' => null,
-            'caption' => null,
-            'description' => null,
-            'width' => null,
-            'height' => null,
-            'disk' => $disk,
-            'directory' => $directory,
-            'size' => $filesize,
-            'visibility' => 'public',
-        ];
+        return CuratorUtils::importMedia(
+            path: $this->getFixturesPath() . $filename,
+            disk: $this->getDisk(),
+            directory: $this->getDirectory(),
+        );
     }
 }

@@ -8,6 +8,7 @@ use Awcodes\Curator\Config\CuratorManager;
 use Awcodes\Curator\Config\GlideManager;
 use Awcodes\Curator\Models\Media;
 use Awcodes\Curator\Observers\MediaObserver;
+use Awcodes\Curator\Resources\MediaResource;
 use Awcodes\Curator\View\Components\Curation;
 use Awcodes\Curator\View\Components\Glider;
 use Filament\Support\Assets\AlpineComponent;
@@ -63,6 +64,32 @@ class CuratorServiceProvider extends PackageServiceProvider
 
     public function packageBooted(): void
     {
+        $this->app->bind(
+            Media::class,
+            config('curator.model'),
+        );
+
+        $this->app->bind(
+            MediaResource::class,
+            config('curator.resource.resource'),
+        );
+
+        $this->app->bind(
+            MediaResource\CreateMedia::class,
+            config('curator.resource.pages.create'),
+        );
+
+        $this->app->bind(
+            MediaResource\EditMedia::class,
+            config('curator.resource.pages.edit'),
+        );
+
+        $this->app->bind(
+            MediaResource\ListMedia::class,
+            config('curator.resource.pages.index'),
+        );
+
+
         app(Media::class)::observe(MediaObserver::class);
 
         Livewire::component('curator-panel', Components\Modals\CuratorPanel::class);

@@ -4,14 +4,10 @@ namespace Awcodes\Curator\Models;
 
 use Awcodes\Curator\Concerns\HasPackageFactory;
 use Awcodes\Curator\Config\GlideManager;
-use Awcodes\Curator\CuratorUtils;
-use Awcodes\Curator\Glide\GlideBuilder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Number;
-use function Awcodes\Curator\is_media_resizable;
 
 class Media extends Model
 {
@@ -46,6 +42,12 @@ class Media extends Model
         'exif' => 'array',
     ];
 
+    protected $appends = [
+        'url',
+        'full_path',
+        'pretty_name',
+    ];
+
     protected function url(): Attribute
     {
         return Attribute::make(
@@ -67,76 +69,10 @@ class Media extends Model
         );
     }
 
-    protected function thumbnailUrl(): Attribute
-    {
-        return Attribute::make(
-            get: fn(): string => $this->is_resizable && $this->isLocal()
-                ? GlideBuilder::make()
-                    ->width(200)
-                    ->height(200)
-                    ->fit('crop')
-                    ->format('webp')
-                    ->toUrl($this->path)
-                : $this->url,
-        );
-    }
-
-    protected function mediumUrl(): Attribute
-    {
-        return Attribute::make(
-            get: fn(): string => $this->is_resizable && $this->isLocal()
-                ? GlideBuilder::make()
-                    ->width(640)
-                    ->height(640)
-                    ->fit('crop')
-                    ->format('webp')
-                    ->toUrl($this->path)
-                : $this->url,
-        );
-    }
-
-    protected function largeUrl(): Attribute
-    {
-        return Attribute::make(
-            get: fn(): string => $this->is_resizable && $this->isLocal()
-                ? GlideBuilder::make()
-                    ->width(1024)
-                    ->height(1024)
-                    ->fit('contain')
-                    ->format('webp')
-                    ->toUrl($this->path)
-                : $this->url,
-        );
-    }
-
     protected function fullPath(): Attribute
     {
         return Attribute::make(
             get: fn(): string => Storage::disk($this->disk)->path($this->path),
-        );
-    }
-
-    protected function isResizable(): Attribute
-    {
-        return Attribute::make(
-            get: fn(): bool => CuratorUtils::isResizable($this->ext),
-        );
-    }
-
-    protected function isPreviewable(): Attribute
-    {
-        return Attribute::make(
-            get: fn(): bool => CuratorUtils::isPreviewable($this->ext),
-        );
-    }
-
-    protected function sizeForHumans(): Attribute
-    {
-        return Attribute::make(
-            get: fn(): string => Number::fileSize(
-                bytes: $this->size,
-                precision: 2
-            )
         );
     }
 
@@ -159,11 +95,6 @@ class Media extends Model
         }
 
         return $this->name . '.' . $this->ext;
-    }
-
-    public function isLocal(): bool
-    {
-        return ! CuratorUtils::isUsingCloudDisk();
     }
 
     public function getCuration(string $key): array

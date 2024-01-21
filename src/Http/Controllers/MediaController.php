@@ -3,6 +3,7 @@
 namespace Awcodes\Curator\Http\Controllers;
 
 use Awcodes\Curator\Config\GlideManager;
+use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Models\Media;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -30,7 +31,7 @@ class MediaController extends Controller
 
         abort_unless(filled($media), 404);
 
-        if (! $media->resizable) {
+        if (! Curator::isResizable($media->ext)) {
             return Storage::disk($media->disk)->response($media->path);
         }
 

@@ -3,7 +3,7 @@
 @endphp
 
 <div>
-    @if (str($record->type)->contains('image'))
+    @if ($record->is_previewable)
         <img
             src="{{ $record->url }}"
             alt="{{ $record->alt }}"
@@ -12,10 +12,10 @@
             loading="lazy"
             class="overflow-hidden border border-gray-300 rounded dark:border-gray-900 checkered"
         />
-    @elseif (str($record->type)->contains('video'))
+    @elseif ($record->is_video)
         <video controls src="{{ $record->url }}"></video>
     @else
-        <x-curator::document-image
+        <x-curator::display.document
             label="{{ $record->name }}"
             icon-size="xl"
             class="p-4 rounded"

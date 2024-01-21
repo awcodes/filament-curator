@@ -8,6 +8,8 @@ use Awcodes\Curator\Components\Modals\Concerns\HasBreadcrumbs;
 use Awcodes\Curator\Models\Media;
 use Awcodes\Curator\PathGenerators\Contracts\PathGenerator;
 use Awcodes\Curator\Resources\MediaResource;
+use Awcodes\Pounce\Enums\MaxWidth;
+use Awcodes\Pounce\PounceComponent;
 use Closure;
 use Exception;
 use Filament\Actions\Action;
@@ -23,12 +25,10 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Storage;
-use Livewire\Attributes\On;
-use Livewire\Component;
 use Livewire\WithPagination;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-class CuratorPanel extends Component implements HasForms, HasActions
+class CuratorPanel extends PounceComponent implements HasForms, HasActions
 {
     use InteractsWithActions;
     use InteractsWithForms;
@@ -104,49 +104,22 @@ class CuratorPanel extends Component implements HasForms, HasActions
 
     public bool $shouldPrefetchFiles = false;
 
+    public bool $showAll = false;
+
     public function mount(): void
     {
-        $this->form->fill();
-
         $this->getDirectories();
 
-        if ($this->shouldPrefetchFiles) {
-            $this->files = $this->getFiles();
-        }
+        $this->breadcrumbs[] = $this->directory;
+
+        $this->files = $this->getFiles();
+
+        $this->form->fill();
     }
 
-    #[On('open-modal')]
-    public function openModal(string $id, array $settings = []): void
+    public static function getMaxWidth(): MaxWidth
     {
-        if ($id === 'curator-panel') {
-            $this->acceptedFileTypes = $settings['acceptedFileTypes'];
-            $this->defaultSort = $settings['defaultSort'];
-            $this->directory = $settings['directory'];
-            $this->diskName = $settings['diskName'];
-            $this->imageCropAspectRatio = $settings['imageCropAspectRatio'];
-            $this->imageResizeMode = $settings['imageResizeMode'];
-            $this->imageResizeTargetWidth = $settings['imageResizeTargetWidth'];
-            $this->imageResizeTargetHeight = $settings['imageResizeTargetHeight'];
-            $this->isLimitedToDirectory = $settings['isLimitedToDirectory'];
-            $this->isMultiple = $settings['isMultiple'];
-            $this->isTenantAware = $settings['isTenantAware'];
-            $this->maxItems = $settings['maxItems'];
-            $this->maxSize = $settings['maxSize'];
-            $this->maxWidth = $settings['maxWidth'];
-            $this->minSize = $settings['minSize'];
-            $this->pathGenerator = $settings['pathGenerator'];
-            $this->validationRules = $settings['rules'];
-            $this->selected = (array)$settings['selected'];
-            $this->shouldPreserveFilenames = $settings['shouldPreserveFilenames'];
-            $this->statePath = $settings['statePath'];
-            $this->types = $settings['types'];
-            $this->visibility = $settings['visibility'];
-
-            $this->breadcrumbs[] = $this->directory;
-            $this->files = $this->getFiles();
-
-            $this->form->fill();
-        }
+        return MaxWidth::Screen;
     }
 
     public function form(Form $form): Form
@@ -198,7 +171,8 @@ class CuratorPanel extends Component implements HasForms, HasActions
 
     public function getFiles(int $page = 0, bool $excludeSelected = false): array
     {
-        $files = App::make(Media::class)->query()
+        $files = Media::query()
+            ->where('directory', $this->directory)
             ->when(filament()->hasTenancy() && $this->isTenantAware, function ($query) {
                 return $query->where(filament()->getTenantOwnershipRelationshipName() . '_id', filament()->getTenant()->id);
             })
@@ -207,18 +181,11 @@ class CuratorPanel extends Component implements HasForms, HasActions
 
                 return $query->whereNotIn('id', $selected);
             })
-            ->when($this->isLimitedToDirectory, function ($query) {
-                return $query->where('directory', $this->directory);
-            })
-            ->when(filled($this->types), function ($query) {
-                $types = $this->types;
-                $query = $query->whereIn('type', $types);
+            ->when(filled($this->acceptedFileTypes) && ! $this->showAll, function ($query) {
+                $types = $this->acceptedFileTypes;
+                $query = $query->whereIn('mime', $types);
                 $wildcardTypes = collect($types)->filter(fn($type) => str_contains($type, '*'));
                 $wildcardTypes?->map(fn($type) => $query->orWhere('type', 'LIKE', str_replace('*', '%', $type)));
-
-                if ($this->isLimitedToDirectory) {
-                    $query->where('directory', $this->directory);
-                }
 
                 return $query;
             })
@@ -235,7 +202,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
         if (!$excludeSelected && $this->selected) {
             $selected = collect($this->selected)->pluck('id')->toArray();
 
-            $selectedItems = App::make(Media::class)
+            $selectedItems = Media::query()
                 ->whereIn('id', $selected)
                 ->get()
                 ->sortBy(function ($model) use ($selected) {

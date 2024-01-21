@@ -17,6 +17,13 @@ class ListMedia extends ListRecords
 
     public string $layoutView = 'grid';
 
+    public function mount(): void
+    {
+        parent::mount();
+
+        $this->layoutView = config('curator.resource.default_layout');
+    }
+
     protected $listeners = [
         'changeLayoutView' => 'changeLayoutView',
         'layoutViewChanged' => '$refresh',

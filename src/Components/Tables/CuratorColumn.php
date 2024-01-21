@@ -7,10 +7,8 @@ use Closure;
 use Filament\Tables\Columns\ImageColumn;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
-use function Awcodes\Curator\get_media_items;
 
 class CuratorColumn extends ImageColumn
 {

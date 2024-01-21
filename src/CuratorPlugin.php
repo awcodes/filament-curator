@@ -62,37 +62,44 @@ class CuratorPlugin implements Plugin
 
     public function getLabel(): string
     {
-        return $this->evaluate($this->label) ?? 'Media';
+        return $this->evaluate($this->label)
+            ?? config('curator.resource.label');
     }
 
     public function getPluralLabel(): string
     {
-        return $this->evaluate($this->pluralLabel) ?? 'Media';
+        return $this->evaluate($this->pluralLabel)
+            ?? config('curator.resource.plural_label');
     }
 
     public function getNavigationGroup(): ?string
     {
-        return $this->evaluate($this->navigationGroup) ?? null;
+        return $this->evaluate($this->navigationGroup)
+            ?? config('curator.resource.navigation.group');
     }
 
     public function getNavigationIcon(): ?string
     {
-        return $this->navigationIcon ?? 'heroicon-o-photo';
+        return $this->navigationIcon
+            ?? config('curator.resource.navigation.icon');
     }
 
     public function getNavigationSort(): ?int
     {
-        return $this->navigationSort ?? null;
+        return $this->navigationSort
+            ?? config('curator.resource.navigation.sort');
     }
 
     public function shouldRegisterNavigation(): ?bool
     {
-        return $this->evaluate($this->shouldRegisterNavigation) ?? true;
+        return $this->evaluate($this->shouldRegisterNavigation)
+            ?? config('curator.resource.navigation.should_register');
     }
 
     public function shouldShowBadge(): ?bool
     {
-        return $this->evaluate($this->shouldShowBadge) ?? false;
+        return $this->evaluate($this->shouldShowBadge)
+            ?? config('curator.resource.navigation.should_show_badge');
     }
 
     /**

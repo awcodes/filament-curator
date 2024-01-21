@@ -2,7 +2,7 @@
 
 namespace Awcodes\Curator\Enums;
 
-enum Previewable: string
+enum PreviewableExtensions: string
 {
     case Jpg = 'jpg';
     case Jpeg = 'jpeg';

@@ -31,8 +31,21 @@ use Illuminate\Support\Facades\Facade;
  * @method static string | null getImageResizeTargetWidth()
  * @method static string | null getMaxSize()
  * @method static string | null getMinSize()
- * @method static bool | null shouldPreserveFilenames()
+ * @method static string getLargeUrl(string $path)
+ * @method static string getMediumUrl(string $path)
+ * @method static string getThumbnailUrl(string $path)
  * @method static string | null getVisibility()
+ * @method static bool | null shouldPreserveFilenames()
+ * @method static bool isResizable(string $ext)
+ * @method static bool isPreviewable(string $ext)
+ * @method static bool isVideo(string $ext)
+ * @method static bool isDocument(string $ext)
+ * @method static bool isUsingCloudinary()
+ * @method static bool isUsingCloudDisk()
+ * @method static bool isUsingGCS()
+ * @method static bool isUsingS3()
+ * @method static array sanitizeExif(array $exif)
+ * @method static string sizeForHumans(int $size, int | null $precision = 2)
  *
  * @see CuratorManager
  */

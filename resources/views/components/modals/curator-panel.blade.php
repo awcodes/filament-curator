@@ -60,24 +60,31 @@
                 <p class="text-xs">{{ trans('curator::views.panel.add_multiple_file') }}</p>
             @endif
         </div>
-        <label class="border border-gray-300 dark:border-gray-700 rounded-md relative flex items-center">
-            <span class="sr-only">{{ trans('curator::views.panel.search_label') }}</span>
-            <x-filament::icon
-                alias="curator::icons.check"
-                icon="heroicon-s-magnifying-glass"
-                class="w-4 h-4 absolute top-1.5 left-2 rtl:left-0 rtl:right-2 dark:text-gray-500"
+        <div class="flex items-center gap-4">
+            <label class="shrink-0 border border-gray-300 dark:border-gray-700 rounded-md relative flex items-center">
+                <span class="sr-only">{{ trans('curator::views.panel.search_label') }}</span>
+                <x-filament::icon
+                    alias="curator::icons.check"
+                    icon="heroicon-s-magnifying-glass"
+                    class="w-4 h-4 absolute top-1.5 left-2 rtl:left-0 rtl:right-2 dark:text-gray-500"
+                />
+                <input
+                    type="search"
+                    placeholder="{{ trans('curator::views.panel.search_placeholder') }}"
+                    wire:model.live.debounce.500ms="search"
+                    class="block w-full transition rounded-md text-sm py-1 !ps-8 !pe-3 duration-75 border-none focus:ring-1 focus:ring-inset focus:ring-primary-600 disabled:opacity-70 bg-transparent placeholder-gray-700 dark:placeholder-gray-400"
+                />
+                <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="animate-spin h-4 w-4 text-gray-400 dark:text-gray-500 sm absolute right-2" wire:loading.delay wire:target="search">
+                    <path clip-rule="evenodd" d="M12 19C15.866 19 19 15.866 19 12C19 8.13401 15.866 5 12 5C8.13401 5 5 8.13401 5 12C5 15.866 8.13401 19 12 19ZM12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" fill-rule="evenodd" fill="currentColor" opacity="0.2"></path>
+                    <path d="M2 12C2 6.47715 6.47715 2 12 2V5C8.13401 5 5 8.13401 5 12H2Z" fill="currentColor"></path>
+                </svg>
+            </label>
+            <x-filament::icon-button
+                x-on:click="$wire.$dispatch('unPounce')"
+                icon="heroicon-o-x-mark"
+                color="gray"
             />
-            <input
-                type="search"
-                placeholder="{{ trans('curator::views.panel.search_placeholder') }}"
-                wire:model.live.debounce.500ms="search"
-                class="block w-full transition text-sm py-1 !ps-8 !pe-3 duration-75 border-none focus:ring-1 focus:ring-inset focus:ring-primary-600 disabled:opacity-70 bg-transparent placeholder-gray-700 dark:placeholder-gray-400"
-            />
-            <svg fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="animate-spin h-4 w-4 text-gray-400 dark:text-gray-500 sm absolute right-2" wire:loading.delay wire:target="search">
-                <path clip-rule="evenodd" d="M12 19C15.866 19 19 15.866 19 12C19 8.13401 15.866 5 12 5C8.13401 5 5 8.13401 5 12C5 15.866 8.13401 19 12 19ZM12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" fill-rule="evenodd" fill="currentColor" opacity="0.2"></path>
-                <path d="M2 12C2 6.47715 6.47715 2 12 2V5C8.13401 5 5 8.13401 5 12H2Z" fill="currentColor"></path>
-            </svg>
-        </label>
+        </div>
     </div>
     <!-- End Toolbar -->
 
@@ -124,34 +131,13 @@
                             x-on:click="handleItemClick('{{ $file['id'] }}', $event)"
                             class="block w-full h-full overflow-hidden bg-gray-700 rounded-sm"
                         >
-                            @if (str_contains($file['type'], 'image'))
-                                <img
-                                    src="{{ $file['thumbnail_url'] }}"
-                                    alt="{{ $file['alt'] ?? '' }}"
-                                    width="300"
-                                    height="300"
-                                    class="block w-full h-full checkered"
-                                />
-                            @else
-                                <div class="curator-document-image grid place-items-center w-full h-full text-xs uppercase relative">
-                                    <div class="relative grid place-items-center w-full h-full">
-                                        @if (str_contains($file['type'], 'video'))
-                                            <x-filament::icon
-                                                alias="curator::icons.video-camera"
-                                                icon="heroicon-o-video-camera"
-                                                class="w-16 h-16 opacity-20"
-                                            />
-                                        @else
-                                            <x-filament::icon
-                                                alias="curator::icons.document"
-                                                icon="heroicon-o-document"
-                                                class="w-16 h-16 opacity-20"
-                                            />
-                                        @endif
-                                    </div>
-                                    <span class="block absolute">{{ $file['ext'] }}</span>
-                                </div>
-                            @endif
+                            <x-curator::display
+                                :item="$file"
+                                :src="curator()->getThumbnailUrl($file['path'])"
+                                :alt="$file['alt'] ?? ''"
+                                width="200"
+                                height="200"
+                            />
                         </button>
 
                         <p class="text-xs truncate absolute bottom-0 inset-x-0 px-1 pb-1 pt-4 text-white bg-gradient-to-t from-black/80 to-transparent pointer-events-none">
@@ -178,7 +164,7 @@
                         </button>
                     </li>
                 @empty
-                    @empty($subDirectories))
+                    @empty($subDirectories)
                     <li class="col-span-3 sm:col-span-4 md:col-span-6 lg:col-span-8">
                         {{ trans('curator::views.panel.empty') }}
                     </li>

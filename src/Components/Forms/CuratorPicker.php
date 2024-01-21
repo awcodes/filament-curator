@@ -71,7 +71,6 @@ class CuratorPicker extends Field
             ->outlined();
 
         $this->afterStateHydrated(static function (CuratorPicker $component, array|int|string|null $state): void {
-
             if (blank($state)) {
                 $component->state([]);
 
@@ -92,7 +91,7 @@ class CuratorPicker extends Field
             }
 
             foreach ($media as $itemData) {
-                $items[(string)Str::uuid()] = $itemData;
+                $items[(string)Str::uuid()] = (object) $itemData;
             }
 
             $component->state($items);
@@ -266,7 +265,7 @@ class CuratorPicker extends Field
             ->outlined($this->isOutlined())
             ->size($this->getSize())
             ->action(function (CuratorPicker $component, \Livewire\Component $livewire) {
-                $livewire->dispatch('open-modal', id: 'curator-panel', settings: [
+                $livewire->dispatch('pounce', component: 'curator-panel', arguments: [
                     'acceptedFileTypes' => $component->getAcceptedFileTypes(),
                     'defaultSort' => $component->getDefaultPanelSort(),
                     'directory' => $component->getDirectory(),
@@ -284,10 +283,9 @@ class CuratorPicker extends Field
                     'minSize' => $component->getMinSize(),
                     'pathGenerator' => $component->getPathGenerator(),
                     'rules' => $component->getValidationRules(),
-                    'selected' => (array)$component->getState(),
+                    'selected' => (array) $component->getState(),
                     'shouldPreserveFilenames' => $component->shouldPreserveFilenames(),
                     'statePath' => $component->getStatePath(),
-                    'types' => $component->getAcceptedFileTypes(),
                     'visibility' => $component->getVisibility(),
                 ]);
             });

@@ -5,16 +5,22 @@ namespace Awcodes\Curator\DTO;
 class MediaDTO
 {
     public function __construct(
-        readonly public string $path,
-        readonly public ?string $alt = null,
-        readonly public ?string $title = null,
-        readonly public ?string $description = null,
-        readonly public ?string $caption = null,
-        readonly public ?int $width = null,
-        readonly public ?int $height = null,
-        readonly public ?bool $isResizable = null,
-        readonly public ?bool $isPreviewable = null,
+        public string $path,
+        public ?string $name = null,
+        public ?string $alt = null,
+        public ?string $title = null,
+        public ?string $description = null,
+        public ?string $caption = null,
+        public ?int $width = null,
+        public ?int $height = null,
+        public ?bool $isResizable = null,
+        public ?bool $isPreviewable = null,
     ){}
+
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
 
     public function getAlt(): ?string
     {

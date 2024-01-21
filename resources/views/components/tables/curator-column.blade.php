@@ -32,16 +32,15 @@
 >
     @if ($items)
         @foreach ($items as $item)
-        <div style="
-                {!! $height !== null ? "height: {$height};" : null !!}
-                {!! $width !== null ? "width: {$width};" : null !!}
-            "
-            @class([
-                'rounded-full overflow-hidden' => $isRounded(),
-                $ring . ' ring-white dark:ring-gray-900' => $imageCount > 1,
-            ])
-        >
-            @if (\Awcodes\Curator\is_media_resizable($item->ext))
+            <div style="
+                    {!! $height !== null ? "height: {$height};" : null !!}
+                    {!! $width !== null ? "width: {$width};" : null !!}
+                "
+                @class([
+                    'rounded-full overflow-hidden' => $isRounded(),
+                    $ring . ' ring-white dark:ring-gray-900' => $imageCount > 1,
+                ])
+            >
                 @php
                     $img_width = $width ? (int)$width : null;
                     $img_height = $height ? (int)$height : null;
@@ -51,35 +50,23 @@
                         $img_height *= $resolution;
                     }
                 @endphp
-                <img
-                    src="{{ $item->getSignedUrl([
-                        'w' => $img_width,
-                        'h' => $img_height,
-                        'fit' => 'crop',
-                        'fm' => 'webp'
-                    ]) }}"
-                    alt="{{ $item->alt }}"
-                    style="
-                        {!! $height !== null ? "height: {$height};" : null !!}
-                        {!! $width !== null ? "width: {$width};" : null !!}
-                    "
+
+                <x-curator::display
+                    :item="$item"
+                    :src="glide()->getUrl($item->path, ['w' => $img_width, 'h' => $img_height, 'fit' => 'crop', 'fm' => 'webp'])"
+                    :lazy="true"
+                    icon-classes="size-6"
+                    :width="$width"
+                    :height="$height"
                     @class([
-                        'h-full w-auto' => str($item->type)->contains('svg'),
+                        'bg-gray-100 dark:bg-gray-950/50',
+                        'h-full w-auto' => str($item->mime)->contains('svg'),
                         'max-w-none' => $height && ! $width,
-                        'object-cover object-center' => ! str($item->type)->contains('svg') && ($isRounded() || $width || $height)
+                        'object-cover object-center' => ! str($item->mime)->contains('svg') && ($isRounded() || $width || $height),
+                        'w-full h-full' => curator()->isDocument($item->ext)
                     ])
-                    {{ $getExtraImgAttributeBag() }}
                 />
-            @else
-                <x-curator::document-image
-                    :label="$item->name"
-                    icon-size="md"
-                    :type="$item->type"
-                    :extension="$item->ext"
-                    class="h-full w-full"
-                />
-            @endif
-        </div>
+            </div>
         @endforeach
     @endif
 </div>

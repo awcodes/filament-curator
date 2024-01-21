@@ -9,6 +9,10 @@ class CuratorManager
 {
     use CanUploadFiles;
     use EvaluatesClosures;
+    use Concerns\HasMediaSizes;
+    use Concerns\HasRenderableType;
+    use Concerns\HasSanitizers;
+    use Concerns\SupportsCloudDisks;
 
     public static function configure(): static
     {

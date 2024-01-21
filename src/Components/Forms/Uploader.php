@@ -13,7 +13,6 @@ use Illuminate\Support\Str;
 use Intervention\Image\Facades\Image;
 use League\Flysystem\UnableToCheckFileExistence;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
-use function Awcodes\Curator\is_media_resizable;
 
 class Uploader extends FileUpload
 {

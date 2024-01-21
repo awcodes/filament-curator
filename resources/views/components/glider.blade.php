@@ -12,7 +12,7 @@
             {{ $attributes->filter(fn ($attr) => $attr !== '') }}
         />
     @else
-        <x-curator::document-image
+        <x-curator::display.document
             label="{{ $mediaItem->getName() }}"
             icon-size="xl"
             {{ $attributes->merge(['class' => 'p-4']) }}

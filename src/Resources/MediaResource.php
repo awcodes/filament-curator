@@ -4,8 +4,10 @@ namespace Awcodes\Curator\Resources;
 
 use Awcodes\Curator\Components\Forms\CuratorEditor;
 use Awcodes\Curator\Components\Forms\Uploader;
+use Awcodes\Curator\Components\Tables\CuratorColumn;
 use Awcodes\Curator\Config\CuratorManager;
 use Awcodes\Curator\CuratorPlugin;
+use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Models\Media;
 use Exception;
 use Filament\Forms;
@@ -202,7 +204,7 @@ class MediaResource extends Resource
     public static function getDefaultTableColumns(): array
     {
         return [
-            Tables\Columns\ImageColumn::make('url')
+            CuratorColumn::make('url')
                 ->label(trans('curator::tables.columns.url'))
                 ->size(40),
             Tables\Columns\TextColumn::make('name')
@@ -214,14 +216,20 @@ class MediaResource extends Resource
                 ->sortable(),
             Tables\Columns\TextColumn::make('size')
                 ->label(trans('curator::tables.columns.size'))
-                ->formatStateUsing(fn ($record): string => $record->size_for_humans)
+                ->formatStateUsing(fn ($record): string => Curator::sizeForHumans($record->size))
                 ->sortable(),
             Tables\Columns\TextColumn::make('dimensions')
                 ->label(trans('curator::tables.columns.dimensions'))
                 ->getStateUsing(fn ($record): ?string => $record->width ? $record->width . 'x' . $record->height : null),
+            Tables\Columns\TextColumn::make('disk')
+                ->label(trans('curator::tables.columns.disk'))
+                ->toggledHiddenByDefault()
+                ->toggleable()
+                ->sortable(),
             Tables\Columns\TextColumn::make('directory')
                 ->label(trans('curator::tables.columns.directory'))
-                ->extraAttributes(['class' => 'hidden'])
+                ->toggledHiddenByDefault()
+                ->toggleable()
                 ->sortable(),
             Tables\Columns\TextColumn::make('created_at')
                 ->label(trans('curator::tables.columns.created_at'))
