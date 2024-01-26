@@ -152,7 +152,7 @@ Form component
 
 ```php
 CuratorPicker::make('featured_image_id')
-    ->relationship('featured_image', 'id'),
+    ->relationship('featuredImage', 'id'),
 ```
 
 Model
@@ -173,7 +173,7 @@ Form component
 ```php
 CuratorPicker::make('product_picture_ids')
     ->multiple()
-    ->relationship('product_pictures', 'id')
+    ->relationship('productPictures', 'id')
     ->orderColumn('order'), // only necessary if you need to rename the order column
 ```
 
