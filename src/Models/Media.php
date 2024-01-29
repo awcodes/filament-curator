@@ -48,7 +48,7 @@ class Media extends Model
                 } catch (\Throwable) {
                     // ACL not supported on Storage Bucket, Laravel only throws exception here so need to be careful.
                     // so we assume it's private
-                    $isPrivate = true;
+                    $isPrivate = config(sprintf('filesystems.disks.%s.visibility', $this->disk)) !== 'public';
                 }
 
                 return $isPrivate ? Storage::disk($this->disk)->temporaryUrl(
