@@ -4,8 +4,11 @@ namespace Awcodes\Curator;
 
 use Closure;
 use Filament\Contracts\Plugin;
+use Filament\Facades\Filament;
 use Filament\Panel;
 use Filament\Support\Concerns\EvaluatesClosures;
+use Filament\Support\Facades\FilamentView;
+use Illuminate\Contracts\View\View;
 
 class CuratorPlugin implements Plugin
 {
@@ -36,11 +39,19 @@ class CuratorPlugin implements Plugin
             ->resources([
                 $this->getResource(),
             ]);
+
+        if (! is_panel_auth_route()) {
+            $panel
+                ->renderHook(
+                    'panels::body.end',
+                    fn (): View => view('curator::components.modals.modal')
+                );
+        }
     }
 
     public function boot(Panel $panel): void
     {
-        //
+
     }
 
     public static function make(): static
@@ -48,7 +59,7 @@ class CuratorPlugin implements Plugin
         return app(static::class);
     }
 
-    public static function get(): static
+    public static function get(): Plugin
     {
         return filament(app(static::class)->getId());
     }

@@ -56,12 +56,5 @@ class CuratorServiceProvider extends PackageServiceProvider
             AlpineComponent::make('curation', __DIR__ . '/../resources/dist/curation.js'),
             Css::make('curator', __DIR__ . '/../resources/dist/curator.css')->loadedOnRequest(),
         ], 'awcodes/curator');
-
-        if (Filament::getCurrentPanel() && Filament::getCurrentPanel()->hasPlugin('awcodes/curator')) {
-            FilamentView::registerRenderHook(
-                'panels::body.end',
-                fn (): View => view('curator::components.modals.modal')
-            );
-        }
     }
 }
