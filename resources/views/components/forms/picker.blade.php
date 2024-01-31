@@ -41,25 +41,18 @@
                     @if ($shouldDisplayAsList)
                         <div class="w-full flex items-center gap-4 text-xs pe-2">
                             <div class="curator-picker-list-preview flex-shrink-0 h-12 w-12 checkered">
-                                @if ($item->is_previewable)
-                                    <x-curator::display.image
-                                        src="{{ $item->thumbnail_url }}"
-                                        alt="{{ $item->alt ?? $item->name }}"
-                                        constrained="{{ $isConstrained() }}"
-                                        lazy="{{ $shouldLazyLoad() }}"
-                                    />
-                                @else
-                                    <x-curator::display.document
-                                        label="{{ $item->name }}"
-                                        icon-size="md"
-                                    />
-                                @endif
+                                <x-curator::display
+                                    :item="$item"
+                                    :src="curator()->getThumbnailUrl($item->path)"
+                                    :lazy="true"
+                                    icon-classes="size-24"
+                                />
                             </div>
                             <div class="curator-picker-list-details min-w-0 overflow-hidden py-2">
                                 <p>{{ $item->pretty_name }}</p>
                             </div>
                             <div class="curator-picker-list-details flex-shrink-0 ml-auto py-2">
-                                <p>{{ $item->size_for_humans }}</p>
+                                <p>{{ curator()->sizeForHumans($item->size) }}</p>
                             </div>
                             <div class="curator-picker-list-actions flex-shrink-0">
                                 <div class="relative flex items-center">
@@ -92,29 +85,16 @@
                         <div
                             @class([
                                 'relative block w-full overflow-hidden border border-gray-300 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 dark:text-white flex justify-center checkered',
-                                'h-64' => ! $item->is_video,
+                                'h-64' => ! curator()->isVideo($item->ext),
                                 'md:flex-1 ' => $itemsCount <= 3,
                             ])
                         >
-                            @if ($item->is_previewable)
-                                <x-curator::display.image
-                                    src="{{ $item->large_url }}"
-                                    alt="{{ $item->alt ?? $item->name }}"
-                                    constrained="{{ $isConstrained() }}"
-                                    lazy="{{ $shouldLazyLoad() }}"
-                                />
-                            @elseif ($item->is_video)
-                                <x-curator::display.video
-                                    src="{{ $item->url }}"
-                                    :controls="true"
-                                    :preload="$shouldLazyLoad()"
-                                />
-                            @else
-                                <x-curator::display.document
-                                    label="{{ $item->name }}"
-                                    icon-size="xl"
-                                />
-                            @endif
+                            <x-curator::display
+                                :item="$item"
+                                :src="curator()->getMediumUrl($item->path)"
+                                :lazy="true"
+                                icon-classes="size-24"
+                            />
 
                             <div class="absolute top-0 right-0">
                                 <div class="relative flex items-center bg-gray-950 divide-x divide-gray-700 rounded-bl-lg shadow-md">
@@ -143,7 +123,7 @@
                                 </div>
                             </div>
 
-                            @if (! $item->is_video)
+                            @if (! curator()->isVideo($item->ext))
                                 <x-curator::display.info-overlay :label="$item->pretty_name" :size="$item->size" />
                             @endif
                         </div>
