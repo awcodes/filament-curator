@@ -70,7 +70,7 @@ class MediaResource extends Resource
         return CuratorPlugin::get()->getNavigationCountBadge() ?
             (Filament::hasTenancy() && Config::get('curator.is_tenant_aware')) ?
                 static::getEloquentQuery()
-                ->where(Filament::getTenantOwnershipRelationshipName() . '_id', Filament::getTenant()->id)
+                ->where(Config::get('curator.tenant_ownership_relationship_name') . '_id', Filament::getTenant()->id)
                 ->count()
             : number_format(static::getModel()::count())
             : null;

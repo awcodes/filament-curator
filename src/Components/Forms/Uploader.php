@@ -127,7 +127,7 @@ class Uploader extends FileUpload
                 $component->getDiskName()
             );
 
-            return [
+            $data = [
                 'disk' => $component->getDiskName(),
                 'directory' => $component->getDirectory(),
                 'visibility' => $component->getVisibility(),
@@ -140,6 +140,12 @@ class Uploader extends FileUpload
                 'type' => $file->getMimeType(),
                 'ext' => $extension,
             ];
+
+            if($component->isTenantAware() && Filament::hasTenancy()) {
+                $data[$component->tenantOwnershipRelationshipName() . '_id'] = Filament::getTenant()->id;
+            }
+
+            return $data;
         });
     }
 }
