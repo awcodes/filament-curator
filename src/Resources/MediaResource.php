@@ -12,6 +12,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 use function Awcodes\Curator\is_media_resizable;
@@ -56,7 +57,12 @@ class MediaResource extends Resource
     public static function getNavigationBadge(): ?string
     {
         return CuratorPlugin::get()->getNavigationCountBadge() ?
-            number_format(static::getModel()::count()) : null;
+            (Filament::hasTenancy() && Config::get('curator.is_tenant_aware')) ?
+                static::getEloquentQuery()
+                ->where(Filament::getTenantOwnershipRelationshipName() . '_id', Filament::getTenant()->id)
+                ->count()
+            : number_format(static::getModel()::count())
+            : null;
     }
 
     public static function form(Form $form): Form
