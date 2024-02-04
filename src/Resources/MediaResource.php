@@ -7,6 +7,7 @@ use Awcodes\Curator\Components\Forms\Uploader;
 use Awcodes\Curator\Components\Tables\CuratorColumn;
 use Awcodes\Curator\CuratorPlugin;
 use Exception;
+use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -21,6 +22,16 @@ class MediaResource extends Resource
     public static function getModel(): string
     {
         return config('curator.model');
+    }
+
+    public static function isScopedToTenant(): bool
+    {
+        return config('curator.is_tenant_aware') ?? static::$isScopedToTenant;
+    }
+
+    public static function getTenantOwnershipRelationshipName(): string
+    {
+        return config('curator.tenant_ownership_relationship_name') ?? Filament::getTenantOwnershipRelationshipName();
     }
 
     public static function getModelLabel(): string
