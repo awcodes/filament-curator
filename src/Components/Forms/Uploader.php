@@ -5,6 +5,7 @@ namespace Awcodes\Curator\Components\Forms;
 use Awcodes\Curator\Concerns\CanGeneratePaths;
 use Awcodes\Curator\Concerns\CanNormalizePaths;
 use Awcodes\Curator\PathGenerators\Contracts\PathGenerator;
+use Filament\Facades\Filament;
 use Filament\Forms\Components\BaseFileUpload;
 use Filament\Forms\Components\FileUpload;
 use Illuminate\Support\Facades\App;
