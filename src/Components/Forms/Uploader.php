@@ -142,8 +142,8 @@ class Uploader extends FileUpload
                 'ext' => $extension,
             ];
 
-            if($component->isTenantAware() && Filament::hasTenancy()) {
-                $data[$component->tenantOwnershipRelationshipName() . '_id'] = Filament::getTenant()->id;
+            if(config('curator.is_tenant_aware') && Filament::hasTenancy()) {
+                $data[config('curator.tenant_ownership_relationship_name') . '_id'] = Filament::getTenant()->id;
             }
 
             return $data;
