@@ -44,7 +44,7 @@ return [
         'download' => 'Yuklash',
         'remove' => 'Olib tashlash',
         'deselect_all' => 'Barchasini tanlamaslik',
-        'add_multiple_file' => 'Ko\'proq tanlash uchun: Cmd + Click'
+        'add_multiple_file' => 'Ko\'proq tanlash uchun: Cmd + Click',
     ],
     'curation' => [
         'heading' => 'Tanlanuvchi rasm',

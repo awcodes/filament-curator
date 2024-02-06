@@ -41,9 +41,9 @@ class MultiUploadAction extends Action
             ->action(function ($data) {
                 foreach ($data['files'] as $item) {
                     // Fix malformed utf-8 characters
-                    if (!empty($item['exif'])) {
+                    if (! empty($item['exif'])) {
                         array_walk_recursive($item['exif'], function (&$entry) {
-                            if (!mb_detect_encoding($entry, 'utf-8', true)) {
+                            if (! mb_detect_encoding($entry, 'utf-8', true)) {
                                 $entry = utf8_encode($entry);
                             }
                         });
@@ -53,7 +53,7 @@ class MultiUploadAction extends Action
 
                     tap(
                         App::make(Media::class)->create($item),
-                        fn(Media $media) => $media->getPrettyName(),
+                        fn (Media $media) => $media->getPrettyName(),
                     )->toArray();
                 }
             });

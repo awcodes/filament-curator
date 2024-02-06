@@ -44,7 +44,7 @@ return [
         'download' => 'دانلود',
         'remove' => 'حذف',
         'deselect_all' => 'لغو انتخاب همه',
-        'add_multiple' => 'استفاده کنید Cmd + Click برای انتخاب چند فایل از.'
+        'add_multiple' => 'استفاده کنید Cmd + Click برای انتخاب چند فایل از.',
     ],
     'curation' => [
         'heading' => 'Curating',

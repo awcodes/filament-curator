@@ -16,6 +16,7 @@ use Filament\Tables\Table;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
+
 use function Awcodes\Curator\is_media_resizable;
 
 class MediaResource extends Resource
@@ -70,8 +71,8 @@ class MediaResource extends Resource
         return CuratorPlugin::get()->getNavigationCountBadge() ?
             (Filament::hasTenancy() && Config::get('curator.is_tenant_aware')) ?
                 static::getEloquentQuery()
-                ->where(Config::get('curator.tenant_ownership_relationship_name') . '_id', Filament::getTenant()->id)
-                ->count()
+                    ->where(Config::get('curator.tenant_ownership_relationship_name') . '_id', Filament::getTenant()->id)
+                    ->count()
             : number_format(static::getModel()::count())
             : null;
     }
@@ -102,13 +103,13 @@ class MediaResource extends Resource
                                             }),
                                     ]),
                                 Forms\Components\Tabs\Tab::make(trans('curator::forms.sections.curation'))
-                                    ->visible(fn($record) => is_media_resizable($record->ext))
+                                    ->visible(fn ($record) => is_media_resizable($record->ext))
                                     ->schema([
                                         Forms\Components\Repeater::make('curations')
                                             ->label(trans('curator::forms.sections.curation'))
                                             ->hiddenLabel()
                                             ->reorderable(false)
-                                            ->itemLabel(fn($state): ?string => $state['curation']['key'] ?? null)
+                                            ->itemLabel(fn ($state): ?string => $state['curation']['key'] ?? null)
                                             ->collapsible()
                                             ->schema([
                                                 CuratorEditor::make('curation')
@@ -137,7 +138,7 @@ class MediaResource extends Resource
                             ]),
                         Forms\Components\Section::make(trans('curator::forms.sections.exif'))
                             ->collapsed()
-                            ->visible(fn($record) => $record && $record->exif)
+                            ->visible(fn ($record) => $record && $record->exif)
                             ->schema([
                                 Forms\Components\KeyValue::make('exif')
                                     ->hiddenLabel()
@@ -227,11 +228,11 @@ class MediaResource extends Resource
                 ->label(trans('curator::tables.columns.disk'))
                 ->icons([
                     'heroicon-o-server',
-                    'heroicon-o-cloud' => fn($state): bool => in_array($state, config('curator.cloud_disks')),
+                    'heroicon-o-cloud' => fn ($state): bool => in_array($state, config('curator.cloud_disks')),
                 ])
                 ->colors([
                     'gray',
-                    'success' => fn($state): bool => in_array($state, config('curator.cloud_disks')),
+                    'success' => fn ($state): bool => in_array($state, config('curator.cloud_disks')),
                 ]),
             Tables\Columns\TextColumn::make('directory')
                 ->label(trans('curator::tables.columns.directory'))
@@ -282,7 +283,7 @@ class MediaResource extends Resource
                 }),
             Forms\Components\TextInput::make('alt')
                 ->label(trans('curator::forms.fields.alt'))
-                ->hint(fn(): HtmlString => new HtmlString('<a href="https://www.w3.org/WAI/tutorials/images/decision-tree" class="filament-link text-primary-500" target="_blank">' . trans('curator::forms.fields.alt_hint') . '</a>')),
+                ->hint(fn (): HtmlString => new HtmlString('<a href="https://www.w3.org/WAI/tutorials/images/decision-tree" class="filament-link text-primary-500" target="_blank">' . trans('curator::forms.fields.alt_hint') . '</a>')),
             Forms\Components\TextInput::make('title')
                 ->label(trans('curator::forms.fields.title')),
             Forms\Components\Textarea::make('caption')
@@ -318,7 +319,7 @@ class MediaResource extends Resource
                 Tables\Actions\DeleteBulkAction::make(),
             ];
         }
-        
+
         return [];
     }
 }

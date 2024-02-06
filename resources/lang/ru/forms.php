@@ -1,26 +1,26 @@
 <?php
 
 return [
-    'sections'  => [
-        'details'           => 'Детали',
-        'exif'              => 'Exif данные',
-        'file'              => 'Файл',
-        'meta'              => 'Мета',
-        'preview'           => 'Превью',
-        'upload_new'        => 'Загрузить еще',
+    'sections' => [
+        'details' => 'Детали',
+        'exif' => 'Exif данные',
+        'file' => 'Файл',
+        'meta' => 'Мета',
+        'preview' => 'Превью',
+        'upload_new' => 'Загрузить еще',
         'upload_new_helper' => 'Если у вас есть какие-либо курирования для этого медиа, то вам придется их воссоздать, они не создадуться автоматически.',
-        'curation'          => 'Курирование',
+        'curation' => 'Курирование',
     ],
-    'fields'    => [
-        'alt'         => 'Alt текст',
-        'alt_hint'    => 'Alt?',
-        'caption'     => 'Заголовок',
+    'fields' => [
+        'alt' => 'Alt текст',
+        'alt_hint' => 'Alt?',
+        'caption' => 'Заголовок',
         'description' => 'Описание',
-        'file'        => 'Файл',
-        'title'       => 'Заголовок',
-        'name'        => 'Название',
+        'file' => 'Файл',
+        'title' => 'Заголовок',
+        'name' => 'Название',
     ],
-    'notices'   => [
+    'notices' => [
         'success' => 'Элемент обновлен успешно',
     ],
     'curations' => [

@@ -14,12 +14,13 @@ use Illuminate\Support\Str;
 use Intervention\Image\Facades\Image;
 use League\Flysystem\UnableToCheckFileExistence;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
+
 use function Awcodes\Curator\is_media_resizable;
 
 class Uploader extends FileUpload
 {
-    use CanNormalizePaths;
     use CanGeneratePaths;
+    use CanNormalizePaths;
 
     public function getDirectory(): ?string
     {
@@ -46,18 +47,18 @@ class Uploader extends FileUpload
             return;
         }
 
-        if (!is_array($this->getState())) {
+        if (! is_array($this->getState())) {
             $this->state([$this->getState()]);
         }
 
-        $state = array_map(function (TemporaryUploadedFile|array $file) {
-            if (!$file instanceof TemporaryUploadedFile) {
+        $state = array_map(function (TemporaryUploadedFile | array $file) {
+            if (! $file instanceof TemporaryUploadedFile) {
                 return $file;
             }
 
             $callback = $this->saveUploadedFileUsing;
 
-            if (!$callback) {
+            if (! $callback) {
                 $file->delete();
 
                 return $file;
@@ -83,7 +84,7 @@ class Uploader extends FileUpload
 
         $this->saveUploadedFileUsing(function (BaseFileUpload $component, TemporaryUploadedFile $file): ?array {
             try {
-                if (!$file->exists()) {
+                if (! $file->exists()) {
                     return null;
                 }
             } catch (UnableToCheckFileExistence $exception) {
@@ -92,7 +93,7 @@ class Uploader extends FileUpload
 
             $filename = $component->shouldPreserveFilenames()
                 ? Str::of(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME))->slug()
-                : (string)Str::uuid();
+                : (string) Str::uuid();
 
             $extension = $file->getClientOriginalExtension();
 
@@ -118,7 +119,7 @@ class Uploader extends FileUpload
                 $exif = $image->exif();
             }
 
-            if (Storage::disk($component->getDiskName())->exists(ltrim($component->getDirectory().'/'.$filename.'.'.$extension, '/'))) {
+            if (Storage::disk($component->getDiskName())->exists(ltrim($component->getDirectory() . '/' . $filename . '.' . $extension, '/'))) {
                 $filename = $filename . '-' . time();
             }
 
@@ -142,7 +143,7 @@ class Uploader extends FileUpload
                 'ext' => $extension,
             ];
 
-            if(config('curator.is_tenant_aware') && Filament::hasTenancy()) {
+            if (config('curator.is_tenant_aware') && Filament::hasTenancy()) {
                 $data[config('curator.tenant_ownership_relationship_name') . '_id'] = Filament::getTenant()->id;
             }
 

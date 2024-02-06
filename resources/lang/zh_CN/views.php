@@ -44,7 +44,7 @@ return [
         'download' => '下载',
         'remove' => '删除',
         'deselect_all' => '取消全选',
-        'add_multiple_file' => 'Cmd + 单击可选择多个文件'
+        'add_multiple_file' => 'Cmd + 单击可选择多个文件',
     ],
     'curation' => [
         'heading' => '精选',

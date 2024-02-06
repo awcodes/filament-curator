@@ -58,7 +58,7 @@ class ListMedia extends ListRecords
                 }),
             MultiUploadAction::make(),
             CreateAction::make()
-                ->label(fn(): string => trans('filament-actions::create.single.label', ['label' => CuratorPlugin::get()->getLabel()])),
+                ->label(fn (): string => trans('filament-actions::create.single.label', ['label' => CuratorPlugin::get()->getLabel()])),
         ];
     }
 }

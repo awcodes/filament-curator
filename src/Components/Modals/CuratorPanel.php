@@ -21,13 +21,12 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-class CuratorPanel extends Component implements HasForms, HasActions
+class CuratorPanel extends Component implements HasActions, HasForms
 {
     use InteractsWithActions;
     use InteractsWithForms;
@@ -55,9 +54,9 @@ class CuratorPanel extends Component implements HasForms, HasActions
 
     public bool $isLimitedToDirectory = false;
 
-    public bool|Closure $isTenantAware = true;
+    public bool | Closure $isTenantAware = true;
 
-    public string|null $tenantOwnershipRelationshipName = null;
+    public ?string $tenantOwnershipRelationshipName = null;
 
     public bool $isMultiple = false;
 
@@ -71,7 +70,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
 
     public ?int $mediaId = null;
 
-    public PathGenerator|string|null $pathGenerator = null;
+    public PathGenerator | string | null $pathGenerator = null;
 
     public string $search = '';
 
@@ -128,7 +127,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
             $this->minSize = $settings['minSize'];
             $this->pathGenerator = $settings['pathGenerator'];
             $this->validationRules = $settings['rules'];
-            $this->selected = (array)$settings['selected'];
+            $this->selected = (array) $settings['selected'];
             $this->shouldPreserveFilenames = $settings['shouldPreserveFilenames'];
             $this->statePath = $settings['statePath'];
             $this->types = $settings['types'];
@@ -144,7 +143,10 @@ class CuratorPanel extends Component implements HasForms, HasActions
     {
         if ($this->maxItems) {
             $this->validationRules = array_filter($this->validationRules, function ($value) {
-                if ($value === 'array' || str_starts_with($value, 'max:')) { return false; }
+                if ($value === 'array' || str_starts_with($value, 'max:')) {
+                    return false;
+                }
+
                 return true;
             });
         }
@@ -152,7 +154,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
         return $form
             ->schema([
                 Uploader::make('files_to_add')
-                    ->visible(fn() => count($this->selected) !== 1)
+                    ->visible(fn () => count($this->selected) !== 1)
                     ->hiddenLabel()
                     ->required()
                     ->multiple()
@@ -183,7 +185,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
                             ],
                         ]),
                     ...App::make(MediaResource::class)->getAdditionalInformationFormSchema(),
-                ])->visible(fn() => filled($this->selected) && count($this->selected) === 1),
+                ])->visible(fn () => filled($this->selected) && count($this->selected) === 1),
             ])->statePath('data');
     }
 
@@ -204,8 +206,8 @@ class CuratorPanel extends Component implements HasForms, HasActions
             ->when($this->types, function ($query) {
                 $types = $this->types;
                 $query = $query->whereIn('type', $types);
-                $wildcardTypes = collect($types)->filter(fn($type) => str_contains($type, '*'));
-                $wildcardTypes?->map(fn($type) => $query->orWhere('type', 'LIKE', str_replace('*', '%', $type)));
+                $wildcardTypes = collect($types)->filter(fn ($type) => str_contains($type, '*'));
+                $wildcardTypes?->map(fn ($type) => $query->orWhere('type', 'LIKE', str_replace('*', '%', $type)));
 
                 return $query;
             })
@@ -219,7 +221,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
 
         $items = $paginator->items();
 
-        if (!$excludeSelected && $this->selected) {
+        if (! $excludeSelected && $this->selected) {
             $selected = collect($this->selected)->pluck('id')->toArray();
 
             $selectedItems = App::make(Media::class)
@@ -252,7 +254,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
         ];
     }
 
-    public function addToSelection(int|string $id): void
+    public function addToSelection(int | string $id): void
     {
         $item = collect($this->files)->firstWhere('id', $id);
 
@@ -266,7 +268,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
         $this->setMediaForm();
     }
 
-    public function removeFromSelection(int|string $id): void
+    public function removeFromSelection(int | string $id): void
     {
         $this->selected = collect($this->selected)->reject(function ($selectedItem) use ($id) {
             return $selectedItem['id'] === $id;
@@ -275,7 +277,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
         $this->context = count($this->selected) === 1 ? 'edit' : 'create';
     }
 
-    public function removeFromFiles(int|string $id): void
+    public function removeFromFiles(int | string $id): void
     {
         $this->files = collect($this->files)->reject(function ($selectedItem) use ($id) {
             return $selectedItem['id'] === $id;
@@ -322,7 +324,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
             ->disabled(function (): bool {
                 return count($this->form->getRawState()['files_to_add'] ?? []) === 0;
             })
-            ->action(function () use($insertAfter): void {
+            ->action(function () use ($insertAfter): void {
                 $media = self::createMediaFiles($this->form->getState());
 
                 $this->form->fill();
@@ -512,14 +514,15 @@ class CuratorPanel extends Component implements HasForms, HasActions
         return view('curator::components.modals.curator-panel');
     }
 
-    protected function createMediaFiles(array $formData) : array {
+    protected function createMediaFiles(array $formData): array
+    {
         $media = [];
 
         foreach ($formData['files_to_add'] as $item) {
             // Fix malformed utf-8 characters
-            if (!empty($item['exif'])) {
+            if (! empty($item['exif'])) {
                 array_walk_recursive($item['exif'], function (&$entry) {
-                    if (!mb_detect_encoding($entry, 'utf-8', true)) {
+                    if (! mb_detect_encoding($entry, 'utf-8', true)) {
                         $entry = mb_convert_encoding($entry, 'utf-8');
                     }
                 });
@@ -529,7 +532,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
 
             $media[] = tap(
                 App::make(Media::class)->create($item),
-                fn(Media $media) => $media->getPrettyName(),
+                fn (Media $media) => $media->getPrettyName(),
             )->toArray();
         }
 

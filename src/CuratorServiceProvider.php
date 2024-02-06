@@ -5,14 +5,11 @@ namespace Awcodes\Curator;
 use Awcodes\Curator\Models\Media;
 use Awcodes\Curator\Observers\MediaObserver;
 use Awcodes\Curator\Resources\MediaResource;
-use Awcodes\Curator\View\Components\Glider;
 use Awcodes\Curator\View\Components\Curation;
-use Filament\Facades\Filament;
+use Awcodes\Curator\View\Components\Glider;
 use Filament\Support\Assets\AlpineComponent;
 use Filament\Support\Assets\Css;
 use Filament\Support\Facades\FilamentAsset;
-use Filament\Support\Facades\FilamentView;
-use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Blade;
 use Livewire\Livewire;
 use Spatie\LaravelPackageTools\Commands\InstallCommand;
@@ -28,7 +25,7 @@ class CuratorServiceProvider extends PackageServiceProvider
             ->hasRoute('web')
             ->hasViews()
             ->hasTranslations()
-            ->hasMigrations(['create_media_table','add_tenant_aware_column_to_media_table'])
+            ->hasMigrations(['create_media_table', 'add_tenant_aware_column_to_media_table'])
             ->hasCommands([
                 Commands\UpgradeCommand::class,
             ])

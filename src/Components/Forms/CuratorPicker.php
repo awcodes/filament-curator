@@ -22,43 +22,44 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+
 use function Awcodes\Curator\get_media_items;
 
 class CuratorPicker extends Field
 {
     use CanBeOutlined;
+    use CanGeneratePaths;
+    use CanUploadFiles;
     use HasColor;
     use HasSize;
-    use CanUploadFiles;
-    use CanGeneratePaths;
 
     protected string $view = 'curator::components.forms.picker';
 
-    protected string|Htmlable|Closure|null $buttonLabel = null;
+    protected string | Htmlable | Closure | null $buttonLabel = null;
 
-    protected bool|Closure|null $isConstrained = false;
+    protected bool | Closure | null $isConstrained = false;
 
     protected ?bool $isLimitedToDirectory = null;
 
-    protected bool|Closure|null $isMultiple = false;
+    protected bool | Closure | null $isMultiple = false;
 
-    protected bool|Closure|null $isTenantAware = null;
+    protected bool | Closure | null $isTenantAware = null;
 
-    protected string|null $tenantOwnershipRelationshipName = null;
+    protected ?string $tenantOwnershipRelationshipName = null;
 
-    protected bool|Closure|null $shouldLazyLoad = null;
+    protected bool | Closure | null $shouldLazyLoad = null;
 
-    protected int|Closure|null $maxItems = null;
+    protected int | Closure | null $maxItems = null;
 
     protected ?string $orderColumn = null;
 
-    protected string|Closure|null $relationship = null;
+    protected string | Closure | null $relationship = null;
 
-    protected string|Closure|null $relationshipTitleColumnName = null;
+    protected string | Closure | null $relationshipTitleColumnName = null;
 
-    protected bool|Closure|null $shouldDisplayAsList = null;
+    protected bool | Closure | null $shouldDisplayAsList = null;
 
-    protected string|Closure|null $defaultPanelSort = null;
+    protected string | Closure | null $defaultPanelSort = null;
 
     /**
      * @throws Exception
@@ -73,7 +74,7 @@ class CuratorPicker extends Field
             ->color('primary')
             ->outlined();
 
-        $this->afterStateHydrated(static function (CuratorPicker $component, array|int|string|null $state): void {
+        $this->afterStateHydrated(static function (CuratorPicker $component, array | int | string | null $state): void {
 
             if (blank($state)) {
                 $component->state([]);
@@ -95,14 +96,14 @@ class CuratorPicker extends Field
             }
 
             foreach ($media as $itemData) {
-                $items[(string)Str::uuid()] = $itemData;
+                $items[(string) Str::uuid()] = $itemData;
             }
 
             $component->state($items);
         });
 
-        $this->afterStateUpdated(function (CuratorPicker $component, array|int|null $state): void {
-            if (!filled($state)) {
+        $this->afterStateUpdated(function (CuratorPicker $component, array | int | null $state): void {
+            if (! filled($state)) {
                 $component->state([]);
             }
 
@@ -111,20 +112,20 @@ class CuratorPicker extends Field
             $state = array_values($state);
 
             foreach ($state as $itemData) {
-                $items[(string)Str::uuid()] = $itemData;
+                $items[(string) Str::uuid()] = $itemData;
             }
 
             $component->state($items);
         });
 
         $this->dehydrateStateUsing(function (CuratorPicker $component, $state) {
-            if (!filled($state)) {
+            if (! filled($state)) {
                 return null;
             }
 
             $state = collect($state)->pluck('id')->toArray();
 
-            if (count($state) === 1 && is_array($state) && !$component->isMultiple()) {
+            if (count($state) === 1 && is_array($state) && ! $component->isMultiple()) {
                 $state = $state[0];
             }
 
@@ -132,31 +133,31 @@ class CuratorPicker extends Field
         });
 
         $this->registerActions([
-            fn(CuratorPicker $component): Action => $component->getDownloadAction(),
-            fn(CuratorPicker $component): Action => $component->getEditAction(),
-            fn(CuratorPicker $component): Action => $component->getRemoveAction(),
-            fn(CuratorPicker $component): Action => $component->getRemoveAllAction(),
-            fn(CuratorPicker $component): Action => $component->getReorderAction(),
-            fn(CuratorPicker $component): Action => $component->getViewAction(),
-            fn(CuratorPicker $component): Action => $component->getPickerAction(),
+            fn (CuratorPicker $component): Action => $component->getDownloadAction(),
+            fn (CuratorPicker $component): Action => $component->getEditAction(),
+            fn (CuratorPicker $component): Action => $component->getRemoveAction(),
+            fn (CuratorPicker $component): Action => $component->getRemoveAllAction(),
+            fn (CuratorPicker $component): Action => $component->getReorderAction(),
+            fn (CuratorPicker $component): Action => $component->getViewAction(),
+            fn (CuratorPicker $component): Action => $component->getPickerAction(),
         ]);
     }
 
-    public function buttonLabel(string|Htmlable|Closure $label): static
+    public function buttonLabel(string | Htmlable | Closure $label): static
     {
         $this->buttonLabel = $label;
 
         return $this;
     }
 
-    public function constrained(bool|Closure|null $condition = true): static
+    public function constrained(bool | Closure | null $condition = true): static
     {
         $this->isConstrained = $condition;
 
         return $this;
     }
 
-    public function defaultPanelSort(string|Closure|null $direction = 'desc'): static
+    public function defaultPanelSort(string | Closure | null $direction = 'desc'): static
     {
         $this->defaultPanelSort = $direction;
 
@@ -183,7 +184,7 @@ class CuratorPicker extends Field
         return $this->orderColumn ?? 'order';
     }
 
-    public function getRelationship(): BelongsTo|BelongsToMany|null
+    public function getRelationship(): BelongsTo | BelongsToMany | null
     {
         $name = $this->getRelationshipName();
 
@@ -217,11 +218,11 @@ class CuratorPicker extends Field
                 $state = $component->getState();
 
                 foreach ($arguments['items'] as $key => $item) {
-                    if (!str_contains($item, '-')) {
-                        $uuid = (string)Str::uuid();
+                    if (! str_contains($item, '-')) {
+                        $uuid = (string) Str::uuid();
                         $arguments['items'][$key] = $uuid;
-                        $state[$uuid] = $state[(int)$item];
-                        unset($state[(int)$item]);
+                        $state[$uuid] = $state[(int) $item];
+                        unset($state[(int) $item]);
                     }
                 }
 
@@ -253,7 +254,7 @@ class CuratorPicker extends Field
             ->label(trans('curator::views.picker.edit'))
             ->icon('heroicon-s-pencil')
             ->color('gray')
-            ->hidden(fn(CuratorPicker $component): bool => $component->isDisabled())
+            ->hidden(fn (CuratorPicker $component): bool => $component->isDisabled())
             ->url(function (array $arguments): string {
                 return App::make(MediaResource::class)
                     ->getUrl('edit', ['record' => $arguments['id']]);
@@ -288,7 +289,7 @@ class CuratorPicker extends Field
                     'minSize' => $component->getMinSize(),
                     'pathGenerator' => $component->getPathGenerator(),
                     'rules' => $component->getValidationRules(),
-                    'selected' => (array)$component->getState(),
+                    'selected' => (array) $component->getState(),
                     'shouldPreserveFilenames' => $component->shouldPreserveFilenames(),
                     'statePath' => $component->getStatePath(),
                     'types' => $component->getAcceptedFileTypes(),
@@ -303,7 +304,7 @@ class CuratorPicker extends Field
             ->label(trans('curator::views.picker.remove'))
             ->icon('heroicon-s-minus-circle')
             ->color('gray')
-            ->hidden(fn(CuratorPicker $component): bool => $component->isDisabled())
+            ->hidden(fn (CuratorPicker $component): bool => $component->isDisabled())
             ->action(function (array $arguments, CuratorPicker $component): void {
                 $state = $component->getState();
                 unset($state[$arguments['uuid']]);
@@ -347,7 +348,7 @@ class CuratorPicker extends Field
 
     public function isLimitedToDirectory(): bool
     {
-        if (!$this->getDirectory()) {
+        if (! $this->getDirectory()) {
             return false;
         }
 
@@ -369,21 +370,21 @@ class CuratorPicker extends Field
         return $this->tenantOwnershipRelationshipName ?? config('curator.tenant_ownership_relationship_name');
     }
 
-    public function lazyLoad(bool|Closure $condition = true): static
+    public function lazyLoad(bool | Closure $condition = true): static
     {
         $this->shouldLazyLoad = $condition;
 
         return $this;
     }
 
-    public function limitToDirectory(bool|Closure|null $condition = true): static
+    public function limitToDirectory(bool | Closure | null $condition = true): static
     {
         $this->isLimitedToDirectory = $condition;
 
         return $this;
     }
 
-    public function maxItems(int|Closure $items): static
+    public function maxItems(int | Closure $items): static
     {
         $this->maxItems = $items;
 
@@ -398,7 +399,7 @@ class CuratorPicker extends Field
         return $this;
     }
 
-    public function multiple(bool|Closure $condition = true): static
+    public function multiple(bool | Closure $condition = true): static
     {
         $this->isMultiple = $condition;
 
@@ -412,7 +413,7 @@ class CuratorPicker extends Field
         return $this;
     }
 
-    public function relationship(string|Closure $relationshipName, string|Closure $titleColumnName, Closure $callback = null): static
+    public function relationship(string | Closure $relationshipName, string | Closure $titleColumnName, ?Closure $callback = null): static
     {
         $this->relationship = $relationshipName;
         $this->relationshipTitleColumnName = $titleColumnName;
@@ -435,7 +436,7 @@ class CuratorPicker extends Field
             /** @var BelongsTo $relationship */
             $relatedModel = $relationship->getResults();
 
-            if (!$relatedModel) {
+            if (! $relatedModel) {
                 return;
             }
 
@@ -450,7 +451,7 @@ class CuratorPicker extends Field
 
             $relationship = $component->getRelationship();
 
-            if (blank($state) && !$relationship->exists()) {
+            if (blank($state) && ! $relationship->exists()) {
                 return;
             }
 
@@ -485,7 +486,7 @@ class CuratorPicker extends Field
             $record->save();
         });
 
-        $this->dehydrated(fn(CuratorPicker $component): bool => !$component->isMultiple());
+        $this->dehydrated(fn (CuratorPicker $component): bool => ! $component->isMultiple());
 
         return $this;
     }
@@ -495,14 +496,14 @@ class CuratorPicker extends Field
         return $this->evaluate($this->shouldLazyLoad) ?? false;
     }
 
-    public function tenantAware(bool|Closure $condition = true): static
+    public function tenantAware(bool | Closure $condition = true): static
     {
         $this->isTenantAware = $condition;
 
         return $this;
     }
 
-    public function listDisplay(bool|Closure $condition = true): static
+    public function listDisplay(bool | Closure $condition = true): static
     {
         $this->shouldDisplayAsList = $condition;
 

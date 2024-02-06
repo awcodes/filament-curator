@@ -26,7 +26,7 @@ return [
     'curations' => [
         'button_label' => 'ساختن Curation',
     ],
-	'multi_upload' => [
+    'multi_upload' => [
         'action_label' => 'بارگذاری چندتایی',
         'modal_heading' => 'بارگذاری چند فایل',
         'modal_file_label' => 'فایلها',
