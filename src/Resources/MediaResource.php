@@ -7,6 +7,7 @@ use Awcodes\Curator\Components\Forms\Uploader;
 use Awcodes\Curator\Components\Tables\CuratorColumn;
 use Awcodes\Curator\CuratorPlugin;
 use Exception;
+use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -22,6 +23,16 @@ class MediaResource extends Resource
     public static function getModel(): string
     {
         return config('curator.model');
+    }
+
+    public static function isScopedToTenant(): bool
+    {
+        return config('curator.is_tenant_aware') ?? static::$isScopedToTenant;
+    }
+
+    public static function getTenantOwnershipRelationshipName(): string
+    {
+        return config('curator.tenant_ownership_relationship_name') ?? Filament::getTenantOwnershipRelationshipName();
     }
 
     public static function getModelLabel(): string
@@ -59,7 +70,7 @@ class MediaResource extends Resource
         return CuratorPlugin::get()->getNavigationCountBadge() ?
             (Filament::hasTenancy() && Config::get('curator.is_tenant_aware')) ?
                 static::getEloquentQuery()
-                ->where(Filament::getTenantOwnershipRelationshipName() . '_id', Filament::getTenant()->id)
+                ->where(Config::get('curator.tenant_ownership_relationship_name') . '_id', Filament::getTenant()->id)
                 ->count()
             : number_format(static::getModel()::count())
             : null;

@@ -28,7 +28,7 @@ class CuratorServiceProvider extends PackageServiceProvider
             ->hasRoute('web')
             ->hasViews()
             ->hasTranslations()
-            ->hasMigration('create_media_table')
+            ->hasMigrations(['create_media_table','add_tenant_aware_column_to_media_table'])
             ->hasCommands([
                 Commands\UpgradeCommand::class,
             ])

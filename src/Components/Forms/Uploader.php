@@ -5,6 +5,7 @@ namespace Awcodes\Curator\Components\Forms;
 use Awcodes\Curator\Concerns\CanGeneratePaths;
 use Awcodes\Curator\Concerns\CanNormalizePaths;
 use Awcodes\Curator\PathGenerators\Contracts\PathGenerator;
+use Filament\Facades\Filament;
 use Filament\Forms\Components\BaseFileUpload;
 use Filament\Forms\Components\FileUpload;
 use Illuminate\Support\Facades\App;
@@ -127,7 +128,7 @@ class Uploader extends FileUpload
                 $component->getDiskName()
             );
 
-            return [
+            $data = [
                 'disk' => $component->getDiskName(),
                 'directory' => $component->getDirectory(),
                 'visibility' => $component->getVisibility(),
@@ -140,6 +141,12 @@ class Uploader extends FileUpload
                 'type' => $file->getMimeType(),
                 'ext' => $extension,
             ];
+
+            if(config('curator.is_tenant_aware') && Filament::hasTenancy()) {
+                $data[config('curator.tenant_ownership_relationship_name') . '_id'] = Filament::getTenant()->id;
+            }
+
+            return $data;
         });
     }
 }
