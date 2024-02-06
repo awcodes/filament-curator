@@ -364,7 +364,7 @@ class CuratorPicker extends Field
         return $this->evaluate($this->isTenantAware) ?? config('curator.is_tenant_aware');
     }
 
-    public function tenantOwnershipRelationshipName(): bool
+    public function tenantOwnershipRelationshipName(): string
     {
         return $this->tenantOwnershipRelationshipName ?? config('curator.tenant_ownership_relationship_name');
     }
