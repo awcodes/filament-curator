@@ -309,7 +309,7 @@ class CuratorPanel extends Component implements HasForms, HasActions
         }
     }
 
-    public function addFilesAction(): Action
+    public function addFilesAction(bool $insertAfter = false): Action
     {
         return Action::make('addFiles')
             ->button()
@@ -319,27 +319,8 @@ class CuratorPanel extends Component implements HasForms, HasActions
             ->disabled(function (): bool {
                 return count($this->form->getRawState()['files_to_add'] ?? []) === 0;
             })
-            ->action(function (): void {
-                $media = [];
-                $formData = $this->form->getState();
-
-                foreach ($formData['files_to_add'] as $item) {
-                    // Fix malformed utf-8 characters
-                    if (!empty($item['exif'])) {
-                        array_walk_recursive($item['exif'], function (&$entry) {
-                            if (!mb_detect_encoding($entry, 'utf-8', true)) {
-                                $entry = mb_convert_encoding($entry, 'utf-8');
-                            }
-                        });
-                    }
-
-                    $item['title'] = pathinfo($formData['originalFilenames'][$item['path']] ?? null, PATHINFO_FILENAME);
-
-                    $media[] = tap(
-                        App::make(Media::class)->create($item),
-                        fn(Media $media) => $media->getPrettyName(),
-                    )->toArray();
-                }
+            ->action(function () use($insertAfter): void {
+                $media = self::createMediaFiles($this->form->getState());
 
                 $this->form->fill();
 
@@ -348,10 +329,31 @@ class CuratorPanel extends Component implements HasForms, HasActions
                     ...$this->files,
                 ];
 
+                if ($insertAfter) {
+                    $this->dispatch(
+                        'insert-content',
+                        type: 'media',
+                        statePath: $this->statePath,
+                        media: $media
+                    );
+
+                    $this->dispatch('close-modal', id: $this->modalId ?? 'curator-panel');
+
+                    return;
+                }
+
                 foreach ($media as $item) {
                     $this->addToSelection($item['id']);
                 }
             });
+    }
+
+    public function addInsertFilesAction(): Action
+    {
+        return $this->addFilesAction(true)
+            ->name('addInsertFiles')
+            ->color('success')
+            ->label(__('curator::views.panel.use_selected_image'));
     }
 
     public function cancelEditAction(): Action
@@ -505,5 +507,29 @@ class CuratorPanel extends Component implements HasForms, HasActions
     public function render(): View
     {
         return view('curator::components.modals.curator-panel');
+    }
+
+    protected function createMediaFiles(array $formData) : array {
+        $media = [];
+
+        foreach ($formData['files_to_add'] as $item) {
+            // Fix malformed utf-8 characters
+            if (!empty($item['exif'])) {
+                array_walk_recursive($item['exif'], function (&$entry) {
+                    if (!mb_detect_encoding($entry, 'utf-8', true)) {
+                        $entry = mb_convert_encoding($entry, 'utf-8');
+                    }
+                });
+            }
+
+            $item['title'] = pathinfo($formData['originalFilenames'][$item['path']] ?? null, PATHINFO_FILENAME);
+
+            $media[] = tap(
+                App::make(Media::class)->create($item),
+                fn(Media $media) => $media->getPrettyName(),
+            )->toArray();
+        }
+
+        return $media;
     }
 }
