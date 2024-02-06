@@ -366,7 +366,7 @@ class CuratorPicker extends Field
 
     public function tenantOwnershipRelationshipName(): bool
     {
-        return $this->evaluate($this->tenantOwnershipRelationshipName) ?? config('curator.tenant_ownership_relationship_name');
+        return $this->tenantOwnershipRelationshipName ?? config('curator.tenant_ownership_relationship_name');
     }
 
     public function lazyLoad(bool|Closure $condition = true): static
