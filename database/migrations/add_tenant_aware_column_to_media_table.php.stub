@@ -18,7 +18,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        if (Schema::hasColumn(app(config('curator.model'))->getTable(), config('curator.tenant_ownership_relationship_name') . '_id'))
+        if (Schema::hasColumn(app(config('curator.model'))->getTable(), config('curator.tenant_ownership_relationship_name') . '_id')) {
             Schema::table(app(config('curator.model'))->getTable(), function(Blueprint $table) {
                 $table->dropColumn(config('curator.tenant_ownership_relationship_name') . '_id');
             });
