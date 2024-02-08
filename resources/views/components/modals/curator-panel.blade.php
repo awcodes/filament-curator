@@ -1,5 +1,14 @@
 <div
     x-data="{
+        isDragging: false,
+        dropped: false,
+        init() {
+            window.addEventListener('FilePond:removefile', event => {
+                if (event.detail.pond.getFiles().length < 1) {
+                    this.dropped = false;
+                }
+            });
+        },
         handleItemClick: function (mediaId = null, event) {
             if (! mediaId) return;
 
@@ -35,6 +44,12 @@
         },
     }"
     class="curator-panel h-full absolute inset-0 flex flex-col"
+    x-on:dragover.prevent="isDragging = true; dropped = false;"
+    x-on:dragleave.prevent="isDragging = false; dropped = false;"
+    x-on:drop.prevent="isDragging = false; dropped = true;"
+    x-bind:class="{
+        'dragging': isDragging,
+    }"
 >
     <!-- Toolbar -->
     <div class="curator-panel-toolbar px-4 py-2 flex items-center justify-between bg-gray-200/70 dark:bg-black/20 dark:text-white border-b border-gray-300 dark:border-gray-800">
@@ -61,6 +76,13 @@
             @endif
         </div>
         <div class="flex items-center gap-4">
+            <x-filament::button
+                size="xs"
+                color="gray"
+                x-on:click="dropped = true"
+            >
+                Upload Files
+            </x-filament::button>
             <label class="shrink-0 border border-gray-300 dark:border-gray-700 rounded-md relative flex items-center">
                 <span class="sr-only">{{ trans('curator::views.panel.search_label') }}</span>
                 <x-filament::icon
@@ -144,6 +166,23 @@
                             {{ $file['pretty_name'] }}
                         </p>
 
+                        <div class="absolute top-0 right-0 flex justify-center shadow-md rounded-tr-sm rounded-bl-lg bg-gray-800">
+                            <div class="flex items-center justify-center w-8 h-8">
+                                <x-filament-actions::group
+                                    :actions="[
+                                        ($this->viewItemAction)(['item' => $file]),
+                                        ($this->downloadItemAction)(['item' => $file]),
+                                        ($this->editItemAction)(['item' => $file]),
+                                        ($this->destroyItemAction)(['item' => $file]),
+                                    ]"
+                                    color="primary"
+                                    icon-size="sm"
+                                    dropdown-placement="bottom-end"
+                                    dropdown-width="max-w-48"
+                                />
+                            </div>
+                        </div>
+
                         <button
                             type="button"
                             x-on:click="handleItemClick('{{ $file['id'] }}', $event)"
@@ -198,40 +237,42 @@
         <!-- End Gallery -->
 
         <!-- Sidebar -->
-        <div class="curator-panel-sidebar w-full lg:h-full lg:max-w-xs overflow-auto bg-gray-100 dark:bg-gray-900/30 flex flex-col shadow-top lg:shadow-none z-[1] lg:border-l border-gray-300 dark:border-gray-800">
+        <div
+            class="curator-panel-sidebar lg:h-full lg:max-w-xs overflow-auto bg-gray-100 dark:bg-gray-900/30 flex flex-col shadow-top lg:shadow-none z-[1] lg:border-l border-gray-300 dark:border-gray-800"
+            x-bind:class="{
+                'w-0': ! (isDragging || dropped),
+                'w-full': isDragging || dropped,
+            }"
+            x-show="isDragging || dropped"
+            x-transition:enter="transition-all transform duration-300"
+            x-transition:enter-start="translate-x-full"
+            x-transition:enter-end="translate-x-0"
+            x-transition:leave="transition-all transform duration-300"
+            x-transition:leave-start="translate-x-0"
+            x-transition:leave-end="translate-x-full"
+        >
             <div class="flex-1 overflow-hidden">
                 <div class="flex flex-col h-full overflow-y-auto">
-                    <h4 class="font-bold py-2 px-4 mb-0">
+                    <h4 class="font-bold p-4 pb-0 mb-0">
                         <span>
-                            {{
-                                count($selected) === 1
-                                    ? trans('curator::views.panel.edit_media')
-                                    : trans('curator::views.panel.add_files')
-                            }}
+                            {{ trans('curator::views.panel.add_files') }}
                         </span>
                     </h4>
 
+                    <div class="flex items-center px-4 pb-2 justify-start gap-2">
+                        @if ( $this->addFilesAction->isVisible())
+                            {{ $this->addFilesAction }}
+                            {{ $this->addInsertFilesAction }}
+                        @endif
+                    </div>
+
                     <div class="flex-1 overflow-auto px-4 pb-4">
-                        <div class="h-full">
-                            <div class="mb-4 mt-px">
-                                {{ $this->form }}
-                            </div>
-                            <x-filament-actions::modals />
+                        <div class="mt-px">
+                            {{ $this->form }}
                         </div>
                     </div>
 
                     <div class="flex items-center justify-start mt-auto gap-3 py-3 px-4 border-t border-gray-300 bg-gray-200 dark:border-gray-800 dark:bg-black/10">
-                        @if (count($selected) !== 1)
-                            <div>
-                            {{ $this->addFilesAction }}
-                            </div>
-                        @endif
-                        @if (count($selected) === 1)
-                            <div class="flex gap-3">
-                                {{ $this->updateFileAction }}
-                                {{ $this->cancelEditAction }}
-                            </div>
-                        @endif
                         @if (count($selected) > 0)
                             <div class="ml-auto">
                                 {{ $this->insertMediaAction }}
@@ -243,5 +284,6 @@
             </div>
         </div>
         <!-- End Sidebar -->
+        <x-filament-actions::modals />
     </div>
 </div>

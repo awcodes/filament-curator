@@ -10,17 +10,31 @@ use Awcodes\Curator\CuratorPlugin;
 use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Models\Media;
 use Exception;
+use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 
 class MediaResource extends Resource
 {
     protected static ?string $model = Media::class;
+
+    public static function isScopedToTenant(): bool
+    {
+        return Config::get('curator.is_tenant_aware')
+            ?? static::$isScopedToTenant;
+    }
+
+    public static function getTenantOwnershipRelationshipName(): string
+    {
+        return Config::get('curator.tenant_ownership_relationship_name')
+            ?? Filament::getTenantOwnershipRelationshipName();
+    }
 
     public static function getModelLabel(): string
     {
@@ -34,7 +48,8 @@ class MediaResource extends Resource
 
     public static function getNavigationLabel(): string
     {
-        return Str::title(static::getPluralModelLabel()) ?? Str::title(static::getModelLabel());
+        return Str::title(static::getPluralModelLabel())
+            ?? Str::title(static::getModelLabel());
     }
 
     public static function getNavigationIcon(): string
@@ -55,7 +70,11 @@ class MediaResource extends Resource
     public static function getNavigationBadge(): ?string
     {
         return CuratorPlugin::get()->shouldShowBadge()
-            ? number_format(static::getModel()::count())
+            ? (Filament::hasTenancy() && Config::get('curator.is_tenant_aware'))
+                ? static::getEloquentQuery()
+                    ->where(Config::get('curator.tenant_ownership_relationship_name') . '_id', Filament::getTenant()->id)
+                    ->count()
+                : number_format(static::getModel()::count())
             : null;
     }
 

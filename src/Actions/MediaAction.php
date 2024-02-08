@@ -44,6 +44,7 @@ class MediaAction extends Action
                     'imageResizeMode' => Config::get('curator.image_resize_mode'),
                     'isLimitedToDirectory' => false,
                     'isTenantAware' => Config::get('curator.is_tenant_aware'),
+                    'tenantOwnershipRelationshipName' => Config::get('curator.tenant_ownership_relationship_name'),
                     'isMultiple' => false,
                     'maxItems' => 1,
                     'maxSize' => Config::get('curator.max_size'),

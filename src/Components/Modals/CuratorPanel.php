@@ -5,6 +5,7 @@ namespace Awcodes\Curator\Components\Modals;
 use Awcodes\Curator\Components\Forms\Uploader;
 use Awcodes\Curator\Components\Modals\Concerns\InteractsWithStorage;
 use Awcodes\Curator\Components\Modals\Concerns\HasBreadcrumbs;
+use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Models\Media;
 use Awcodes\Curator\PathGenerators\Contracts\PathGenerator;
 use Awcodes\Curator\Resources\MediaResource;
@@ -15,12 +16,11 @@ use Exception;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
-use Filament\Forms\Components\Group;
-use Filament\Forms\Components\View as FormView;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
+use Filament\Support\Enums\MaxWidth as FilamentMaxWidth;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
@@ -59,6 +59,8 @@ class CuratorPanel extends PounceComponent implements HasForms, HasActions
     public bool $isLimitedToDirectory = false;
 
     public bool|Closure $isTenantAware = true;
+
+    public string|null $tenantOwnershipRelationshipName = null;
 
     public bool $isMultiple = false;
 
@@ -132,11 +134,10 @@ class CuratorPanel extends PounceComponent implements HasForms, HasActions
         }
 
         return $form
+            ->statePath('data')
             ->schema([
                 Uploader::make('files_to_add')
-                    ->visible(fn() => count($this->selected) !== 1)
                     ->hiddenLabel()
-                    ->required()
                     ->multiple()
                     ->label(trans('curator::forms.fields.file'))
                     ->preserveFilenames($this->shouldPreserveFilenames)
@@ -153,20 +154,9 @@ class CuratorPanel extends PounceComponent implements HasForms, HasActions
                     ->imageResizeMode($this->imageResizeMode)
                     ->imageResizeTargetWidth($this->imageResizeTargetWidth)
                     ->imageResizeTargetHeight($this->imageResizeTargetHeight)
-                    ->storeFileNamesIn('originalFilenames'),
-                Group::make([
-                    FormView::make('preview')
-                        ->view('curator::components.forms.edit-preview', [
-                            'file' => Arr::first($this->selected),
-                            'actions' => [
-                                $this->viewAction(),
-                                $this->downloadAction(),
-                                $this->destroyAction(),
-                            ],
-                        ]),
-                    ...App::make(MediaResource::class)->getAdditionalInformationFormSchema(),
-                ])->visible(fn() => filled($this->selected) && count($this->selected) === 1),
-            ])->statePath('data');
+                    ->storeFileNamesIn('originalFilenames')
+                    ->dropOnPage()
+            ]);
     }
 
     public function getFiles(int $page = 0, bool $excludeSelected = false): array
@@ -174,7 +164,7 @@ class CuratorPanel extends PounceComponent implements HasForms, HasActions
         $files = Media::query()
             ->where('directory', $this->directory)
             ->when(filament()->hasTenancy() && $this->isTenantAware, function ($query) {
-                return $query->where(filament()->getTenantOwnershipRelationshipName() . '_id', filament()->getTenant()->id);
+                return $query->where($this->tenantOwnershipRelationshipName . '_id', filament()->getTenant()->id);
             })
             ->when($this->selected, function ($query, $selected) {
                 $selected = collect($selected)->pluck('id')->toArray();
@@ -295,37 +285,21 @@ class CuratorPanel extends PounceComponent implements HasForms, HasActions
         }
     }
 
-    public function addFilesAction(): Action
+    public function addFilesAction(bool $insertAfter = false): Action
     {
         return Action::make('addFiles')
             ->button()
             ->size('sm')
             ->color('primary')
             ->label(trans('curator::views.panel.add_files'))
+            ->visible(function (): bool {
+                return count($this->form->getRawState()['files_to_add'] ?? []) !== 0;
+            })
             ->disabled(function (): bool {
                 return count($this->form->getRawState()['files_to_add'] ?? []) === 0;
             })
-            ->action(function (): void {
-                $media = [];
-                $formData = $this->form->getState();
-
-                foreach ($formData['files_to_add'] as $item) {
-                    // Fix malformed utf-8 characters
-                    if (!empty($item['exif'])) {
-                        array_walk_recursive($item['exif'], function (&$entry) {
-                            if (!mb_detect_encoding($entry, 'utf-8', true)) {
-                                $entry = mb_convert_encoding($entry, 'utf-8');
-                            }
-                        });
-                    }
-
-                    $item['title'] = pathinfo($formData['originalFilenames'][$item['path']] ?? null, PATHINFO_FILENAME);
-
-                    $media[] = tap(
-                        App::make(Media::class)->create($item),
-                        fn(Media $media) => $media->getPrettyName(),
-                    )->toArray();
-                }
+            ->action(function () use ($insertAfter): void {
+                $media = self::createMediaFiles($this->form->getState());
 
                 $this->form->fill();
 
@@ -334,36 +308,69 @@ class CuratorPanel extends PounceComponent implements HasForms, HasActions
                     ...$this->files,
                 ];
 
+                if ($insertAfter) {
+                    $this->dispatch(
+                        'insert-content',
+                        type: 'media',
+                        statePath: $this->statePath,
+                        media: $media
+                    );
+
+                    $this->dispatch('close-modal', id: $this->modalId ?? 'curator-panel');
+
+                    return;
+                }
+
                 foreach ($media as $item) {
                     $this->addToSelection($item['id']);
                 }
             });
     }
 
-    public function cancelEditAction(): Action
+    public function addInsertFilesAction(): Action
     {
-        return Action::make('cancelEdit')
-            ->button()
-            ->size('sm')
-            ->color('gray')
-            ->label(trans('curator::views.panel.edit_cancel'))
-            ->action(function (): void {
-                $this->form->fill();
-                $this->selected = [];
-                $this->context = 'create';
+        return $this->addFilesAction(true)
+            ->name('addInsertFiles')
+            ->color('success')
+            ->label(trans('curator::views.panel.use_selected_image'))
+            ->visible(function (): bool {
+                return count($this->form->getRawState()['files_to_add'] ?? []) !== 0;
             });
     }
 
-    public function destroyAction(): Action
+    public function editItemAction(): Action
     {
-        return Action::make('destroy')
+        return Action::make('editItem')
+            ->label(trans('curator::views.panel.edit'))
+            ->color('gray')
+            ->icon('heroicon-s-pencil')
+            ->modalWidth(FilamentMaxWidth::Medium)
+            ->record(fn (array $arguments) => Media::query()->where('id', $arguments['item']['id'])->first() ?? null)
+            ->fillForm(fn (Media $record) => $record->toArray())
+            ->form(App::make(MediaResource::class)->getAdditionalInformationFormSchema())
+            ->action(function (array $data, Media $record): void {
+                try {
+                    $record->update($data);
+
+                    Notification::make('curator_update_success')
+                        ->success()
+                        ->body(trans('curator::notifications.update_success'))
+                        ->send();
+                } catch (Exception) {
+                    Notification::make('curator_update_error')
+                        ->danger()
+                        ->body(trans('curator::notifications.update_error'))
+                        ->send();
+                }
+            });
+    }
+
+    public function destroyItemAction(): Action
+    {
+        return Action::make('destroyItem')
             ->label(trans('curator::views.panel.edit_delete'))
             ->color('danger')
             ->icon('heroicon-s-trash')
-            ->iconButton()
-            ->extraAttributes([
-                'style' => 'border: none; margin: 0;',
-            ])
             ->requiresConfirmation()
             ->action(function (array $arguments): void {
                 if (empty($arguments)) {
@@ -394,16 +401,12 @@ class CuratorPanel extends PounceComponent implements HasForms, HasActions
             });
     }
 
-    public function downloadAction(): Action
+    public function downloadItemAction(): Action
     {
-        return Action::make('download')
+        return Action::make('downloadItem')
             ->label(trans('curator::views.panel.download'))
             ->icon('heroicon-s-arrow-down-tray')
             ->color('gray')
-            ->iconButton()
-            ->extraAttributes([
-                'style' => 'border: none; margin: 0;',
-            ])
             ->action(function (array $arguments): ?StreamedResponse {
                 if (empty($arguments)) {
                     return null;
@@ -428,57 +431,16 @@ class CuratorPanel extends PounceComponent implements HasForms, HasActions
                     media: $this->selected
                 );
 
-                $this->dispatch('close-modal', id: $this->modalId ?? 'curator-panel');
+                $this->dispatch('unPounce');
             });
     }
 
-    public function updateFileAction(): Action
+    public function viewItemAction(): Action
     {
-        return Action::make('updateFile')
-            ->button()
-            ->size('sm')
-            ->color('primary')
-            ->label(trans('curator::views.panel.edit_save'))
-            ->action(function (): void {
-                try {
-                    $item = App::make(Media::class)->find(Arr::first($this->selected)['id']);
-                    if ($item) {
-                        $item->update($this->form->getState());
-
-                        $this->selected = collect($this->selected)->map(function ($selectedItem) use ($item) {
-                            if ($selectedItem['id'] === $item->id) {
-                                return $item->refresh();
-                            }
-
-                            return $selectedItem;
-                        })->toArray();
-
-                        Notification::make('curator_update_success')
-                            ->success()
-                            ->body(trans('curator::notifications.update_success'))
-                            ->send();
-                    } else {
-                        throw new Exception();
-                    }
-                } catch (Exception) {
-                    Notification::make('curator_update_error')
-                        ->danger()
-                        ->body(trans('curator::notifications.update_error'))
-                        ->send();
-                }
-            });
-    }
-
-    public function viewAction(): Action
-    {
-        return Action::make('view')
+        return Action::make('viewItem')
             ->label(trans('curator::views.panel.view'))
             ->icon('heroicon-s-eye')
             ->color('gray')
-            ->iconButton()
-            ->extraAttributes([
-                'style' => 'border: none; margin: 0;',
-            ])
             ->url(function (array $arguments): ?string {
                 if (empty($arguments)) {
                     return null;
@@ -486,6 +448,24 @@ class CuratorPanel extends PounceComponent implements HasForms, HasActions
 
                 return $arguments['item']['url'] ?? null;
             }, true);
+    }
+
+    protected function createMediaFiles(array $formData): array
+    {
+        $media = [];
+        $formData = $this->form->getState();
+
+        foreach ($formData['files_to_add'] as $item) {
+            $item['exif'] = !empty($item['exif']) ? Curator::sanitizeExif($item['exif']) : null;
+            $item['title'] = pathinfo($formData['originalFilenames'][$item['path']] ?? null, PATHINFO_FILENAME);
+
+            $media[] = tap(
+                App::make(Media::class)->create($item),
+                fn(Media $media) => $media->getPrettyName(),
+            )->toArray();
+        }
+
+        return $media;
     }
 
     public function render(): View

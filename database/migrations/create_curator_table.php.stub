@@ -28,6 +28,11 @@ return new class extends Migration
             $table->text('pretty_name')->nullable();
             $table->text('exif')->nullable();
             $table->longText('curations')->nullable();
+
+            if(config('curator.is_tenant_aware')) {
+                $table->integer(config('curator.tenant_ownership_relationship_name') . '_id')->nullable();
+            }
+
             $table->timestamps();
         });
     }

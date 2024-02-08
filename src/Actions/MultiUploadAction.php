@@ -4,6 +4,7 @@ namespace Awcodes\Curator\Actions;
 
 use Awcodes\Curator\Components\Forms\Uploader;
 use Awcodes\Curator\Config\CuratorManager;
+use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Models\Media;
 use Filament\Actions\Action;
 use Illuminate\Support\Facades\App;
@@ -43,15 +44,7 @@ class MultiUploadAction extends Action
             ])
             ->action(function ($data) {
                 foreach ($data['files'] as $item) {
-                    // Fix malformed utf-8 characters
-                    if (!empty($item['exif'])) {
-                        array_walk_recursive($item['exif'], function (&$entry) {
-                            if (!mb_detect_encoding($entry, 'utf-8', true)) {
-                                $entry = utf8_encode($entry);
-                            }
-                        });
-                    }
-
+                    $item['exif'] = !empty($item['exif']) ? Curator::sanitizeExif($item['exif']) : null;
                     $item['title'] = pathinfo($data['originalFilename'][$item['path']] ?? null, PATHINFO_FILENAME);
 
                     tap(

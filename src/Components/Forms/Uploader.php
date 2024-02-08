@@ -4,10 +4,13 @@ namespace Awcodes\Curator\Components\Forms;
 
 use Awcodes\Curator\Concerns\CanGeneratePaths;
 use Awcodes\Curator\Concerns\CanNormalizePaths;
+use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\PathGenerators\Contracts\PathGenerator;
+use Filament\Facades\Filament;
 use Filament\Forms\Components\BaseFileUpload;
 use Filament\Forms\Components\FileUpload;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Intervention\Image\Facades\Image;
@@ -25,6 +28,7 @@ class Uploader extends FileUpload
         $generator = $this->getPathGenerator() ?? config('curator.path_generator');
 
         if (
+            $generator &&
             class_exists($generator) &&
             (new \ReflectionClass($generator))->implementsInterface(PathGenerator::class)
         ) {
@@ -96,14 +100,9 @@ class Uploader extends FileUpload
 
             $storeMethod = $component->getVisibility() === 'public' ? 'storePubliclyAs' : 'storeAs';
 
-            if (is_media_resizable($extension)) {
-                if (
-                    (
-                        in_array($component->getDiskName(), config('curator.cloud_disks'))
-                        && config('livewire.temporary_file_upload.directory') !== null
-                    )
-                    || in_array(config('livewire.temporary_file_upload.disk'), config('curator.cloud_disks'))
-                ) {
+
+            if (Curator::isResizable($extension)) {
+                if (Curator::isUsingCloudDisk()) {
                     $content = Storage::disk($component->getDiskName())->get($file->path());
                 } else {
                     $content = $file->getRealPath();
@@ -126,7 +125,7 @@ class Uploader extends FileUpload
                 $component->getDiskName()
             );
 
-            return [
+            $data = [
                 'disk' => $component->getDiskName(),
                 'directory' => $component->getDirectory(),
                 'visibility' => $component->getVisibility(),
@@ -139,6 +138,12 @@ class Uploader extends FileUpload
                 'type' => $file->getMimeType(),
                 'ext' => $extension,
             ];
+
+            if (Config::get('curator.is_tenant_aware') && Filament::hasTenancy()) {
+                $data[Config::get('curator.tenant_ownership_relationship_name') . '_id'] = Filament::getTenant()->id;
+            }
+
+            return $data;
         });
     }
 }

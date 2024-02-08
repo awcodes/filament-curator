@@ -43,6 +43,8 @@ class CuratorPicker extends Field
 
     protected bool|Closure|null $isTenantAware = null;
 
+    protected string|null $tenantOwnershipRelationshipName = null;
+
     protected bool|Closure|null $shouldLazyLoad = null;
 
     protected int|Closure|null $maxItems = null;
@@ -107,7 +109,7 @@ class CuratorPicker extends Field
             $state = array_values($state);
 
             foreach ($state as $itemData) {
-                $items[(string)Str::uuid()] = $itemData;
+                $items[(string)Str::uuid()] = (object) $itemData;
             }
 
             $component->state($items);
@@ -276,6 +278,7 @@ class CuratorPicker extends Field
                     'imageResizeTargetHeight' => $component->getImageResizeTargetHeight(),
                     'isLimitedToDirectory' => $component->isLimitedToDirectory(),
                     'isTenantAware' => $component->isTenantAware(),
+                    'tenantOwnershipRelationshipName' => $component->getTenantOwnershipRelationshipName(),
                     'isMultiple' => $component->isMultiple(),
                     'maxItems' => $component->getMaxItems(),
                     'maxSize' => $component->getMaxSize(),
@@ -352,6 +355,11 @@ class CuratorPicker extends Field
     public function isTenantAware(): bool
     {
         return $this->evaluate($this->isTenantAware) ?? config('curator.is_tenant_aware');
+    }
+
+    public function getTenantOwnershipRelationshipName(): string
+    {
+        return $this->tenantOwnershipRelationshipName ?? config('curator.tenant_ownership_relationship_name');
     }
 
     public function lazyLoad(bool|Closure $condition = true): static

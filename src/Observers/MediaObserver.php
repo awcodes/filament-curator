@@ -2,8 +2,8 @@
 
 namespace Awcodes\Curator\Observers;
 
-use Awcodes\Curator\Config\GlideManager;
-use Awcodes\Curator\CuratorUtils;
+use Awcodes\Curator\Facades\Glide;
+use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Models\Media;
 use Illuminate\Support\Facades\Storage;
 use stdClass;
@@ -24,7 +24,7 @@ class MediaObserver
                         $media->{$k} = $v->toString();
                     }
                 } elseif ($k === 'exif' && is_array($v)) {
-                    $media->{$k} = CuratorUtils::sanitizeExif($v);
+                    $media->{$k} = Curator::sanitizeExif($v);
                 } else {
                     $media->{$k} = $v;
                 }
@@ -37,7 +37,7 @@ class MediaObserver
     /**
      * Handle the Media "updating" event.
      */
-    public function updating(Media $media, GlideManager $glideManager): void
+    public function updating(Media $media): void
     {
         $storage = Storage::disk($media->disk);
 
@@ -57,7 +57,7 @@ class MediaObserver
             $media->path = $media->directory . '/' . $media->getOriginal()['name'] . '.' . $media->ext;
 
             // Delete glide-cache for replaced image
-            $server = $glideManager->getServer();
+            $server = Glide::getServer();
             $server->deleteCache($media->path);
         }
 
@@ -77,7 +77,7 @@ class MediaObserver
     /**
      * Handle the Media "deleted" event.
      */
-    public function deleted(Media $media, GlideManager $glideManager): void
+    public function deleted(Media $media): void
     {
         $storage = Storage::disk($media->disk);
 
@@ -92,7 +92,7 @@ class MediaObserver
         }
 
         // Delete glide-cache for delete image
-        $server = $glideManager->getServer();
+        $server = Glide::getServer();
         $server->deleteCache($media->path);
     }
 
