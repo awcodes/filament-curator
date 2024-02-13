@@ -3,7 +3,7 @@
         handleItemClick: function (mediaId = null, event) {
             if (! mediaId) return;
 
-            if ($wire.isMultiple && event && event.metaKey) {
+            if ($wire.isMultiple && event && (event.metaKey || event.ctrlKey)) {
                 if (this.isSelected(mediaId)) {
                     let toRemove = Object.values($wire.selected).find(obj => obj.id == mediaId)
                     $wire.removeFromSelection(toRemove.id);
