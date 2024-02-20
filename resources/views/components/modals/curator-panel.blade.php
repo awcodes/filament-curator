@@ -3,7 +3,7 @@
         handleItemClick: function (mediaId = null, event) {
             if (! mediaId) return;
 
-            if ($wire.isMultiple && event && event.metaKey) {
+            if ($wire.isMultiple && event && event.{{ config('curator.multi_select_key') }}) {
                 if (this.isSelected(mediaId)) {
                     let toRemove = Object.values($wire.selected).find(obj => obj.id == mediaId)
                     $wire.removeFromSelection(toRemove.id);
@@ -57,7 +57,11 @@
             </x-filament::button>
             @endif
             @if ($isMultiple)
-                <p class="text-xs">{{ trans('curator::views.panel.add_multiple_file') }}</p>
+                @if (config('curator.multi_select_key') === 'metaKey')
+                    <p class="text-xs">{{ trans('curator::views.panel.add_multiple_file', ['key' => 'Cmd']) }}</p>
+                @else
+                    <p class="text-xs">{{ trans('curator::views.panel.add_multiple_file', ['key' => config('curator.multi_select_key')]) }}</p>
+                @endif
             @endif
         </div>
         <label class="border border-gray-300 dark:border-gray-700 rounded-md relative flex items-center">
