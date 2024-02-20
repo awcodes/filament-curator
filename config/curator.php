@@ -53,4 +53,5 @@ return [
     'should_preserve_filenames' => false,
     'should_register_navigation' => true,
     'visibility' => 'public',
+    'multi_select_key' => 'metaKey',
 ];
