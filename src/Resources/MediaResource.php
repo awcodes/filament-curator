@@ -70,11 +70,16 @@ class MediaResource extends Resource
     {
         return CuratorPlugin::get()->getNavigationCountBadge() ?
             (Filament::hasTenancy() && Config::get('curator.is_tenant_aware')) ?
-                static::getEloquentQuery()
-                    ->where(Config::get('curator.tenant_ownership_relationship_name') . '_id', Filament::getTenant()->id)
-                    ->count()
+            static::getEloquentQuery()
+            ->where(Config::get('curator.tenant_ownership_relationship_name') . '_id', Filament::getTenant()->id)
+            ->count()
             : number_format(static::getModel()::count())
             : null;
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return CuratorPlugin::get()->getShouldRegisterNavigation();
     }
 
     public static function form(Form $form): Form

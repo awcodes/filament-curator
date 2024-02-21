@@ -22,6 +22,8 @@ class CuratorPlugin implements Plugin
 
     protected ?bool $navigationCountBadge = null;
 
+    protected ?bool $shouldRegisterNavigation = null;
+
     protected string | Closure | null $pluralLabel = null;
 
     protected ?string $resource = null;
@@ -38,7 +40,7 @@ class CuratorPlugin implements Plugin
                 $this->getResource(),
             ]);
 
-        if (! is_panel_auth_route()) {
+        if (!is_panel_auth_route()) {
             $panel
                 ->renderHook(
                     'panels::body.end',
@@ -49,7 +51,6 @@ class CuratorPlugin implements Plugin
 
     public function boot(Panel $panel): void
     {
-
     }
 
     public static function make(): static
@@ -97,6 +98,11 @@ class CuratorPlugin implements Plugin
         return $this->navigationCountBadge ?? config('curator.resources.navigation_count_badge');
     }
 
+    public function getShouldRegisterNavigation(): ?bool
+    {
+        return $this->shouldRegisterNavigation ?? config('curator.should_register_navigation');
+    }
+
     public function navigationGroup(string | Closure | null $group = null): static
     {
         $this->navigationGroup = $group;
@@ -121,6 +127,13 @@ class CuratorPlugin implements Plugin
     public function navigationCountBadge(bool $show = true): static
     {
         $this->navigationCountBadge = $show;
+
+        return $this;
+    }
+
+    public function shouldRegisterNavigation(bool $show = true): static
+    {
+        $this->shouldRegisterNavigation = $show;
 
         return $this;
     }
