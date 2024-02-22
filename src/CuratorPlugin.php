@@ -98,7 +98,7 @@ class CuratorPlugin implements Plugin
         return $this->navigationCountBadge ?? config('curator.resources.navigation_count_badge');
     }
 
-    public function getShouldRegisterNavigation(): ?bool
+    public function shouldRegisterNavigation(): ?bool
     {
         return $this->shouldRegisterNavigation ?? config('curator.should_register_navigation');
     }
@@ -131,7 +131,7 @@ class CuratorPlugin implements Plugin
         return $this;
     }
 
-    public function shouldRegisterNavigation(bool $show = true): static
+    public function registerNavigation(bool $show = true): static
     {
         $this->shouldRegisterNavigation = $show;
 

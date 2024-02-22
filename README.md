@@ -99,7 +99,7 @@ public function panel(Panel $panel): Panel
                 ->navigationGroup('Content')
                 ->navigationSort(3)
                 ->navigationCountBadge()
-                ->shouldRegisterNavigation()
+                ->registerNavigation(false)
                 ->resource(\App\Filament\Resources\CustomMediaResource::class)
         ]);
 }
