@@ -99,6 +99,7 @@ public function panel(Panel $panel): Panel
                 ->navigationGroup('Content')
                 ->navigationSort(3)
                 ->navigationCountBadge()
+                ->shouldRegisterNavigation()
                 ->resource(\App\Filament\Resources\CustomMediaResource::class)
         ]);
 }
@@ -351,7 +352,7 @@ Glide's options.
 - force: (bool) this can be used to force glider to return a signed url and is helpful when returning urls from cloud disks. This should be used with the knowledge that it could have performance implications.
 
 ```blade
-<div class="aspect-video w-64">
+<div class="w-64 aspect-video">
     <x-curator-glider
         class="object-cover w-auto"
         :media="1"
