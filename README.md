@@ -333,6 +333,24 @@ You can also change which formats are available for curations by changing the `c
 ],
 ```
 
+If you wish to disable the "Curation" tab in the Media Editor you can do so by setting `tabs.display_curation`
+to `false` in the config file. The default is `true`.
+
+```php
+'tabs' => [
+    'display_curation' => false,
+],
+```
+
+If you wish to disable the "Upload New" tab in the Media Editor you can do so by setting `tabs.display_upload_new`
+to `false` in the config file. The default is `true`.
+
+```php
+'tabs' => [
+    'display_upload_new' => false,
+],
+```
+
 ### Glider Blade Component
 
 To make it as easy as possible to output your media, Curator comes with an
