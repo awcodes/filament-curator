@@ -53,5 +53,9 @@ return [
     'should_preserve_filenames' => false,
     'should_register_navigation' => true,
     'visibility' => 'public',
+    'tabs' => [
+        'display_curation' => true,
+        'display_upload_new' => true,
+    ],
     'multi_select_key' => 'metaKey',
 ];
