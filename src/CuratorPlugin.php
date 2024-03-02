@@ -40,7 +40,7 @@ class CuratorPlugin implements Plugin
                 $this->getResource(),
             ]);
 
-        if (!is_panel_auth_route()) {
+        if (! is_panel_auth_route()) {
             $panel
                 ->renderHook(
                     'panels::body.end',
