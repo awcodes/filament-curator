@@ -97,6 +97,7 @@ public function panel(Panel $panel): Panel
                 ->pluralLabel('Media')
                 ->navigationIcon('heroicon-o-photo')
                 ->navigationGroup('Content')
+                ->cluster('Cms')
                 ->navigationSort(3)
                 ->navigationCountBadge()
                 ->registerNavigation(false)
