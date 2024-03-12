@@ -66,10 +66,10 @@ class MediaResource extends Resource
         return CuratorPlugin::get()->getNavigationGroup();
     }
 
-    /*public static function getCluster(): ?string
+    public static function getCluster(): ?string
     {
         return CuratorPlugin::get()->getCluster();
-    }*/
+    }
 
     public static function getNavigationBadge(): ?string
     {
