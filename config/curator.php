@@ -58,4 +58,7 @@ return [
         'display_upload_new' => true,
     ],
     'multi_select_key' => 'metaKey',
+    'table' => [
+        'layout' => 'list',
+    ]
 ];
