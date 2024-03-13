@@ -24,6 +24,8 @@ class CuratorPlugin implements Plugin
 
     protected ?bool $shouldRegisterNavigation = null;
 
+    protected ?string $defaultListView = null;
+
     protected string | Closure | null $pluralLabel = null;
 
     protected ?string $resource = null;
@@ -40,7 +42,7 @@ class CuratorPlugin implements Plugin
                 $this->getResource(),
             ]);
 
-        if (! is_panel_auth_route()) {
+        if (!is_panel_auth_route()) {
             $panel
                 ->renderHook(
                     'panels::body.end',
@@ -103,6 +105,11 @@ class CuratorPlugin implements Plugin
         return $this->shouldRegisterNavigation ?? config('curator.should_register_navigation');
     }
 
+    public function defaultListView(): ?string
+    {
+        return $this->defaultListView ?? config('curator.table.layout');
+    }
+
     public function navigationGroup(string | Closure | null $group = null): static
     {
         $this->navigationGroup = $group;
@@ -134,6 +141,13 @@ class CuratorPlugin implements Plugin
     public function registerNavigation(bool $show = true): static
     {
         $this->shouldRegisterNavigation = $show;
+
+        return $this;
+    }
+
+    public function defaultView(string $view): static
+    {
+        $this->defaultListView = $view;
 
         return $this;
     }

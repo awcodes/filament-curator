@@ -16,7 +16,7 @@ class ListMedia extends ListRecords
 
     public function boot()
     {
-        $this->layoutView = config('curator.table.layout') ?? 'grid';
+        $this->layoutView = CuratorPlugin::get()->defaultListView();
     }
 
     protected $listeners = [
