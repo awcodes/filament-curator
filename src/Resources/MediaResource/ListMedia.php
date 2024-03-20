@@ -16,7 +16,7 @@ class ListMedia extends ListRecords
 
     public function boot()
     {
-        $this->layoutView = CuratorPlugin::get()->defaultListView();
+        $this->layoutView = CuratorPlugin::get()->getDefaultListView();
     }
 
     protected $listeners = [
