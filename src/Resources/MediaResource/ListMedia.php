@@ -12,7 +12,12 @@ use Illuminate\Support\Str;
 
 class ListMedia extends ListRecords
 {
-    public string $layoutView = 'grid';
+    public string $layoutView;
+
+    public function boot()
+    {
+        $this->layoutView = CuratorPlugin::get()->getDefaultListView();
+    }
 
     protected $listeners = [
         'changeLayoutView' => 'changeLayoutView',
