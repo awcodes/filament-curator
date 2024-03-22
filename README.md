@@ -100,7 +100,7 @@ public function panel(Panel $panel): Panel
                 ->navigationSort(3)
                 ->navigationCountBadge()
                 ->registerNavigation(false)
-                ->defaultView('grid' || 'list')
+                ->defaultListView('grid' || 'list')
                 ->resource(\App\Filament\Resources\CustomMediaResource::class)
         ]);
 }
