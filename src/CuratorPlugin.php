@@ -20,6 +20,8 @@ class CuratorPlugin implements Plugin
     protected string | Closure | null $pluralLabel = null;
     protected bool | Closure | null $shouldRegisterNavigation = null;
     protected bool | Closure | null $shouldShowBadge = null;
+    protected bool | Closure | null $supportsCurations = null;
+    protected bool | Closure | null $supportsFileSwap = null;
 
     public function getId(): string
     {
@@ -59,7 +61,6 @@ class CuratorPlugin implements Plugin
     /**
      * Getters
      */
-
     public function getLabel(): string
     {
         return $this->evaluate($this->label)
@@ -102,9 +103,34 @@ class CuratorPlugin implements Plugin
             ?? config('curator.resource.navigation.should_show_badge');
     }
 
+    public function supportsCurations(): bool
+    {
+        return $this->evaluate($this->supportsCurations)
+            ?? config('curator.supports_curations', true);
+    }
+
+    public function supportsFileSwap(): bool
+    {
+        return $this->evaluate($this->supportsFileSwap)
+            ?? config('curator.supports_file_swap', true);
+    }
+
     /**
      * Setters
      */
+    public function curations(bool | Closure $condition = true): static
+    {
+        $this->supportsCurations = $condition;
+
+        return $this;
+    }
+
+    public function fileSwap(bool | Closure $condition = true): static
+    {
+        $this->supportsFileSwap = $condition;
+
+        return $this;
+    }
 
     public function label(string | Closure $label): static
     {

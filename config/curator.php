@@ -24,5 +24,7 @@ return [
             'edit' => \Awcodes\Curator\Resources\MediaResource\EditMedia::class,
             'index' => \Awcodes\Curator\Resources\MediaResource\ListMedia::class,
         ],
-    ]
+    ],
+    'supports_curations' => true,
+    'supports_file_swap' => true,
 ];

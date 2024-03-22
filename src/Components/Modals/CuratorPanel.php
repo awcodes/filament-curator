@@ -38,8 +38,6 @@ class CuratorPanel extends PounceComponent implements HasForms, HasActions
 
     public array $acceptedFileTypes = [];
 
-    public string $context = 'create';
-
     public ?array $data = [];
 
     public ?string $directory = null;
@@ -155,7 +153,6 @@ class CuratorPanel extends PounceComponent implements HasForms, HasActions
                     ->imageResizeTargetWidth($this->imageResizeTargetWidth)
                     ->imageResizeTargetHeight($this->imageResizeTargetHeight)
                     ->storeFileNamesIn('originalFilenames')
-                    ->dropOnPage()
             ]);
     }
 
@@ -202,7 +199,6 @@ class CuratorPanel extends PounceComponent implements HasForms, HasActions
             array_unshift($items, ...$selectedItems);
 
             $this->setMediaForm();
-            $this->context = count($this->selected) === 1 ? 'edit' : 'create';
         }
 
         $this->getSubDirectories();
@@ -235,7 +231,6 @@ class CuratorPanel extends PounceComponent implements HasForms, HasActions
             $this->selected = [$item];
         }
 
-        $this->context = count($this->selected) === 1 ? 'edit' : 'create';
         $this->setMediaForm();
     }
 
@@ -244,8 +239,6 @@ class CuratorPanel extends PounceComponent implements HasForms, HasActions
         $this->selected = collect($this->selected)->reject(function ($selectedItem) use ($id) {
             return $selectedItem['id'] === $id;
         })->toArray();
-
-        $this->context = count($this->selected) === 1 ? 'edit' : 'create';
     }
 
     public function removeFromFiles(int|string $id): void
@@ -253,8 +246,6 @@ class CuratorPanel extends PounceComponent implements HasForms, HasActions
         $this->files = collect($this->files)->reject(function ($selectedItem) use ($id) {
             return $selectedItem['id'] === $id;
         })->toArray();
-
-        $this->context = filled($this->selected) ? 'edit' : 'create';
     }
 
     public function updatedSearch(): void

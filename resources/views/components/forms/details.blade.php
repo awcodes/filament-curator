@@ -23,7 +23,7 @@
                 {{ trans('curator::views.details.file_type') }}
             </dt>
             <dd class="{{ $dataClasses }}">
-                {{ filled($record) ? $record->type : '-' }}
+                {{ filled($record) ? $record->mime : '-' }}
             </dd>
         </div>
         <div>
@@ -31,7 +31,7 @@
                 {{ trans('curator::views.details.file_size') }}
             </dt>
             <dd class="{{ $dataClasses }}">
-                {{ filled($record) ? $record->size_for_humans : '-' }}
+                {{ filled($record) ? curator()->sizeForHumans($record->size) : '-' }}
             </dd>
         </div>
         <div>

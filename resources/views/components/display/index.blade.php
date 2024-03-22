@@ -11,6 +11,10 @@
     if ($item && is_array($item)) {
         $item = (object) $item;
     }
+
+    if (!$src) {
+      $src = $item->url;
+    }
 @endphp
 
 @if (curator()->isPreviewable($item->ext))

@@ -109,7 +109,9 @@ class MediaResource extends Resource
                                             }),
                                     ]),
                                 Forms\Components\Tabs\Tab::make(trans('curator::forms.sections.curation'))
-                                    ->visible(fn($record) => is_media_resizable($record->ext))
+                                    ->visible(function($record) {
+                                        return is_media_resizable($record->ext) && CuratorPlugin::get()->supportsCurations();
+                                    })
                                     ->schema([
                                         Forms\Components\Repeater::make('curations')
                                             ->label(trans('curator::forms.sections.curation'))
@@ -126,6 +128,9 @@ class MediaResource extends Resource
                                             ]),
                                     ]),
                                 Forms\Components\Tabs\Tab::make(trans('curator::forms.sections.upload_new'))
+                                    ->visible(function() {
+                                        return  CuratorPlugin::get()->supportsFileSwap();
+                                    })
                                     ->schema([
                                         static::getUploaderField()
                                             ->helperText(trans('curator::forms.sections.upload_new_helper')),
