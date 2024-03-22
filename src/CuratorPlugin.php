@@ -24,7 +24,7 @@ class CuratorPlugin implements Plugin
 
     protected ?bool $shouldRegisterNavigation = null;
 
-    protected ?string $getDefaultListView = null;
+    protected string | Closure | null $defaultListView = null;
 
     protected string | Closure | null $pluralLabel = null;
 
@@ -107,7 +107,7 @@ class CuratorPlugin implements Plugin
 
     public function getDefaultListView(): ?string
     {
-        return $this->getDefaultListView ?? config('curator.table.layout');
+        return $this->evaluate($this->defaultListView) ?? config('curator.table.layout');
     }
 
     public function navigationGroup(string | Closure | null $group = null): static
@@ -145,9 +145,9 @@ class CuratorPlugin implements Plugin
         return $this;
     }
 
-    public function defaultView(string $view): static
+    public function defaultListView(string | Closure $view): static
     {
-        $this->getDefaultListView = $view;
+        $this->defaultListView = $view;
 
         return $this;
     }
