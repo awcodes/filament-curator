@@ -11,6 +11,8 @@ return [
         'file_url' => 'رابط الملف',
         'file' => 'الملف',
         'ext' => 'الإمتداد',
+        'copy_url' => 'نسخ الرابط',
+        'url_copied' => 'تم النسخ!',
     ],
     'picker' => [
         'button' => 'إضافة وسائط',
@@ -19,6 +21,7 @@ return [
         'edit' => 'تعديل',
         'download' => 'تنزيل',
         'remove' => 'حذف',
+        'clear' => 'حذف الكل',
     ],
     'panel' => [
         'button' => 'إضافة وسائط',
@@ -40,10 +43,13 @@ return [
         'edit' => 'تعديل',
         'download' => 'تنزيل',
         'remove' => 'حذف',
+        'deselect_all' => 'إلغاء تحديد الكل',
+        'add_multiple_file' => ':key + مع الضغط لإختيار عدة ملفات.',
     ],
     'curation' => [
         'heading' => 'تنظيم',
         'adjustments' => 'تعديل',
+        'cancel' => 'إلغاء',
         'custom' => 'مخصص',
         'key' => 'المفتاح',
         'key_helper' => 'هذا هو المرجع المستخدم لاسترداد تنظيم طريقة العرض.',
@@ -55,5 +61,11 @@ return [
         'crop_mode' => 'وضع القطع',
         'reset' => 'إعادة تعيين',
         'save_curation' => 'حفظ التنظيم',
+        'height' => 'الإرتفاع',
+        'width' => 'العرض',
+        'format' => 'التنسيق',
+        'quality' => 'الدقة',
+        'rotate' => 'التدوير',
+        'rotate_deg' => 'درجة',
     ],
 ];
