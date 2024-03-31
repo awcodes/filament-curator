@@ -68,7 +68,7 @@ class MediaResource extends Resource
 
     public static function getCluster(): ?string
     {
-        return config('curator.resources.cluster', null);
+        return config('curator.resources.cluster');
     }
 
     public static function getNavigationBadge(): ?string
