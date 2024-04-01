@@ -14,8 +14,9 @@ class ListMedia extends ListRecords
 {
     public string $layoutView;
 
-    public function boot()
+    public function mount(): void
     {
+        parent::mount();
         $this->layoutView = CuratorPlugin::get()->getDefaultListView();
     }
 
