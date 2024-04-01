@@ -48,7 +48,7 @@ class MediaResource extends Resource
 
     public static function getNavigationLabel(): string
     {
-        return Str::title(static::getPluralModelLabel()) ?? Str::title(static::getModelLabel());
+        return CuratorPlugin::get()->getNavigationLabel() ?? Str::title(static::getPluralModelLabel()) ?? Str::title(static::getModelLabel());
     }
 
     public static function getNavigationIcon(): string
