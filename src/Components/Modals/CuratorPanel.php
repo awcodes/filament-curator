@@ -304,7 +304,7 @@ class CuratorPanel extends PounceComponent implements HasActions, HasForms
                 ];
 
                 foreach ($media as $item) {
-                    $this->selected[] = (string) $item['id'];
+                    $this->selected[] = $item;
                 }
             });
     }
