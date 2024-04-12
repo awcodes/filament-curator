@@ -114,9 +114,9 @@ class CuratorPanel extends PounceComponent implements HasActions, HasForms
 
         $this->files = $this->getFiles();
 
-        //        if (filled($this->selected)) {
-        //            $this->selected = collect($this->selected)->pluck('id')->map(fn ($id) => (string) $id)->toArray();
-        //        }
+        if (filled($this->selected)) {
+            $this->selected = array_values($this->selected);
+        }
 
         $this->form->fill();
     }
@@ -170,11 +170,11 @@ class CuratorPanel extends PounceComponent implements HasActions, HasForms
             ->when(filament()->hasTenancy() && $this->isTenantAware, function ($query) {
                 return $query->where($this->tenantOwnershipRelationshipName . '_id', filament()->getTenant()->id);
             })
-            ->when($this->selected, function ($query, $selected) {
-                $selected = collect($selected)->pluck('id')->toArray();
-
-                return $query->whereNotIn('id', $selected);
-            })
+//            ->when($this->selected, function ($query, $selected) {
+//                $selected = collect($selected)->pluck('id')->toArray();
+//
+//                return $query->whereNotIn('id', $selected);
+//            })
             ->when(filled($this->acceptedFileTypes) && ! $this->showAll, function ($query) {
                 $types = $this->acceptedFileTypes;
                 $query = $query->whereIn('mime', $types);
@@ -193,20 +193,20 @@ class CuratorPanel extends PounceComponent implements HasActions, HasForms
 
         $items = $paginator->items();
 
-        if (! $excludeSelected && $this->selected) {
-            $selected = collect($this->selected)->pluck('id')->toArray();
-
-            $selectedItems = Media::query()
-                ->whereIn('id', $selected)
-                ->get()
-                ->sortBy(function ($model) use ($selected) {
-                    return array_search($model->id, $selected);
-                });
-
-            array_unshift($items, ...$selectedItems);
-
-            $this->setMediaForm();
-        }
+//        if (! $excludeSelected && $this->selected) {
+//            $selected = collect($this->selected)->pluck('id')->toArray();
+//
+//            $selectedItems = Media::query()
+//                ->whereIn('id', $selected)
+//                ->get()
+//                ->sortBy(function ($model) use ($selected) {
+//                    return array_search($model->id, $selected);
+//                });
+//
+//            array_unshift($items, ...$selectedItems);
+//
+//            $this->setMediaForm();
+//        }
 
         $this->getSubDirectories();
         $this->getBreadCrumbs();
@@ -237,18 +237,22 @@ class CuratorPanel extends PounceComponent implements HasActions, HasForms
 
     public function updatedSearch(): void
     {
-        $this->files = App::make(Media::class)
-            ->when($this->isLimitedToDirectory, function ($query) {
-                return $query->where('directory', $this->directory);
-            })
-            ->where('name', 'like', '%' . $this->search . '%')
-            ->orWhere('title', 'like', '%' . $this->search . '%')
-            ->orWhere('alt', 'like', '%' . $this->search . '%')
-            ->orWhere('caption', 'like', '%' . $this->search . '%')
-            ->orWhere('description', 'like', '%' . $this->search . '%')
-            ->limit(50)
-            ->get()
-            ->toArray();
+        if (empty($this->search)) {
+            $this->files = $this->getFiles();
+        } else {
+            $this->files = App::make(Media::class)
+                ->when($this->isLimitedToDirectory, function ($query) {
+                    return $query->where('directory', $this->directory);
+                })
+                ->where('name', 'like', '%' . $this->search . '%')
+                ->orWhere('title', 'like', '%' . $this->search . '%')
+                ->orWhere('alt', 'like', '%' . $this->search . '%')
+                ->orWhere('caption', 'like', '%' . $this->search . '%')
+                ->orWhere('description', 'like', '%' . $this->search . '%')
+                ->limit(50)
+                ->get()
+                ->toArray();
+        }
     }
 
     public function setMediaForm(): void
@@ -402,15 +406,11 @@ class CuratorPanel extends PounceComponent implements HasActions, HasForms
             ->color('success')
             ->label(trans('curator::views.panel.use_selected_image'))
             ->action(function (): void {
-                $media = collect($this->files)->filter(function ($item) {
-                    return in_array($item['id'], $this->selected);
-                })->toArray();
-
                 $this->dispatch(
                     'insert-content',
                     type: 'media',
                     statePath: $this->statePath,
-                    media: $media
+                    media: $this->selected
                 );
 
                 $this->dispatch('unPounce');

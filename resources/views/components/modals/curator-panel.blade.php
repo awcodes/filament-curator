@@ -2,48 +2,36 @@
     x-data="{
         selected: $wire.entangle('selected'),
         multiple: {{ $isMultiple ? 'true' : 'false' }},
-        handleItemClick: function (mediaId = null, event) {
-            if (! mediaId) return;
+        handleItemClick: function (media = null) {
+            if (! media) return;
 
-            if (this.multiple && event && event.metaKey) {
-                if (this.isSelected(mediaId)) {
-                    this.removeFromSelection(mediaId);
-                    return;
-                }
-
-                this.addToSelection(mediaId);
-
+            if (this.isSelected(media.id)) {
+                this.removeFromSelection(media.id);
                 return;
             }
 
-            if (this.selected.length === 1) {
-                if (this.selected[0] != mediaId) {
-                    this.removeFromSelection(this.selected[0]);
-                    this.addToSelection(mediaId);
-                } else {
-                    this.removeFromSelection(this.selected[0]);
-                }
-
-                return;
-            }
-
-            this.addToSelection(mediaId);
+            this.addToSelection(media);
         },
-        isSelected: function (mediaId = null) {
-            if (this.selected.length === 0) return false;
-
-            return this.selected.includes(mediaId);
+        hasSelection: function () {
+            return this.selected.length > 0;
         },
-        addToSelection: function (mediaId = null) {
-            if (! mediaId) return;
+        isSelected: function (id = null) {
+            if (! this.hasSelection()) return false;
 
-            this.selected.push(mediaId);
+            return this.selected.find(function (item) {
+                return item.id == id;
+            }) !== undefined;
         },
-        removeFromSelection: function (mediaId = null) {
-            if (! mediaId) return;
+        addToSelection: function (media = null) {
+            if (! media) return;
 
-            this.selected = this.selected.filter(function (value) {
-                return value !== mediaId;
+            this.selected.push(media);
+        },
+        removeFromSelection: function (id = null) {
+            if (! id) return;
+
+            this.selected = this.selected.filter(function (item) {
+                return item.id != id;
             });
         },
     }"
@@ -51,17 +39,17 @@
 >
     <!-- Controls -->
     <div
-        x-show="selected.length > 0"
-        class="curator-panel-controls fixed top-4 inset-x-0 pointer-events-none transition z-20 flex justify-center"
+        x-show="hasSelection()"
+        class="curator-panel-controls fixed bottom-0 md:bottom-auto md:top-4 inset-x-0 pointer-events-none transition z-20 flex justify-center"
         x-transition:enter="ease-out duration-100"
-        x-transition:enter-start="opacity-0 -translate-y-4"
-        x-transition:enter-end="opacity-100 translate-y-0"
+        x-transition:enter-start="opacity-0 translate-y-0 md:-translate-y-4"
+        x-transition:enter-end="opacity-100 -translate-y-4 md:translate-y-0"
         x-transition:leave="ease-in duration-100"
-        x-transition:leave-start="opacity-100 translate-y-0"
-        x-transition:leave-end="opacity-0 -translate-y-4"
+        x-transition:leave-start="opacity-100 -translate-y-4 md:translate-y-0"
+        x-transition:leave-end="opacity-0 translate-y-0 md:-translate-y-4"
         x-cloak
     >
-        <div class="bg-gray-800 rounded-xl p-3 flex items-center gap-3 pointer-events-auto">
+        <div class="bg-black md:bg-gray-800 md:rounded-xl p-3 w-full md:w-auto flex items-center gap-3 pointer-events-auto">
             {{ $this->insertMedia }}
             <x-filament::button
                 color="gray"
@@ -84,9 +72,6 @@
             >
                 {{ trans('curator::views.panel.load_more') }}
             </x-filament::button>
-            @endif
-            @if ($isMultiple)
-                <p class="text-xs">{{ trans('curator::views.panel.add_multiple_file') }}</p>
             @endif
         </div>
         <div class="flex items-center gap-4">
@@ -173,13 +158,10 @@
                     <li
                         wire:key="media-{{ $file['id'] }}"
                         class="relative aspect-square group"
-                        x-bind:class="{
-                            'opacity-40': selected.length > 0 && !isSelected('{{ $file['id'] }}')
-                        }"
                     >
                         <button
                             type="button"
-                            x-on:click="handleItemClick('{{ $file['id'] }}', $event)"
+                            x-on:click="handleItemClick(@js($file))"
                             class="block w-full h-full overflow-hidden bg-gray-700 rounded-md"
                         >
                             <x-curator::display
@@ -191,11 +173,27 @@
                             />
                         </button>
 
+                        <button
+                                type="button"
+                                x-on:click="removeFromSelection({{ $file['id']}})"
+                                x-show="isSelected('{{ $file['id'] }}')"
+                                x-cloak
+                                class="absolute inset-0 flex items-center justify-center w-full h-full rounded-md shadow text-primary-600 bg-primary-500/20 ring-2 ring-primary-500"
+                        >
+                            <span class="flex items-center justify-center w-8 h-8 text-white rounded-full bg-primary-500 drop-shadow">
+                                <x-filament::icon
+                                        alias="curator::icons.check"
+                                        icon="heroicon-s-check"
+                                        class="w-5 h-5"
+                                />
+                            </span>
+                            <span class="sr-only">
+                                {{ trans('curator::views.panel.deselect') }}
+                            </span>
+                        </button>
+
                         <div
-                            class="absolute top-1 right-1 flex justify-center shadow-md rounded bg-gray-800 opacity-0 pointer-events-none transition"
-                            x-bind:class="{
-                                'group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:pointer-events-auto': selected.length === 0 && !isSelected('{{ $file['id'] }}')
-                            }"
+                            class="absolute top-1 right-1 flex justify-center shadow-md rounded bg-gray-800 opacity-0 pointer-events-none transition group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:pointer-events-auto"
                         >
                             <div class="flex items-center justify-center w-8 h-8">
                                 <x-filament-actions::group
@@ -214,32 +212,10 @@
                         </div>
 
                         <p
-                            class="text-xs truncate absolute bottom-0 inset-x-0 px-1 pb-1 pt-4 text-white bg-gradient-to-t from-black/80 to-transparent pointer-events-none opacity-0 transition"
-                            x-bind:class="{
-                                'group-hover:opacity-100 group-focus-within:opacity-100 ': selected.length === 0 && !isSelected('{{ $file['id'] }}')
-                            }"
+                            class="text-xs truncate absolute bottom-0 inset-x-0 px-1 pb-1 pt-4 rounded-b text-white bg-gradient-to-t from-black/80 to-transparent pointer-events-none opacity-0 transition group-hover:opacity-100 group-focus-within:opacity-100"
                         >
                             {{ $file['pretty_name'] }}
                         </p>
-
-                        <button
-                            type="button"
-                            x-on:click="handleItemClick('{{ $file['id'] }}', $event)"
-                            x-show="isSelected('{{ $file['id'] }}')"
-                            x-cloak
-                            class="absolute inset-0 flex items-center justify-center w-full h-full rounded-md shadow text-primary-600 bg-primary-500/20 ring-2 ring-primary-500"
-                        >
-                            <span class="flex items-center justify-center w-8 h-8 text-white rounded-full bg-primary-500 drop-shadow">
-                                <x-filament::icon
-                                    alias="curator::icons.check"
-                                    icon="heroicon-s-check"
-                                    class="w-5 h-5"
-                                />
-                            </span>
-                            <span class="sr-only">
-                                {{ trans('curator::views.panel.deselect') }}
-                            </span>
-                        </button>
                     </li>
                 @empty
                     @empty($subDirectories)
@@ -248,8 +224,6 @@
                         </li>
                     @endempty
                 @endforelse
-
-
             </ul>
         </div>
         <!-- End Gallery -->
@@ -259,16 +233,32 @@
             class="curator-panel-sidebar lg:h-full lg:max-w-xs overflow-auto bg-gray-100 dark:bg-gray-900/30 flex flex-col shadow-top lg:shadow-none z-[1] lg:border-l border-gray-300 dark:border-gray-800 w-full"
         >
             <div class="flex-1 overflow-hidden">
-                <div class="flex flex-col overflow-y-auto">
+                <div class="flex flex-col overflow-y-auto" x-show="hasSelection()">
                     <h4 class="font-bold p-4 pb-0 mb-0">
                         Selected Files
                     </h4>
-                    <div>
+                    <div class="flex flex-wrap gap-2 px-4 mt-2">
                         <template x-for="media in selected" :key="media.id">
-                            <img
-                                x-bind:src="media.url"
-                                class="w-full h-24 object-cover"
-                            />
+                            <div class="w-10 h-10 rounded overflow-hidden relative group">
+                                <img
+                                    x-bind:src="media.url"
+                                    class="w-10 h-10 object-cover object-center rounded"
+                                    x-bind:alt="media.alt"
+                                    width="100"
+                                    height="100"
+                                />
+                                <button
+                                    type="button"
+                                    class="opacity-0 bg-danger-500 w-full grid place-content-center group-hover:opacity-100 absolute inset-0"
+                                    x-on:click="removeFromSelection(media.id)"
+                                >
+                                    <x-filament::icon
+                                        alias="curator::icons.remove"
+                                        icon="heroicon-s-x-mark"
+                                        class="w-6 h-6 text-white"
+                                    />
+                                </button>
+                            </div>
                         </template>
                     </div>
                 </div>
