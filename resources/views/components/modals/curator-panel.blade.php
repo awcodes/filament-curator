@@ -1,59 +1,57 @@
 <div
     x-data="{
-        isDragging: false,
-        dropped: true,
-        init() {
-{{--            window.addEventListener('FilePond:removefile', event => {--}}
-{{--                if (event.detail.pond.getFiles().length < 1) {--}}
-{{--                    this.dropped = false;--}}
-{{--                }--}}
-{{--            });--}}
-        },
+        selected: $wire.entangle('selected'),
+        multiple: {{ $isMultiple ? 'true' : 'false' }},
         handleItemClick: function (mediaId = null, event) {
             if (! mediaId) return;
 
-            if ($wire.isMultiple && event && event.metaKey) {
+            if (this.multiple && event && event.metaKey) {
                 if (this.isSelected(mediaId)) {
-                    let toRemove = Object.values($wire.selected).find(obj => obj.id == mediaId)
-                    $wire.removeFromSelection(toRemove.id);
+                    this.removeFromSelection(mediaId);
                     return;
                 }
 
-                $wire.addToSelection(mediaId);
+                this.addToSelection(mediaId);
 
                 return;
             }
 
-            if ($wire.selected.length === 1 && $wire.selected[0].id != mediaId) {
-                $wire.removeFromSelection($wire.selected[0].id);
-                $wire.addToSelection(mediaId);
+            if (this.selected.length === 1) {
+                if (this.selected[0] != mediaId) {
+                    this.removeFromSelection(this.selected[0]);
+                    this.addToSelection(mediaId);
+                } else {
+                    this.removeFromSelection(this.selected[0]);
+                }
+
                 return;
             }
 
-            if ($wire.selected.length === 1 && $wire.selected[0].id == mediaId) {
-                $wire.removeFromSelection($wire.selected[0].id);
-                return;
-            }
-
-            $wire.addToSelection(mediaId);
+            this.addToSelection(mediaId);
         },
         isSelected: function (mediaId = null) {
-            if ($wire.selected.length === 0) return false;
+            if (this.selected.length === 0) return false;
 
-            return Object.values($wire.selected).find(obj => obj.id == mediaId) !== undefined;
+            return this.selected.includes(mediaId);
+        },
+        addToSelection: function (mediaId = null) {
+            if (! mediaId) return;
+
+            this.selected.push(mediaId);
+        },
+        removeFromSelection: function (mediaId = null) {
+            if (! mediaId) return;
+
+            this.selected = this.selected.filter(function (value) {
+                return value !== mediaId;
+            });
         },
     }"
     class="curator-panel h-full absolute inset-0 flex flex-col"
-{{--    x-on:dragover.prevent="isDragging = true; dropped = false;"--}}
-{{--    x-on:dragleave.prevent="isDragging = false; dropped = false;"--}}
-{{--    x-on:drop.prevent="isDragging = false; dropped = true;"--}}
-{{--    x-bind:class="{--}}
-{{--        'dragging': isDragging,--}}
-{{--    }"--}}
 >
     <!-- Controls -->
     <div
-        x-show="$wire.selected.length > 0"
+        x-show="selected.length > 0"
         class="curator-panel-controls fixed top-4 inset-x-0 pointer-events-none transition z-20 flex justify-center"
         x-transition:enter="ease-out duration-100"
         x-transition:enter-start="opacity-0 -translate-y-4"
@@ -68,7 +66,7 @@
             <x-filament::button
                 color="gray"
                 size="sm"
-                x-on:click="$wire.selected = []"
+                x-on:click="selected = []"
             >
                 {{ trans('curator::views.panel.deselect_all') }}
             </x-filament::button>
@@ -81,8 +79,8 @@
             <x-filament::button
                 size="xs"
                 color="gray"
-                x-on:click="$wire.selected = []"
-                x-show="$wire.selected.length > 1"
+                x-on:click="selected = []"
+                x-show="selected.length > 1"
             >
                 {{ trans('curator::views.panel.deselect_all') }}
             </x-filament::button>
@@ -100,13 +98,6 @@
             @endif
         </div>
         <div class="flex items-center gap-4">
-{{--            <x-filament::button--}}
-{{--                size="xs"--}}
-{{--                color="gray"--}}
-{{--                x-on:click="dropped = true"--}}
-{{--            >--}}
-{{--                Upload Files--}}
-{{--            </x-filament::button>--}}
             <label class="shrink-0 border border-gray-300 dark:border-gray-700 rounded-md relative flex items-center">
                 <span class="sr-only">{{ trans('curator::views.panel.search_label') }}</span>
                 <x-filament::icon
@@ -144,7 +135,7 @@
             ])>
                 @if ($breadcrumbs)
                     @foreach($breadcrumbs as $breadcrumb)
-                        <li wire:key="{{ $breadcrumb['path'] }}">
+                        <li wire:key="breadcrumb-{{ $breadcrumb['path'] }}">
                             <div>
                                 @if ($loop->last)
                                     <span class="opacity-50">{{ $breadcrumb['label'] }}</span>
@@ -166,9 +157,10 @@
             <ul class="curator-picker-grid">
                 @forelse ($files as $file)
                     <li
-                        wire:key="media-{{ $file['id'] }}" class="relative aspect-square group"
+                        wire:key="media-{{ $file['id'] }}"
+                        class="relative aspect-square group"
                         x-bind:class="{
-                            'opacity-40': $wire.selected.length > 0 && !isSelected('{{ $file['id'] }}')
+                            'opacity-40': selected.length > 0 && !isSelected('{{ $file['id'] }}')
                         }"
                     >
                         <button
@@ -185,7 +177,12 @@
                             />
                         </button>
 
-                        <div class="absolute top-1 right-1 flex justify-center shadow-md rounded bg-gray-800 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:pointer-events-auto transition">
+                        <div
+                            class="absolute top-1 right-1 flex justify-center shadow-md rounded bg-gray-800 opacity-0 pointer-events-none transition"
+                            x-bind:class="{
+                                'group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:pointer-events-auto': selected.length === 0 && !isSelected('{{ $file['id'] }}')
+                            }"
+                        >
                             <div class="flex items-center justify-center w-8 h-8">
                                 <x-filament-actions::group
                                     :actions="[
@@ -202,7 +199,12 @@
                             </div>
                         </div>
 
-                        <p class="text-xs truncate absolute bottom-0 inset-x-0 px-1 pb-1 pt-4 text-white bg-gradient-to-t from-black/80 to-transparent pointer-events-none opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 group-focus-within:pointer-events-auto transition">
+                        <p
+                            class="text-xs truncate absolute bottom-0 inset-x-0 px-1 pb-1 pt-4 text-white bg-gradient-to-t from-black/80 to-transparent pointer-events-none opacity-0 transition"
+                            x-bind:class="{
+                                'group-hover:opacity-100 group-focus-within:opacity-100 ': selected.length === 0 && !isSelected('{{ $file['id'] }}')
+                            }"
+                        >
                             {{ $file['pretty_name'] }}
                         </p>
 
@@ -261,34 +263,13 @@
 
         <!-- Sidebar -->
         <div
-            class="curator-panel-sidebar lg:h-full lg:max-w-xs overflow-auto bg-gray-100 dark:bg-gray-900/30 flex flex-col shadow-top lg:shadow-none z-[1] lg:border-l border-gray-300 dark:border-gray-800"
-            x-bind:class="{
-                'w-0': ! (isDragging || dropped),
-                'w-full': isDragging || dropped,
-            }"
-            x-show="isDragging || dropped"
-            x-transition:enter="transition-all transform duration-300"
-            x-transition:enter-start="translate-x-full"
-            x-transition:enter-end="translate-x-0"
-            x-transition:leave="transition-all transform duration-300"
-            x-transition:leave-start="translate-x-0"
-            x-transition:leave-end="translate-x-full"
+            class="curator-panel-sidebar lg:h-full lg:max-w-xs overflow-auto bg-gray-100 dark:bg-gray-900/30 flex flex-col shadow-top lg:shadow-none z-[1] lg:border-l border-gray-300 dark:border-gray-800 w-full"
         >
             <div class="flex-1 overflow-hidden">
                 <div class="flex flex-col h-full overflow-y-auto">
-                    <div class="flex items-center justify-between gap-4 p-4 pb-0 mb-0">
-                        <h4 class="font-bold ">
-                            <span>
-                                {{ trans('curator::views.panel.add_files') }}
-                            </span>
-                        </h4>
-{{--                        <x-filament::icon-button--}}
-{{--                            icon="heroicon-o-x-mark"--}}
-{{--                            size="xs"--}}
-{{--                            color="gray"--}}
-{{--                            x-on:click="dropped = false"--}}
-{{--                        ></x-filament::icon-button>--}}
-                    </div>
+                    <h4 class="font-bold p-4 pb-0 mb-0">
+                        {{ trans('curator::views.panel.add_files') }}
+                    </h4>
 
                     <div class="flex items-center px-4 pb-2 justify-start gap-2">
                         @if ( $this->addFilesAction->isVisible())

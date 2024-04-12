@@ -38,7 +38,7 @@ class CuratorPanel extends PounceComponent implements HasForms, HasActions
 
     public array $acceptedFileTypes = [];
 
-    public ?array $data = [];
+    public ?array $panelData = [];
 
     public ?string $directory = null;
 
@@ -114,6 +114,10 @@ class CuratorPanel extends PounceComponent implements HasForms, HasActions
 
         $this->files = $this->getFiles();
 
+        if (filled($this->selected)) {
+            $this->selected = collect($this->selected)->pluck('id')->map(fn ($id) => (string) $id)->toArray();
+        }
+
         $this->form->fill();
     }
 
@@ -132,7 +136,7 @@ class CuratorPanel extends PounceComponent implements HasForms, HasActions
         }
 
         return $form
-            ->statePath('data')
+            ->statePath('panelData')
             ->schema([
                 Uploader::make('files_to_add')
                     ->hiddenLabel()
@@ -221,26 +225,6 @@ class CuratorPanel extends PounceComponent implements HasForms, HasActions
         ];
     }
 
-    public function addToSelection(int|string $id): void
-    {
-        $item = collect($this->files)->firstWhere('id', $id);
-
-        if ($this->isMultiple) {
-            $this->selected[] = $item;
-        } else {
-            $this->selected = [$item];
-        }
-
-        $this->setMediaForm();
-    }
-
-    public function removeFromSelection(int|string $id): void
-    {
-        $this->selected = collect($this->selected)->reject(function ($selectedItem) use ($id) {
-            return $selectedItem['id'] === $id;
-        })->toArray();
-    }
-
     public function removeFromFiles(int|string $id): void
     {
         $this->files = collect($this->files)->reject(function ($selectedItem) use ($id) {
@@ -267,7 +251,7 @@ class CuratorPanel extends PounceComponent implements HasForms, HasActions
     public function setMediaForm(): void
     {
         if (count($this->selected) === 1) {
-            $item = App::make(Media::class)->find(Arr::first($this->selected)['id']);
+            $item = App::make(Media::class)->find(Arr::first($this->selected));
             if ($item) {
                 $this->form->fill($item->toArray());
             }
@@ -290,14 +274,9 @@ class CuratorPanel extends PounceComponent implements HasForms, HasActions
                 return count($this->form->getRawState()['files_to_add'] ?? []) === 0;
             })
             ->action(function () use ($insertAfter): void {
-                $media = self::createMediaFiles($this->form->getState());
+                $media = self::createMediaFiles();
 
                 $this->form->fill();
-
-                $this->files = [
-                    ...$media,
-                    ...$this->files,
-                ];
 
                 if ($insertAfter) {
                     $this->dispatch(
@@ -307,13 +286,18 @@ class CuratorPanel extends PounceComponent implements HasForms, HasActions
                         media: $media
                     );
 
-                    $this->dispatch('close-modal', id: $this->modalId ?? 'curator-panel');
+                    $this->dispatch('unPounce');
 
                     return;
                 }
 
+                $this->files = [
+                    ...$media,
+                    ...$this->files,
+                ];
+
                 foreach ($media as $item) {
-                    $this->addToSelection($item['id']);
+                    $this->selected[] = (string) $item['id'];
                 }
             });
     }
@@ -415,11 +399,15 @@ class CuratorPanel extends PounceComponent implements HasForms, HasActions
             ->color('success')
             ->label(trans('curator::views.panel.use_selected_image'))
             ->action(function (): void {
+                $media = collect($this->files)->filter(function ($item) {
+                    return in_array($item['id'], $this->selected);
+                })->toArray();
+
                 $this->dispatch(
                     'insert-content',
                     type: 'media',
                     statePath: $this->statePath,
-                    media: $this->selected
+                    media: $media
                 );
 
                 $this->dispatch('unPounce');
@@ -441,7 +429,7 @@ class CuratorPanel extends PounceComponent implements HasForms, HasActions
             }, true);
     }
 
-    protected function createMediaFiles(array $formData): array
+    protected function createMediaFiles(): array
     {
         $media = [];
         $formData = $this->form->getState();

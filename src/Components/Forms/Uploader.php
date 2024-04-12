@@ -9,6 +9,7 @@ use Awcodes\Curator\PathGenerators\Contracts\PathGenerator;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\BaseFileUpload;
 use Filament\Forms\Components\FileUpload;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Storage;
@@ -52,7 +53,7 @@ class Uploader extends FileUpload
             $this->state([$this->getState()]);
         }
 
-        $state = array_map(function (TemporaryUploadedFile|array $file) {
+        $state = array_filter(array_map(function (TemporaryUploadedFile|array $file) {
             if (!$file instanceof TemporaryUploadedFile) {
                 return $file;
             }
@@ -74,7 +75,7 @@ class Uploader extends FileUpload
             $file->delete();
 
             return $storedFile;
-        }, $this->getState());
+        }, Arr::wrap($this->getState())));
 
         $this->state($state);
     }
@@ -99,7 +100,6 @@ class Uploader extends FileUpload
             $extension = $file->getClientOriginalExtension();
 
             $storeMethod = $component->getVisibility() === 'public' ? 'storePubliclyAs' : 'storeAs';
-
 
             if (Curator::isResizable($extension)) {
                 if (Curator::isUsingCloudDisk()) {
@@ -135,7 +135,7 @@ class Uploader extends FileUpload
                 'width' => $width ?? null,
                 'height' => $height ?? null,
                 'size' => $file->getSize(),
-                'type' => $file->getMimeType(),
+                'mime' => $file->getMimeType(),
                 'ext' => $extension,
             ];
 
