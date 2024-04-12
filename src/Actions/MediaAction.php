@@ -26,11 +26,10 @@ class MediaAction extends Action
             ->arguments([
                 'src' => '',
             ])
-            ->action(function (TiptapEditor|CuratorPicker $component, Component $livewire, array $arguments) {
+            ->action(function (TiptapEditor | CuratorPicker $component, Component $livewire, array $arguments) {
 
                 $selected = $arguments['src'] !== ''
-                    ? [App::get(Media::class)->firstWhere('name', Str::of($arguments['src'])->afterLast('/')->beforeLast
-                    ('.'))]
+                    ? [App::get(Media::class)->firstWhere('name', Str::of($arguments['src'])->afterLast('/')->beforeLast('.'))]
                     : [];
 
                 $livewire->dispatch('open-modal', id: 'curator-panel', settings: [

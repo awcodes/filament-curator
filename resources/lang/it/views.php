@@ -12,7 +12,7 @@ return [
         'file' => 'File',
         'ext' => 'Estensione',
         'copy_url' => 'Copia URL',
-        'url_copied' => 'Copiato!',    
+        'url_copied' => 'Copiato!',
     ],
     'picker' => [
         'button' => 'Aggiungi media',

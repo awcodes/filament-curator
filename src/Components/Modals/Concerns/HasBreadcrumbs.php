@@ -21,14 +21,14 @@ trait HasBreadcrumbs
 
     public function generateBreadcrumbs($currentDir, $dirs): array
     {
-        if (!$currentDir) {
+        if (! $currentDir) {
             return [];
         }
 
         $item = is_string($currentDir) ? $dirs[$currentDir] : $currentDir;
 
-        if ($item["parent_path"]) {
-            $crumbs = $this->generateBreadcrumbs($dirs[$item["parent_path"]], $dirs);
+        if ($item['parent_path']) {
+            $crumbs = $this->generateBreadcrumbs($dirs[$item['parent_path']], $dirs);
         }
 
         $crumbs[] = $item;

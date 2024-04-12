@@ -17,19 +17,19 @@ trait InteractsWithStorage
 
         $this->directories = collect($directories)
             ->mapWithKeys(function ($item) {
-                $itemArray = explode("/", $item);
+                $itemArray = explode('/', $item);
                 $name = array_pop($itemArray);
 
                 return [
                     $item => [
-                        "label" => Str::of($name)
-                            ->replace("-", " ")
+                        'label' => Str::of($name)
+                            ->replace('-', ' ')
                             ->title()
                             ->toString(),
-                        "name" => $name,
-                        "path" => $item,
-                        "parent_path" => implode("/", $itemArray)
-                    ]
+                        'name' => $name,
+                        'path' => $item,
+                        'parent_path' => implode('/', $itemArray),
+                    ],
                 ];
             })
             ->toArray();

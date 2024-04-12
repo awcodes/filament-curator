@@ -2,11 +2,11 @@
 
 return [
     'columns' => [
-        'url'        => 'URL',
-        'name'       => 'Имя',
-        'ext'        => 'Расширение',
-        'disk'       => 'Диск',
-        'directory'  => 'Директория',
+        'url' => 'URL',
+        'name' => 'Имя',
+        'ext' => 'Расширение',
+        'disk' => 'Диск',
+        'directory' => 'Директория',
         'created_at' => 'Создано',
     ],
     'actions' => [

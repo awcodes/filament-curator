@@ -2,7 +2,6 @@
 
 namespace Awcodes\Curator;
 
-use Awcodes\Curator\Config\CuratorManager;
 use Awcodes\Curator\Facades\Curator;
 use Exception;
 use Illuminate\Support\Facades\Storage;
@@ -21,8 +20,7 @@ class CuratorUtils
         ?string $alt = null,
         ?string $caption = null,
         ?string $description = null,
-    ): array
-    {
+    ): array {
         $disk = $disk ?? Curator::getDiskName();
         $directory = $directory ?? Curator::getDirectory();
         $storage = Storage::disk($disk);

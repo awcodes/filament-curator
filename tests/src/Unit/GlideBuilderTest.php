@@ -1,6 +1,7 @@
 <?php
 
 use Awcodes\Curator\Glide\GlideBuilder;
+
 use function Awcodes\Curator\glide_builder;
 
 it('can return proper array from Glide builder', function () {

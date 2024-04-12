@@ -14,13 +14,21 @@ class CuratorPlugin implements Plugin
     use EvaluatesClosures;
 
     protected string | Closure | null $label = null;
+
     protected string | Closure | null $navigationGroup = null;
+
     protected ?string $navigationIcon = null;
+
     protected ?int $navigationSort = null;
+
     protected string | Closure | null $pluralLabel = null;
+
     protected bool | Closure | null $shouldRegisterNavigation = null;
+
     protected bool | Closure | null $shouldShowBadge = null;
+
     protected bool | Closure | null $supportsCurations = null;
+
     protected bool | Closure | null $supportsFileSwap = null;
 
     public function getId(): string
@@ -139,7 +147,7 @@ class CuratorPlugin implements Plugin
         return $this;
     }
 
-    public function navigationGroup(string | Closure $group = null): static
+    public function navigationGroup(string | Closure | null $group = null): static
     {
         $this->navigationGroup = $group;
 

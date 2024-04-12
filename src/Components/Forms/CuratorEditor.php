@@ -17,8 +17,8 @@ class CuratorEditor extends Field
 {
     use CanBeOutlined;
     use HasColor;
-    use HasSize;
     use HasCurationPresets;
+    use HasSize;
 
     protected string | Htmlable | Closure | null $buttonLabel = null;
 

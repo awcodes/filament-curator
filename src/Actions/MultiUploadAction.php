@@ -44,12 +44,12 @@ class MultiUploadAction extends Action
             ])
             ->action(function ($data) {
                 foreach ($data['files'] as $item) {
-                    $item['exif'] = !empty($item['exif']) ? Curator::sanitizeExif($item['exif']) : null;
+                    $item['exif'] = ! empty($item['exif']) ? Curator::sanitizeExif($item['exif']) : null;
                     $item['title'] = pathinfo($data['originalFilename'][$item['path']] ?? null, PATHINFO_FILENAME);
 
                     tap(
                         App::make(Media::class)->create($item),
-                        fn(Media $media) => $media->getPrettyName(),
+                        fn (Media $media) => $media->getPrettyName(),
                     )->toArray();
                 }
             });

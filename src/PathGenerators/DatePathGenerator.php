@@ -7,7 +7,7 @@ use Carbon\Carbon;
 
 class DatePathGenerator implements PathGenerator
 {
-    public function getPath(string $baseDir = null): string
+    public function getPath(?string $baseDir = null): string
     {
         $now = Carbon::now();
 

@@ -7,10 +7,10 @@ return [
         'ext' => 'Estensione',
         'disk' => 'Disco',
         'directory' => 'Cartella',
-        'created_at' => 'Creato il',    
+        'created_at' => 'Creato il',
     ],
     'actions' => [
         'toggle_table_grid' => 'Vista Griglia',
-        'toggle_table_list' => 'Vista Elenco',    
+        'toggle_table_list' => 'Vista Elenco',
     ],
 ];

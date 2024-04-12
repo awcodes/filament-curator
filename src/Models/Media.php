@@ -51,7 +51,7 @@ class Media extends Model
     protected function url(): Attribute
     {
         return Attribute::make(
-            get: function (): string | null {
+            get: function (): ?string {
                 $storage = Storage::disk($this->disk);
 
                 try {
@@ -72,14 +72,14 @@ class Media extends Model
     protected function fullPath(): Attribute
     {
         return Attribute::make(
-            get: fn(): string => Storage::disk($this->disk)->path($this->path),
+            get: fn (): string => Storage::disk($this->disk)->path($this->path),
         );
     }
 
     protected function prettyName(): Attribute
     {
         return Attribute::make(
-            get: fn(): string => $this->getPrettyName()
+            get: fn (): string => $this->getPrettyName()
         );
     }
 

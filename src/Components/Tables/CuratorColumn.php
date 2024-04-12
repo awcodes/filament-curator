@@ -12,15 +12,15 @@ use Illuminate\Support\Arr;
 
 class CuratorColumn extends ImageColumn
 {
-    protected int|Closure|null $resolution = null;
+    protected int | Closure | null $resolution = null;
 
     protected string $view = 'curator::components.tables.curator-column';
 
-    public function getMedia(): Media|Collection|array|null
+    public function getMedia(): Media | Collection | array | null
     {
         $record = $this->getRecord();
 
-        if (!is_a($record, Media::class)) {
+        if (! is_a($record, Media::class)) {
             $state = $this->getState();
 
             if (is_a($state, Collection::class)) {
@@ -44,18 +44,18 @@ class CuratorColumn extends ImageColumn
         return $this->evaluate($this->resolution);
     }
 
-    public function resolution(int|Closure|null $resolution): static
+    public function resolution(int | Closure | null $resolution): static
     {
         $this->resolution = $resolution;
 
         return $this;
     }
 
-    public function applyEagerLoading(EloquentBuilder|Relation $query): EloquentBuilder|Relation
+    public function applyEagerLoading(EloquentBuilder | Relation $query): EloquentBuilder | Relation
     {
         $model = $query->getModel();
 
-        if (!$this->queriesRelationships($query->getModel())) {
+        if (! $this->queriesRelationships($query->getModel())) {
             return $query;
         }
 

@@ -2,7 +2,6 @@
 
 namespace Awcodes\Curator\Curations;
 
-use Awcodes\Curator\CuratorUtils;
 use Illuminate\Support\Str;
 
 class CurationPreset
@@ -14,7 +13,8 @@ class CurationPreset
         public string $format,
         public int $quality,
         public int $width,
-    ) {}
+    ) {
+    }
 
     public static function make(string $label): static
     {

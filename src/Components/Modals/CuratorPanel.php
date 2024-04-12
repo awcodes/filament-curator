@@ -3,8 +3,8 @@
 namespace Awcodes\Curator\Components\Modals;
 
 use Awcodes\Curator\Components\Forms\Uploader;
-use Awcodes\Curator\Components\Modals\Concerns\InteractsWithStorage;
 use Awcodes\Curator\Components\Modals\Concerns\HasBreadcrumbs;
+use Awcodes\Curator\Components\Modals\Concerns\InteractsWithStorage;
 use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Models\Media;
 use Awcodes\Curator\PathGenerators\Contracts\PathGenerator;
@@ -28,12 +28,12 @@ use Illuminate\Support\Facades\Storage;
 use Livewire\WithPagination;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-class CuratorPanel extends PounceComponent implements HasForms, HasActions
+class CuratorPanel extends PounceComponent implements HasActions, HasForms
 {
+    use HasBreadcrumbs;
     use InteractsWithActions;
     use InteractsWithForms;
     use InteractsWithStorage;
-    use HasBreadcrumbs;
     use WithPagination;
 
     public array $acceptedFileTypes = [];
@@ -56,9 +56,9 @@ class CuratorPanel extends PounceComponent implements HasForms, HasActions
 
     public bool $isLimitedToDirectory = false;
 
-    public bool|Closure $isTenantAware = true;
+    public bool | Closure $isTenantAware = true;
 
-    public string|null $tenantOwnershipRelationshipName = null;
+    public ?string $tenantOwnershipRelationshipName = null;
 
     public bool $isMultiple = false;
 
@@ -72,7 +72,7 @@ class CuratorPanel extends PounceComponent implements HasForms, HasActions
 
     public ?int $mediaId = null;
 
-    public PathGenerator|string|null $pathGenerator = null;
+    public PathGenerator | string | null $pathGenerator = null;
 
     public string $search = '';
 
@@ -114,9 +114,9 @@ class CuratorPanel extends PounceComponent implements HasForms, HasActions
 
         $this->files = $this->getFiles();
 
-        if (filled($this->selected)) {
-            $this->selected = collect($this->selected)->pluck('id')->map(fn ($id) => (string) $id)->toArray();
-        }
+        //        if (filled($this->selected)) {
+        //            $this->selected = collect($this->selected)->pluck('id')->map(fn ($id) => (string) $id)->toArray();
+        //        }
 
         $this->form->fill();
     }
@@ -130,7 +130,10 @@ class CuratorPanel extends PounceComponent implements HasForms, HasActions
     {
         if ($this->maxItems) {
             $this->validationRules = array_filter($this->validationRules, function ($value) {
-                if ($value === 'array' || str_starts_with($value, 'max:')) { return false; }
+                if ($value === 'array' || str_starts_with($value, 'max:')) {
+                    return false;
+                }
+
                 return true;
             });
         }
@@ -156,7 +159,7 @@ class CuratorPanel extends PounceComponent implements HasForms, HasActions
                     ->imageResizeMode($this->imageResizeMode)
                     ->imageResizeTargetWidth($this->imageResizeTargetWidth)
                     ->imageResizeTargetHeight($this->imageResizeTargetHeight)
-                    ->storeFileNamesIn('originalFilenames')
+                    ->storeFileNamesIn('originalFilenames'),
             ]);
     }
 
@@ -175,8 +178,8 @@ class CuratorPanel extends PounceComponent implements HasForms, HasActions
             ->when(filled($this->acceptedFileTypes) && ! $this->showAll, function ($query) {
                 $types = $this->acceptedFileTypes;
                 $query = $query->whereIn('mime', $types);
-                $wildcardTypes = collect($types)->filter(fn($type) => str_contains($type, '*'));
-                $wildcardTypes?->map(fn($type) => $query->orWhere('type', 'LIKE', str_replace('*', '%', $type)));
+                $wildcardTypes = collect($types)->filter(fn ($type) => str_contains($type, '*'));
+                $wildcardTypes?->map(fn ($type) => $query->orWhere('type', 'LIKE', str_replace('*', '%', $type)));
 
                 return $query;
             })
@@ -190,7 +193,7 @@ class CuratorPanel extends PounceComponent implements HasForms, HasActions
 
         $items = $paginator->items();
 
-        if (!$excludeSelected && $this->selected) {
+        if (! $excludeSelected && $this->selected) {
             $selected = collect($this->selected)->pluck('id')->toArray();
 
             $selectedItems = Media::query()
@@ -225,7 +228,7 @@ class CuratorPanel extends PounceComponent implements HasForms, HasActions
         ];
     }
 
-    public function removeFromFiles(int|string $id): void
+    public function removeFromFiles(int | string $id): void
     {
         $this->files = collect($this->files)->reject(function ($selectedItem) use ($id) {
             return $selectedItem['id'] === $id;
@@ -435,12 +438,12 @@ class CuratorPanel extends PounceComponent implements HasForms, HasActions
         $formData = $this->form->getState();
 
         foreach ($formData['files_to_add'] as $item) {
-            $item['exif'] = !empty($item['exif']) ? Curator::sanitizeExif($item['exif']) : null;
+            $item['exif'] = ! empty($item['exif']) ? Curator::sanitizeExif($item['exif']) : null;
             $item['title'] = pathinfo($formData['originalFilenames'][$item['path']] ?? null, PATHINFO_FILENAME);
 
             $media[] = tap(
                 App::make(Media::class)->create($item),
-                fn(Media $media) => $media->getPrettyName(),
+                fn (Media $media) => $media->getPrettyName(),
             )->toArray();
         }
 

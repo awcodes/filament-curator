@@ -3,9 +3,6 @@
 namespace Awcodes\Curator\Facades;
 
 use Awcodes\Curator\Config\CuratorManager;
-use Awcodes\Curator\Glide\GliderFallback;
-use Awcodes\Curator\Models\Media;
-use Awcodes\Curator\Observers\MediaObserver;
 use Closure;
 use Illuminate\Support\Facades\Facade;
 

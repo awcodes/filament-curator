@@ -2,8 +2,8 @@
 
 namespace Awcodes\Curator\Observers;
 
-use Awcodes\Curator\Facades\Glide;
 use Awcodes\Curator\Facades\Curator;
+use Awcodes\Curator\Facades\Glide;
 use Awcodes\Curator\Models\Media;
 use Illuminate\Support\Facades\Storage;
 use stdClass;
@@ -62,7 +62,7 @@ class MediaObserver
         }
 
         // Rename file name
-        if ($media->isDirty(['name']) && !blank($media->name)) {
+        if ($media->isDirty(['name']) && ! blank($media->name)) {
             if ($storage->exists($media->directory . '/' . $media->name . '.' . $media->ext)) {
                 $media->name = $media->name . '-' . time();
             }

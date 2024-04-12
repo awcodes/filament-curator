@@ -15,7 +15,6 @@ use Filament\Support\Assets\AlpineComponent;
 use Filament\Support\Assets\Css;
 use Filament\Support\Facades\FilamentAsset;
 use Illuminate\Support\Facades\Blade;
-use Livewire\Features\SupportFileUploads\FileUploadConfiguration;
 use Livewire\Livewire;
 use Spatie\LaravelPackageTools\Commands\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
@@ -88,7 +87,6 @@ class CuratorServiceProvider extends PackageServiceProvider
             MediaResource\ListMedia::class,
             config('curator.resource.pages.index'),
         );
-
 
         app(Media::class)::observe(MediaObserver::class);
 

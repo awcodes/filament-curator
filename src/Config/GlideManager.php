@@ -11,11 +11,13 @@ use League\Glide\Urls\UrlBuilderFactory;
 
 class GlideManager
 {
-    use EvaluatesClosures;
     use Concerns\HasGliderFallbacks;
+    use EvaluatesClosures;
 
     protected array $serverConfig;
+
     protected string $token;
+
     protected ?string $basePath = null;
 
     public static function configure(): static

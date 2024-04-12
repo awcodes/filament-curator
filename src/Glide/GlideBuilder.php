@@ -34,7 +34,8 @@ class GlideBuilder
         public ?string $markpos = null,
         public ?int $markalpha = null,
         public ?string $markfit = null,
-    ){}
+    ) {
+    }
 
     public static function make(): static
     {
@@ -43,7 +44,7 @@ class GlideBuilder
 
     public function toArray(): array
     {
-        return array_filter(get_object_vars($this), fn($value) => $value !== null);
+        return array_filter(get_object_vars($this), fn ($value) => $value !== null);
     }
 
     public function toQueryString(): string

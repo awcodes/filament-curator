@@ -76,14 +76,6 @@
     <!-- Toolbar -->
     <div class="curator-panel-toolbar px-4 py-2 flex items-center justify-between bg-gray-200/70 dark:bg-black/20 dark:text-white border-b border-gray-300 dark:border-gray-800">
         <div class="flex items-center gap-2">
-            <x-filament::button
-                size="xs"
-                color="gray"
-                x-on:click="selected = []"
-                x-show="selected.length > 1"
-            >
-                {{ trans('curator::views.panel.deselect_all') }}
-            </x-filament::button>
             @if($currentPage < $lastPage)
             <x-filament::button
                 size="xs"
@@ -155,6 +147,28 @@
                 @endif
             </ul>
             <ul class="curator-picker-grid">
+                @if ($subDirectories)
+                    @foreach($subDirectories as $dir)
+                        <li
+                                wire:key="dir-{{ $dir['name'] }}" class="relative aspect-square"
+                        >
+                            <button
+                                    type="button"
+                                    wire:click="handleDirectoryChange('{{ $dir['path'] }}')"
+                                    class="block w-full h-full overflow-hidden bg-gray-200 rounded-md dark:bg-gray-900 hover:text-primary-600 hover:bg-primary-500/20 hover:ring-2 hover:ring-primary-500 dark:hover:text-white dark:hover:bg-primary-500/20 focus:text-primary-600 focus:bg-primary-500/20 focus:ring-2 focus:ring-primary-500"
+                            >
+                                <div class="grid place-content-center place-items-center w-full h-full text-xs relative">
+                                    <x-filament::icon
+                                            alias="curator::icons.folder"
+                                            icon="heroicon-o-folder"
+                                            class="w-12 h-12 opacity-20"
+                                    />
+                                    <span>{{ $dir['label'] }}</span>
+                                </div>
+                            </button>
+                        </li>
+                    @endforeach
+                @endif
                 @forelse ($files as $file)
                     <li
                         wire:key="media-{{ $file['id'] }}"
@@ -235,28 +249,7 @@
                     @endempty
                 @endforelse
 
-                @if ($subDirectories)
-                    @foreach($subDirectories as $dir)
-                        <li
-                            wire:key="dir-{{ $dir['name'] }}" class="relative aspect-square"
-                        >
-                            <button
-                                type="button"
-                                wire:click="handleDirectoryChange('{{ $dir['path'] }}')"
-                                class="block w-full h-full overflow-hidden bg-gray-200 rounded-md dark:bg-gray-900 hover:text-primary-600 hover:bg-primary-500/20 hover:ring-2 hover:ring-primary-500 dark:hover:text-white dark:hover:bg-primary-500/20 focus:text-primary-600 focus:bg-primary-500/20 focus:ring-2 focus:ring-primary-500"
-                            >
-                                <div class="grid place-content-center place-items-center w-full h-full text-xs relative">
-                                    <x-filament::icon
-                                        alias="curator::icons.folder"
-                                        icon="heroicon-o-folder"
-                                        class="w-12 h-12 opacity-20"
-                                    />
-                                    <span>{{ $dir['label'] }}</span>
-                                </div>
-                            </button>
-                        </li>
-                    @endforeach
-                @endif
+
             </ul>
         </div>
         <!-- End Gallery -->
@@ -266,6 +259,19 @@
             class="curator-panel-sidebar lg:h-full lg:max-w-xs overflow-auto bg-gray-100 dark:bg-gray-900/30 flex flex-col shadow-top lg:shadow-none z-[1] lg:border-l border-gray-300 dark:border-gray-800 w-full"
         >
             <div class="flex-1 overflow-hidden">
+                <div class="flex flex-col overflow-y-auto">
+                    <h4 class="font-bold p-4 pb-0 mb-0">
+                        Selected Files
+                    </h4>
+                    <div>
+                        <template x-for="media in selected" :key="media.id">
+                            <img
+                                x-bind:src="media.url"
+                                class="w-full h-24 object-cover"
+                            />
+                        </template>
+                    </div>
+                </div>
                 <div class="flex flex-col h-full overflow-y-auto">
                     <h4 class="font-bold p-4 pb-0 mb-0">
                         {{ trans('curator::views.panel.add_files') }}
