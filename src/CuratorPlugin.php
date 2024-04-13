@@ -18,13 +18,13 @@ class CuratorPlugin implements Plugin
 
     protected string | Closure | null $navigationLabel = null;
 
-    protected ?string $navigationIcon = null;
+    protected string | Closure | null $navigationIcon = null;
 
-    protected ?int $navigationSort = null;
+    protected int | Closure | null $navigationSort = null;
 
-    protected ?bool $navigationCountBadge = null;
+    protected bool | Closure | null $navigationCountBadge = null;
 
-    protected ?bool $shouldRegisterNavigation = null;
+    protected bool | Closure | null $shouldRegisterNavigation = null;
 
     protected string | Closure | null $defaultListView = null;
 
@@ -94,12 +94,12 @@ class CuratorPlugin implements Plugin
 
     public function getNavigationIcon(): ?string
     {
-        return $this->navigationIcon ?? config('curator.resources.navigation_icon');
+        return $this->evaluate($this->navigationIcon) ?? config('curator.resources.navigation_icon');
     }
 
     public function getNavigationSort(): ?int
     {
-        return $this->navigationSort ?? config('curator.resources.navigation_sort');
+        return $this->evaluate($this->navigationSort) ?? config('curator.resources.navigation_sort');
     }
 
     public function getNavigationCountBadge(): ?bool
@@ -109,7 +109,7 @@ class CuratorPlugin implements Plugin
 
     public function shouldRegisterNavigation(): ?bool
     {
-        return $this->shouldRegisterNavigation ?? config('curator.should_register_navigation');
+        return $this->evaluate($this->shouldRegisterNavigation) ?? config('curator.should_register_navigation');
     }
 
     public function getDefaultListView(): ?string
@@ -131,14 +131,14 @@ class CuratorPlugin implements Plugin
         return $this;
     }
 
-    public function navigationIcon(string $icon): static
+    public function navigationIcon(string | Closure $icon): static
     {
         $this->navigationIcon = $icon;
 
         return $this;
     }
 
-    public function navigationSort(int $order): static
+    public function navigationSort(int | Closure $order): static
     {
         $this->navigationSort = $order;
 
@@ -152,9 +152,9 @@ class CuratorPlugin implements Plugin
         return $this;
     }
 
-    public function registerNavigation(bool $show = true): static
+    public function registerNavigation(bool | Closure $condition = true): static
     {
-        $this->shouldRegisterNavigation = $show;
+        $this->shouldRegisterNavigation = $condition;
 
         return $this;
     }
