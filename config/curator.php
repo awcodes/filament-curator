@@ -53,6 +53,7 @@ return [
     ],
     'should_preserve_filenames' => false,
     'should_register_navigation' => true,
+    'should_check_visibility' => true,
     'visibility' => 'public',
     'tabs' => [
         'display_curation' => true,
