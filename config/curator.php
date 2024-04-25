@@ -7,6 +7,8 @@ return [
         'image/webp',
         'image/svg+xml',
         'application/pdf',
+        'video/mp4',
+        'video/x-m4v'
     ],
     'cloud_disks' => [
         's3',

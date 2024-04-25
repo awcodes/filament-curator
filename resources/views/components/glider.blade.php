@@ -16,6 +16,19 @@
             @endif
             {{ $attributes->filter(fn ($attr) => $attr !== '') }}
         />
+    @elseif (str($media->type)->contains('video'))
+        <video
+        @if ($width && $height)
+            width="{{ $width }}"
+            height="{{ $height }}"
+        @else
+            width="{{ $media->width }}"
+            height="{{ $media->height }}"
+        @endif
+        {{ $attributes->filter(fn ($attr) => $attr !== '') }}
+        >
+            <source src="{{ $source }}" type="video/mp4">
+        </video>
     @else
         <x-curator::document-image
             label="{{ $media->name }}"
