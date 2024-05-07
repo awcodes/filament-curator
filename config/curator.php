@@ -45,6 +45,7 @@ return [
         'label' => 'Media',
         'plural_label' => 'Media',
         'navigation_group' => null,
+        'navigation_label' => 'Media',
         'navigation_icon' => 'heroicon-o-photo',
         'navigation_sort' => null,
         'navigation_count_badge' => false,
@@ -52,10 +53,14 @@ return [
     ],
     'should_preserve_filenames' => false,
     'should_register_navigation' => true,
+    'should_check_exists' => true,
     'visibility' => 'public',
     'tabs' => [
         'display_curation' => true,
         'display_upload_new' => true,
     ],
     'multi_select_key' => 'metaKey',
+    'table' => [
+        'layout' => 'grid',
+    ]
 ];

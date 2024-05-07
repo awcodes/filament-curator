@@ -40,6 +40,10 @@ class Media extends Model
     {
         return Attribute::make(
             get: function () {
+                if (! config('curator.should_check_exists', true)) {
+                    return Storage::disk($this->disk)->url($this->path);
+                }
+
                 if (Storage::disk($this->disk)->exists($this->path) === false) {
                     return '';
                 }

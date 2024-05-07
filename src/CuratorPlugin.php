@@ -16,13 +16,17 @@ class CuratorPlugin implements Plugin
 
     protected string | Closure | null $navigationGroup = null;
 
-    protected ?string $navigationIcon = null;
+    protected string | Closure | null $navigationLabel = null;
 
-    protected ?int $navigationSort = null;
+    protected string | Closure | null $navigationIcon = null;
 
-    protected ?bool $navigationCountBadge = null;
+    protected int | Closure | null $navigationSort = null;
 
-    protected ?bool $shouldRegisterNavigation = null;
+    protected bool | Closure | null $navigationCountBadge = null;
+
+    protected bool | Closure | null $shouldRegisterNavigation = null;
+
+    protected string | Closure | null $defaultListView = null;
 
     protected string | Closure | null $pluralLabel = null;
 
@@ -40,7 +44,7 @@ class CuratorPlugin implements Plugin
                 $this->getResource(),
             ]);
 
-        if (! is_panel_auth_route()) {
+        if (!is_panel_auth_route()) {
             $panel
                 ->renderHook(
                     'panels::body.end',
@@ -83,14 +87,19 @@ class CuratorPlugin implements Plugin
         return $this->evaluate($this->navigationGroup) ?? config('curator.resources.navigation_group');
     }
 
+    public function getNavigationLabel(): ?string
+    {
+        return $this->evaluate($this->navigationLabel) ?? config('curator.resources.navigation_label');
+    }
+
     public function getNavigationIcon(): ?string
     {
-        return $this->navigationIcon ?? config('curator.resources.navigation_icon');
+        return $this->evaluate($this->navigationIcon) ?? config('curator.resources.navigation_icon');
     }
 
     public function getNavigationSort(): ?int
     {
-        return $this->navigationSort ?? config('curator.resources.navigation_sort');
+        return $this->evaluate($this->navigationSort) ?? config('curator.resources.navigation_sort');
     }
 
     public function getNavigationCountBadge(): ?bool
@@ -100,7 +109,12 @@ class CuratorPlugin implements Plugin
 
     public function shouldRegisterNavigation(): ?bool
     {
-        return $this->shouldRegisterNavigation ?? config('curator.should_register_navigation');
+        return $this->evaluate($this->shouldRegisterNavigation) ?? config('curator.should_register_navigation');
+    }
+
+    public function getDefaultListView(): ?string
+    {
+        return $this->evaluate($this->defaultListView) ?? config('curator.table.layout');
     }
 
     public function navigationGroup(string | Closure | null $group = null): static
@@ -110,14 +124,21 @@ class CuratorPlugin implements Plugin
         return $this;
     }
 
-    public function navigationIcon(string $icon): static
+    public function navigationLabel(string | Closure | null $label = null): static
+    {
+        $this->navigationLabel = $label;
+
+        return $this;
+    }
+
+    public function navigationIcon(string | Closure $icon): static
     {
         $this->navigationIcon = $icon;
 
         return $this;
     }
 
-    public function navigationSort(int $order): static
+    public function navigationSort(int | Closure $order): static
     {
         $this->navigationSort = $order;
 
@@ -131,9 +152,16 @@ class CuratorPlugin implements Plugin
         return $this;
     }
 
-    public function registerNavigation(bool $show = true): static
+    public function registerNavigation(bool | Closure $condition = true): static
     {
-        $this->shouldRegisterNavigation = $show;
+        $this->shouldRegisterNavigation = $condition;
+
+        return $this;
+    }
+
+    public function defaultListView(string | Closure $view): static
+    {
+        $this->defaultListView = $view;
 
         return $this;
     }
