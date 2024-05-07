@@ -352,6 +352,13 @@ to `false` in the config file. The default is `true`.
 ],
 ```
 
+If you wish to disable renaming the actual file when the user renames the media asset, set the `rename_on_update` config
+value to `false`. The default value is `true`.
+
+```php
+'rename_on_update' => false
+```
+
 ### Glider Blade Component
 
 To make it as easy as possible to output your media, Curator comes with an

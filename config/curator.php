@@ -62,5 +62,6 @@ return [
     'multi_select_key' => 'metaKey',
     'table' => [
         'layout' => 'grid',
-    ]
+    ],
+    'rename_on_update' => true
 ];

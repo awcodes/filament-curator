@@ -65,7 +65,7 @@ class MediaObserver
         }
 
         // Rename file name
-        if ($media->isDirty(['name']) && ! blank($media->name)) {
+        if ($media->isDirty(['name']) && ! blank($media->name) && config('curator.rename_on_update')) {
             if (Storage::disk($media->disk)->exists($media->directory . '/' . $media->name . '.' . $media->ext)) {
                 $media->name = $media->name . '-' . time();
             }
