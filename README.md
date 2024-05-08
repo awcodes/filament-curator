@@ -85,7 +85,7 @@ php artisan vendor:publish --tag="curator-config"
 
 ### With Filament Panels
 
-If you are using Filament Panels you will need to add the Plugin to you Panel's configuration. This will register the plugin's resources with the Panel. All methods are optional, and will be read from the config file if not provided.
+If you are using Filament Panels you will need to add the Plugin to your Panel's configuration. This will register the plugin's resources with the Panel. All methods are optional, and will be read from the config file if not provided.
 
 ```php
 public function panel(Panel $panel): Panel
