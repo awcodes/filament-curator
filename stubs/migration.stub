@@ -10,8 +10,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('curator', function (Blueprint $table) {
-            $table->id();
-            $table->string('disk')->default('public');
+            {{ use_uuid }}
+
+            $table->string('disk');
             $table->string('directory')->nullable();
             $table->string('visibility')->default('public');
             $table->string('name');
@@ -19,7 +20,7 @@ return new class extends Migration
             $table->unsignedInteger('width')->nullable();
             $table->unsignedInteger('height')->nullable();
             $table->unsignedInteger('size')->nullable();
-            $table->string('mime');
+            $table->string('type');
             $table->string('ext');
             $table->string('alt')->nullable();
             $table->string('title')->nullable();
@@ -28,10 +29,7 @@ return new class extends Migration
             $table->text('pretty_name')->nullable();
             $table->text('exif')->nullable();
             $table->longText('curations')->nullable();
-
-            if(config('curator.is_tenant_aware')) {
-                $table->integer(config('curator.tenant_ownership_relationship_name') . '_id')->nullable();
-            }
+            $table->unsignedBigInteger('{{ tenancy_name }}_id')->nullable();
 
             $table->timestamps();
         });

@@ -42,13 +42,6 @@ class CuratorPlugin implements Plugin
             ->resources([
                 MediaResource::class,
             ]);
-
-        if (! $panel->hasPlugin('pouncePlugin')) {
-            $panel->renderHook(
-                name: 'panels::body.end',
-                hook: fn (): string => Blade::render("@livewire('pounce')")
-            );
-        }
     }
 
     public function boot(Panel $panel): void
@@ -102,25 +95,25 @@ class CuratorPlugin implements Plugin
     public function shouldRegisterNavigation(): ?bool
     {
         return $this->evaluate($this->shouldRegisterNavigation)
-            ?? config('curator.resource.navigation.should_register');
+            ?? config('curator.resource.navigation.register');
     }
 
     public function shouldShowBadge(): ?bool
     {
         return $this->evaluate($this->shouldShowBadge)
-            ?? config('curator.resource.navigation.should_show_badge');
+            ?? config('curator.resource.navigation.badge');
     }
 
     public function supportsCurations(): bool
     {
         return $this->evaluate($this->supportsCurations)
-            ?? config('curator.supports_curations', true);
+            ?? config('curator.features.curations', true);
     }
 
     public function supportsFileSwap(): bool
     {
         return $this->evaluate($this->supportsFileSwap)
-            ?? config('curator.supports_file_swap', true);
+            ?? config('curator.features.file_swap', true);
     }
 
     /**

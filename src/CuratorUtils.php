@@ -69,7 +69,7 @@ class CuratorUtils
             'width' => $width ?? null,
             'height' => $height ?? null,
             'size' => $storage->size($filepath),
-            'mime' => $storage->mimeType($filepath),
+            'type' => $storage->mimeType($filepath),
             'ext' => $ext,
             'alt' => $alt ?? null,
             'description' => $description ?? null,

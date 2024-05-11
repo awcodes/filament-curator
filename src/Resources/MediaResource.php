@@ -26,13 +26,13 @@ class MediaResource extends Resource
 
     public static function isScopedToTenant(): bool
     {
-        return Config::get('curator.is_tenant_aware')
+        return Config::get('curator.features.tenancy.enabled')
             ?? static::$isScopedToTenant;
     }
 
     public static function getTenantOwnershipRelationshipName(): string
     {
-        return Config::get('curator.tenant_ownership_relationship_name')
+        return Config::get('curator.features.tenancy.relationship_name')
             ?? Filament::getTenantOwnershipRelationshipName();
     }
 
@@ -70,9 +70,9 @@ class MediaResource extends Resource
     public static function getNavigationBadge(): ?string
     {
         return CuratorPlugin::get()->shouldShowBadge()
-            ? (Filament::hasTenancy() && Config::get('curator.is_tenant_aware'))
+            ? (Filament::hasTenancy() && Config::get('curator.features.tenancy.enabled'))
                 ? static::getEloquentQuery()
-                    ->where(Config::get('curator.tenant_ownership_relationship_name') . '_id', Filament::getTenant()->id)
+                    ->where(Config::get('curator.features.tenancy.relationship_name') . '_id', Filament::getTenant()->id)
                     ->count()
                 : number_format(static::getModel()::count())
             : null;

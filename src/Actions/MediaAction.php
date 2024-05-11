@@ -5,11 +5,12 @@ namespace Awcodes\Curator\Actions;
 use Awcodes\Curator\Components\Forms\CuratorPicker;
 use Awcodes\Curator\Models\Media;
 use Filament\Forms\Components\Actions\Action;
+use Filament\Support\Enums\MaxWidth;
 use FilamentTiptapEditor\TiptapEditor;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
-use Livewire\Component;
 
 class MediaAction extends Action
 {
@@ -26,38 +27,44 @@ class MediaAction extends Action
             ->arguments([
                 'src' => '',
             ])
-            ->action(function (TiptapEditor | CuratorPicker $component, Component $livewire, array $arguments) {
-
+            ->modalHeading(false)
+            ->modalSubmitAction(false)
+            ->modalCancelAction(false)
+            ->modalWidth(MaxWidth::Screen)
+            ->modalContent(function (TiptapEditor | CuratorPicker $component, array $arguments): View {
                 $selected = $arguments['src'] !== ''
                     ? [App::get(Media::class)->firstWhere('name', Str::of($arguments['src'])->afterLast('/')->beforeLast('.'))]
                     : [];
 
-                $livewire->dispatch('open-modal', id: 'curator-panel', settings: [
-                    'acceptedFileTypes' => Config::get('curator.accepted_file_types'),
-                    'defaultSort' => 'desc',
-                    'directory' => Config::get('curator.directory'),
-                    'diskName' => Config::get('curator.disk'),
-                    'imageCropAspectRatio' => Config::get('curator.image_crop_aspect_ratio'),
-                    'imageResizeTargetWidth' => Config::get('curator.image_resize_target_width'),
-                    'imageResizeTargetHeight' => Config::get('curator.image_resize_target_height'),
-                    'imageResizeMode' => Config::get('curator.image_resize_mode'),
-                    'isLimitedToDirectory' => false,
-                    'isTenantAware' => Config::get('curator.is_tenant_aware'),
-                    'tenantOwnershipRelationshipName' => Config::get('curator.tenant_ownership_relationship_name'),
-                    'isMultiple' => false,
-                    'maxItems' => 1,
-                    'maxSize' => Config::get('curator.max_size'),
-                    'maxWidth' => Config::get('curator.max_width'),
-                    'minSize' => Config::get('curator.min_size'),
-                    'modalId' => $component->getLivewire()->getId() . '-form-component-action',
-                    'pathGenerator' => Config::get('curator.path_generator'),
-                    'rules' => [],
-                    'selected' => $selected,
-                    'shouldPreserveFilenames' => Config::get('curator.should_preserve_filenames'),
-                    'statePath' => $component->getStatePath(),
-                    'types' => $component->getAcceptedFileTypes(),
-                    'visibility' => Config::get('curator.visibility'),
+                return view('curator::components.modals.curator-panel', [
+                    'settings' => [
+                        'acceptedFileTypes' => Config::get('curator.accepted_file_types'),
+                        'defaultSort' => 'desc',
+                        'directory' => Config::get('curator.directory'),
+                        'diskName' => Config::get('curator.disk'),
+                        'imageCropAspectRatio' => Config::get('curator.image_crop_aspect_ratio'),
+                        'imageResizeTargetWidth' => Config::get('curator.image_resize_target_width'),
+                        'imageResizeTargetHeight' => Config::get('curator.image_resize_target_height'),
+                        'imageResizeMode' => Config::get('curator.image_resize_mode'),
+                        'isLimitedToDirectory' => false,
+                        'isTenantAware' => Config::get('curator.is_tenant_aware'),
+                        'tenantOwnershipRelationshipName' => Config::get('curator.tenant_ownership_relationship_name'),
+                        'isMultiple' => false,
+                        'maxItems' => 1,
+                        'maxSize' => Config::get('curator.max_size'),
+                        'maxWidth' => Config::get('curator.max_width'),
+                        'minSize' => Config::get('curator.min_size'),
+                        'modalId' => $component->getLivewire()->getId() . '-form-component-action',
+                        'pathGenerator' => Config::get('curator.path_generator'),
+                        'rules' => [],
+                        'selected' => $selected,
+                        'shouldPreserveFilenames' => Config::get('curator.should_preserve_filenames'),
+                        'statePath' => $component->getStatePath(),
+                        'types' => $component->getAcceptedFileTypes(),
+                        'visibility' => Config::get('curator.visibility'),
+                    ]
                 ]);
-            });
+            })
+            ->action(fn () => null);
     }
 }

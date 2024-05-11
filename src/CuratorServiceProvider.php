@@ -3,6 +3,7 @@
 namespace Awcodes\Curator;
 
 use Awcodes\Curator\Commands\GenerateGlideTokenCommand;
+use Awcodes\Curator\Commands\InstallCommand;
 use Awcodes\Curator\Config\CurationManager;
 use Awcodes\Curator\Config\CuratorManager;
 use Awcodes\Curator\Config\GlideManager;
@@ -16,7 +17,6 @@ use Filament\Support\Assets\Css;
 use Filament\Support\Facades\FilamentAsset;
 use Illuminate\Support\Facades\Blade;
 use Livewire\Livewire;
-use Spatie\LaravelPackageTools\Commands\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
@@ -24,81 +24,73 @@ class CuratorServiceProvider extends PackageServiceProvider
 {
     public function configurePackage(Package $package): void
     {
-        $package->name('curator')
+        $package->name(name: 'curator')
             ->hasConfigFile()
-            ->hasRoute('web')
+            ->hasRoute(routeFileName: 'curator')
             ->hasViews()
             ->hasTranslations()
-            ->hasMigration('create_curator_table')
             ->hasCommands([
+                InstallCommand::class,
                 GenerateGlideTokenCommand::class,
-            ])
-            ->hasInstallCommand(function (InstallCommand $command) {
-                $command
-                    ->publishMigrations()
-                    ->askToRunMigrations()
-                    ->endWith(function (InstallCommand $command) {
-                        $command->call('curator:token');
-                    });
-            });
+            ]);
     }
 
     public function packageRegistered(): void
     {
         $this->app->scoped(
-            CuratorManager::class,
-            fn () => new CuratorManager(),
+            abstract: CuratorManager::class,
+            concrete: fn () => new CuratorManager(),
         );
 
         $this->app->scoped(
-            GlideManager::class,
-            fn () => new GlideManager(),
+            abstract: GlideManager::class,
+            concrete: fn () => new GlideManager(),
         );
 
         $this->app->scoped(
-            CurationManager::class,
-            fn () => new CurationManager(),
+            abstract: CurationManager::class,
+            concrete: fn () => new CurationManager(),
         );
     }
 
     public function packageBooted(): void
     {
         $this->app->bind(
-            Media::class,
-            config('curator.model'),
+            abstract: Media::class,
+            concrete: config('curator.model'),
         );
 
         $this->app->bind(
-            MediaResource::class,
-            config('curator.resource.resource'),
+            abstract: MediaResource::class,
+            concrete: config('curator.resource.resource'),
         );
 
         $this->app->bind(
-            MediaResource\CreateMedia::class,
-            config('curator.resource.pages.create'),
+            abstract: MediaResource\CreateMedia::class,
+            concrete: config('curator.resource.pages.create'),
         );
 
         $this->app->bind(
-            MediaResource\EditMedia::class,
-            config('curator.resource.pages.edit'),
+            abstract: MediaResource\EditMedia::class,
+            concrete: config('curator.resource.pages.edit'),
         );
 
         $this->app->bind(
-            MediaResource\ListMedia::class,
-            config('curator.resource.pages.index'),
+            abstract: MediaResource\ListMedia::class,
+            concrete: config('curator.resource.pages.index'),
         );
 
-        app(Media::class)::observe(MediaObserver::class);
+        app(abstract: Media::class)::observe(classes: MediaObserver::class);
 
-        Livewire::component('curator-panel', Components\Modals\CuratorPanel::class);
-        Livewire::component('curator-curation', Components\Modals\CuratorCuration::class);
+        Livewire::component(name: 'curator-panel', class: Components\Modals\CuratorPanel::class);
+        Livewire::component(name: 'curator-curation', class: Components\Modals\CuratorCuration::class);
 
-        Blade::component('curator-glider', Glider::class);
-        Blade::component('curator-curation', Curation::class);
+        Blade::component(class: 'curator-glider', alias: Glider::class);
+        Blade::component(class: 'curator-curation', alias: Curation::class);
 
         FilamentAsset::register([
-            AlpineComponent::make('curation', __DIR__ . '/../resources/dist/curation.js'),
-            Css::make('curator', __DIR__ . '/../resources/dist/curator.css')->loadedOnRequest(),
-        ], 'awcodes/curator');
+            AlpineComponent::make(id: 'curation', path: __DIR__ . '/../resources/dist/curation.js'),
+            Css::make(id: 'curator', path: __DIR__ . '/../resources/dist/curator.css')->loadedOnRequest(),
+        ], package: 'awcodes/curator');
     }
 }

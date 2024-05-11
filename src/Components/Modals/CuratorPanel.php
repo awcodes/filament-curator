@@ -9,8 +9,6 @@ use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Models\Media;
 use Awcodes\Curator\PathGenerators\Contracts\PathGenerator;
 use Awcodes\Curator\Resources\MediaResource;
-use Awcodes\Pounce\Enums\MaxWidth;
-use Awcodes\Pounce\PounceComponent;
 use Closure;
 use Exception;
 use Filament\Actions\Action;
@@ -26,15 +24,18 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Storage;
 use Livewire\WithPagination;
+use Livewire\Component;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-class CuratorPanel extends PounceComponent implements HasActions, HasForms
+class CuratorPanel extends Component implements HasActions, HasForms
 {
     use HasBreadcrumbs;
     use InteractsWithActions;
     use InteractsWithForms;
     use InteractsWithStorage;
     use WithPagination;
+
+    public ?array $settings = [];
 
     public array $acceptedFileTypes = [];
 
@@ -108,6 +109,10 @@ class CuratorPanel extends PounceComponent implements HasActions, HasForms
 
     public function mount(): void
     {
+        foreach ($this->settings as $key => $value) {
+            $this->{$key} = $value;
+        }
+
         $this->getDirectories();
 
         $this->breadcrumbs[] = $this->directory;
@@ -119,11 +124,6 @@ class CuratorPanel extends PounceComponent implements HasActions, HasForms
         }
 
         $this->form->fill();
-    }
-
-    public static function getMaxWidth(): MaxWidth
-    {
-        return MaxWidth::Screen;
     }
 
     public function form(Form $form): Form
@@ -177,7 +177,7 @@ class CuratorPanel extends PounceComponent implements HasActions, HasForms
 //            })
             ->when(filled($this->acceptedFileTypes) && ! $this->showAll, function ($query) {
                 $types = $this->acceptedFileTypes;
-                $query = $query->whereIn('mime', $types);
+                $query = $query->whereIn('type', $types);
                 $wildcardTypes = collect($types)->filter(fn ($type) => str_contains($type, '*'));
                 $wildcardTypes?->map(fn ($type) => $query->orWhere('type', 'LIKE', str_replace('*', '%', $type)));
 
@@ -406,14 +406,7 @@ class CuratorPanel extends PounceComponent implements HasActions, HasForms
             ->color('success')
             ->label(trans('curator::views.panel.use_selected_image'))
             ->action(function (): void {
-                $this->dispatch(
-                    'insert-content',
-                    type: 'media',
-                    statePath: $this->statePath,
-                    media: $this->selected
-                );
-
-                $this->dispatch('unPounce');
+                $this->dispatch('insert-media', type: 'media', statePath: $this->statePath, media: $this->selected);
             });
     }
 
@@ -452,6 +445,6 @@ class CuratorPanel extends PounceComponent implements HasActions, HasForms
 
     public function render(): View
     {
-        return view('curator::components.modals.curator-panel');
+        return view('curator::livewire.curator-panel');
     }
 }

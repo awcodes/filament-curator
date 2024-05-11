@@ -1,10 +1,18 @@
 <?php
 
 return [
+    'default_disk' => env('FILAMENT_FILESYSTEM_DISK', 'public'),
+    'default_visibility' => 'public',
+    'features' => [
+        'curations' => true,
+        'file_swap' => true,
+        'directory_restriction' => false,
+        'tenancy' => [
+            'enabled' => false,
+            'relationship_name' => null,
+        ],
+    ],
     'glide_token' => env('CURATOR_GLIDE_TOKEN'),
-    'is_limited_to_directory' => false,
-    'is_tenant_aware' => true,
-    'tenant_ownership_relationship_name' => 'tenant',
     'model' => \Awcodes\Curator\Models\Media::class,
     'path_generator' => null,
     'resource' => [
@@ -25,6 +33,4 @@ return [
             'index' => \Awcodes\Curator\Resources\MediaResource\ListMedia::class,
         ],
     ],
-    'supports_curations' => true,
-    'supports_file_swap' => true,
 ];

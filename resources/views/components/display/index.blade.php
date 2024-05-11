@@ -5,6 +5,7 @@
     'lazy' => null,
     'player' => false,
     'iconClasses' => '',
+    'constrained' => false,
 ])
 
 @php
@@ -22,7 +23,15 @@
         src="{{ $src }}"
         alt="{{ $item->alt ?? '' }}"
         loading="{{ $lazy ? 'lazy' : 'eager' }}"
-        {{ $attributes->merge(['width' => $item->width, 'height' => $item->height])->except(['src', 'alt', 'lazy', 'item']) }}
+        {{
+            $attributes
+                ->merge(['width' => $item->width, 'height' => $item->height])
+                ->except(['src', 'alt', 'lazy', 'item'])
+                ->class([
+                    'object-cover' => ! $constrained,
+                    'object-contain' => $constrained,
+                ])
+        }}
     />
 @elseif (curator()->isVideo($item->ext) && $player)
     <video
