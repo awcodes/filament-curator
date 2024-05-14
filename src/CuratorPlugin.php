@@ -16,8 +16,6 @@ class CuratorPlugin implements Plugin
 
     protected string | Closure | null $navigationGroup = null;
 
-    //protected string | Closure | null $cluster = null;
-
     protected string | Closure | null $navigationLabel = null;
 
     protected ?string $navigationIcon = null;
@@ -89,11 +87,6 @@ class CuratorPlugin implements Plugin
         return $this->evaluate($this->navigationGroup) ?? config('curator.resources.navigation_group');
     }
 
-    /*public function getCluster(): ?string
-    {
-        return $this->evaluate($this->cluster) ?? config('curator.resources.cluster');
-    }*/
-    
     public function getNavigationLabel(): ?string
     {
         return $this->evaluate($this->navigationLabel) ?? config('curator.resources.navigation_label');
@@ -130,13 +123,6 @@ class CuratorPlugin implements Plugin
 
         return $this;
     }
-
-    /*public function cluster(string | Closure | null $cluster = null): static
-    {
-        $this->cluster = $cluster;
-
-        return $this;
-    }*/
 
     public function navigationLabel(string | Closure | null $label = null): static
     {
