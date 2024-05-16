@@ -1,18 +1,18 @@
 <div
-    {{ $attributes->merge($getExtraAttributes())->class(['curator-grid-column relative rounded-t-xl overflow-hidden -mx-4 -mt-4 mb-1 aspect-video']) }}
+    {{ $attributes->merge($getExtraAttributes())->class(['curator-grid-column absolute inset-0 rounded-t-xl overflow-hidden aspect-video']) }}
 >
     @php
         $record = $getRecord();
     @endphp
 
-    <div class="rounded-t-xl h-full overflow-hidden bg-gray-200 dark:bg-gray-700">
+    <div class="rounded-t-xl h-full overflow-hidden bg-gray-100 dark:bg-gray-950/50">
         @if (str($record->type)->contains('image'))
             <img
                 src="{{ $record->getSignedUrl(['w' => 640, 'h' => 320, 'fit' => 'crop', 'fm' => 'webp']) }}"
                 alt="{{ $record->alt }}"
                 @class([
                     'h-full',
-                    'w-auto' => str($record->type)->contains('svg'),
+                    'w-auto mx-auto' => str($record->type)->contains('svg'),
                     'object-cover w-full' => ! str($record->type)->contains('svg'),
                 ])
             />
