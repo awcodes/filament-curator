@@ -53,6 +53,10 @@
             @apply ring-2 ring-primary-500;
         }
 
+        .fi-ta-record:not(:has([type="checkbox"])) .fi-ta-actions {
+            margin-top: 56.25%;
+        }
+
         .fi-ta-record:has(.curator-grid-column) {
             @apply block;
 
