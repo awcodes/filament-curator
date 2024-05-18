@@ -521,26 +521,29 @@ class CuratorPicker extends Field
                     $orderColumn = $component->getOrderColumn();
                     $typeColumn = $component->getTypeColumn();
                     $typeValue = $component->getTypeValue();
-                    $existingIds = $relationship->pluck('id')->toArray();
+                    $existingItems = $relationship->where($typeColumn, $typeValue)->get()->keyBy('media_id')->toArray();
+                    $newIds = collect($state)->pluck('id')->toArray();
 
-                    $relationship->whereNotIn('id', Arr::pluck($state, 'id'))->delete();
+                    $relationship->whereNotIn('media_id', $newIds)
+                        ->where($typeColumn, $typeValue)
+                        ->delete();
 
-                    $i = 1;
+                    $i = count($existingItems) + 1;
                     foreach ($state as $item) {
                         $itemId = $item['id'];
                         $data = [
                             'media_id' => $itemId,
                             $orderColumn => $i,
                         ];
-                        if ($typeColumn && $typeValue) {
+                        if ($typeValue) {
                             $data[$typeColumn] = $typeValue;
                         }
-                        if (in_array($itemId, $existingIds)) {
+                        if (isset($existingItems[$itemId])) {
                             $relationship->where('media_id', $itemId)->update($data);
                         } else {
                             $relationship->create($data);
                         }
-                        $i++; // Increment counter
+                        $i++;
                     }
                     return;
                 }
