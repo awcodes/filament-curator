@@ -195,19 +195,27 @@ public function productPictures(): BelongsToMany
 
 #### MorphAble
 
-**Note:** The current implementation supports morphable relationships in forms, but it is not yet functional in table columns. Further adjustments are required for full compatibility in all display contexts.
+**Note:** The current implementation supports morphable relationships in forms, but it is not yet functional in table columns. Further adjustments are required for full compatibility.
 
-Migration
+Example Migration
 
-`media_id` relationship on media_id
+```php
+Schema::create('media_items', function (Blueprint $table) {
+    $table->id();
+    $table->morphs('mediable');
+    $table->foreignId('media_id')->constrained()->onDelete('cascade');
+    $table->integer('order');
+    $table->string('type');
+    $table->timestamps();
+});
+```
 
 Model
 
 ```php
-public function documents(): MorphMany
+public function media(): MorphMany
 {
-    return $this->morphMany(MediaItem::class, 'mediable')
-                ->orderBy('order');
+    return $this->morphMany(MediaItem::class, 'mediable')->orderBy('order');
 }
 ```
 
@@ -216,8 +224,10 @@ Form component
 ```php
 CuratorPicker::make('document_ids')
     ->multiple()
-    ->relationship('documents', 'id')
-    ->orderColumn('order'), // only necessary if you need to rename the order column
+    ->relationship('media', 'id')
+    ->orderColumn('order') // Optional: Rename the order column if needed
+    ->typeColumn('type') // Optional: Rename the type column if needed
+    ->typeValue('document'); // Optional: Specify the type value if using types
 ```
 
 ### Path Generation
