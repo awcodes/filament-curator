@@ -193,6 +193,33 @@ public function productPictures(): BelongsToMany
 }
 ```
 
+#### MorphAble
+
+**Note:** The current implementation supports morphable relationships in forms, but it is not yet functional in table columns. Further adjustments are required for full compatibility in all display contexts.
+
+Migration
+
+`media_id` relationship on media_id
+
+Model
+
+```php
+public function documents(): MorphMany
+{
+    return $this->morphMany(MediaItem::class, 'mediable')
+                ->orderBy('order');
+}
+```
+
+Form component
+
+```php
+CuratorPicker::make('document_ids')
+    ->multiple()
+    ->relationship('documents', 'id')
+    ->orderColumn('order'), // only necessary if you need to rename the order column
+```
+
 ### Path Generation
 
 By default, Curator will use the directory and disk set in the config to

@@ -16,6 +16,7 @@ use Filament\Support\Concerns\HasColor;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
@@ -184,7 +185,7 @@ class CuratorPicker extends Field
         return $this->orderColumn ?? 'order';
     }
 
-    public function getRelationship(): BelongsTo | BelongsToMany | null
+    public function getRelationship(): BelongsTo | BelongsToMany | MorphMany | null
     {
         $name = $this->getRelationshipName();
 
@@ -426,10 +427,21 @@ class CuratorPicker extends Field
             $relationship = $component->getRelationship();
 
             if ($component->isMultiple()) {
+                if ($relationship instanceof MorphMany) {
+                    // Load related media items
+                    $relatedMediaItems = $relationship->with('media')->get();
+
+                    // Map related media data
+                    $relatedMedia = $relatedMediaItems->map(function ($item) {
+                        return $item->media->toArray();
+                    })->toArray();
+
+                    $component->state($relatedMedia);
+                    return;
+                }
+
                 $relatedModels = $relationship->getResults();
-
                 $component->state($relatedModels);
-
                 return;
             }
 
@@ -456,24 +468,45 @@ class CuratorPicker extends Field
             }
 
             if ($component->isMultiple()) {
-                if (
-                    ($relationship instanceof BelongsToMany) &&
-                    in_array($component->getOrderColumn(), $relationship->getPivotColumns())
-                ) {
+                if ($relationship instanceof BelongsToMany) {
                     $orderColumn = $component->getOrderColumn();
-                    $state = collect(array_values($state))->mapWithKeys(function ($item, $index) use ($orderColumn) {
-                        return [$item['id'] => [$orderColumn => $index + 1]];
-                    });
+                    if (in_array($orderColumn, $relationship->getPivotColumns())) {
+                        $state = collect(array_values($state))->mapWithKeys(function ($item, $index) use ($orderColumn) {
+                            return [$item['id'] => [$orderColumn => $index + 1]];
+                        });
 
+                        $relationship->sync($state ?? []);
+                        return;
+                    }
+
+                    $state = Arr::pluck($state, 'id');
                     $relationship->sync($state ?? []);
-
                     return;
                 }
 
-                $state = Arr::pluck($state, 'id');
-                $relationship->sync($state ?? []);
+                if ($relationship instanceof MorphMany) {
+                    $orderColumn = $component->getOrderColumn();
+                    $existingIds = $relationship->pluck('id')->toArray();
 
-                return;
+                    // Delete removed items
+                    $relationship->whereNotIn('id', Arr::pluck($state, 'id'))->delete();
+
+                    // Update or create new items
+                    $i = 1; // Initialize counter
+                    foreach ($state as $item) {
+                        $itemId = $item['id'];
+                        if (in_array($itemId, $existingIds)) {
+                            $relationship->where('media_id', $itemId)->update([$orderColumn => $i]);
+                        } else {
+                            $relationship->create([
+                                'media_id' => $itemId,
+                                $orderColumn => $i,
+                            ]);
+                        }
+                        $i++; // Increment counter
+                    }
+                    return;
+                }
             }
 
             if (blank($state) && $relationship->exists()) {
