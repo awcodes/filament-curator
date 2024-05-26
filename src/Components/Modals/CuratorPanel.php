@@ -123,7 +123,7 @@ class CuratorPanel extends Component implements HasActions, HasForms
             $this->tenantOwnershipRelationshipName = $settings['tenantOwnershipRelationshipName'];
             $this->maxItems = $settings['maxItems'];
             $this->maxSize = $settings['maxSize'];
-            $this->maxWidth = $settings['maxWidth'];
+            $this->maxWidth = $settings['maxWidth'] ?? 0;
             $this->minSize = $settings['minSize'];
             $this->pathGenerator = $settings['pathGenerator'];
             $this->validationRules = $settings['rules'];
