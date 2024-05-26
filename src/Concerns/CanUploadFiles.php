@@ -20,9 +20,9 @@ trait CanUploadFiles
 
     protected string | Closure | null $imageResizeTargetWidth = null;
 
-    protected string | Closure | null $maxSize = null;
+    protected int | Closure | null $maxSize = null;
 
-    protected string | Closure | null $minSize = null;
+    protected int | Closure | null $minSize = null;
 
     protected bool | Closure $shouldPreserveFilenames = false;
 
