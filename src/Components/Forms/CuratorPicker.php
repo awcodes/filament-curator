@@ -16,6 +16,7 @@ use Filament\Support\Concerns\HasColor;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
@@ -52,6 +53,10 @@ class CuratorPicker extends Field
     protected int | Closure | null $maxItems = null;
 
     protected ?string $orderColumn = null;
+
+    protected ?string $typeColumn = null;
+
+    protected ?string $typeValue = null;
 
     protected string | Closure | null $relationship = null;
 
@@ -184,7 +189,17 @@ class CuratorPicker extends Field
         return $this->orderColumn ?? 'order';
     }
 
-    public function getRelationship(): BelongsTo | BelongsToMany | null
+    public function getTypeColumn(): string
+    {
+        return $this->typeColumn ?? 'type';
+    }
+
+    public function getTypeValue(): ?string
+    {
+        return $this->typeValue ?? null;
+    }
+
+    public function getRelationship(): BelongsTo | BelongsToMany | MorphMany | null
     {
         $name = $this->getRelationshipName();
 
@@ -413,6 +428,20 @@ class CuratorPicker extends Field
         return $this;
     }
 
+    public function typeColumn(string $column): static
+    {
+        $this->typeColumn = $column;
+
+        return $this;
+    }
+
+    public function typeValue(string $value): static
+    {
+        $this->typeValue = $value;
+
+        return $this;
+    }
+
     public function relationship(string | Closure $relationshipName, string | Closure $titleColumnName, ?Closure $callback = null): static
     {
         $this->relationship = $relationshipName;
@@ -426,10 +455,26 @@ class CuratorPicker extends Field
             $relationship = $component->getRelationship();
 
             if ($component->isMultiple()) {
+                if ($relationship instanceof MorphMany) {
+                    $typeColumn = $component->getTypeColumn();
+                    $typeValue = $component->getTypeValue();
+
+                    $query = $relationship->with('media');
+                    if ($typeColumn && $typeValue) {
+                        $query->where($typeColumn, $typeValue);
+                    }
+                    $relatedMediaItems = $query->get();
+
+                    $relatedMedia = $relatedMediaItems->map(function ($item) {
+                        return $item->media->toArray();
+                    })->toArray();
+
+                    $component->state($relatedMedia);
+                    return;
+                }
+
                 $relatedModels = $relationship->getResults();
-
                 $component->state($relatedModels);
-
                 return;
             }
 
@@ -456,24 +501,52 @@ class CuratorPicker extends Field
             }
 
             if ($component->isMultiple()) {
-                if (
-                    ($relationship instanceof BelongsToMany) &&
-                    in_array($component->getOrderColumn(), $relationship->getPivotColumns())
-                ) {
+                if ($relationship instanceof BelongsToMany) {
                     $orderColumn = $component->getOrderColumn();
-                    $state = collect(array_values($state))->mapWithKeys(function ($item, $index) use ($orderColumn) {
-                        return [$item['id'] => [$orderColumn => $index + 1]];
-                    });
+                    if (in_array($orderColumn, $relationship->getPivotColumns())) {
+                        $state = collect(array_values($state))->mapWithKeys(function ($item, $index) use ($orderColumn) {
+                            return [$item['id'] => [$orderColumn => $index + 1]];
+                        });
 
+                        $relationship->sync($state ?? []);
+                        return;
+                    }
+
+                    $state = Arr::pluck($state, 'id');
                     $relationship->sync($state ?? []);
-
                     return;
                 }
 
-                $state = Arr::pluck($state, 'id');
-                $relationship->sync($state ?? []);
+                if ($relationship instanceof MorphMany) {
+                    $orderColumn = $component->getOrderColumn();
+                    $typeColumn = $component->getTypeColumn();
+                    $typeValue = $component->getTypeValue();
+                    $existingItems = $relationship->where($typeColumn, $typeValue)->get()->keyBy('media_id')->toArray();
+                    $newIds = collect($state)->pluck('id')->toArray();
 
-                return;
+                    $relationship->whereNotIn('media_id', $newIds)
+                        ->where($typeColumn, $typeValue)
+                        ->delete();
+
+                    $i = count($existingItems) + 1;
+                    foreach ($state as $item) {
+                        $itemId = $item['id'];
+                        $data = [
+                            'media_id' => $itemId,
+                            $orderColumn => $i,
+                        ];
+                        if ($typeValue) {
+                            $data[$typeColumn] = $typeValue;
+                        }
+                        if (isset($existingItems[$itemId])) {
+                            $relationship->where('media_id', $itemId)->update($data);
+                        } else {
+                            $relationship->create($data);
+                        }
+                        $i++;
+                    }
+                    return;
+                }
             }
 
             if (blank($state) && $relationship->exists()) {
