@@ -20,10 +20,10 @@
         </div>
         <div>
             <dt class="{{ $labelClasses }}">
-                {{ trans('curator::views.details.file_type') }}
+                {{ trans('curator::views.details.mime_type') }}
             </dt>
             <dd class="{{ $dataClasses }}">
-                {{ filled($record) ? $record->mime : '-' }}
+                {{ filled($record) ? $record->type : '-' }}
             </dd>
         </div>
         <div>

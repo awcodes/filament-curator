@@ -6,7 +6,7 @@
     <div class="rounded-t-xl h-full overflow-hidden bg-gray-100 dark:bg-gray-950/50">
         <x-curator::display
             :item="$record"
-            :src="curator()->getMediumUrl($record->path)"
+            :src="$record->mediumUrl"
             :lazy="true"
             icon-classes="size-24"
             @class([

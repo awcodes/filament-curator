@@ -139,18 +139,18 @@
                 @if ($subDirectories)
                     @foreach($subDirectories as $dir)
                         <li
-                                wire:key="dir-{{ $dir['name'] }}" class="relative aspect-square"
+                            wire:key="dir-{{ $dir['name'] }}" class="relative aspect-square"
                         >
                             <button
-                                    type="button"
-                                    wire:click="handleDirectoryChange('{{ $dir['path'] }}')"
-                                    class="block w-full h-full overflow-hidden bg-gray-200 rounded-md dark:bg-gray-900 hover:text-primary-600 hover:bg-primary-500/20 hover:ring-2 hover:ring-primary-500 dark:hover:text-white dark:hover:bg-primary-500/20 focus:text-primary-600 focus:bg-primary-500/20 focus:ring-2 focus:ring-primary-500"
+                                type="button"
+                                wire:click="handleDirectoryChange('{{ $dir['path'] }}')"
+                                class="block w-full h-full overflow-hidden bg-gray-200 rounded-md dark:bg-gray-900 hover:text-primary-600 hover:bg-primary-500/20 hover:ring-2 hover:ring-primary-500 dark:hover:text-white dark:hover:bg-primary-500/20 focus:text-primary-600 focus:bg-primary-500/20 focus:ring-2 focus:ring-primary-500"
                             >
                                 <div class="grid place-content-center place-items-center w-full h-full text-xs relative">
                                     <x-filament::icon
-                                            alias="curator::icons.folder"
-                                            icon="heroicon-o-folder"
-                                            class="w-12 h-12 opacity-20"
+                                        alias="curator::icons.folder"
+                                        icon="heroicon-o-folder"
+                                        class="w-12 h-12 opacity-20"
                                     />
                                     <span>{{ $dir['label'] }}</span>
                                 </div>
@@ -170,7 +170,7 @@
                         >
                             <x-curator::display
                                 :item="$file"
-                                :src="curator()->getThumbnailUrl($file['path'])"
+                                :src="$file['thumbnail_url']"
                                 :alt="$file['alt'] ?? ''"
                                 width="200"
                                 height="200"

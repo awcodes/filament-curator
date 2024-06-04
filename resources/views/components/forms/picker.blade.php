@@ -31,7 +31,7 @@
                             <div class="curator-picker-list-preview flex-shrink-0 h-12 w-12 checkered">
                                 <x-curator::display
                                     :item="$item"
-                                    :src="curator()->getThumbnailUrl($item['path'])"
+                                    :src="$item['thumbnail_url']"
                                     :lazy="true"
                                     icon-classes="size-24"
                                 />
@@ -78,7 +78,7 @@
                         >
                             <x-curator::display
                                 :item="$item"
-                                :src="$constrained ? curator()->getLargeUrl($item['path']) : curator()->getMediumUrl($item['path'])"
+                                :src="$constrained ? $item['large_url'] : $item['medium_url']"
                                 :lazy="true"
                                 icon-classes="size-24"
                                 :constrained="$constrained"

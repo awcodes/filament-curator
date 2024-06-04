@@ -2,24 +2,26 @@
 
 namespace Awcodes\Curator\Config\Concerns;
 
-use Awcodes\Curator\Glide\GlideBuilder;
+use Awcodes\Curator\Concerns\UrlProvider;
+use Closure;
 use Illuminate\Support\Number;
 
 trait HasMediaSizes
 {
-    public function getThumbnailUrl(string $path): string
+    protected UrlProvider | Closure | null $urlProvider = null;
+
+    public function urlProvider(UrlProvider | Closure $provider): static
     {
-        return GlideBuilder::make()->width(200)->height(200)->format('webp')->fit('crop')->toUrl($path);
+        $this->urlProvider = $provider;
+
+        return $this;
     }
 
-    public function getMediumUrl(string $path): string
+    public function getUrlProvider(): UrlProvider
     {
-        return GlideBuilder::make()->width(640)->height(640)->format('webp')->fit('crop')->toUrl($path);
-    }
+        $provider = $this->evaluate($this->urlProvider) ?? config('curator.url_provider');
 
-    public function getLargeUrl(string $path): string
-    {
-        return GlideBuilder::make()->width(1024)->height(1024)->format('webp')->fit('contain')->toUrl($path);
+        return app($provider);
     }
 
     public function sizeForHumans(int $size, ?int $precision = 2): string

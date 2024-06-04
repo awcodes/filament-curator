@@ -53,7 +53,7 @@
 
                 <x-curator::display
                     :item="$item"
-                    :src="glide()->getUrl($item->path, ['w' => $img_width, 'h' => $img_height, 'fit' => 'crop', 'fm' => 'webp'])"
+                    :src="$item->thumbnailUrl"
                     :lazy="true"
                     icon-classes="size-6"
                     :width="$width"

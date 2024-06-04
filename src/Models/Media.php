@@ -4,10 +4,12 @@ namespace Awcodes\Curator\Models;
 
 use Awcodes\Curator\Concerns\HasPackageFactory;
 use Awcodes\Curator\Config\GlideManager;
+use Awcodes\Curator\Facades\Curator;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
+use Throwable;
 
 class Media extends Model
 {
@@ -45,10 +47,13 @@ class Media extends Model
     protected $appends = [
         'url',
         'full_path',
+        'thumbnail_url',
+        'medium_url',
+        'large_url',
         'pretty_name',
     ];
 
-    protected function url(): Attribute
+    public function url(): Attribute
     {
         return Attribute::make(
             get: function (): ?string {
@@ -56,7 +61,7 @@ class Media extends Model
 
                 try {
                     $isPrivate = $storage->getVisibility($this->path) === 'private';
-                } catch (\Throwable) {
+                } catch (Throwable) {
                     // ACL not supported on Storage Bucket, Laravel only throws exception here so need to be careful.
                     // so we assume it's private
                     $isPrivate = true;
@@ -69,14 +74,35 @@ class Media extends Model
         );
     }
 
-    protected function fullPath(): Attribute
+    public function fullPath(): Attribute
     {
         return Attribute::make(
             get: fn (): string => Storage::disk($this->disk)->path($this->path),
         );
     }
 
-    protected function prettyName(): Attribute
+    public function thumbnailUrl(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): string => Curator::getUrlProvider()::getThumbnailUrl($this->path),
+        );
+    }
+
+    public function mediumUrl(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): string => Curator::getUrlProvider()::getMediumUrl($this->path),
+        );
+    }
+
+    public function largeUrl(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): string => Curator::getUrlProvider()::getLargeUrl($this->path),
+        );
+    }
+
+    public function prettyName(): Attribute
     {
         return Attribute::make(
             get: fn (): string => $this->getPrettyName()

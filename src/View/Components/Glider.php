@@ -3,7 +3,6 @@
 namespace Awcodes\Curator\View\Components;
 
 use Awcodes\Curator\Config\GlideManager;
-use Awcodes\Curator\CuratorUtils;
 use Awcodes\Curator\DTO\MediaDTO;
 use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Models\Media;
@@ -79,14 +78,14 @@ class Glider extends Component
 
         $this->mediaItem = new MediaDTO(
             path: $media,
-            isResizable: CuratorUtils::isResizable($extension),
-            isPreviewable: CuratorUtils::isPreviewable($extension),
+            isResizable: Curator::isResizable($extension),
+            isPreviewable: Curator::isPreviewable($extension),
         );
     }
 
     public function handleInt(int $media): void
     {
-        $media = Curator::getModel()->where('id', $media)->first();
+        $media = app(Media::class)->where('id', $media)->first();
 
         if (! $this->media && $this->fallback) {
             $fallback = app(GlideManager::class)->getGliderFallback($this->fallback);

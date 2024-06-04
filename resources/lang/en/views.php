@@ -7,7 +7,7 @@ return [
     ],
     'details' => [
         'uploaded_on' => 'Uploaded On',
-        'file_type' => 'File Type',
+        'mime_type' => 'Mime Type',
         'file_size' => 'File Size',
         'dimensions' => 'Dimensions',
         'disk' => 'Disk',

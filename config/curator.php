@@ -33,4 +33,5 @@ return [
             'index' => \Awcodes\Curator\Resources\MediaResource\ListMedia::class,
         ],
     ],
+    'url_provider' => \Awcodes\Curator\Providers\GlideUrlProvider::class,
 ];

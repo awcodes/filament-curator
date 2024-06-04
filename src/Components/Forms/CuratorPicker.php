@@ -20,6 +20,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Storage;
@@ -61,6 +62,10 @@ class CuratorPicker extends Field
     protected bool | Closure | null $shouldDisplayAsList = null;
 
     protected string | Closure | null $defaultPanelSort = null;
+
+    protected ?string $typeColumn = null;
+
+    protected ?string $typeValue = null;
 
     /**
      * @throws Exception
@@ -204,7 +209,7 @@ class CuratorPicker extends Field
         return $this->orderColumn ?? 'order';
     }
 
-    public function getRelationship(): BelongsTo | BelongsToMany | null
+    public function getRelationship(): BelongsTo | BelongsToMany | MorphMany | null
     {
         $name = $this->getRelationshipName();
 
@@ -448,10 +453,27 @@ class CuratorPicker extends Field
             $relationship = $component->getRelationship();
 
             if ($component->isMultiple()) {
+                if ($relationship instanceof MorphMany) {
+                    $typeColumn = $component->getTypeColumn();
+                    $typeValue = $component->getTypeValue();
+
+                    $query = $relationship->with('media');
+                    if ($typeColumn && $typeValue) {
+                        $query->where($typeColumn, $typeValue);
+                    }
+                    $relatedMediaItems = $query->get();
+
+                    $relatedMedia = $relatedMediaItems->map(function ($item) {
+                        return $item->media->toArray();
+                    })->toArray();
+
+                    $component->state($relatedMedia);
+                    return;
+                }
+
+
                 $relatedModels = $relationship->getResults();
-
                 $component->state($relatedModels);
-
                 return;
             }
 
@@ -477,24 +499,52 @@ class CuratorPicker extends Field
             }
 
             if ($component->isMultiple()) {
-                if (
-                    ($relationship instanceof BelongsToMany) &&
-                    in_array($component->getOrderColumn(), $relationship->getPivotColumns())
-                ) {
+                if ($relationship instanceof BelongsToMany) {
                     $orderColumn = $component->getOrderColumn();
-                    $state = collect(array_values($state))->mapWithKeys(function ($item, $index) use ($orderColumn) {
-                        return [$item['id'] => [$orderColumn => $index + 1]];
-                    });
+                    if (in_array($orderColumn, $relationship->getPivotColumns())) {
+                        $state = collect(array_values($state))->mapWithKeys(function ($item, $index) use ($orderColumn) {
+                            return [$item['id'] => [$orderColumn => $index + 1]];
+                        });
 
+                        $relationship->sync($state ?? []);
+                        return;
+                    }
+
+                    $state = Arr::pluck($state, 'id');
                     $relationship->sync($state ?? []);
-
                     return;
                 }
 
-                $state = Arr::pluck($state, 'id');
-                $relationship->sync($state ?? []);
+                if ($relationship instanceof MorphMany) {
+                    $orderColumn = $component->getOrderColumn();
+                    $typeColumn = $component->getTypeColumn();
+                    $typeValue = $component->getTypeValue();
+                    $existingItems = $relationship->where($typeColumn, $typeValue)->get()->keyBy('media_id')->toArray();
+                    $newIds = collect($state)->pluck('id')->toArray();
 
-                return;
+                    $relationship->whereNotIn('media_id', $newIds)
+                        ->where($typeColumn, $typeValue)
+                        ->delete();
+
+                    $i = count($existingItems) + 1;
+                    foreach ($state as $item) {
+                        $itemId = $item['id'];
+                        $data = [
+                            'media_id' => $itemId,
+                            $orderColumn => $i,
+                        ];
+                        if ($typeValue) {
+                            $data[$typeColumn] = $typeValue;
+                        }
+                        if (isset($existingItems[$itemId])) {
+                            $relationship->where('media_id', $itemId)->update($data);
+                        } else {
+                            $relationship->create($data);
+                        }
+                        $i++;
+                    }
+                    return;
+                }
             }
 
             if (blank($state) && $relationship->exists()) {
@@ -534,5 +584,15 @@ class CuratorPicker extends Field
     public function shouldDisplayAsList(): bool
     {
         return $this->evaluate($this->shouldDisplayAsList) ?? false;
+    }
+
+    public function getTypeColumn(): string
+    {
+        return $this->typeColumn ?? 'type';
+    }
+
+    public function getTypeValue(): ?string
+    {
+        return $this->typeValue ?? null;
     }
 }
