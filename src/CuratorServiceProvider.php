@@ -8,12 +8,12 @@ use Awcodes\Curator\Config\CurationManager;
 use Awcodes\Curator\Config\CuratorManager;
 use Awcodes\Curator\Config\GlideManager;
 use Awcodes\Curator\Models\Media;
-use Awcodes\Curator\Observers\MediaObserver;
 use Awcodes\Curator\Resources\MediaResource;
 use Awcodes\Curator\View\Components\Curation;
 use Awcodes\Curator\View\Components\Glider;
 use Filament\Support\Assets\AlpineComponent;
 use Filament\Support\Assets\Css;
+use Filament\Support\Assets\Js;
 use Filament\Support\Facades\FilamentAsset;
 use Illuminate\Support\Facades\Blade;
 use Livewire\Livewire;
@@ -80,8 +80,6 @@ class CuratorServiceProvider extends PackageServiceProvider
             concrete: config('curator.resource.pages.index'),
         );
 
-        app(abstract: Media::class)::observe(classes: MediaObserver::class);
-
         Livewire::component(name: 'curator-panel', class: Components\Modals\CuratorPanel::class);
         Livewire::component(name: 'curator-curation', class: Components\Modals\CuratorCuration::class);
 
@@ -90,6 +88,7 @@ class CuratorServiceProvider extends PackageServiceProvider
 
         FilamentAsset::register([
             AlpineComponent::make(id: 'curation', path: __DIR__ . '/../resources/dist/curation.js'),
+            AlpineComponent::make(id: 'highlighter', path: __DIR__ . '/../resources/dist/highlighter.js'),
             Css::make(id: 'curator', path: __DIR__ . '/../resources/dist/curator.css')->loadedOnRequest(),
         ], package: 'awcodes/curator');
     }

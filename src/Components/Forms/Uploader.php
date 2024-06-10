@@ -135,7 +135,7 @@ class Uploader extends FileUpload
                 'width' => $width ?? null,
                 'height' => $height ?? null,
                 'size' => $file->getSize(),
-                'mime' => $file->getMimeType(),
+                'type' => $file->getMimeType(),
                 'ext' => $extension,
             ];
 

@@ -14,11 +14,14 @@ use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\ActionSize;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
+use Livewire\Component;
 
 class MediaResource extends Resource
 {
@@ -127,7 +130,7 @@ class MediaResource extends Resource
                                                     ->lazy(),
                                             ]),
                                     ]),
-                                Forms\Components\Tabs\Tab::make(trans('curator::forms.sections.upload_new'))
+                                Forms\Components\Tabs\Tab::make(trans('curator::forms.sections.replace'))
                                     ->visible(function () {
                                         return CuratorPlugin::get()->supportsFileSwap();
                                     })
@@ -148,15 +151,12 @@ class MediaResource extends Resource
                                     }),
                             ]),
                         Forms\Components\Section::make(trans('curator::forms.sections.exif'))
-                            ->collapsed()
                             ->visible(fn ($record) => $record && $record->exif)
                             ->schema([
-                                Forms\Components\KeyValue::make('exif')
+                                Forms\Components\ViewField::make('exif')
+                                    ->view('curator::components.forms.exif')
                                     ->hiddenLabel()
                                     ->dehydrated(false)
-                                    ->addable(false)
-                                    ->deletable(false)
-                                    ->editableKeys(false)
                                     ->columnSpan('full'),
                             ]),
                     ])
@@ -301,7 +301,7 @@ class MediaResource extends Resource
                 }),
             Forms\Components\TextInput::make('alt')
                 ->label(trans('curator::forms.fields.alt'))
-                ->hint(fn (): HtmlString => new HtmlString('<a href="https://www.w3.org/WAI/tutorials/images/decision-tree" class="filament-link text-primary-500" target="_blank">' . trans('curator::forms.fields.alt_hint') . '</a>')),
+                ->hint(fn (): HtmlString => new HtmlString('<a href="https://www.w3.org/WAI/tutorials/images/decision-tree" class="filament-link text-primary-500 text-xs" target="_blank">' . trans('curator::forms.fields.alt_hint') . '</a>')),
             Forms\Components\TextInput::make('title')
                 ->label(trans('curator::forms.fields.title')),
             Forms\Components\Textarea::make('caption')

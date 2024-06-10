@@ -45,8 +45,8 @@ const defaultOptions = {
 
 compile({
     ...defaultOptions,
-    entryPoints: ['./resources/js/curator.js'],
-    outfile: './resources/dist/curator.js',
+    entryPoints: ['./resources/js/highlighter.js'],
+    outfile: './resources/dist/highlighter.js',
 })
 
 compile({

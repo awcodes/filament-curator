@@ -3,14 +3,16 @@
 namespace Awcodes\Curator\Models;
 
 use Awcodes\Curator\Concerns\HasPackageFactory;
-use Awcodes\Curator\Config\GlideManager;
 use Awcodes\Curator\Facades\Curator;
+use Awcodes\Curator\Observers\MediaObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
 
+#[ObservedBy([MediaObserver::class])]
 class Media extends Model
 {
     use HasPackageFactory;
@@ -107,11 +109,6 @@ class Media extends Model
         return Attribute::make(
             get: fn (): string => $this->getPrettyName()
         );
-    }
-
-    public function getGlideUrl(array $params = []): string
-    {
-        return app(GlideManager::class)->getUrl($this->path, $params);
     }
 
     public function getPrettyName(): string

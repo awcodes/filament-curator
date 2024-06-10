@@ -1,6 +1,13 @@
 <?php
 
 return [
+    'curation_formats' => [
+        'jpg',
+        'jpeg',
+        'webp',
+        'png',
+        'avif',
+    ],
     'default_disk' => env('FILAMENT_FILESYSTEM_DISK', 'public'),
     'default_visibility' => 'public',
     'features' => [

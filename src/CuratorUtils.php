@@ -17,12 +17,15 @@ class CuratorUtils
         string $path,
         ?string $disk = null,
         ?string $directory = null,
+        ?string $visibility = null,
         ?string $alt = null,
+        ?string $title = null,
         ?string $caption = null,
         ?string $description = null,
     ): array {
         $disk = $disk ?? Curator::getDiskName();
         $directory = $directory ?? Curator::getDirectory();
+        $visibility = $visibility ?? Curator::getVisibility();
         $storage = Storage::disk($disk);
 
         if (str_starts_with($path, 'http')) {
@@ -48,7 +51,7 @@ class CuratorUtils
         }
 
         if (! $storage->exists($filepath)) {
-            $storage->put($filepath, $fileContents, Curator::getVisibility());
+            $storage->put($filepath, $fileContents, $visibility);
             $fileContents = $storage->get($filepath);
         }
 
@@ -63,7 +66,7 @@ class CuratorUtils
         return [
             'disk' => $disk,
             'directory' => $directory,
-            'visibility' => Curator::getVisibility(),
+            'visibility' => $visibility,
             'name' => $filename,
             'path' => $filepath,
             'width' => $width ?? null,
@@ -72,6 +75,7 @@ class CuratorUtils
             'type' => $storage->mimeType($filepath),
             'ext' => $ext,
             'alt' => $alt ?? null,
+            'title' => $title ?? null,
             'description' => $description ?? null,
             'caption' => $caption ?? null,
             'exif' => $exif ?? null,
