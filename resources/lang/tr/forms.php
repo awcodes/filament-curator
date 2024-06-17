@@ -2,7 +2,7 @@
 
 return [
     'sections' => [
-        'details' => 'Details',
+        'details' => 'Detaylar',
         'exif' => 'Exif Verisi',
         'file' => 'Dosya',
         'meta' => 'Meta',
