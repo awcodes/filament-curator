@@ -63,7 +63,7 @@ return [
         'save_curation' => 'Αποθήκευση Παραλλαγής',
         'height' => 'Ύψος',
         'width' => 'Μήκος',
-        'format' => 'Μορφή',
+        'format' => 'Τύπος',
         'quality' => 'Ποιότητα',
         'rotate' => 'Περιστροφή',
         'rotate_deg' => 'μοίρες',
