@@ -473,11 +473,17 @@ class CuratorPicker extends Field
                 if ($relationship instanceof MorphMany) {
                     $typeColumn = $component->getTypeColumn();
                     $typeValue = $component->getTypeValue();
+                    $collection = $component->getCollection();
 
                     $query = $relationship->with('media');
                     if ($typeColumn && $typeValue) {
                         $query->where($typeColumn, $typeValue);
                     }
+
+                    if ($collection){
+                        $query->where('collection', $collection);
+                    }
+
                     $relatedMediaItems = $query->get();
 
                     $relatedMedia = $relatedMediaItems->map(function ($item) {
@@ -490,6 +496,30 @@ class CuratorPicker extends Field
 
                 $relatedModels = $relationship->getResults();
                 $component->state($relatedModels);
+                return;
+            }
+
+            if ($relationship instanceof MorphOne){
+                $typeColumn = $component->getTypeColumn();
+                $typeValue = $component->getTypeValue();
+                $collection = $component->getCollection();
+
+                $query = $relationship->with('media');
+                if ($typeColumn && $typeValue) {
+                    $query->where($typeColumn, $typeValue);
+                }
+
+                if ($collection){
+                    $query->where('collection', $collection);
+                }
+
+                $relatedMediaItems = $query->get();
+
+                $relatedMedia = $relatedMediaItems->map(function ($item) {
+                    return $item->media->toArray();
+                })->toArray();
+
+                $component->state($relatedMedia);
                 return;
             }
 
