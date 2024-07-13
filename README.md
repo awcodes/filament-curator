@@ -206,6 +206,7 @@ Schema::create('media_items', function (Blueprint $table) {
     $table->foreignId('media_id')->constrained()->onDelete('cascade');
     $table->integer('order');
     $table->string('type');
+    $table->string('collection') // optionally you can add a collection
     $table->timestamps();
 });
 ```
@@ -225,6 +226,7 @@ Form component
 CuratorPicker::make('document_ids')
     ->multiple()
     ->relationship('media', 'id')
+    ->collection('gallery_images') // Optional: Rename the collection name if needed
     ->orderColumn('order') // Optional: Rename the order column if needed
     ->typeColumn('type') // Optional: Rename the type column if needed
     ->typeValue('document'); // Optional: Specify the type value if using types
