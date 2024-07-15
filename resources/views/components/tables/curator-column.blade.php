@@ -60,9 +60,9 @@
                     :height="$height"
                     @class([
                         'bg-gray-100 dark:bg-gray-950/50',
-                        'h-full w-auto' => str($item->mime)->contains('svg'),
+                        'h-full w-auto' => str($item->type)->contains('svg'),
                         'max-w-none' => $height && ! $width,
-                        'object-cover object-center' => ! str($item->mime)->contains('svg') && ($isRounded() || $width || $height),
+                        'object-cover object-center' => ! str($item->type)->contains('svg') && ($isRounded() || $width || $height),
                         'w-full h-full' => curator()->isDocument($item->ext)
                     ])
                 />

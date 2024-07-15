@@ -36,6 +36,7 @@ class MultiUploadAction extends Action
                     ->minSize($config->getMinSize())
                     ->maxSize($config->getMaxSize())
                     ->multiple()
+                    ->panelLayout('grid')
 //                    ->pathGenerator(config('curator.path_generator'))
                     ->preserveFilenames($config->shouldPreserveFilenames())
                     ->required()

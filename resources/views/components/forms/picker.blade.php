@@ -33,7 +33,7 @@
                                     :item="$item"
                                     :src="$item['thumbnail_url']"
                                     :lazy="true"
-                                    icon-classes="size-24"
+                                    icon-classes="size-6"
                                 />
                             </div>
                             <div class="curator-picker-list-details min-w-0 overflow-hidden py-2">

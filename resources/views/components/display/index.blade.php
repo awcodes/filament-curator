@@ -45,7 +45,7 @@
 @else
     <div
         @class([
-            'curator-document-image grid place-items-center w-full h-full text-xs uppercase relative',
+            'curator-document-image grid place-items-center w-full h-full text-xs uppercase relative bg-gray-100 dark:bg-gray-900',
             $attributes->get('class')
         ])
         {{ $attributes->except(['src', 'alt', 'lazy', 'item', 'class']) }}

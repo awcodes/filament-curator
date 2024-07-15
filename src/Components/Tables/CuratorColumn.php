@@ -55,7 +55,7 @@ class CuratorColumn extends ImageColumn
     {
         $model = $query->getModel();
 
-        if (! $this->queriesRelationships($query->getModel())) {
+        if (! $this->hasRelationship($query->getModel())) {
             return $query;
         }
 
