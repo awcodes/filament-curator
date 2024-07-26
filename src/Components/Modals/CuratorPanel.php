@@ -204,12 +204,12 @@ class CuratorPanel extends Component implements HasActions, HasForms
                 return $query->where('directory', $this->directory);
             })
             ->when($this->types, function ($query) {
-                $types = $this->types;
-                $query = $query->whereIn('type', $types);
-                $wildcardTypes = collect($types)->filter(fn ($type) => str_contains($type, '*'));
-                $wildcardTypes?->map(fn ($type) => $query->orWhere('type', 'LIKE', str_replace('*', '%', $type)));
-
-                return $query;
+                return $query->where(function($query){
+                    $types = $this->types;
+                    $query = $query->whereIn('type', $types);
+                    $wildcardTypes = collect($types)->filter(fn ($type) => str_contains($type, '*'));
+                    $wildcardTypes?->map(fn ($type) => $query->orWhere('type', 'LIKE', str_replace('*', '%', $type)));
+                });
             })
             ->orderBy('created_at', $this->defaultSort);
 
