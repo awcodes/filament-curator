@@ -521,10 +521,10 @@ class CuratorPicker extends Field
                     $orderColumn = $component->getOrderColumn();
                     $typeColumn = $component->getTypeColumn();
                     $typeValue = $component->getTypeValue();
-                    $existingItems = $relationship->where($typeColumn, $typeValue)->get()->keyBy('media_id')->toArray();
+                    $existingItems = $component->getRelationship()->where($typeColumn, $typeValue)->get()->keyBy('media_id')->toArray();
                     $newIds = collect($state)->pluck('id')->toArray();
 
-                    $relationship->whereNotIn('media_id', $newIds)
+                    $component->getRelationship()->whereNotIn('media_id', $newIds)
                         ->where($typeColumn, $typeValue)
                         ->delete();
 
@@ -539,7 +539,7 @@ class CuratorPicker extends Field
                             $data[$typeColumn] = $typeValue;
                         }
                         if (isset($existingItems[$itemId])) {
-                            $relationship->where('media_id', $itemId)->update($data);
+                            $component->getRelationship()->where('media_id', $itemId)->update($data);
                         } else {
                             $relationship->create($data);
                         }
