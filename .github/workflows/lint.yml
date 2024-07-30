@@ -1,17 +1,18 @@
-name: "Fix PHP code styling"
+name: 'PHP Code Styling'
 
 on:
-  pull_request:
+  workflow_dispatch:
+  push:
     branches:
       - 3.x
-    types:
-      - closed
     paths:
       - '**.php'
 
+permissions:
+  contents: write
+
 jobs:
-  if_merged:
-    if: github.event.pull_request.merged == true
+  lint:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -20,9 +21,10 @@ jobs:
           ref: ${{ github.head_ref }}
 
       - name: Fix PHP code style issues
-        uses: aglipanci/laravel-pint-action@2.4
+        uses: aglipanci/laravel-pint-action@v2
 
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "Chore: Fix PHP code styling"
+          commit_message: "Format Code"
+          commit_user_name: 'GitHub Actions'
