@@ -37,7 +37,7 @@
                     <div class="flex-1 overflow-auto px-4 pb-4">
                         <div class="space-y-3">
                             <div x-show="presets" x-cloak>
-                                <x-curator::curation-select prefix="Preset" name="preset" x-model="preset">
+                                <x-curator::curation-select prefix="{{ trans('curator::views.curation.preset') }}" name="preset" x-model="preset">
                                     <option value="custom">{{ trans('curator::views.curation.custom') }}</option>
                                     <template x-for="preset in presets">
                                         <option x-bind:value="preset.key" x-bind:key="preset.key" x-text="preset.label"></option>
