@@ -11,7 +11,7 @@ class ThumbnailPreset extends CurationPreset
 
     public function getLabel(): string
     {
-        return 'Thumbnail';
+        return trans('curator::views.curation.thumbnail');
     }
 
     public function getWidth(): int
