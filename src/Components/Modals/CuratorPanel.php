@@ -204,7 +204,7 @@ class CuratorPanel extends Component implements HasActions, HasForms
                 return $query->where('directory', $this->directory);
             })
             ->when($this->types, function ($query) {
-                return $query->where(function($query){
+                return $query->where(function ($query) {
                     $types = $this->types;
                     $query = $query->whereIn('type', $types);
                     $wildcardTypes = collect($types)->filter(fn ($type) => str_contains($type, '*'));
@@ -404,7 +404,7 @@ class CuratorPanel extends Component implements HasActions, HasForms
                             ->body(trans('curator::notifications.delete_success'))
                             ->send();
                     } else {
-                        throw new Exception();
+                        throw new Exception;
                     }
                 } catch (Exception) {
                     Notification::make('curator_delete_error')
@@ -479,7 +479,7 @@ class CuratorPanel extends Component implements HasActions, HasForms
                             ->body(trans('curator::notifications.update_success'))
                             ->send();
                     } else {
-                        throw new Exception();
+                        throw new Exception;
                     }
                 } catch (Exception) {
                     Notification::make('curator_update_error')

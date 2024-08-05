@@ -16,8 +16,8 @@ use Filament\Support\Concerns\HasColor;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Storage;
@@ -470,11 +470,13 @@ class CuratorPicker extends Field
                     })->toArray();
 
                     $component->state($relatedMedia);
+
                     return;
                 }
 
                 $relatedModels = $relationship->getResults();
                 $component->state($relatedModels);
+
                 return;
             }
 
@@ -509,11 +511,13 @@ class CuratorPicker extends Field
                         });
 
                         $relationship->sync($state ?? []);
+
                         return;
                     }
 
                     $state = Arr::pluck($state, 'id');
                     $relationship->sync($state ?? []);
+
                     return;
                 }
 
@@ -545,6 +549,7 @@ class CuratorPicker extends Field
                         }
                         $i++;
                     }
+
                     return;
                 }
             }
