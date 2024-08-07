@@ -64,10 +64,20 @@
                         {!! $width !== null ? "width: {$width};" : null !!}
                     "
                     @class([
-                        'h-full w-auto' => str($item->type)->contains('svg'),
                         'max-w-none' => $height && ! $width,
-                        'object-cover object-center' => ! str($item->type)->contains('svg') && ($isRounded() || $width || $height)
+                        'object-cover object-center' => ($isRounded() || $width || $height)
                     ])
+                    {{ $getExtraImgAttributeBag() }}
+                />
+            @elseif (str($item->type)->contains('svg'))
+                <img
+                    src="{{ Storage::url($item->path) }}"
+                    alt="{{ $item->alt }}"
+                    style="
+                        {!! $height !== null ? "height: {$height};" : "height: 2rem;" !!}
+                        {!! $width !== null ? "width: {$width};" : null !!}
+                    "
+                    class="h-full w-auto"
                     {{ $getExtraImgAttributeBag() }}
                 />
             @else
