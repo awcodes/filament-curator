@@ -22,12 +22,11 @@ if (! function_exists('get_media_items')) {
             return [$ids];
         }
 
-        if(is_array($ids) && is_related_to_media_through_pivot(get_class(current($ids)), Media::class)){
-            $mediaIds =  collect($ids)->map(fn ($model) => $model?->media_id)->toArray();
+        if (is_array($ids) && is_related_to_media_through_pivot(get_class(current($ids)), Media::class)) {
+            $mediaIds = collect($ids)->map(fn ($model) => $model?->media_id)->toArray();
 
             return Media::whereIn('id', $mediaIds)->get();
         }
-
 
         $ids = array_values($ids);
 
@@ -47,9 +46,8 @@ if (! function_exists('get_media_items')) {
     }
 }
 
-
 if (! function_exists('is_related_to_media_through_pivot')) {
-    function is_related_to_media_through_pivot(string $modelClass, string $relatedClass):bool
+    function is_related_to_media_through_pivot(string $modelClass, string $relatedClass): bool
     {
         $model = new $modelClass;
         $reflector = new \ReflectionClass($model);
@@ -66,6 +64,7 @@ if (! function_exists('is_related_to_media_through_pivot')) {
                 }
             }
         }
+
         return false;
     }
 }
