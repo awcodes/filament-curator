@@ -216,10 +216,52 @@ Model
 ```php
 public function media(): MorphMany
 {
-    return $this->morphMany(MediaItem::class, 'mediable')->orderBy('order');
+    // When you have multiple media per input.
+    // Example gallery images of a post
+    
+    return $this->morphMany(Mediable::class, 'mediable')->orderBy('order');
+}
+```
+```php 
+    // When you have you need 1 media item.
+    // To follow up the above example, this could be a post's featured image.
+    
+    public function singleMedia()
+    {
+        return $this->morphOne(Mediable::class, 'mediable', 'mediable_type', 'mediable_id');
+    }
+```
+
+Pivot Model Mediable
+
+```php 
+public function media()
+{
+    return $this->belongsTo(Media::class);
 }
 ```
 
+#### Collections
+The package now supports the use of collections. The use of collections is supported only when using Morphable relationships.
+To start using collections add the following column in the Mediable model migration
+```php 
+$table->string('collection') // optionally you can add a collection
+```
+
+The use of collection in your would result in a new relationship method. 
+Let's define a new collection with the name of Gallery Images and one of Featured Image
+```php 
+    public function featuredImage()
+    {
+        return $this->singleMedia()->where('collection', 'featured_image');
+    }
+
+
+    public function galleryImages()
+    {
+        return $this->media()->where('collection', 'gallery_images');
+    }
+```
 Form component
 
 ```php
