@@ -33,6 +33,8 @@ class CuratorColumn extends ImageColumn
 
                     return Media::whereIn('id', $mediaIds)->get();
                 }
+
+                return $state;
             }
 
             if (is_a($state, Media::class)) {
