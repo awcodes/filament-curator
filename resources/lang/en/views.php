@@ -48,9 +48,11 @@ return [
     ],
     'curation' => [
         'heading' => 'Curating',
+        'preset' => 'Preset',
         'adjustments' => 'Adjustments',
         'cancel' => 'Cancel',
         'custom' => 'Custom',
+        'thumbnail' => 'Thumbnail',
         'key' => 'Key',
         'key_helper' => 'This is the reference used to retrieve your curation for display.',
         'zoom_in' => 'Zoom In',

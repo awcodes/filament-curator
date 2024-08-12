@@ -1,19 +1,17 @@
 name: "Build Assets"
 
 on:
-  pull_request:
+  workflow_dispatch:
+  push:
     branches:
       - 3.x
-    types:
-      - closed
     paths:
       - 'resources/views/**.php'
       - 'resources/js/**.js'
       - 'resources/css/**.css'
 
 jobs:
-  if_merged:
-    if: github.event.pull_request.merged == true
+  assets:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -34,3 +32,4 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Chore: build assets"
+          commit_user_name: "GitHub Actions"

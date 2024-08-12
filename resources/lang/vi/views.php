@@ -44,7 +44,7 @@ return [
         'download' => 'Tải xuống',
         'remove' => 'Chọn tên tin khác',
         'deselect_all' => 'Ẩn tất cả lựa chọn',
-        'add_multiple_file' => 'Cmd + Click để chọn nhiều tệp tin'
+        'add_multiple_file' => 'Cmd + Click để chọn nhiều tệp tin',
     ],
     'curation' => [
         'thumbnail' => 'Hình ảnh thu nhỏ',

@@ -27,7 +27,7 @@ trait HasGlideSettings
     public function getGlideServer(): Server | ServerFactory
     {
         if (! $this->glideServer) {
-            return (new DefaultServerFactory())->getFactory();
+            return (new DefaultServerFactory)->getFactory();
         }
 
         return $this->glideServer;
