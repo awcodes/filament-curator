@@ -14,7 +14,7 @@ use function Awcodes\Curator\is_media_resizable;
 
 class Media extends Model
 {
-    use  HasPackageFactory;
+    use HasPackageFactory;
 
     protected $guarded = [];
 
