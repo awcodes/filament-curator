@@ -161,7 +161,7 @@
         <!-- End Gallery -->
 
         <!-- Sidebar -->
-        <div class="curator-panel-sidebar w-full lg:h-full lg:max-w-xs overflow-auto bg-gray-100 dark:bg-gray-900/30 flex flex-col shadow-top lg:shadow-none z-[1]">
+        <div class="curator-panel-sidebar w-full lg:h-full lg:max-w-sm overflow-auto bg-gray-100 dark:bg-gray-900/30 flex flex-col shadow-top lg:shadow-none z-[1]">
             <div class="flex-1 overflow-hidden">
                 <div class="flex flex-col h-full overflow-y-auto">
                     <h4 class="font-bold py-2 px-4 mb-0">

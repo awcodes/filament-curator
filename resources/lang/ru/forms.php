@@ -14,7 +14,7 @@ return [
     'fields'    => [
         'alt'         => 'Alt текст',
         'alt_hint'    => 'Alt?',
-        'caption'     => 'Заголовок',
+        'caption'     => 'Подпись',
         'description' => 'Описание',
         'file'        => 'Файл',
         'title'       => 'Заголовок',
