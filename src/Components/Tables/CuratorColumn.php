@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
 
 use function Awcodes\Curator\get_media_items;
+use function Awcodes\Curator\is_related_to_media_through_pivot;
 
 class CuratorColumn extends ImageColumn
 {
@@ -24,9 +25,16 @@ class CuratorColumn extends ImageColumn
 
         if (! is_a($record, Media::class)) {
             $state = $this->getState();
-
             if (is_a($state, Collection::class)) {
-                return $state->take($this->limit);
+                $state = $state->take($this->limit);
+
+                if (! is_null($state) && is_related_to_media_through_pivot(get_class(($state->first())), Media::class)) {
+                    $mediaIds = collect($state)->map(fn ($model) => $model?->media_id)->toArray();
+
+                    return Media::whereIn('id', $mediaIds)->get();
+                }
+
+                return $state;
             }
 
             if (is_a($state, Media::class)) {
