@@ -64,7 +64,9 @@ class CuratorCuration extends Component
         // save image to directory base on media
         $curationPath = $this->media->directory . '/' . $this->media->name . '/' . $data['key'] . '.' . $extension;
 
-        Storage::disk($this->media->disk)->put($curationPath, $image->stream());
+        Storage::disk($this->media->disk)->put($curationPath, $image->stream(), [
+            'visibility' => $this->media->visibility,
+        ]);
 
         $curation = [
             'key' => $data['key'] ?? $aspectWidth . 'x' . $aspectHeight,
