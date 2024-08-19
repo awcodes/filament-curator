@@ -4,7 +4,6 @@ namespace Awcodes\Curator;
 
 use Awcodes\Curator\Models\Media;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Str;
 
@@ -22,12 +21,6 @@ if (! function_exists('get_media_items')) {
             return [$ids];
         }
 
-        if (is_array($ids) && is_related_to_media_through_pivot(get_class(current($ids)), Media::class)) {
-            $mediaIds = collect($ids)->map(fn ($model) => $model?->media_id)->toArray();
-
-            return Media::whereIn('id', $mediaIds)->get();
-        }
-
         $ids = array_values($ids);
 
         if (isset($ids[0]['id'])) {
@@ -43,29 +36,6 @@ if (! function_exists('get_media_items')) {
         }
 
         return [];
-    }
-}
-
-if (! function_exists('is_related_to_media_through_pivot')) {
-    function is_related_to_media_through_pivot(string $modelClass, string $relatedClass): bool
-    {
-        $model = new $modelClass;
-        $reflector = new \ReflectionClass($model);
-        $methods = $reflector->getMethods(\ReflectionMethod::IS_PUBLIC);
-        foreach ($methods ?? [] as $method) {
-            if ($method?->class === $modelClass) {
-                $returnType = $method?->getReturnType();
-                if ($returnType) {
-                    $relationInstance = $model->{$method->getName()}();
-                    if ($relationInstance instanceof BelongsTo &&
-                        get_class($relationInstance->getRelated()) === $relatedClass) {
-                        return true;
-                    }
-                }
-            }
-        }
-
-        return false;
     }
 }
 
