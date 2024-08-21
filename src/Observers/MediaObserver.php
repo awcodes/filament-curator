@@ -25,7 +25,7 @@ class MediaObserver
                     // Fix malformed utf-8 characters
                     array_walk_recursive($v, function (&$entry) {
                         if (! mb_detect_encoding($entry, 'utf-8', true)) {
-                            $entry = utf8_encode($entry);
+                            $entry = mb_convert_encoding($entry, 'utf-8');
                         }
                     });
 
