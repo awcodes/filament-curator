@@ -10,6 +10,18 @@
         default => 'ring',
     };
 
+    $ringClasses = \Illuminate\Support\Arr::toCssClasses([
+        'ring-white dark:ring-gray-900',
+        match ($ring) {
+            0 => null,
+            1 => 'ring-1',
+            2 => 'ring-2',
+            3 => 'ring',
+            4 => 'ring-4',
+            default => $ring,
+        },
+    ]);
+
     $overlap = match ($overlap) {
         0 => 'space-x-0',
         2 => '-space-x-2',
@@ -17,6 +29,8 @@
         4 => '-space-x-4',
         default => '-space-x-1',
     };
+
+    $defaultImageUrl = $getDefaultImageUrl();
 
     $resolution = $getResolution();
 
@@ -91,5 +105,21 @@
             @endif
         </div>
         @endforeach
+    @elseif($defaultImageUrl)
+        <img
+                src="{{ $defaultImageUrl }}"
+                {{
+					$getExtraImgAttributeBag()
+						->class([
+							'max-w-none object-cover object-center',
+							'rounded-full' => $isCircular,
+							$ringClasses,
+						])
+						->style([
+							"height: {$height}" => $height,
+							"width: {$width}" => $width,
+						])
+				}}
+        />
     @endif
 </div>
