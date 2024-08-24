@@ -10,7 +10,7 @@ use Illuminate\Support\Str;
 if (! function_exists('is_media_resizable')) {
     function is_media_resizable(string $type): bool
     {
-        return in_array($type, ['image/jpeg', 'image/png','image/gif', 'image/webp', 'image/bmp']);
+        return in_array($type, ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/bmp']);
     }
 }
 
