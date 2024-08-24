@@ -8,9 +8,9 @@ use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Str;
 
 if (! function_exists('is_media_resizable')) {
-    function is_media_resizable(string $ext): bool
+    function is_media_resizable(string $type): bool
     {
-        return in_array($ext, ['jpeg', 'jpg', 'png', 'webp', 'bmp']);
+        return in_array($type, ['image/jpeg', 'image/png','image/gif', 'image/webp', 'image/bmp']);
     }
 }
 
