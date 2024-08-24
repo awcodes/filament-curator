@@ -543,7 +543,10 @@ class CuratorPicker extends Field
                             $data[$typeColumn] = $typeValue;
                         }
                         if (isset($existingItems[$itemId])) {
-                            $component->getRelationship()->where('media_id', $itemId)->update($data);
+                            $component->getRelationship()
+                                ->where('media_id', $itemId)
+                                ->where($typeColumn, $typeValue)
+                                ->update($data);
                         } else {
                             $relationship->create($data);
                         }
