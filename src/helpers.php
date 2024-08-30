@@ -8,9 +8,9 @@ use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Str;
 
 if (! function_exists('is_media_resizable')) {
-    function is_media_resizable(string $ext): bool
+    function is_media_resizable(string $type): bool
     {
-        return in_array($ext, ['jpeg', 'jpg', 'png', 'webp', 'bmp']);
+        return in_array($type, ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/bmp']);
     }
 }
 
@@ -22,7 +22,6 @@ if (! function_exists('get_media_items')) {
         if ($ids instanceof $mediaModel) {
             return [$ids];
         }
-
 
         if (is_array($ids) && is_related_to_media_through_pivot(current($ids))) {
             $mediaIds = collect($ids)->map(fn ($model) => $model?->media_id)->toArray();

@@ -95,7 +95,7 @@ class Media extends Model
     protected function resizable(): Attribute
     {
         return Attribute::make(
-            get: fn () => is_media_resizable($this->ext),
+            get: fn () => is_media_resizable($this->type),
         );
     }
 
