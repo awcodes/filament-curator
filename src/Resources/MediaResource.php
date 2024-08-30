@@ -113,7 +113,7 @@ class MediaResource extends Resource
                                             }),
                                     ]),
                                 Forms\Components\Tabs\Tab::make(trans('curator::forms.sections.curation'))
-                                    ->visible(fn ($record) => is_media_resizable($record->ext) && config('curator.tabs.display_curation'))
+                                    ->visible(fn ($record) => is_media_resizable($record->type) && config('curator.tabs.display_curation'))
                                     ->schema([
                                         Forms\Components\Repeater::make('curations')
                                             ->label(trans('curator::forms.sections.curation'))
