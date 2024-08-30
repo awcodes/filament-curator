@@ -428,7 +428,6 @@ class CuratorPicker extends Field
         return $this;
     }
 
-
     public function typeColumn(string $column): static
     {
         $this->typeColumn = $column;
