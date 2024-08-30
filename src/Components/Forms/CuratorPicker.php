@@ -207,7 +207,7 @@ class CuratorPicker extends Field
         return $this->typeValue ?? null;
     }
 
-    public function getRelationship(): BelongsTo | BelongsToMany | MorphMany | null
+    public function getRelationship(): BelongsTo | BelongsToMany | MorphMany | MorphOne | null
     {
         $name = $this->getRelationshipName();
 
