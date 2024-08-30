@@ -25,11 +25,12 @@ class CuratorColumn extends ImageColumn
 
         if (! is_a($record, Media::class)) {
             $state = $this->getState();
+
             if (is_a($state, Collection::class)) {
                 $state = $state->take($this->limit);
 
-                if (! is_null($state) && is_related_to_media_through_pivot(get_class(($state->first())), Media::class)) {
-                    $mediaIds = collect($state)->map(fn ($model) => $model?->media_id)->toArray();
+                if (! is_null($state) && is_related_to_media_through_pivot($state->first())) {
+                    $mediaIds = $state->map(fn ($model) => $model?->media_id)->toArray();
 
                     return Media::whereIn('id', $mediaIds)->get();
                 }

@@ -4,7 +4,6 @@ namespace Awcodes\Curator;
 
 use Awcodes\Curator\Models\Media;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Str;
 
@@ -18,14 +17,17 @@ if (! function_exists('is_media_resizable')) {
 if (! function_exists('get_media_items')) {
     function get_media_items(array | Media | int $ids): Collection | array
     {
-        if ($ids instanceof Media) {
+        $mediaModel = config('curator.model');
+
+        if ($ids instanceof $mediaModel) {
             return [$ids];
         }
 
-        if (is_array($ids) && is_related_to_media_through_pivot(get_class(current($ids)), Media::class)) {
+
+        if (is_array($ids) && is_related_to_media_through_pivot(current($ids))) {
             $mediaIds = collect($ids)->map(fn ($model) => $model?->media_id)->toArray();
 
-            return Media::whereIn('id', $mediaIds)->get();
+            return config('curator.model')::whereIn('id', $mediaIds)->get();
         }
 
         $ids = array_values($ids);
@@ -47,25 +49,11 @@ if (! function_exists('get_media_items')) {
 }
 
 if (! function_exists('is_related_to_media_through_pivot')) {
-    function is_related_to_media_through_pivot(string $modelClass, string $relatedClass): bool
+    function is_related_to_media_through_pivot(mixed $type): bool
     {
-        $model = new $modelClass;
-        $reflector = new \ReflectionClass($model);
-        $methods = $reflector->getMethods(\ReflectionMethod::IS_PUBLIC);
-        foreach ($methods ?? [] as $method) {
-            if ($method?->class === $modelClass) {
-                $returnType = $method?->getReturnType();
-                if ($returnType) {
-                    $relationInstance = $model->{$method->getName()}();
-                    if ($relationInstance instanceof BelongsTo &&
-                        get_class($relationInstance->getRelated()) === $relatedClass) {
-                        return true;
-                    }
-                }
-            }
-        }
+        $intermediateModelType = config('curator.intermediate_model');
 
-        return false;
+        return (! is_null(config('curator.intermediate_model'))) && $type instanceof $intermediateModelType;
     }
 }
 

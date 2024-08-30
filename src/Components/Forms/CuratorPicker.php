@@ -549,6 +549,7 @@ class CuratorPicker extends Field
                 return;
             }
 
+
             if ($component->isMultiple()) {
                 if ($relationship instanceof BelongsToMany) {
                     $orderColumn = $component->getOrderColumn();
