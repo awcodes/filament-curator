@@ -4,7 +4,6 @@ namespace Awcodes\Curator;
 
 use Awcodes\Curator\Models\Media;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Str;
 
@@ -23,7 +22,6 @@ if (! function_exists('get_media_items')) {
         if ($ids instanceof $mediaModel) {
             return [$ids];
         }
-
 
         if (is_array($ids) && is_related_to_media_through_pivot(current($ids))) {
             $mediaIds = collect($ids)->map(fn ($model) => $model?->media_id)->toArray();
