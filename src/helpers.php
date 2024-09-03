@@ -17,8 +17,16 @@ if (! function_exists('is_media_resizable')) {
 if (! function_exists('get_media_items')) {
     function get_media_items(array | Media | int $ids): Collection | array
     {
-        if ($ids instanceof Media) {
+        $mediaModel = config('curator.model');
+
+        if ($ids instanceof $mediaModel) {
             return [$ids];
+        }
+
+        if (is_array($ids) && is_related_to_media_through_pivot(current($ids))) {
+            $mediaIds = collect($ids)->map(fn ($model) => $model?->media_id)->toArray();
+
+            return config('curator.model')::whereIn('id', $mediaIds)->get();
         }
 
         $ids = array_values($ids);
@@ -36,6 +44,15 @@ if (! function_exists('get_media_items')) {
         }
 
         return [];
+    }
+}
+
+if (! function_exists('is_related_to_media_through_pivot')) {
+    function is_related_to_media_through_pivot(mixed $type): bool
+    {
+        $intermediateModelType = config('curator.intermediate_model');
+
+        return (! is_null(config('curator.intermediate_model'))) && $type instanceof $intermediateModelType;
     }
 }
 
