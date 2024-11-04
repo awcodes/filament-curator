@@ -11,7 +11,7 @@
             fileName: '{{ $media->name }}',
             fileType: '{{ $media->type }}',
             presets: @js($presets),
-            checkCrossOrigin: {{ config('curator.cropper.check_cross_origin') }}
+            checkCrossOrigin: @js(config('curator.cropper.check_cross_origin'))
         })"
         x-on:add-curation.window="$dispatch('close-modal', { id: '{{ $modalId }}' })"
     >
