@@ -20,6 +20,7 @@
             icon-size="xl"
             class="p-4 rounded"
             :type="$record->type"
+            :extension="$record->ext"
         />
     @endif
 </div>
