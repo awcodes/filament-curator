@@ -25,6 +25,7 @@
                 icon-size="xl"
                 class="p-4 rounded"
                 :type="$file['type']"
+                :extension="$file['ext']"
             />
         @endif
 
