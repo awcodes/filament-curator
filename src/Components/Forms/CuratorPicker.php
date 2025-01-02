@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Storage;
@@ -53,6 +54,8 @@ class CuratorPicker extends Field
     protected int | Closure | null $maxItems = null;
 
     protected ?string $orderColumn = null;
+
+    protected ?string $collection = null;
 
     protected ?string $typeColumn = null;
 
@@ -194,12 +197,17 @@ class CuratorPicker extends Field
         return $this->typeColumn ?? 'type';
     }
 
+    public function getCollection()
+    {
+        return $this->collection ?? null;
+    }
+
     public function getTypeValue(): ?string
     {
         return $this->typeValue ?? null;
     }
 
-    public function getRelationship(): BelongsTo | BelongsToMany | MorphMany | null
+    public function getRelationship(): BelongsTo | BelongsToMany | MorphMany | MorphOne | null
     {
         $name = $this->getRelationshipName();
 
@@ -435,6 +443,13 @@ class CuratorPicker extends Field
         return $this;
     }
 
+    public function collection(string $collection)
+    {
+        $this->collection = $collection;
+
+        return $this;
+    }
+
     public function typeValue(string $value): static
     {
         $this->typeValue = $value;
@@ -458,11 +473,18 @@ class CuratorPicker extends Field
                 if ($relationship instanceof MorphMany) {
                     $typeColumn = $component->getTypeColumn();
                     $typeValue = $component->getTypeValue();
+                    $collection = $component->getCollection();
 
                     $query = $relationship->with('media');
                     if ($typeColumn && $typeValue) {
                         $query->where($typeColumn, $typeValue);
                     }
+
+                    if ($collection) {
+
+                        $query->where('collection', $collection);
+                    }
+
                     $relatedMediaItems = $query->get();
 
                     $relatedMedia = $relatedMediaItems->map(function ($item) {
@@ -476,6 +498,32 @@ class CuratorPicker extends Field
 
                 $relatedModels = $relationship->getResults();
                 $component->state($relatedModels);
+
+                return;
+            }
+
+            if ($relationship instanceof MorphOne) {
+
+                $typeColumn = $component->getTypeColumn();
+                $typeValue = $component->getTypeValue();
+                $collection = $component->getCollection();
+
+                $query = $relationship->with('media');
+                if ($typeColumn && $typeValue) {
+                    $query->where($typeColumn, $typeValue);
+                }
+
+                if ($collection) {
+                    $query->where('collection', $collection);
+                }
+
+                $relatedMediaItems = $query->get();
+
+                $relatedMedia = $relatedMediaItems->map(function ($item) {
+                    return $item->media->toArray();
+                })->toArray();
+
+                $component->state($relatedMedia);
 
                 return;
             }
@@ -525,10 +573,11 @@ class CuratorPicker extends Field
                     $orderColumn = $component->getOrderColumn();
                     $typeColumn = $component->getTypeColumn();
                     $typeValue = $component->getTypeValue();
-                    $existingItems = $component->getRelationship()->where($typeColumn, $typeValue)->get()->keyBy('media_id')->toArray();
+                    $collection = $component->getCollection();
+                    $existingItems = $relationship->where($typeColumn, $typeValue)->get()->keyBy('media_id')->toArray();
                     $newIds = collect($state)->pluck('id')->toArray();
 
-                    $component->getRelationship()->whereNotIn('media_id', $newIds)
+                    $relationship->whereNotIn('media_id', $newIds)
                         ->where($typeColumn, $typeValue)
                         ->delete();
 
@@ -538,15 +587,17 @@ class CuratorPicker extends Field
                         $data = [
                             'media_id' => $itemId,
                             $orderColumn => $i,
+                            'collection' => $collection,
                         ];
                         if ($typeValue) {
                             $data[$typeColumn] = $typeValue;
                         }
+                        if ($collection) {
+                            $data['collection'] = $collection;
+                        }
+
                         if (isset($existingItems[$itemId])) {
-                            $component->getRelationship()
-                                ->where('media_id', $itemId)
-                                ->where($typeColumn, $typeValue)
-                                ->update($data);
+                            $relationship->where('media_id', $itemId)->update($data);
                         } else {
                             $relationship->create($data);
                         }
@@ -555,6 +606,42 @@ class CuratorPicker extends Field
 
                     return;
                 }
+            }
+
+            if ($relationship instanceof MorphOne) {
+                $orderColumn = $component->getOrderColumn();
+                $typeColumn = $component->getTypeColumn();
+                $typeValue = $component->getTypeValue();
+                $collection = $component->getCollection();
+                $existingItems = $relationship->where($typeColumn, $typeValue)->get()->keyBy('media_id')->toArray();
+                $newIds = collect($state)->pluck('id')->toArray();
+
+                $relationship->whereNotIn('media_id', $newIds)
+                    ->where($typeColumn, $typeValue)
+                    ->delete();
+
+                $i = count($existingItems) + 1;
+
+                foreach ($state as $item) {
+                    $itemId = $item['id'];
+                    $data = [
+                        'media_id' => $itemId,
+                        'collection' => $collection,
+                        $orderColumn => $i,
+                    ];
+                    if ($typeValue) {
+                        $data[$typeColumn] = $typeValue;
+                    }
+
+                    if (isset($existingItems[$itemId])) {
+                        $relationship->where('media_id', $itemId)->update($data);
+                    } else {
+                        $relationship->create($data);
+                    }
+                    $i++;
+                }
+
+                return;
             }
 
             if (blank($state) && $relationship->exists()) {
