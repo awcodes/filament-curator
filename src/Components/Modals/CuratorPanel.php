@@ -177,12 +177,14 @@ class CuratorPanel extends Component implements HasActions, HasForms
                 Group::make([
                     FormView::make('preview')
                         ->view('curator::components.forms.edit-preview', [
-                            'file' => Arr::first($this->selected),
-                            'actions' => [
+                            'file' => $file = Arr::first($this->selected),
+                            'actions' => array_filter([
                                 $this->viewAction(),
                                 $this->downloadAction(),
-                                $this->destroyAction(),
-                            ],
+                                ($file && isset($file["id"]) && \Illuminate\Support\Facades\Gate::allows('delete', App::make(Media::class)->find($file["id"])))
+                                    ? $this->destroyAction()
+                                    : null,
+                            ]),
                         ]),
                     ...App::make(MediaResource::class)->getAdditionalInformationFormSchema(),
                 ])->visible(fn () => filled($this->selected) && count($this->selected) === 1),
