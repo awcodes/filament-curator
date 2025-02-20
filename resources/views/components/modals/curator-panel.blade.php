@@ -199,7 +199,9 @@
                         @endcan
                         @if (count($selected) === 1)
                             <div class="flex gap-3">
-                                {{ $this->updateFileAction }}
+                                @can('update', App::make(\Awcodes\Curator\Models\Media::class)->find(Arr::first($this->selected)['id']))
+                                    {{ $this->updateFileAction }}
+                                @endcan
                                 {{ $this->cancelEditAction }}
                             </div>
                         @endif

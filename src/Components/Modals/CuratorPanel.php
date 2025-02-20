@@ -175,19 +175,29 @@ class CuratorPanel extends Component implements HasActions, HasForms
                     ->imageResizeTargetWidth($this->imageResizeTargetWidth)
                     ->imageResizeTargetHeight($this->imageResizeTargetHeight)
                     ->storeFileNamesIn('originalFilenames'),
-                Group::make([
-                    FormView::make('preview')
-                        ->view('curator::components.forms.edit-preview', [
-                            'file' => $file = Arr::first($this->selected),
-                            'actions' => array_filter([
-                                $this->viewAction(),
-                                $this->downloadAction(),
-                                ($file && isset($file["id"]) && Gate::allows('delete', App::make(Media::class)->find($file["id"])))
-                                    ? $this->destroyAction()
-                                    : null,
+                    Group::make([
+                        FormView::make('preview')
+                            ->view('curator::components.forms.edit-preview', [
+                                'file' => $file = Arr::first($this->selected), // Assign $file here
+                                'actions' => array_filter([
+                                    $this->viewAction(),
+                                    $this->downloadAction(),
+                                    ($file && isset($file["id"]) && Gate::allows('delete', App::make(Media::class)->find($file["id"])))
+                                        ? $this->destroyAction()
+                                        : null,
+                                ]),
                             ]),
-                        ]),
-                    ...App::make(MediaResource::class)->getAdditionalInformationFormSchema(),
+                        ...collect(App::make(MediaResource::class)->getAdditionalInformationFormSchema())
+                            ->map(function ($component) use ($file) { // Capture $file
+                                $media = ($file && isset($file['id'])) 
+                                    ? App::make(Media::class)->find($file['id'])
+                                    : null;
+        
+                                return $component->disabled(
+                                    !$media || !Gate::allows('update', $media)
+                                );
+                            })
+                            ->all(),
                 ])->visible(fn () => filled($this->selected) && count($this->selected) === 1),
             ])->statePath('data');
     }
