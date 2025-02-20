@@ -189,12 +189,14 @@
                     </div>
 
                     <div class="flex items-center justify-start mt-auto gap-3 py-3 px-4 border-t border-gray-300 bg-gray-200 dark:border-gray-800 dark:bg-black/10">
-                        @if (count($selected) !== 1)
-                            <div>
-                                {{ $this->addFilesAction }}
-                                {{ $this->addInsertFilesAction }}
-                            </div>
-                        @endif
+                        @can('create', \Awcodes\Curator\Models\Media::class)
+                            @if (count($selected) !== 1)
+                                <div>
+                                    {{ $this->addFilesAction }}
+                                    {{ $this->addInsertFilesAction }}
+                                </div>
+                            @endif
+                        @endcan
                         @if (count($selected) === 1)
                             <div class="flex gap-3">
                                 {{ $this->updateFileAction }}

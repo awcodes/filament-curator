@@ -2,29 +2,30 @@
 
 namespace Awcodes\Curator\Components\Modals;
 
-use Awcodes\Curator\Components\Forms\Uploader;
-use Awcodes\Curator\Models\Media;
-use Awcodes\Curator\PathGenerators\Contracts\PathGenerator;
-use Awcodes\Curator\Resources\MediaResource;
 use Closure;
 use Exception;
+use Livewire\Component;
+use Filament\Forms\Form;
+use Illuminate\Support\Arr;
+use Livewire\Attributes\On;
 use Filament\Actions\Action;
-use Filament\Actions\Concerns\InteractsWithActions;
-use Filament\Actions\Contracts\HasActions;
+use Livewire\WithPagination;
+use Awcodes\Curator\Models\Media;
+use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\App;
 use Filament\Forms\Components\Group;
+use Illuminate\Support\Facades\Gate;
+use Filament\Forms\Contracts\HasForms;
+use Illuminate\Support\Facades\Storage;
+use Filament\Notifications\Notification;
+use Filament\Actions\Contracts\HasActions;
+use Awcodes\Curator\Resources\MediaResource;
+use Awcodes\Curator\Components\Forms\Uploader;
 use Filament\Forms\Components\View as FormView;
 use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
-use Filament\Notifications\Notification;
-use Illuminate\Contracts\View\View;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Storage;
-use Livewire\Attributes\On;
-use Livewire\Component;
-use Livewire\WithPagination;
+use Filament\Actions\Concerns\InteractsWithActions;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Awcodes\Curator\PathGenerators\Contracts\PathGenerator;
 
 class CuratorPanel extends Component implements HasActions, HasForms
 {
@@ -154,7 +155,7 @@ class CuratorPanel extends Component implements HasActions, HasForms
         return $form
             ->schema([
                 Uploader::make('files_to_add')
-                    ->visible(fn () => count($this->selected) !== 1)
+                    ->visible(fn () => count($this->selected) !== 1 && Gate::allows('create', App::make(Media::class)) )
                     ->hiddenLabel()
                     ->required()
                     ->multiple()
@@ -181,7 +182,7 @@ class CuratorPanel extends Component implements HasActions, HasForms
                             'actions' => array_filter([
                                 $this->viewAction(),
                                 $this->downloadAction(),
-                                ($file && isset($file["id"]) && \Illuminate\Support\Facades\Gate::allows('delete', App::make(Media::class)->find($file["id"])))
+                                ($file && isset($file["id"]) && Gate::allows('delete', App::make(Media::class)->find($file["id"])))
                                     ? $this->destroyAction()
                                     : null,
                             ]),
