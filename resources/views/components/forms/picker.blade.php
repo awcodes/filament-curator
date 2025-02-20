@@ -31,6 +31,17 @@
             style="{{ $itemsCount === 1 ? '--grid-column-count: 1' : '' }}"
         >
             @foreach ($items as $uuid => $item)
+              @php
+                    $media = App::make(\Awcodes\Curator\Models\Media::class)->find($item["id"]);
+                    $canEdit = $media && Gate::allows('update', $media);
+
+                    $groupActions = array_filter([
+                        $getAction('view')(['url' => $item['url']]),
+                        $canEdit ? $getAction('edit')(['id' => $item['id']]) : null, 
+                        $getAction('download')(['uuid' => $uuid]),
+                        $getAction('remove')(['uuid' => $uuid]),
+                    ]);
+              @endphp
                 <li
                     wire:key="{{ $this->getId() }}.{{ $uuid }}.{{ $field::class }}.item"
                     x-sortable-item="{{ $uuid }}"
@@ -80,12 +91,7 @@
 
                                     <div class="flex items-center justify-center flex-none w-8 h-8">
                                         <x-filament-actions::group
-                                            :actions="[
-                                                $getAction('view')(['url' => $item['url']]),
-                                                $getAction('edit')(['id' => $item['id']]),
-                                                $getAction('download')(['uuid' => $uuid]),
-                                                $getAction('remove')(['uuid' => $uuid]),
-                                            ]"
+                                            :actions="$groupActions"
                                             color="gray"
                                             size="xs"
                                             dropdown-placement="bottom-end"
@@ -143,12 +149,7 @@
 
                                 <div class="flex items-center justify-center flex-none w-10 h-10">
                                     <x-filament-actions::group
-                                        :actions="[
-                                            $getAction('view')(['url' => $item['url']]),
-                                            $getAction('edit')(['id' => $item['id']]),
-                                            $getAction('download')(['uuid' => $uuid]),
-                                            $getAction('remove')(['uuid' => $uuid]),
-                                        ]"
+                                        :actions="$groupActions"
                                         color="gray"
                                         size="xs"
                                         dropdown-placement="bottom-end"
