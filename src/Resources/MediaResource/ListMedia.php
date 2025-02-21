@@ -2,13 +2,14 @@
 
 namespace Awcodes\Curator\Resources\MediaResource;
 
-use Awcodes\Curator\Actions\MultiUploadAction;
-use Awcodes\Curator\CuratorPlugin;
 use Exception;
-use Filament\Actions\Action;
-use Filament\Actions\CreateAction;
-use Filament\Resources\Pages\ListRecords;
 use Illuminate\Support\Str;
+use Filament\Actions\Action;
+use Awcodes\Curator\CuratorPlugin;
+use Filament\Actions\CreateAction;
+use Illuminate\Support\Facades\Gate;
+use Filament\Resources\Pages\ListRecords;
+use Awcodes\Curator\Actions\MultiUploadAction;
 
 class ListMedia extends ListRecords
 {
@@ -63,7 +64,13 @@ class ListMedia extends ListRecords
                     $livewire->dispatch('changeLayoutView');
                 }),
             MultiUploadAction::make()
-                ->authorize('create', $this->getModel()),
+                ->authorize(function () {
+                    $model = $this->getModel();
+                    if (! Gate::getPolicyFor($model)) {
+                        return true;
+                    }
+                    return Gate::allows('create', $model);
+                }),
             CreateAction::make()
                 ->label(fn (): string => trans('filament-actions::create.single.label', ['label' => CuratorPlugin::get()->getLabel()])),
         ];

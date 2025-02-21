@@ -33,7 +33,12 @@
             @foreach ($items as $uuid => $item)
               @php
                     $media = App::make(\Awcodes\Curator\Models\Media::class)->find($item["id"]);
-                    $canEdit = $media && Gate::allows('update', $media);
+
+                     // Retrieve the policy, if any, for this media.
+                    $policy = $media ? Gate::getPolicyFor($media) : null; 
+
+                    // For edit: if no policy exists, allow the action; otherwise, check the 'update' ability.
+                    $canEdit = $media && (is_null($policy) || Gate::allows('update', $media));
 
                     $groupActions = array_filter([
                         $getAction('view')(['url' => $item['url']]),

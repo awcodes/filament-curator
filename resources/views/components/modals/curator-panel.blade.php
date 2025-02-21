@@ -189,19 +189,52 @@
                     </div>
 
                     <div class="flex items-center justify-start mt-auto gap-3 py-3 px-4 border-t border-gray-300 bg-gray-200 dark:border-gray-800 dark:bg-black/10">
-                        @can('create', \Awcodes\Curator\Models\Media::class)
-                            @if (count($selected) !== 1)
+                        @php
+                            use Illuminate\Support\Facades\Gate;
+                            use Awcodes\Curator\Models\Media;
+                            use Illuminate\Support\Arr;
+
+                            // Checks for the 'create' ability.
+                            function canCreateMedia() {
+                                // Create a dummy instance for checking the policy.
+                                $dummy = new Media();
+                                $policy = Gate::getPolicyFor($dummy);
+                                // If no policy is registered, allow the action.
+                                if (is_null($policy)) {
+                                    return true;
+                                }
+                                return Gate::allows('create', Media::class);
+                            }
+
+                            // Checks for the 'update' ability on a specific media instance.
+                            function canUpdateMedia($media) {
+                                $policy = Gate::getPolicyFor($media);
+                                if (is_null($policy)) {
+                                    return true;
+                                }
+                                return Gate::allows('update', $media);
+                            }
+
+                            // Retrieve the media instance if exactly one item is selected.
+                            $media = null;
+                            if (count($selected) === 1) {
+                                $first = Arr::first($this->selected);
+                                $media = $first ? App::make(Media::class)->find($first['id']) : null;
+                            }
+                        @endphp
+                        @if (count($selected) !== 1)
+                            @if (canCreateMedia())
                                 <div>
                                     {{ $this->addFilesAction }}
                                     {{ $this->addInsertFilesAction }}
                                 </div>
                             @endif
-                        @endcan
+                        @endif
                         @if (count($selected) === 1)
                             <div class="flex gap-3">
-                                @can('update', App::make(\Awcodes\Curator\Models\Media::class)->find(Arr::first($this->selected)['id']))
+                                @if ($media && canUpdateMedia($media))
                                     {{ $this->updateFileAction }}
-                                @endcan
+                                @endif
                                 {{ $this->cancelEditAction }}
                             </div>
                         @endif

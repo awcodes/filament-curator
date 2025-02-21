@@ -155,7 +155,12 @@ class CuratorPanel extends Component implements HasActions, HasForms
         return $form
             ->schema([
                 Uploader::make('files_to_add')
-                    ->visible(fn () => count($this->selected) !== 1 && Gate::allows('create', App::make(Media::class)) )
+                    ->visible(fn () => count($this->selected) !== 1 &&
+                    (
+                        // Fallback: allow if no policy is registered, otherwise check 'create'
+                        is_null(Gate::getPolicyFor(App::make(Media::class))) ||
+                        Gate::allows('create', App::make(Media::class))
+                    ))
                     ->hiddenLabel()
                     ->required()
                     ->multiple()
@@ -182,19 +187,29 @@ class CuratorPanel extends Component implements HasActions, HasForms
                                 'actions' => array_filter([
                                     $this->viewAction(),
                                     $this->downloadAction(),
-                                    ($file && isset($file["id"]) && Gate::allows('delete', App::make(Media::class)->find($file["id"])))
+                                    (
+                                        $file &&
+                                        isset($file["id"]) &&
+                                        ($media = App::make(Media::class)->find($file["id"])) &&
+                                        (
+                                            // Fallback: allow if no policy is registered, otherwise check 'delete'
+                                            is_null(Gate::getPolicyFor($media)) ||
+                                            Gate::allows('delete', $media)
+                                        )
+                                    )
                                         ? $this->destroyAction()
                                         : null,
                                 ]),
                             ]),
                         ...collect(App::make(MediaResource::class)->getAdditionalInformationFormSchema())
                             ->map(function ($component) use ($file) { // Capture $file
-                                $media = ($file && isset($file['id'])) 
-                                    ? App::make(Media::class)->find($file['id'])
-                                    : null;
-        
+                                $media = ($file && isset($file['id']))
+                                ? App::make(Media::class)->find($file['id'])
+                                : null;
+    
                                 return $component->disabled(
-                                    !$media || !Gate::allows('update', $media)
+                                    // Disable if there is no media OR if a policy exists and update is not allowed.
+                                    !$media || (!is_null(Gate::getPolicyFor($media)) && !Gate::allows('update', $media))
                                 );
                             })
                             ->all(),
