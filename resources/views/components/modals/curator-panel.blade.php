@@ -197,13 +197,13 @@
                             // Checks for the 'create' ability.
                             function canCreateMedia() {
                                 // Create a dummy instance for checking the policy.
-                                $dummy = new Media();
+                                $dummy = App::make(Media::class);
                                 $policy = Gate::getPolicyFor($dummy);
                                 // If no policy is registered, allow the action.
                                 if (is_null($policy)) {
                                     return true;
                                 }
-                                return Gate::allows('create', Media::class);
+                                return Gate::allows('create',  $dummy);
                             }
 
                             // Checks for the 'update' ability on a specific media instance.
