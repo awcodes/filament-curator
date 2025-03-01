@@ -19,10 +19,10 @@ $iconClasses = [
     $attributes->get('class')
 ])>
     @if (str($type)->contains('video'))
-        @svg('heroicon-o-speaker-wave', ['class' => 'opacity-20 ' . $iconClasses[$iconSize]])
+        @svg('heroicon-o-video-camera', ['class' => 'opacity-20 ' . $iconClasses[$iconSize]])
         <span class="block absolute">{{ $extension }}</span>
     @elseif (str($type)->contains('audio'))
-        @svg('heroicon-o-video-camera', ['class' => 'opacity-20 ' . $iconClasses[$iconSize]])
+        @svg('heroicon-o-speaker-wave', ['class' => 'opacity-20 ' . $iconClasses[$iconSize]])
         <span class="block absolute">{{ $extension }}</span>
     @else
         @svg('heroicon-o-document', ['class' => 'opacity-20 ' . $iconClasses[$iconSize]])

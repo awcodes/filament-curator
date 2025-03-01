@@ -120,7 +120,7 @@
                                                 icon="heroicon-o-video-camera"
                                                 class="w-16 h-16 opacity-20"
                                             />
-                                        @elseif (str_contains($file['type'], 'audo'))
+                                        @elseif (str_contains($file['type'], 'audio'))
                                             <x-filament::icon
                                                 alias="curator::icons.speaker-wave"
                                                 icon="heroicon-o-speaker-wave"
