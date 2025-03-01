@@ -28,6 +28,8 @@
             />
         @elseif (str($file['type'])->contains('video'))
             <video controls src="{{ $file['url'] }}"></video>
+        @elseif (str($record->type)->contains('audio'))
+            <audio controls src="{{ $file['url'] }}"></audio>
         @else
             <x-curator::document-image
                 label="{{ $file['name'] }}"

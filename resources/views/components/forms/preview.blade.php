@@ -14,6 +14,8 @@
         />
     @elseif (str($record->type)->contains('video'))
         <video controls src="{{ $record->url }}"></video>
+    @elseif (str($record->type)->contains('audio'))
+        <audio controls src="{{ $record->url }}"></audio>
     @else
         <x-curator::document-image
             label="{{ $record->name }}"

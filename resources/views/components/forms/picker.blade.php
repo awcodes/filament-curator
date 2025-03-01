@@ -99,8 +99,9 @@
                     @else
                         <div
                             @class([
-                                'relative block w-full overflow-hidden border border-gray-300 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 dark:text-white flex justify-center checkered',
-                                'h-64' => ! str($item['type'])->contains('video'),
+                                'relative block w-full overflow-hidden border border-gray-300 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 dark:text-white flex justify-center checkered'  => ! str($item['type'])->contains('audio'),
+                                'relative block w-full border p-4 border-gray-300 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 dark:text-white h-32 checkered' =>str($item['type'])->contains('audio'),
+                                'h-64' => ! str($item['type'])->contains('video') && !str($item['type'])->contains('audio'),
                                 'md:flex-1 ' => $itemsCount <= 3,
                             ])
                         >
@@ -125,6 +126,12 @@
                                     preload="none"
                                 @endif
                             ></video>
+                        @elseif (str($item['type'])->contains('audio'))
+                            <audio
+                                controls
+                            >
+                                <source src="{{ $item['url'] }}" type="{{$item['type']}}" />
+                            </audio>
                         @else
                             <x-curator::document-image
                                 label="{{ $item['name'] }}"
@@ -162,7 +169,8 @@
                         </div>
 
                         @if (! str($item['type'])->contains('video'))
-                            <div class="absolute inset-x-0 bottom-0 flex items-center justify-between px-2 pt-10 pb-1 text-xs text-white bg-gradient-to-t from-black/80 to-transparent gap-3">
+                            <div
+                                class="absolute inset-x-0 bottom-0 flex items-center justify-between px-2 pt-3 pb-3 text-xs text-white bg-gradient-to-t from-black/80 to-transparent gap-3">
                                 <p class="truncate">{{ $item['pretty_name'] }}</p>
                                 <p class="flex-shrink-0">{{ $item['size_for_humans'] }}</p>
                             </div>
