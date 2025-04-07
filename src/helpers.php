@@ -14,7 +14,7 @@ if (! function_exists('is_media_resizable')) {
             return false;
         }
 
-        return in_array($type, ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/bmp']);
+        return in_array($type, ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/bmp', 'image']);
     }
 }
 
