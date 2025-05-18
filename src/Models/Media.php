@@ -198,20 +198,20 @@ class Media extends Model
     /**
      * Detect strings that are (at least mostly) binary
      */
-    protected function isMostlyBinary($string)
+    protected function isMostlyBinary(mixed $value): bool
     {
-        if (! is_string($string)) {
+        if (! is_string($value)) {
             return false;
         }
 
         // check for invalid encoding (likely binary)
-        if (! mb_detect_encoding($string, 'UTF-8', true)) {
+        if (! mb_detect_encoding($value, 'UTF-8', true)) {
             return true;
         }
 
         // remove printable UTF-8 chars and see how much is left
-        $nonPrintable = preg_replace('/[[:print:]\s]/u', '', $string);
+        $nonPrintable = preg_replace('/[[:print:]\s]/u', '', $value);
 
-        return strlen($nonPrintable) > (strlen($string) * 0.1); // allow a few non-printable characters
+        return strlen($nonPrintable) > (strlen($value) * 0.1); // allow a few non-printable characters
     }
 }
