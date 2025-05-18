@@ -50,7 +50,6 @@ class Media extends Model
         'height' => 'integer',
         'size' => 'integer',
         'curations' => 'array',
-        'exif' => 'array',
     ];
 
     protected $appends = [
@@ -121,6 +120,26 @@ class Media extends Model
         );
     }
 
+    /**
+     * Cast exif data safely, dealing with any non-utf8 characters, strip any embedded objects/arrays
+     */
+    protected function exif(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => $value ? json_decode($value, true) : null,
+            set: function ($value) {
+                if (! $value) {
+                    return null;
+                }
+
+                return collect($value)
+                    ->filter(fn ($item) => ! is_array($item) && ! is_object($item) && ! $this->isMostlyBinary($item))
+                    ->map(fn ($item) => is_string($item) ? mb_convert_encoding($item, 'UTF-8', 'UTF-8') : $item)
+                    ->toJson();
+            }
+        );
+    }
+
     public function getPrettyName(): string
     {
         if (filled($this->title)) {
@@ -174,5 +193,25 @@ class Media extends Model
     public function hasCuration(string $key): bool
     {
         return filled($this->getCuration($key));
+    }
+
+    /**
+     * Detect strings that are (at least mostly) binary
+     */
+    protected function isMostlyBinary($string)
+    {
+        if (! is_string($string)) {
+            return false;
+        }
+
+        // check for invalid encoding (likely binary)
+        if (! mb_detect_encoding($string, 'UTF-8', true)) {
+            return true;
+        }
+
+        // remove printable UTF-8 chars and see how much is left
+        $nonPrintable = preg_replace('/[[:print:]\s]/u', '', $string);
+
+        return strlen($nonPrintable) > (strlen($string) * 0.1); // allow a few non-printable characters
     }
 }
