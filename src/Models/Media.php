@@ -121,22 +121,13 @@ class Media extends Model
     }
 
     /**
-     * Cast exif data safely, dealing with any non-utf8 characters, strip any embedded objects/arrays
+     * Cast exif data safely, dealing with any non-utf8 characters
      */
     protected function exif(): Attribute
     {
         return Attribute::make(
-            get: fn ($value) => $value ? json_decode($value, true) : null,
-            set: function ($value) {
-                if (! $value) {
-                    return null;
-                }
-
-                return collect($value)
-                    ->filter(fn ($item) => ! is_array($item) && ! is_object($item) && ! $this->isMostlyBinary($item))
-                    ->map(fn ($item) => is_string($item) ? mb_convert_encoding($item, 'UTF-8', 'UTF-8') : $item)
-                    ->toJson();
-            }
+            get: fn ($value) => json_decode($this->decodeExif($value), true),
+            set: fn ($value) => json_encode($this->encodeExif($value)),
         );
     }
 
@@ -196,9 +187,45 @@ class Media extends Model
     }
 
     /**
-     * Detect strings that are (at least mostly) binary
+     * Recursively encode exif data safely, dealing with any non-utf8 characters
      */
-    protected function isMostlyBinary(mixed $value): bool
+    protected function encodeExif(mixed $value): mixed
+    {
+        if (! $value) {
+            return null;
+        }
+
+        if (is_array($value)) {
+            return array_map(fn ($item) => $this->encodeExif($item), $value);
+        }
+
+        return $this->needsBase64($value) ? self::BASE64_PREFIX.base64_encode($value) : $value;
+    }
+
+    /**
+     * Decode exif data safely, dealing with any base64 encoded strings
+     */
+    protected function decodeExif(mixed $value): mixed
+    {
+        if (! $value) {
+            return null;
+        }
+
+        if (is_array($value)) {
+            return array_map(fn ($item) => $this->decodeExif($item), $value);
+        }
+
+        if (str_starts_with($value, self::BASE64_PREFIX)) {
+            return base64_decode(substr($value, strlen(self::BASE64_PREFIX)));
+        }
+
+        return $value;
+    }
+
+    /**
+     * Detect strings that should be encoded as base64
+     */
+    protected function needsBase64(mixed $value): bool
     {
         if (! is_string($value)) {
             return false;
@@ -209,9 +236,9 @@ class Media extends Model
             return true;
         }
 
-        // remove printable UTF-8 chars and see how much is left
+        // encode as base64 if there are any non-printable characters
         $nonPrintable = preg_replace('/[[:print:]\s]/u', '', $value);
 
-        return strlen($nonPrintable) > (strlen($value) * 0.1); // allow a few non-printable characters
+        return strlen($nonPrintable) > strlen($value);
     }
 }
