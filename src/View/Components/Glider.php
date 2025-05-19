@@ -51,6 +51,7 @@ class Glider extends Component
         public ?string $watermarkAlpha = null,
         public ?string $fallback = null,
         public bool $force = false,
+        public string $view = 'curator::components.glider',
     ) {
         $this->basePath = Str::of(config('curator.glide.route_path', 'curator'))
             ->trim('/')
@@ -174,7 +175,7 @@ class Glider extends Component
         }
 
         return function (array $data) {
-            return 'curator::components.glider';
+            return $this->view;
         };
     }
 }
