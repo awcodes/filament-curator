@@ -62,6 +62,11 @@ class Media extends Model
         'pretty_name',
     ];
 
+    /**
+     * A prefix to identify base64 encoded strings in exif data
+     */
+    protected const BASE64_PREFIX = 'encoded@base64:';
+
     protected function url(): Attribute
     {
         return Attribute::make(
