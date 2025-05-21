@@ -71,14 +71,20 @@ class MediaResource extends Resource
         return config('curator.resources.cluster');
     }
 
+    protected static function getNavigationBadgeCount(): int
+    {
+        if (Filament::hasTenancy() && Config::get('curator.is_tenant_aware')) {
+            return static::getEloquentQuery()
+                ->where(Config::get('curator.tenant_ownership_relationship_name') . '_id', Filament::getTenant()->id)
+                ->count();
+        }
+        return static::getModel()::count();
+    }
+
     public static function getNavigationBadge(): ?string
     {
-        return CuratorPlugin::get()->getNavigationCountBadge() ?
-            (Filament::hasTenancy() && Config::get('curator.is_tenant_aware') ?
-                static::getEloquentQuery()
-                    ->where(Config::get('curator.tenant_ownership_relationship_name') . '_id', Filament::getTenant()->id)
-                    ->count()
-            : number_format(static::getModel()::count()))
+        return CuratorPlugin::get()->getNavigationCountBadge()
+            ? number_format(static::getNavigationBadgeCount())
             : null;
     }
 
