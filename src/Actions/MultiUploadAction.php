@@ -40,15 +40,6 @@ class MultiUploadAction extends Action
             ])
             ->action(function ($data) {
                 foreach ($data['files'] as $item) {
-                    // Fix malformed utf-8 characters
-                    if (! empty($item['exif'])) {
-                        array_walk_recursive($item['exif'], function (&$entry) {
-                            if (! mb_detect_encoding($entry, 'utf-8', true)) {
-                                $entry = mb_convert_encoding($entry, 'utf-8');
-                            }
-                        });
-                    }
-
                     $item['title'] = pathinfo($data['originalFilename'][$item['path']] ?? null, PATHINFO_FILENAME);
 
                     tap(
