@@ -78,6 +78,7 @@ class MediaResource extends Resource
                 ->where(Config::get('curator.tenant_ownership_relationship_name') . '_id', Filament::getTenant()->id)
                 ->count();
         }
+
         return static::getModel()::count();
     }
 
