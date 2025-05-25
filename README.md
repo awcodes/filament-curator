@@ -38,7 +38,7 @@ In an effort to align with Filament's theming methodology you will need to use a
 You will also need to add cropper.js.
 
 ```bash
-npm install -D cropperjs
+npm install -D cropperjs@1.6.2
 ```
 
 1. Import the plugin's stylesheet and cropperjs' stylesheet into your theme's css file.
