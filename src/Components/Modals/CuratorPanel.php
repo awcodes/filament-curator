@@ -549,15 +549,6 @@ class CuratorPanel extends Component implements HasActions, HasForms
         $media = [];
 
         foreach ($formData['files_to_add'] as $item) {
-            // Fix malformed utf-8 characters
-            if (! empty($item['exif'])) {
-                array_walk_recursive($item['exif'], function (&$entry) {
-                    if (! mb_detect_encoding($entry, 'utf-8', true)) {
-                        $entry = mb_convert_encoding($entry, 'utf-8');
-                    }
-                });
-            }
-
             $item['title'] = pathinfo($formData['originalFilenames'][$item['path']] ?? null, PATHINFO_FILENAME);
 
             $media[] = tap(

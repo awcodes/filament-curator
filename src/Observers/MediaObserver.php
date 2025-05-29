@@ -21,15 +21,6 @@ class MediaObserver
                     } else {
                         $media->{$k} = $v->toString();
                     }
-                } elseif ($k === 'exif' && is_array($v)) {
-                    // Fix malformed utf-8 characters
-                    array_walk_recursive($v, function (&$entry) {
-                        if (! mb_detect_encoding($entry, 'utf-8', true)) {
-                            $entry = mb_convert_encoding($entry, 'utf-8');
-                        }
-                    });
-
-                    $media->{$k} = $v;
                 } else {
                     $media->{$k} = $v;
                 }
