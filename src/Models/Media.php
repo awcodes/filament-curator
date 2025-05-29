@@ -204,7 +204,7 @@ class Media extends Model
             return array_map(fn ($item) => $this->encodeExif($item), $value);
         }
 
-        return $this->needsBase64($value) ? self::BASE64_PREFIX.base64_encode($value) : $value;
+        return $this->needsBase64($value) ? self::BASE64_PREFIX . base64_encode($value) : $value;
     }
 
     /**
