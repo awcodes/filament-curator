@@ -250,7 +250,7 @@ class MediaResource extends Resource
                 ->size(40),
             Tables\Columns\TextColumn::make('name')
                 ->label(trans('curator::tables.columns.name'))
-                ->searchable()
+                ->searchable(['name', 'title'])
                 ->sortable(),
             Tables\Columns\TextColumn::make('ext')
                 ->label(trans('curator::tables.columns.ext'))
@@ -282,7 +282,7 @@ class MediaResource extends Resource
             Tables\Columns\TextColumn::make('name')
                 ->label(trans('curator::tables.columns.name'))
                 ->extraAttributes(['class' => 'hidden'])
-                ->searchable()
+                ->searchable(['name', 'title'])
                 ->sortable(),
             Tables\Columns\TextColumn::make('ext')
                 ->label(trans('curator::tables.columns.ext'))
