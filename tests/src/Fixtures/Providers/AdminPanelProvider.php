@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Awcodes\Curator\Tests\Fixtures\Providers;
 
+use Awcodes\Curator\Tests\Fixtures\Resources\Authors\AuthorResource;
+use Awcodes\Curator\Tests\Fixtures\Resources\Users\UserResource;
 use Exception;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -30,7 +32,8 @@ class AdminPanelProvider extends PanelProvider
             ->path('/admin')
             ->login()
             ->resources([
-                // Add your resources here
+                UserResource::class,
+                AuthorResource::class,
             ])
             ->pages([
                 Pages\Dashboard::class,
