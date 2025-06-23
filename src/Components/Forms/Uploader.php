@@ -28,6 +28,7 @@ class Uploader extends FileUpload
         $generator = $this->getPathGenerator() ?? config('curator.path_generator');
 
         if (
+            $generator &&
             class_exists($generator) &&
             (new \ReflectionClass($generator))->implementsInterface(PathGenerator::class)
         ) {

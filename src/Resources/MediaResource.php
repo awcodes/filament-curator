@@ -339,6 +339,10 @@ class MediaResource extends Resource
             ->pathGenerator(config('curator.path_generator'))
             ->preserveFilenames(config('curator.should_preserve_filenames'))
             ->visibility(config('curator.visibility'))
-            ->storeFileNamesIn('originalFilename');
+            ->storeFileNamesIn('originalFilename')
+            ->imageCropAspectRatio(config('curator.image_crop_aspect_ratio'))
+            ->imageResizeMode(config('curator.image_resize_mode'))
+            ->imageResizeTargetWidth(config('curator.image_resize_target_width'))
+            ->imageResizeTargetHeight(config('curator.image_resize_target_height'));
     }
 }
