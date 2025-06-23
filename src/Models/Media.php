@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Awcodes\Curator\Models;
 
 use Awcodes\Curator\Concerns\HasPackageFactory;
 use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Observers\MediaObserver;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
@@ -12,6 +15,33 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
 
+/**
+ * @property-read int|string $id
+ * @property string $disk
+ * @property string $directory
+ * @property string $visibility
+ * @property string $name
+ * @property string $path
+ * @property int $width
+ * @property int $height
+ * @property int $size
+ * @property string $type
+ * @property string $ext
+ * @property string|null $alt
+ * @property string|null $title
+ * @property string|null $description
+ * @property string|null $caption
+ * @property array|null $exif
+ * @property array|null $curations
+ * @property-read CarbonInterface $created_at
+ * @property-read CarbonInterface $updated_at
+ * @property-read string $url
+ * @property-read string $full_path
+ * @property-read string $thumbnail_url
+ * @property-read string $medium_url
+ * @property-read string $large_url
+ * @property-read string $pretty_name
+ */
 #[ObservedBy([MediaObserver::class])]
 class Media extends Model
 {
@@ -117,14 +147,14 @@ class Media extends Model
             return $this->title;
         }
 
-        return $this->name . '.' . $this->ext;
+        return $this->name.'.'.$this->ext;
     }
 
     public function getCuration(string $key): array
     {
-        return Arr::first(collect($this->curations)->filter(function ($item) use ($key) {
-            return $item['curation']['key'] === $key;
-        }))['curation'] ?? [];
+        return Arr::first(
+            collect($this->curations)->filter(fn (array $item): bool => $item['curation']['key'] === $key)->toArray()
+        )['curation'] ?? [];
     }
 
     public function hasCuration(string $key): bool

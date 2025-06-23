@@ -1,11 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Awcodes\Curator\Components\Forms;
 
 use Awcodes\Curator\Concerns\CanGeneratePaths;
 use Awcodes\Curator\Concerns\CanNormalizePaths;
 use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\PathGenerators\Contracts\PathGenerator;
+use Closure;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\BaseFileUpload;
 use Filament\Forms\Components\FileUpload;
@@ -17,68 +20,12 @@ use Illuminate\Support\Str;
 use Intervention\Image\Facades\Image;
 use League\Flysystem\UnableToCheckFileExistence;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
+use ReflectionClass;
 
 class Uploader extends FileUpload
 {
     use CanGeneratePaths;
     use CanNormalizePaths;
-
-    public function getDirectory(): ?string
-    {
-        $directory = $this->directory ?? config('curator.directory');
-        $generator = $this->getPathGenerator() ?? config('curator.path_generator');
-
-        if (
-            $generator &&
-            class_exists($generator) &&
-            (new \ReflectionClass($generator))->implementsInterface(PathGenerator::class)
-        ) {
-            $path = App::make($generator)->getPath($directory);
-        } else {
-            $path = $this->evaluate($this->directory);
-        }
-
-        return $this->normalizePath($path);
-    }
-
-    public function saveUploadedFiles(): void
-    {
-        if (blank($this->getState())) {
-            $this->state([]);
-
-            return;
-        }
-
-        if (! is_array($this->getState())) {
-            $this->state([$this->getState()]);
-        }
-
-        $state = array_filter(array_map(function (TemporaryUploadedFile | array $file) {
-            if (! $file instanceof TemporaryUploadedFile) {
-                return $file;
-            }
-
-            $callback = $this->saveUploadedFileUsing;
-
-            if (! $callback) {
-                $file->delete();
-
-                return $file;
-            }
-
-            $storedFile = $this->evaluate($callback, [
-                'file' => $file,
-            ]);
-
-            $this->storeFileName($storedFile['path'], $file->getClientOriginalName());
-
-            $file->delete();
-
-            return $storedFile;
-        }, Arr::wrap($this->getState())));
-
-        $this->state($state);
-    }
 
     protected function setUp(): void
     {
@@ -89,7 +36,7 @@ class Uploader extends FileUpload
                 if (! $file->exists()) {
                     return null;
                 }
-            } catch (UnableToCheckFileExistence $exception) {
+            } catch (UnableToCheckFileExistence) {
                 return null;
             }
 
@@ -115,13 +62,13 @@ class Uploader extends FileUpload
                 $exif = $image->exif();
             }
 
-            if (Storage::disk($component->getDiskName())->exists(ltrim($component->getDirectory() . '/' . $filename . '.' . $extension, '/'))) {
-                $filename = $filename . '-' . time();
+            if (Storage::disk($component->getDiskName())->exists(ltrim($component->getDirectory().'/'.$filename.'.'.$extension, '/'))) {
+                $filename = $filename.'-'.time();
             }
 
             $path = $file->{$storeMethod}(
                 $component->getDirectory(),
-                $filename . '.' . $extension,
+                $filename.'.'.$extension,
                 $component->getDiskName()
             );
 
@@ -140,10 +87,67 @@ class Uploader extends FileUpload
             ];
 
             if (Config::get('curator.is_tenant_aware') && Filament::hasTenancy()) {
-                $data[Config::get('curator.tenant_ownership_relationship_name') . '_id'] = Filament::getTenant()->id;
+                $data[Config::get('curator.tenant_ownership_relationship_name').'_id'] = Filament::getTenant()->id;
             }
 
             return $data;
         });
+    }
+
+    public function getDirectory(): ?string
+    {
+        $directory = $this->directory ?? config('curator.directory');
+        $generator = $this->getPathGenerator() ?? config('curator.path_generator');
+
+        if (
+            $generator &&
+            class_exists($generator) &&
+            (new ReflectionClass($generator))->implementsInterface(PathGenerator::class)
+        ) {
+            $path = App::make($generator)->getPath($directory);
+        } else {
+            $path = $this->evaluate($this->directory);
+        }
+
+        return $this->normalizePath($path);
+    }
+
+    public function saveUploadedFiles(): void
+    {
+        if (blank($this->getState())) {
+            $this->state([]);
+
+            return;
+        }
+
+        if (! is_array($this->getState())) {
+            $this->state([$this->getState()]);
+        }
+
+        $state = array_filter(array_map(function (TemporaryUploadedFile|array $file) {
+            if (! $file instanceof TemporaryUploadedFile) {
+                return $file;
+            }
+
+            $callback = $this->saveUploadedFileUsing;
+
+            if (! $callback instanceof Closure) {
+                $file->delete();
+
+                return $file;
+            }
+
+            $storedFile = $this->evaluate($callback, [
+                'file' => $file,
+            ]);
+
+            $this->storeFileName($storedFile['path'], $file->getClientOriginalName());
+
+            $file->delete();
+
+            return $storedFile;
+        }, Arr::wrap($this->getState())));
+
+        $this->state($state);
     }
 }

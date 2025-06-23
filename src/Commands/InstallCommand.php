@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Awcodes\Curator\Commands;
 
 use Filament\Support\Commands\Concerns\CanManipulateFiles;
 use Illuminate\Console\Command;
+
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\text;
 
@@ -49,9 +52,9 @@ class InstallCommand extends Command
         // handle migration stub
         $this->copyStubToApp(
             'migration',
-            database_path('migrations/' . date('Y_m_d_His', time()) . '_create_curator_table.php'),
+            database_path('migrations/'.date('Y_m_d_His', time()).'_create_curator_table.php'),
             [
-                'use_uuid' => $useUuid ? '$table->uuid(\'id\');' : '$table->id();',
+                'use_uuid' => $useUuid ? '$table->uuid(\'id\')->primary();' : '$table->id();',
                 'tenancy_name' => $useTenancy ? str($tenancyName)->snake() : 'tenant',
             ]
         );
@@ -64,12 +67,12 @@ class InstallCommand extends Command
                 [
                     'imports' => $imports,
                     'traits' => $useUuid ? 'use HasUuids;' : '',
-                    'tenancy' => $useTenancy ? 'public function ' . str($tenancyName)->snake() . '(): BelongsTo' . PHP_EOL . '    {' . PHP_EOL . '        return $this->belongsTo(' . $tenancyName . '::class);' . PHP_EOL . '    }' : '',
+                    'tenancy' => $useTenancy ? 'public function '.str($tenancyName)->snake().'(): BelongsTo'.PHP_EOL.'    {'.PHP_EOL.'        return $this->belongsTo('.$tenancyName.'::class);'.PHP_EOL.'    }' : '',
                 ]
             );
 
-            $this->callSilently("vendor:publish", [
-                '--tag' => "curator-config",
+            $this->callSilently('vendor:publish', [
+                '--tag' => 'curator-config',
             ]);
 
             $this->replaceInFile(
@@ -83,7 +86,7 @@ class InstallCommand extends Command
                 $this->replaceInFile(
                     config_path('curator.php'),
                     [
-                        "tenancy' => [\n            'enabled' => false,\n            'relationship_name' => null,\n        ]," => "tenancy' => [\n            'enabled' => true,\n            'relationship_name' => " . str($tenancyName)->snake() . ",\n        ],"
+                        "tenancy' => [\n            'enabled' => false,\n            'relationship_name' => null,\n        ]," => "tenancy' => [\n            'enabled' => true,\n            'relationship_name' => ".str($tenancyName)->snake().",\n        ],",
                     ]
                 );
             }
@@ -93,7 +96,7 @@ class InstallCommand extends Command
                 [
                     "\n\n" => "\n",
                     'class Media' => "\nclass Media",
-                    'namespace App\Models;' => "namespace App\Models;\n"
+                    'namespace App\Models;' => "namespace App\Models;\n",
                 ]
             );
         }

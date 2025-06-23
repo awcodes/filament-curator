@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Awcodes\Curator\Config;
 
+use Awcodes\Curator\Config\Concerns\HasGliderFallbacks;
 use Filament\Support\Concerns\EvaluatesClosures;
 use Illuminate\Support\Str;
 use League\Glide\Responses\SymfonyResponseFactory;
@@ -11,8 +14,10 @@ use League\Glide\Urls\UrlBuilderFactory;
 
 class GlideManager
 {
-    use Concerns\HasGliderFallbacks;
     use EvaluatesClosures;
+    use HasGliderFallbacks;
+
+    public $config;
 
     protected array $serverConfig;
 

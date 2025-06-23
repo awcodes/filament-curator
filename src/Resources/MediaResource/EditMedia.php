@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Awcodes\Curator\Resources\MediaResource;
 
 use Awcodes\Curator\Resources\MediaResource;
@@ -37,7 +39,7 @@ class EditMedia extends EditRecord
             $livewire = $this->getForm('form')->getLivewire();
             $statePath = $this->getForm('form')->getStatePath();
 
-            data_set($livewire, $statePath . '.file', null);
+            data_set($livewire, $statePath.'.file', null);
         }
     }
 }

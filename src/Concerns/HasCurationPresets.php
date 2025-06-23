@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Awcodes\Curator\Concerns;
 
 trait HasCurationPresets
 {
     public function getPresets(): ?array
     {
-        return collect(config('curator.curation_presets'))->map(function ($preset) {
+        return collect(config('curator.curation_presets'))->map(function ($preset): array {
             $preset = new $preset;
 
             return [

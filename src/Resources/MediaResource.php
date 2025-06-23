@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Awcodes\Curator\Resources;
 
 use Awcodes\Curator\Components\Forms\CuratorEditor;
@@ -9,19 +11,30 @@ use Awcodes\Curator\Config\CuratorManager;
 use Awcodes\Curator\CuratorPlugin;
 use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Models\Media;
+use Awcodes\Curator\Resources\MediaResource\CreateMedia;
+use Awcodes\Curator\Resources\MediaResource\EditMedia;
+use Awcodes\Curator\Resources\MediaResource\ListMedia;
 use Exception;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Facades\Filament;
-use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\ViewField;
 use Filament\Resources\Resource;
-use Filament\Support\Enums\ActionSize;
-use Filament\Tables;
+use Filament\Schemas\Components\Group;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\Layout\View;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\View;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
-use Livewire\Component;
 
 class MediaResource extends Resource
 {
@@ -75,7 +88,7 @@ class MediaResource extends Resource
         return CuratorPlugin::get()->shouldShowBadge()
             ? (Filament::hasTenancy() && Config::get('curator.features.tenancy.enabled'))
                 ? static::getEloquentQuery()
-                    ->where(Config::get('curator.features.tenancy.relationship_name') . '_id', Filament::getTenant()->id)
+                    ->where(Config::get('curator.features.tenancy.relationship_name').'_id', Filament::getTenant()->id)
                     ->count()
                 : number_format(static::getModel()::count())
             : null;
@@ -86,37 +99,35 @@ class MediaResource extends Resource
         return CuratorPlugin::get()->shouldRegisterNavigation();
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Group::make()
+        return $schema
+            ->components([
+                Group::make()
                     ->schema([
-                        Forms\Components\Section::make(trans('curator::forms.sections.file'))
+                        Section::make(trans('curator::forms.sections.file'))
                             ->hiddenOn('edit')
                             ->schema([
                                 static::getUploaderField()
                                     ->required(),
                             ]),
-                        Forms\Components\Tabs::make('image')
+                        Tabs::make('image')
                             ->hiddenOn('create')
                             ->tabs([
-                                Forms\Components\Tabs\Tab::make(trans('curator::forms.sections.preview'))
+                                Tab::make(trans('curator::forms.sections.preview'))
                                     ->schema([
-                                        Forms\Components\ViewField::make('preview')
+                                        ViewField::make('preview')
                                             ->view('curator::components.forms.preview')
                                             ->hiddenLabel()
                                             ->dehydrated(false)
-                                            ->afterStateHydrated(function ($component, $state, $record) {
+                                            ->afterStateHydrated(function ($component, $state, $record): void {
                                                 $component->state($record);
                                             }),
                                     ]),
-                                Forms\Components\Tabs\Tab::make(trans('curator::forms.sections.curation'))
-                                    ->visible(function ($record) {
-                                        return is_media_resizable($record->ext) && CuratorPlugin::get()->supportsCurations();
-                                    })
+                                Tab::make(trans('curator::forms.sections.curation'))
+                                    ->visible(fn ($record): bool => is_media_resizable($record->ext) && CuratorPlugin::get()->supportsCurations())
                                     ->schema([
-                                        Forms\Components\Repeater::make('curations')
+                                        Repeater::make('curations')
                                             ->label(trans('curator::forms.sections.curation'))
                                             ->hiddenLabel()
                                             ->reorderable(false)
@@ -130,30 +141,28 @@ class MediaResource extends Resource
                                                     ->lazy(),
                                             ]),
                                     ]),
-                                Forms\Components\Tabs\Tab::make(trans('curator::forms.sections.replace'))
-                                    ->visible(function () {
-                                        return CuratorPlugin::get()->supportsFileSwap();
-                                    })
+                                Tab::make(trans('curator::forms.sections.replace'))
+                                    ->visible(fn () => CuratorPlugin::get()->supportsFileSwap())
                                     ->schema([
                                         static::getUploaderField()
                                             ->helperText(trans('curator::forms.sections.upload_new_helper')),
                                     ]),
                             ]),
-                        Forms\Components\Section::make(trans('curator::forms.sections.details'))
+                        Section::make(trans('curator::forms.sections.details'))
                             ->schema([
-                                Forms\Components\ViewField::make('details')
+                                ViewField::make('details')
                                     ->view('curator::components.forms.details')
                                     ->hiddenLabel()
                                     ->dehydrated(false)
                                     ->columnSpan('full')
-                                    ->afterStateHydrated(function ($component, $state, $record) {
+                                    ->afterStateHydrated(function ($component, $state, $record): void {
                                         $component->state($record);
                                     }),
                             ]),
-                        Forms\Components\Section::make(trans('curator::forms.sections.exif'))
-                            ->visible(fn ($record) => $record && $record->exif)
+                        Section::make(trans('curator::forms.sections.exif'))
+                            ->visible(fn ($record): bool => $record && $record->exif)
                             ->schema([
-                                Forms\Components\ViewField::make('exif')
+                                ViewField::make('exif')
                                     ->view('curator::components.forms.exif')
                                     ->hiddenLabel()
                                     ->dehydrated(false)
@@ -164,9 +173,9 @@ class MediaResource extends Resource
                         'md' => 'full',
                         'lg' => 2,
                     ]),
-                Forms\Components\Group::make()
+                Group::make()
                     ->schema([
-                        Forms\Components\Section::make(trans('curator::forms.sections.meta'))
+                        Section::make(trans('curator::forms.sections.meta'))
                             ->schema(
                                 static::getAdditionalInformationFormSchema()
                             ),
@@ -192,15 +201,15 @@ class MediaResource extends Resource
                     ? static::getDefaultGridTableColumns()
                     : static::getDefaultTableColumns(),
             )
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                DeleteBulkAction::make(),
             ])
             ->defaultSort('created_at', 'desc')
-            ->contentGrid(function () use ($livewire) {
+            ->contentGrid(function () use ($livewire): ?array {
                 if ($livewire->layoutView === 'grid') {
                     return [
                         'md' => 2,
@@ -219,9 +228,9 @@ class MediaResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => MediaResource\ListMedia::route('/'),
-            'create' => MediaResource\CreateMedia::route('/create'),
-            'edit' => MediaResource\EditMedia::route('/{record}/edit'),
+            'index' => ListMedia::route('/'),
+            'create' => CreateMedia::route('/create'),
+            'edit' => EditMedia::route('/{record}/edit'),
         ];
     }
 
@@ -231,31 +240,31 @@ class MediaResource extends Resource
             CuratorColumn::make('url')
                 ->label(trans('curator::tables.columns.url'))
                 ->size(40),
-            Tables\Columns\TextColumn::make('name')
+            TextColumn::make('name')
                 ->label(trans('curator::tables.columns.name'))
                 ->searchable()
                 ->sortable(),
-            Tables\Columns\TextColumn::make('ext')
+            TextColumn::make('ext')
                 ->label(trans('curator::tables.columns.ext'))
                 ->sortable(),
-            Tables\Columns\TextColumn::make('size')
+            TextColumn::make('size')
                 ->label(trans('curator::tables.columns.size'))
                 ->formatStateUsing(fn ($record): string => Curator::sizeForHumans($record->size))
                 ->sortable(),
-            Tables\Columns\TextColumn::make('dimensions')
+            TextColumn::make('dimensions')
                 ->label(trans('curator::tables.columns.dimensions'))
-                ->getStateUsing(fn ($record): ?string => $record->width ? $record->width . 'x' . $record->height : null),
-            Tables\Columns\TextColumn::make('disk')
+                ->getStateUsing(fn ($record): ?string => $record->width ? $record->width.'x'.$record->height : null),
+            TextColumn::make('disk')
                 ->label(trans('curator::tables.columns.disk'))
                 ->toggledHiddenByDefault()
                 ->toggleable()
                 ->sortable(),
-            Tables\Columns\TextColumn::make('directory')
+            TextColumn::make('directory')
                 ->label(trans('curator::tables.columns.directory'))
                 ->toggledHiddenByDefault()
                 ->toggleable()
                 ->sortable(),
-            Tables\Columns\TextColumn::make('created_at')
+            TextColumn::make('created_at')
                 ->label(trans('curator::tables.columns.created_at'))
                 ->date('Y-m-d')
                 ->sortable(),
@@ -265,21 +274,21 @@ class MediaResource extends Resource
     public static function getDefaultGridTableColumns(): array
     {
         return [
-            Tables\Columns\Layout\View::make('curator::components.tables.grid-column'),
-            Tables\Columns\TextColumn::make('name')
+            View::make('curator::components.tables.grid-column'),
+            TextColumn::make('name')
                 ->label(trans('curator::tables.columns.name'))
                 ->extraAttributes(['class' => 'hidden'])
                 ->searchable()
                 ->sortable(),
-            Tables\Columns\TextColumn::make('ext')
+            TextColumn::make('ext')
                 ->label(trans('curator::tables.columns.ext'))
                 ->extraAttributes(['class' => 'hidden'])
                 ->sortable(),
-            Tables\Columns\TextColumn::make('directory')
+            TextColumn::make('directory')
                 ->label(trans('curator::tables.columns.directory'))
                 ->extraAttributes(['class' => 'hidden'])
                 ->sortable(),
-            Tables\Columns\TextColumn::make('created_at')
+            TextColumn::make('created_at')
                 ->label(trans('curator::tables.columns.created_at'))
                 ->extraAttributes(['class' => 'hidden'])
                 ->sortable(),
@@ -289,7 +298,7 @@ class MediaResource extends Resource
     public static function getAdditionalInformationFormSchema(): array
     {
         return [
-            Forms\Components\TextInput::make('name')
+            TextInput::make('name')
                 ->label(trans('curator::forms.fields.name'))
                 ->hiddenOn('create')
                 ->required()
@@ -299,15 +308,15 @@ class MediaResource extends Resource
 
                     return $slugged;
                 }),
-            Forms\Components\TextInput::make('alt')
+            TextInput::make('alt')
                 ->label(trans('curator::forms.fields.alt'))
-                ->hint(fn (): HtmlString => new HtmlString('<a href="https://www.w3.org/WAI/tutorials/images/decision-tree" class="filament-link text-primary-500 text-xs" target="_blank">' . trans('curator::forms.fields.alt_hint') . '</a>')),
-            Forms\Components\TextInput::make('title')
+                ->hint(fn (): HtmlString => new HtmlString('<a href="https://www.w3.org/WAI/tutorials/images/decision-tree" class="filament-link text-primary-500 text-xs" target="_blank">'.trans('curator::forms.fields.alt_hint').'</a>')),
+            TextInput::make('title')
                 ->label(trans('curator::forms.fields.title')),
-            Forms\Components\Textarea::make('caption')
+            Textarea::make('caption')
                 ->label(trans('curator::forms.fields.caption'))
                 ->rows(2),
-            Forms\Components\Textarea::make('description')
+            Textarea::make('description')
                 ->label(trans('curator::forms.fields.description'))
                 ->rows(2),
         ];

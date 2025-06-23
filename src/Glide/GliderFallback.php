@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Awcodes\Curator\Glide;
 
 use Awcodes\Curator\CuratorUtils;
@@ -14,8 +16,7 @@ class GliderFallback
         public string $source,
         public string $type,
         public int $width,
-    ) {
-    }
+    ) {}
 
     public static function make(string $name): static
     {

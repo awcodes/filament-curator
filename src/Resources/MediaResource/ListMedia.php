@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Awcodes\Curator\Resources\MediaResource;
 
 use Awcodes\Curator\Actions\MultiUploadAction;
@@ -13,9 +15,14 @@ use Illuminate\Support\Str;
 
 class ListMedia extends ListRecords
 {
+    public string $layoutView = 'grid';
+
     protected static string $resource = MediaResource::class;
 
-    public string $layoutView = 'grid';
+    protected $listeners = [
+        'changeLayoutView' => 'changeLayoutView',
+        'layoutViewChanged' => '$refresh',
+    ];
 
     public function mount(): void
     {
@@ -23,11 +30,6 @@ class ListMedia extends ListRecords
 
         $this->layoutView = config('curator.resource.default_layout');
     }
-
-    protected $listeners = [
-        'changeLayoutView' => 'changeLayoutView',
-        'layoutViewChanged' => '$refresh',
-    ];
 
     public function changeLayoutView(): void
     {
@@ -48,16 +50,12 @@ class ListMedia extends ListRecords
         return [
             Action::make('toggle-table-view')
                 ->color('gray')
-                ->label(function (): string {
-                    return $this->layoutView === 'grid'
-                        ? trans('curator::tables.actions.toggle_table_list')
-                        : trans('curator::tables.actions.toggle_table_grid');
-                })
-                ->icon(function (): string {
-                    return $this->layoutView === 'grid'
-                        ? 'heroicon-s-queue-list'
-                        : 'heroicon-s-squares-2x2';
-                })
+                ->label(fn (): string => $this->layoutView === 'grid'
+                    ? trans('curator::tables.actions.toggle_table_list')
+                    : trans('curator::tables.actions.toggle_table_grid'))
+                ->icon(fn (): string => $this->layoutView === 'grid'
+                    ? 'heroicon-s-queue-list'
+                    : 'heroicon-s-squares-2x2')
                 ->action(function ($livewire): void {
                     $livewire->dispatch('changeLayoutView');
                 }),

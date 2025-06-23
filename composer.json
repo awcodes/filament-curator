@@ -4,10 +4,15 @@
   "keywords": [
     "awcodes",
     "laravel",
+    "filament",
     "curator",
-    "filament"
+    "plugin"
   ],
   "homepage": "https://github.com/awcodes/filament-curator",
+  "support": {
+    "issues": "https://github.com/awcodes/filament-curator/issues",
+    "source": "https://github.com/awcodes/filament-curator"
+  },
   "license": "MIT",
   "authors": [
     {
@@ -17,20 +22,19 @@
     }
   ],
   "require": {
-    "php": "^8.1",
+    "php": "^8.2",
+    "filament/filament": "^4.0",
     "intervention/image": "^2.7",
     "league/glide-symfony": "^2.0",
-    "spatie/laravel-package-tools": "^1.13.5"
+    "spatie/laravel-package-tools": "^1.15.0"
   },
   "require-dev": {
-    "awcodes/filament-tiptap-editor": "^3.0",
-    "filament/filament": "^3.0",
-    "laravel/pint": "^1.0",
-    "nunomaduro/collision": "^7.0",
-    "orchestra/testbench": "^8.0",
-    "pestphp/pest": "^2.19",
-    "pestphp/pest-plugin-laravel": "^2.2",
-    "pestphp/pest-plugin-livewire": "^2.1",
+    "laravel/pint": "^1.10",
+    "orchestra/testbench": "^9.0|^10.0",
+    "pestphp/pest": "^3.7",
+    "pestphp/pest-plugin-laravel": "^3.0",
+    "pestphp/pest-plugin-livewire": "^3.0",
+    "rector/rector": "^2.0",
     "spatie/laravel-ray": "^1.26"
   },
   "autoload": {
@@ -39,28 +43,47 @@
     ],
     "psr-4": {
       "Awcodes\\Curator\\": "src",
+      "Awcodes\\Curator\\Database\\Factories\\": "database/factories"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
       "Awcodes\\Curator\\Tests\\": "tests/src",
-      "Awcodes\\Curator\\Database\\Factories\\": "database/factories",
       "Awcodes\\Curator\\Tests\\Database\\Factories\\": "tests/database/factories"
     }
   },
   "scripts": {
-    "format": "vendor/bin/pint",
-    "test": "vendor/bin/pest"
-  },
-  "config": {
-    "sort-packages": true,
-    "allow-plugins": {
-      "composer/package-versions-deprecated": true,
-      "pestphp/pest-plugin": true,
-      "phpstan/extension-installer": true
-    }
+    "post-autoload-dump": "@php ./vendor/bin/testbench package:discover --ansi",
+    "lint": "pint",
+    "refactor": "rector",
+    "test:lint": "pint --test",
+    "test:refactor": "rector --dry-run",
+    "test:unit": "pest",
+    "test": [
+      "@test:refactor",
+      "@test:lint",
+      "@test:unit"
+    ]
   },
   "extra": {
     "laravel": {
       "providers": [
         "Awcodes\\Curator\\CuratorServiceProvider"
-      ]
+      ],
+      "aliases": {
+        "Curator": "Awcodes\\Curator\\Facades\\Curator",
+        "Curation": "Awcodes\\Curator\\Facades\\Curation",
+        "Glide": "Awcodes\\Curator\\Facades\\Glide"
+      }
+    }
+  },
+  "config": {
+    "optimize-autoloader": true,
+    "sort-packages": true,
+    "allow-plugins": {
+      "composer/package-versions-deprecated": true,
+      "pestphp/pest-plugin": true,
+      "phpstan/extension-installer": true
     }
   },
   "minimum-stability": "dev",

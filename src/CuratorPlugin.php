@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Awcodes\Curator;
 
 use Awcodes\Curator\Resources\MediaResource;
@@ -7,29 +9,38 @@ use Closure;
 use Filament\Contracts\Plugin;
 use Filament\Panel;
 use Filament\Support\Concerns\EvaluatesClosures;
-use Illuminate\Support\Facades\Blade;
 
 class CuratorPlugin implements Plugin
 {
     use EvaluatesClosures;
 
-    protected string | Closure | null $label = null;
+    protected string|Closure|null $label = null;
 
-    protected string | Closure | null $navigationGroup = null;
+    protected string|Closure|null $navigationGroup = null;
 
     protected ?string $navigationIcon = null;
 
     protected ?int $navigationSort = null;
 
-    protected string | Closure | null $pluralLabel = null;
+    protected string|Closure|null $pluralLabel = null;
 
-    protected bool | Closure | null $shouldRegisterNavigation = null;
+    protected bool|Closure|null $shouldRegisterNavigation = null;
 
-    protected bool | Closure | null $shouldShowBadge = null;
+    protected bool|Closure|null $shouldShowBadge = null;
 
-    protected bool | Closure | null $supportsCurations = null;
+    protected bool|Closure|null $supportsCurations = null;
 
-    protected bool | Closure | null $supportsFileSwap = null;
+    protected bool|Closure|null $supportsFileSwap = null;
+
+    public static function make(): static
+    {
+        return app(static::class);
+    }
+
+    public static function get(): Plugin
+    {
+        return filament(app(static::class)->getId());
+    }
 
     public function getId(): string
     {
@@ -47,16 +58,6 @@ class CuratorPlugin implements Plugin
     public function boot(Panel $panel): void
     {
         //
-    }
-
-    public static function make(): static
-    {
-        return app(static::class);
-    }
-
-    public static function get(): Plugin
-    {
-        return filament(app(static::class)->getId());
     }
 
     /**
@@ -119,63 +120,63 @@ class CuratorPlugin implements Plugin
     /**
      * Setters
      */
-    public function curations(bool | Closure $condition = true): static
+    public function curations(bool|Closure $condition = true): static
     {
         $this->supportsCurations = $condition;
 
         return $this;
     }
 
-    public function fileSwap(bool | Closure $condition = true): static
+    public function fileSwap(bool|Closure $condition = true): static
     {
         $this->supportsFileSwap = $condition;
 
         return $this;
     }
 
-    public function label(string | Closure $label): static
+    public function label(string|Closure $label): static
     {
         $this->label = $label;
 
         return $this;
     }
 
-    public function navigationGroup(string | Closure | null $group = null): static
+    public function navigationGroup(string|Closure|null $group = null): static
     {
         $this->navigationGroup = $group;
 
         return $this;
     }
 
-    public function navigationIcon(string | Closure $icon): static
+    public function navigationIcon(string|Closure $icon): static
     {
         $this->navigationIcon = $icon;
 
         return $this;
     }
 
-    public function navigationSort(int | Closure $order): static
+    public function navigationSort(int|Closure $order): static
     {
         $this->navigationSort = $order;
 
         return $this;
     }
 
-    public function pluralLabel(string | Closure $label): static
+    public function pluralLabel(string|Closure $label): static
     {
         $this->pluralLabel = $label;
 
         return $this;
     }
 
-    public function registerNavigation(bool | Closure $condition = true): static
+    public function registerNavigation(bool|Closure $condition = true): static
     {
         $this->shouldRegisterNavigation = $condition;
 
         return $this;
     }
 
-    public function showBadge(bool | Closure $condition = true): static
+    public function showBadge(bool|Closure $condition = true): static
     {
         $this->shouldShowBadge = $condition;
 

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Awcodes\Curator\Config\Concerns;
 
 use Awcodes\Curator\Concerns\UrlProvider;
@@ -8,9 +10,9 @@ use Illuminate\Support\Number;
 
 trait HasMediaSizes
 {
-    protected UrlProvider | Closure | null $urlProvider = null;
+    protected UrlProvider|Closure|null $urlProvider = null;
 
-    public function urlProvider(UrlProvider | Closure $provider): static
+    public function urlProvider(UrlProvider|Closure $provider): static
     {
         $this->urlProvider = $provider;
 

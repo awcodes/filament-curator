@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Awcodes\Curator\Glide;
 
 use Awcodes\Curator\Config\GlideManager;
@@ -21,7 +23,7 @@ class GlideBuilder
         public ?float $gam = null,
         public ?int $h = null,
         public ?int $q = null,
-        public string | int | null $or = null,
+        public string|int|null $or = null,
         public ?int $pixel = null,
         public ?int $sharp = null,
         public ?int $w = null,
@@ -34,8 +36,7 @@ class GlideBuilder
         public ?string $markpos = null,
         public ?int $markalpha = null,
         public ?string $markfit = null,
-    ) {
-    }
+    ) {}
 
     public static function make(): static
     {
@@ -44,7 +45,7 @@ class GlideBuilder
 
     public function toArray(): array
     {
-        return array_filter(get_object_vars($this), fn ($value) => $value !== null);
+        return array_filter(get_object_vars($this), fn ($value): bool => $value !== null);
     }
 
     public function toQueryString(): string
@@ -155,7 +156,7 @@ class GlideBuilder
         return $this;
     }
 
-    public function orientation(string | int $value): static
+    public function orientation(string|int $value): static
     {
         $this->or = $value;
 

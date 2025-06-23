@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Awcodes\Curator\PathGenerators;
 
 use Awcodes\Curator\PathGenerators\Contracts\PathGenerator;
@@ -11,7 +13,7 @@ class DatePathGenerator implements PathGenerator
     {
         $now = Carbon::now();
 
-        return ($baseDir ? $baseDir . '/' : '') . sprintf(
+        return ($baseDir !== null && $baseDir !== '' && $baseDir !== '0' ? $baseDir.'/' : '').sprintf(
             '%s/%s/%s',
             $now->format('Y'),
             $now->format('m'),

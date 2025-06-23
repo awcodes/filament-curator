@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Awcodes\Curator\Database\Factories;
 
 use Awcodes\Curator\CuratorUtils;
@@ -8,6 +10,7 @@ use Awcodes\Curator\Models\Media;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Http\UploadedFile;
 
 class MediaFactory extends Factory
 {
@@ -30,11 +33,12 @@ class MediaFactory extends Factory
             'svg' => $this->handleSvg(),
             'document' => $this->handleDocument(),
             'video' => $this->handleVideo(),
-            default => $this->handleImage(),
+            'image' => $this->handleImage(),
+            default => $this->handleRaw(),
         };
     }
 
-    public function private(): MediaFactory
+    public function private(): self
     {
         return $this->state(function (array $attributes) {
             return [
@@ -43,7 +47,7 @@ class MediaFactory extends Factory
         });
     }
 
-    public function randomTimestamps(): MediaFactory
+    public function randomTimestamps(): self
     {
         return $this->state(function (array $attributes) {
             return [
@@ -104,7 +108,7 @@ class MediaFactory extends Factory
 
     public function getType(): string
     {
-        return $this->type ?? 'image';
+        return $this->type ?? 'raw';
     }
 
     /**
@@ -135,10 +139,10 @@ class MediaFactory extends Factory
             'robert-lukeman-_RBcxo9AU-U-unsplash',
             'robert-lukeman-zNN6ubHmruI-unsplash',
             'tim-swaan-eOpewngf68w-unsplash',
-        ])->random() . '.jpg';
+        ])->random().'.jpg';
 
         return CuratorUtils::importMedia(
-            path: $this->getFixturesPath() . $filename,
+            path: $this->getFixturesPath().$filename,
             disk: $this->getDisk(),
             directory: $this->getDirectory(),
             alt: $this->faker->words(rand(3, 8), true),
@@ -159,10 +163,10 @@ class MediaFactory extends Factory
             'brand',
             'apps',
             'link',
-        ])->random() . '.svg';
+        ])->random().'.svg';
 
         return CuratorUtils::importMedia(
-            path: $this->getFixturesPath() . $filename,
+            path: $this->getFixturesPath().$filename,
             disk: $this->getDisk(),
             directory: $this->getDirectory(),
             alt: $this->faker->words(rand(3, 8), true),
@@ -184,7 +188,7 @@ class MediaFactory extends Factory
         ])->random();
 
         return CuratorUtils::importMedia(
-            path: $this->getFixturesPath() . $filename,
+            path: $this->getFixturesPath().$filename,
             disk: $this->getDisk(),
             directory: $this->getDirectory(),
         );
@@ -202,7 +206,23 @@ class MediaFactory extends Factory
         ])->random();
 
         return CuratorUtils::importMedia(
-            path: $this->getFixturesPath() . $filename,
+            path: $this->getFixturesPath().$filename,
+            disk: $this->getDisk(),
+            directory: $this->getDirectory(),
+        );
+    }
+
+    public function handleRaw(): array
+    {
+        $filename = fake()->word();
+
+        $file = UploadedFile::fake()
+            ->image($filename.'.jpg', 1024, 576)
+            ->size(1000)
+            ->mimeType('image/jpeg');
+
+        return CuratorUtils::importMedia(
+            path: $file->getPathname(),
             disk: $this->getDisk(),
             directory: $this->getDirectory(),
         );

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Awcodes\Curator\Resources\MediaResource;
 
 use Awcodes\Curator\Resources\MediaResource;
@@ -12,7 +14,7 @@ class CreateMedia extends CreateRecord
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         if (blank($data['title'])) {
-            $data['title'] = pathinfo($data['originalFilename'], PATHINFO_FILENAME);
+            $data['title'] = pathinfo((string) $data['originalFilename'], PATHINFO_FILENAME);
         }
 
         unset($data['originalFilename']);

@@ -45,12 +45,8 @@ const defaultOptions = {
 
 compile({
     ...defaultOptions,
-    entryPoints: ['./resources/js/highlighter.js'],
-    outfile: './resources/dist/highlighter.js',
-})
-
-compile({
-    ...defaultOptions,
     entryPoints: ['./resources/js/curation.js'],
     outfile: './resources/dist/curation.js',
+}).then(() => {
+    console.log('Curation JS build completed.')
 })

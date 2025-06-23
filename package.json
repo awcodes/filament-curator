@@ -2,32 +2,18 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev:styles": "npx tailwindcss -i resources/css/plugin.css -o resources/dist/curator.css --postcss --watch",
-    "dev:scripts": "node bin/build.js --dev",
-    "build:styles": "npx tailwindcss -i resources/css/plugin.css -o resources/dist/curator.css --postcss --minify && npm run purge",
-    "build:scripts": "node bin/build.js",
-    "purge": "filament-purge -i resources/dist/curator.css -o resources/dist/curator.css -v 3.x",
-    "dev": "npm-run-all --parallel dev:*",
-    "build": "npm-run-all build:*",
+    "dev": "node bin/build.js --dev",
+    "build": "node bin/build.js",
     "prettier": "npx prettier --write ."
   },
   "devDependencies": {
-    "@awcodes/filament-plugin-purge": "^1.1.0",
-    "@tailwindcss/forms": "^0.5.3",
-    "@tailwindcss/typography": "^0.5.9",
     "alpinejs": "^3.10.5",
-    "autoprefixer": "^10.4.7",
-    "esbuild": "^0.17.0",
-    "npm-run-all": "^4.1.5",
-    "postcss": "^8.4.14",
-    "postcss-import": "^15.1.0",
-    "prettier": "^2.7.1",
-    "prettier-plugin-blade": "^1.5.3",
-    "prettier-plugin-tailwindcss": "^0.1.13",
-    "shiki": "^1.6.3",
-    "tailwindcss": "^3.1.6"
+    "esbuild": "^0.25.0",
+    "prettier": "^3.6.0",
+    "prettier-plugin-blade": "^2.1.21",
+    "prettier-plugin-tailwindcss": "^0.6.13"
   },
   "dependencies": {
-    "cropperjs": "^1.5.13"
+    "cropperjs": "^2.0.0"
   }
 }

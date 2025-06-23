@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Awcodes\Curator\Config\Concerns;
 
 use Awcodes\Curator\Enums\PreviewableExtensions;
@@ -24,6 +26,6 @@ trait HasRenderableType
 
     public function isDocument(string $extension): bool
     {
-        return ! (static::isPreviewable($extension) || static::isVideo($extension));
+        return ! static::isPreviewable($extension) && ! static::isVideo($extension);
     }
 }

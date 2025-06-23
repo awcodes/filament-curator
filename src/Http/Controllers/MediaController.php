@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Awcodes\Curator\Http\Controllers;
 
 use Awcodes\Curator\Config\GlideManager;
@@ -13,15 +15,15 @@ use League\Glide\Signatures\SignatureFactory;
 
 class MediaController extends Controller
 {
-    public function show(Request $request, $path, GlideManager $glide)
+    public function show(Request $request, string $path, GlideManager $glide)
     {
         try {
             SignatureFactory::create($glide->getToken())
                 ->validateRequest(
-                    path: $glide->getBasePath() . '/' . $path,
+                    path: $glide->getBasePath().'/'.$path,
                     params: $request->all()
                 );
-        } catch (SignatureException $e) {
+        } catch (SignatureException) {
             abort(403);
         }
 

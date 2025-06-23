@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Awcodes\Curator\Http\Controllers\MediaController;
 use Illuminate\Support\Facades\Route;
 

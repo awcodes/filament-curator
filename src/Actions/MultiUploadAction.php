@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Awcodes\Curator\Actions;
 
 use Awcodes\Curator\Components\Forms\Uploader;
@@ -11,11 +13,6 @@ use Illuminate\Support\Facades\App;
 
 class MultiUploadAction extends Action
 {
-    public static function getDefaultName(): ?string
-    {
-        return 'curator_multi_upload';
-    }
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -27,7 +24,7 @@ class MultiUploadAction extends Action
             ->color('gray')
             ->label(trans('curator::forms.multi_upload.action_label'))
             ->modalHeading(trans('curator::forms.multi_upload.modal_heading'))
-            ->form([
+            ->schema([
                 Uploader::make('files')
                     ->acceptedFileTypes($config->getAcceptedFileTypes())
                     ->directory($config->getDirectory())
@@ -43,16 +40,21 @@ class MultiUploadAction extends Action
                     ->visibility($config->getVisibility())
                     ->storeFileNamesIn('originalFilename'),
             ])
-            ->action(function ($data) {
+            ->action(function (array $data): void {
                 foreach ($data['files'] as $item) {
-                    $item['exif'] = ! empty($item['exif']) ? Curator::sanitizeExif($item['exif']) : null;
-                    $item['title'] = pathinfo($data['originalFilename'][$item['path']] ?? null, PATHINFO_FILENAME);
+                    $item['exif'] = empty($item['exif']) ? null : Curator::sanitizeExif($item['exif']);
+                    $item['title'] = pathinfo((string) ($data['originalFilename'][$item['path']] ?? null), PATHINFO_FILENAME);
 
                     tap(
                         App::make(Media::class)->create($item),
-                        fn (Media $media) => $media->getPrettyName(),
+                        fn (Media $media): string => $media->getPrettyName(),
                     )->toArray();
                 }
             });
+    }
+
+    public static function getDefaultName(): ?string
+    {
+        return 'curator_multi_upload';
     }
 }

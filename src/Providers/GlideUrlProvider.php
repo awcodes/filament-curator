@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Awcodes\Curator\Providers;
 
 use Awcodes\Curator\Concerns\UrlProvider;

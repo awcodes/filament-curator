@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Awcodes\Curator\Observers;
 
 use Awcodes\Curator\Facades\Curator;
@@ -18,11 +20,7 @@ class MediaObserver
         if ($this->hasMediaUpload($media)) {
             foreach ($media->file as $k => $v) {
                 if ($k === 'name') {
-                    if (is_string($v)) {
-                        $media->{$k} = $v;
-                    } else {
-                        $media->{$k} = $v->toString();
-                    }
+                    $media->{$k} = is_string($v) ? $v : $v->toString();
                 } elseif ($k === 'exif' && is_array($v)) {
                     $media->{$k} = Curator::sanitizeExif($v);
                 } else {
@@ -43,18 +41,18 @@ class MediaObserver
 
         // Replace image
         if ($this->hasMediaUpload($media)) {
-            if ($storage->exists($media->directory . '/' . $media->getOriginal()['name'] . '.' . $media->getOriginal()['ext'])) {
-                $storage->delete($media->directory . '/' . $media->getOriginal()['name'] . '.' . $media->getOriginal()['ext']);
+            if ($storage->exists($media->directory.'/'.$media->getOriginal()['name'].'.'.$media->getOriginal()['ext'])) {
+                $storage->delete($media->directory.'/'.$media->getOriginal()['name'].'.'.$media->getOriginal()['ext']);
             }
 
             foreach ($media->file as $k => $v) {
                 $media->{$k} = $v;
             }
 
-            $storage->move($media->path, $media->directory . '/' . $media->getOriginal()['name'] . '.' . $media->ext);
+            $storage->move($media->path, $media->directory.'/'.$media->getOriginal()['name'].'.'.$media->ext);
 
             $media->name = $media->getOriginal()['name'];
-            $media->path = $media->directory . '/' . $media->getOriginal()['name'] . '.' . $media->ext;
+            $media->path = $media->directory.'/'.$media->getOriginal()['name'].'.'.$media->ext;
 
             // Delete glide-cache for replaced image
             $server = Glide::getServer();
@@ -63,11 +61,11 @@ class MediaObserver
 
         // Rename file name
         if ($media->isDirty(['name']) && ! blank($media->name)) {
-            if ($storage->exists($media->directory . '/' . $media->name . '.' . $media->ext)) {
-                $media->name = $media->name . '-' . time();
+            if ($storage->exists($media->directory.'/'.$media->name.'.'.$media->ext)) {
+                $media->name = $media->name.'-'.time();
             }
-            $storage->move($media->path, $media->directory . '/' . $media->name . '.' . $media->ext);
-            $media->path = $media->directory . '/' . $media->name . '.' . $media->ext;
+            $storage->move($media->path, $media->directory.'/'.$media->name.'.'.$media->ext);
+            $media->path = $media->directory.'/'.$media->name.'.'.$media->ext;
         }
 
         $media->__unset('file');
@@ -83,11 +81,11 @@ class MediaObserver
 
         $storage->delete($media->path);
 
-        if ($storage->allFiles($media->directory . '/' . $media->name)) {
-            $storage->deleteDirectory($media->directory . '/' . $media->name);
+        if ($storage->allFiles($media->directory.'/'.$media->name)) {
+            $storage->deleteDirectory($media->directory.'/'.$media->name);
         }
 
-        if (count($storage->allFiles($media->directory)) == 0) {
+        if (count($storage->allFiles($media->directory)) === 0) {
             $storage->deleteDirectory($media->directory);
         }
 
@@ -96,7 +94,7 @@ class MediaObserver
         $server->deleteCache($media->path);
     }
 
-    private function hasMediaUpload($media): bool
+    private function hasMediaUpload(Media $media): bool
     {
         return is_array($media->file) || $media->file instanceof stdClass;
     }

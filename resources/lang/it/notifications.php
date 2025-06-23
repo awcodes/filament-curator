@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'update_success' => 'Il record è stato aggiornato con successo.',
     'update_error' => 'Si è verificato un errore durante l\'aggiornamento del record.',

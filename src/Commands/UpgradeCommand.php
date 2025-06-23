@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Awcodes\Curator\Commands;
 
 use Carbon\Carbon;
@@ -17,6 +19,27 @@ class UpgradeCommand extends Command
     public $signature = 'curator:upgrade';
 
     public $description = 'Upgrade Curator DB from v2 to v3';
+
+    public static function generateMigrationName(string $migrationFileName, Carbon $now): string
+    {
+        $migrationsPath = 'migrations/';
+        $migrationFileName = Str::of($migrationFileName)->rtrim('.stub')->toString();
+
+        $len = mb_strlen($migrationFileName) + 4;
+
+        if (Str::contains($migrationFileName, '/')) {
+            $migrationsPath .= Str::of($migrationFileName)->beforeLast('/')->finish('/');
+            $migrationFileName = Str::of($migrationFileName)->afterLast('/');
+        }
+
+        foreach (glob(database_path("{$migrationsPath}*.php")) as $filename) {
+            if ((mb_substr($filename, -$len) === $migrationFileName.'.php')) {
+                return $filename;
+            }
+        }
+
+        return database_path($migrationsPath.$now->format('Y_m_d_His').'_'.Str::of($migrationFileName)->snake()->finish('.php'));
+    }
 
     public function handle(): int
     {
@@ -39,29 +62,26 @@ class UpgradeCommand extends Command
         // clone db as a backup
         match ($driver) {
             'sqlite' => function () use ($tableName): void {
-                DB::statement('CREATE TABLE media_tmp AS SELECT * FROM ' . $tableName);
+                DB::statement('CREATE TABLE media_tmp AS SELECT * FROM '.$tableName);
             },
             'pgsql' => function () use ($tableName): void {
-                DB::statement('CREATE TABLE media_tmp AS (SELECT * FROM ' . $tableName . ')');
+                DB::statement('CREATE TABLE media_tmp AS (SELECT * FROM '.$tableName.')');
             },
             default => function () use ($tableName): void {
                 DB::statement('CREATE TABLE media_tmp LIKE media');
-                DB::statement('INSERT media_tmp SELECT * FROM ' . $tableName);
+                DB::statement('INSERT media_tmp SELECT * FROM '.$tableName);
             }
         };
 
         // publish migration
         $this->info('Publishing migration...');
 
-        $migrationsPath = realpath(__DIR__ . '/../../database/migrations');
+        $migrationsPath = realpath(__DIR__.'/../../database/migrations');
 
         foreach (glob("{$migrationsPath}/upgrade_*.php.stub") as $filename) {
             File::copy(
                 $filename,
-                $this->generateMigrationName(
-                    basename($filename),
-                    Carbon::now()->addSecond()
-                )
+                static::generateMigrationName(basename($filename), Carbon::now()->addSecond())
             );
         }
 
@@ -77,7 +97,7 @@ class UpgradeCommand extends Command
         if ($mediaCount > 0) {
             $progress = $this->output->createProgressBar($mediaCount);
 
-            DB::table($tableName)->chunkById(500, function ($media) use ($progress, $tableName) {
+            DB::table($tableName)->chunkById(500, function ($media) use ($progress, $tableName): void {
                 foreach ($media as $item) {
                     DB::table($tableName)
                         ->where('id', $item->id)
@@ -96,7 +116,7 @@ class UpgradeCommand extends Command
 
         foreach (['public_id', 'filename'] as $column) {
             if (Schema::hasColumn($tableName, $column)) {
-                Schema::table($tableName, function (Blueprint $table) use ($column) {
+                Schema::table($tableName, function (Blueprint $table) use ($column): void {
                     $table->dropColumn($column);
                 });
             }
@@ -106,26 +126,5 @@ class UpgradeCommand extends Command
         $this->info('Curator successfully upgraded.');
 
         return self::SUCCESS;
-    }
-
-    public static function generateMigrationName(string $migrationFileName, Carbon $now): string
-    {
-        $migrationsPath = 'migrations/';
-        $migrationFileName = Str::of($migrationFileName)->rtrim('.stub')->toString();
-
-        $len = strlen($migrationFileName) + 4;
-
-        if (Str::contains($migrationFileName, '/')) {
-            $migrationsPath .= Str::of($migrationFileName)->beforeLast('/')->finish('/');
-            $migrationFileName = Str::of($migrationFileName)->afterLast('/');
-        }
-
-        foreach (glob(database_path("{$migrationsPath}*.php")) as $filename) {
-            if ((substr($filename, -$len) === $migrationFileName . '.php')) {
-                return $filename;
-            }
-        }
-
-        return database_path($migrationsPath . $now->format('Y_m_d_His') . '_' . Str::of($migrationFileName)->snake()->finish('.php'));
     }
 }
