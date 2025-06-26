@@ -64,7 +64,7 @@ trait CanUploadFiles
 
     public function getDiskName(): string
     {
-        return $this->evaluate($this->diskName) ?? config('filament.default_filesystem_disk');
+        return $this->evaluate($this->diskName) ?? config('curator.default_disk');
     }
 
     public function getDirectory(): ?string
@@ -92,12 +92,12 @@ trait CanUploadFiles
         return $this->evaluate($this->imageResizeTargetWidth) ?? null;
     }
 
-    public function getMaxSize(): ?string
+    public function getMaxSize(): int
     {
         return $this->evaluate($this->maxSize) ?? 5000;
     }
 
-    public function getMinSize(): ?string
+    public function getMinSize(): int
     {
         return $this->evaluate($this->minSize) ?? 0;
     }

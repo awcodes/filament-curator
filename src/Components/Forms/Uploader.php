@@ -17,7 +17,8 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Intervention\Image\Facades\Image;
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\ImageManager;
 use League\Flysystem\UnableToCheckFileExistence;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use ReflectionClass;
@@ -55,11 +56,11 @@ class Uploader extends FileUpload
                     $content = $file->getRealPath();
                 }
 
-                $image = Image::make($content);
-                $image->orientate();
-                $width = $image->getWidth();
-                $height = $image->getHeight();
-                $exif = $image->exif();
+                $manager = new ImageManager(new Driver());
+                $image = $manager->read($content);
+                $width = $image->width();
+                $height = $image->height();
+                $exif = $image->exif()->toArray();
             }
 
             if (Storage::disk($component->getDiskName())->exists(ltrim($component->getDirectory().'/'.$filename.'.'.$extension, '/'))) {

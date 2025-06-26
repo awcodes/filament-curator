@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Awcodes\Curator\Resources\MediaResource;
+namespace Awcodes\Curator\Resources\Media\Pages;
 
 use Awcodes\Curator\Actions\MultiUploadAction;
 use Awcodes\Curator\CuratorPlugin;
-use Awcodes\Curator\Resources\MediaResource;
+use Awcodes\Curator\Resources\Media\MediaResource;
 use Exception;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
@@ -42,9 +42,7 @@ class ListMedia extends ListRecords
         return Str::headline(CuratorPlugin::get()->getPluralLabel());
     }
 
-    /**
-     * @throws Exception
-     */
+    /** @throws Exception */
     public function getHeaderActions(): array
     {
         return [

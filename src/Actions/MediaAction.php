@@ -8,7 +8,6 @@ use Awcodes\Curator\Components\Forms\CuratorPicker;
 use Awcodes\Curator\Models\Media;
 use Filament\Actions\Action;
 use Filament\Support\Enums\Width;
-use FilamentTiptapEditor\TiptapEditor;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
@@ -24,11 +23,11 @@ class MediaAction extends Action
             ->arguments([
                 'src' => '',
             ])
-            ->modalHeading(false)
+            ->modalHeading(null)
             ->modalSubmitAction(false)
             ->modalCancelAction(false)
             ->modalWidth(Width::Screen)
-            ->modalContent(function (TiptapEditor|CuratorPicker $component, array $arguments): View {
+            ->modalContent(function (CuratorPicker $component, array $arguments): View {
                 $selected = $arguments['src'] !== ''
                     ? [App::get(Media::class)->firstWhere('name', Str::of($arguments['src'])->afterLast('/')->beforeLast('.'))]
                     : [];

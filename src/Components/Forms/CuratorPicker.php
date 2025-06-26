@@ -6,7 +6,7 @@ namespace Awcodes\Curator\Components\Forms;
 
 use Awcodes\Curator\Concerns\CanGeneratePaths;
 use Awcodes\Curator\Concerns\CanUploadFiles;
-use Awcodes\Curator\Resources\MediaResource;
+use Awcodes\Curator\Resources\Media\MediaResource;
 use Closure;
 use Exception;
 use Filament\Actions\Action;
@@ -14,6 +14,7 @@ use Filament\Actions\Concerns\CanBeOutlined;
 use Filament\Actions\Concerns\HasSize;
 use Filament\Forms\Components\Field;
 use Filament\Schemas\Components\Component;
+use Filament\Support\Components\Attributes\ExposedLivewireMethod;
 use Filament\Support\Concerns\HasColor;
 use Filament\Support\Enums\Size;
 use Filament\Support\Enums\Width;
@@ -139,25 +140,25 @@ class CuratorPicker extends Field
             return $state;
         });
 
-        $this->registerListeners([
-            'curator::updateState' => [
-                function (CuratorPicker $component, string $statePath, array $arguments): void {
-                    if ($component->getStatePath() !== $statePath) {
-                        return;
-                    }
-
-                    $items = [];
-
-                    $state = array_values($arguments['media']);
-
-                    foreach ($state as $itemData) {
-                        $items[(string) Str::uuid()] = $itemData;
-                    }
-
-                    $component->state($items);
-                },
-            ],
-        ]);
+        //        $this->registerListeners([
+        //            'curator::updateState' => [
+        //                function (CuratorPicker $component, string $statePath, array $arguments): void {
+        //                    if ($component->getStatePath() !== $statePath) {
+        //                        return;
+        //                    }
+        //
+        //                    $items = [];
+        //
+        //                    $state = array_values($arguments['media']);
+        //
+        //                    foreach ($state as $itemData) {
+        //                        $items[(string) Str::uuid()] = $itemData;
+        //                    }
+        //
+        //                    $component->state($items);
+        //                },
+        //            ],
+        //        ]);
 
         $this->registerActions([
             fn (CuratorPicker $component): Action => $component->getDownloadAction(),
@@ -168,6 +169,24 @@ class CuratorPicker extends Field
             fn (CuratorPicker $component): Action => $component->getViewAction(),
             fn (CuratorPicker $component): Action => $component->getPickerAction(),
         ]);
+    }
+
+    #[ExposedLivewireMethod]
+    public function updateState(array $arguments): void
+    {
+        if ($this->getStatePath() !== $arguments['statePath']) {
+            return;
+        }
+
+        $items = [];
+
+        $state = array_values($arguments['media']);
+
+        foreach ($state as $itemData) {
+            $items[(string) Str::uuid()] = $itemData;
+        }
+
+        $this->state($items);
     }
 
     public function buttonLabel(string|Htmlable|Closure $label): static
@@ -294,11 +313,13 @@ class CuratorPicker extends Field
             ->color($this->getColor())
             ->outlined($this->isOutlined())
             ->size($this->getSize())
-            ->modalHeading(false)
+            ->modalHeading(null)
             ->modalSubmitAction(false)
             ->modalCancelAction(false)
             ->modalWidth(Width::Screen)
+            ->modalCloseButton(false)
             ->modalContent(fn (CuratorPicker $component): View => view('curator::components.modals.curator-panel', [
+                'key' => $component->getKey(),
                 'settings' => [
                     'acceptedFileTypes' => $component->getAcceptedFileTypes(),
                     'defaultSort' => $component->getDefaultPanelSort(),

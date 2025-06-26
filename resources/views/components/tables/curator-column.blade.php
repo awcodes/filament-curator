@@ -20,8 +20,8 @@
 
     $resolution = $getResolution();
 
-    $height = $getHeight();
-    $width = $getWidth() ?? ($isRounded() ? $height : null);
+    $height = $getImageHeight();
+    $width = $getImageWidth() ?? ($isRounded() ? $height : null);
 @endphp
 
 <div

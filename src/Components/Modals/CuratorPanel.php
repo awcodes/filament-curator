@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace Awcodes\Curator\Components\Modals;
 
+use Awcodes\Curator\Components\Forms\CuratorPicker;
 use Awcodes\Curator\Components\Forms\Uploader;
 use Awcodes\Curator\Components\Modals\Concerns\HasBreadcrumbs;
 use Awcodes\Curator\Components\Modals\Concerns\InteractsWithStorage;
 use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Models\Media;
 use Awcodes\Curator\PathGenerators\Contracts\PathGenerator;
-use Awcodes\Curator\Resources\MediaResource;
+use Awcodes\Curator\Resources\Media\MediaResource;
+use Awcodes\Curator\Resources\Media\Schemas\MediaForm;
 use Closure;
 use Exception;
 use Filament\Actions\Action;
@@ -19,8 +21,12 @@ use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
+use Filament\Schemas\Concerns\InteractsWithSchemas;
+use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\Width;
+use Filament\Support\Icons\Heroicon;
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
@@ -29,11 +35,11 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-class CuratorPanel extends Component implements HasActions, HasForms
+class CuratorPanel extends Component implements HasActions, HasSchemas
 {
     use HasBreadcrumbs;
     use InteractsWithActions;
-    use InteractsWithForms;
+    use InteractsWithSchemas;
     use InteractsWithStorage;
     use WithPagination;
 
@@ -128,6 +134,7 @@ class CuratorPanel extends Component implements HasActions, HasForms
         $this->form->fill();
     }
 
+    /** @throws Exception */
     public function form(Schema $schema): Schema
     {
         if ($this->maxItems !== null && $this->maxItems !== 0) {
@@ -162,7 +169,9 @@ class CuratorPanel extends Component implements HasActions, HasForms
     public function getFiles(int $page = 0, bool $excludeSelected = false): array
     {
         $files = Media::query()
-            ->where('directory', $this->directory)
+            ->when(filled($this->directory), function ($query) {
+                return $query->where('directory', $this->directory);
+            })
             ->when(filament()->hasTenancy() && $this->isTenantAware, fn ($query) => $query->where($this->tenantOwnershipRelationshipName.'_id', filament()->getTenant()->id))
 //            ->when($this->selected, function ($query, $selected) {
 //                $selected = collect($selected)->pluck('id')->toArray();
@@ -302,16 +311,20 @@ class CuratorPanel extends Component implements HasActions, HasForms
             ->visible(fn (): bool => count($this->form->getRawState()['files_to_add'] ?? []) !== 0);
     }
 
+    /**
+     * @throws BindingResolutionException
+     * @throws Exception
+     */
     public function editItemAction(): Action
     {
         return Action::make('editItem')
             ->label(trans('curator::views.panel.edit'))
             ->color('gray')
-            ->icon('heroicon-s-pencil')
+            ->icon(Heroicon::Pencil)
             ->modalWidth(Width::Medium)
+            ->schema(App::make(MediaForm::class)::getAdditionalInformationFormSchema())
             ->record(fn (array $arguments) => Media::query()->where('id', $arguments['item']['id'])->first() ?? null)
             ->fillForm(fn (Media $record) => $record->toArray())
-            ->schema(App::make(MediaResource::class)->getAdditionalInformationFormSchema())
             ->action(function (array $data, Media $record): void {
                 try {
                     $record->update($data);
@@ -334,7 +347,7 @@ class CuratorPanel extends Component implements HasActions, HasForms
         return Action::make('destroyItem')
             ->label(trans('curator::views.panel.edit_delete'))
             ->color('danger')
-            ->icon('heroicon-s-trash')
+            ->icon(Heroicon::Trash)
             ->requiresConfirmation()
             ->action(function (array $arguments): void {
                 if ($arguments === []) {
@@ -388,7 +401,7 @@ class CuratorPanel extends Component implements HasActions, HasForms
             ->color('success')
             ->label(trans('curator::views.panel.use_selected_image'))
             ->action(function (): void {
-                $this->dispatch('insert-media', type: 'media', statePath: $this->statePath, media: $this->selected);
+                $this->dispatch('insert-media', ['statePath' => $this->statePath, 'media' => $this->selected]);
             });
     }
 

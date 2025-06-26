@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Awcodes\Curator\Resources\MediaResource;
+namespace Awcodes\Curator\Resources\Media\Pages;
 
-use Awcodes\Curator\Resources\MediaResource;
+use Awcodes\Curator\Resources\Media\MediaResource;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateMedia extends CreateRecord

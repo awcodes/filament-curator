@@ -8,11 +8,13 @@ use Awcodes\Curator\Components\Forms\Uploader;
 use Awcodes\Curator\Config\CuratorManager;
 use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Models\Media;
+use Exception;
 use Filament\Actions\Action;
 use Illuminate\Support\Facades\App;
 
 class MultiUploadAction extends Action
 {
+    /** @throws Exception */
     protected function setUp(): void
     {
         parent::setUp();
@@ -38,7 +40,11 @@ class MultiUploadAction extends Action
                     ->preserveFilenames($config->shouldPreserveFilenames())
                     ->required()
                     ->visibility($config->getVisibility())
-                    ->storeFileNamesIn('originalFilename'),
+                    ->storeFileNamesIn('originalFilename')
+                    ->imageCropAspectRatio($config->getImageCropAspectRatio())
+                    ->imageResizeMode($config->getImageResizeMode())
+                    ->imageResizeTargetWidth($config->getImageResizeTargetWidth())
+                    ->imageResizeTargetHeight($config->getImageResizeTargetHeight()),
             ])
             ->action(function (array $data): void {
                 foreach ($data['files'] as $item) {
@@ -48,7 +54,7 @@ class MultiUploadAction extends Action
                     tap(
                         App::make(Media::class)->create($item),
                         fn (Media $media): string => $media->getPrettyName(),
-                    )->toArray();
+                    );
                 }
             });
     }

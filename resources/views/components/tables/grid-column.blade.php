@@ -11,8 +11,8 @@
             icon-classes="size-24"
             @class([
                 'h-full',
-                'w-auto mx-auto' => str($record->mime)->contains('svg'),
-                'object-cover w-full' => ! str($record->mime)->contains('svg'),
+                'w-auto mx-auto' => str($record->type)->contains('svg'),
+                'object-cover w-full' => ! str($record->type)->contains('svg'),
             ])
         />
         <x-curator::display.info-overlay :label="$record->pretty_name" :size="$record->size" />

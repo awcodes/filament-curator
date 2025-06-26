@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Awcodes\Curator;
 
-use Awcodes\Curator\Resources\MediaResource;
+use Awcodes\Curator\Resources\Media\MediaResource;
 use Closure;
 use Filament\Contracts\Plugin;
 use Filament\Panel;
@@ -93,16 +93,16 @@ class CuratorPlugin implements Plugin
             ?? config('curator.resource.navigation.sort');
     }
 
-    public function shouldRegisterNavigation(): ?bool
+    public function shouldRegisterNavigation(): bool
     {
         return $this->evaluate($this->shouldRegisterNavigation)
-            ?? config('curator.resource.navigation.register');
+            ?? config('curator.resource.navigation.should_register');
     }
 
-    public function shouldShowBadge(): ?bool
+    public function shouldShowBadge(): bool
     {
         return $this->evaluate($this->shouldShowBadge)
-            ?? config('curator.resource.navigation.badge');
+            ?? config('curator.resource.navigation.should_show_badge');
     }
 
     public function supportsCurations(): bool

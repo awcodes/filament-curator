@@ -12,10 +12,12 @@ use Awcodes\Curator\Config\CurationManager;
 use Awcodes\Curator\Config\CuratorManager;
 use Awcodes\Curator\Config\GlideManager;
 use Awcodes\Curator\Models\Media;
-use Awcodes\Curator\Resources\MediaResource;
-use Awcodes\Curator\Resources\MediaResource\CreateMedia;
-use Awcodes\Curator\Resources\MediaResource\EditMedia;
-use Awcodes\Curator\Resources\MediaResource\ListMedia;
+use Awcodes\Curator\Resources\Media\MediaResource;
+use Awcodes\Curator\Resources\Media\Pages\CreateMedia;
+use Awcodes\Curator\Resources\Media\Pages\EditMedia;
+use Awcodes\Curator\Resources\Media\Pages\ListMedia;
+use Awcodes\Curator\Resources\Media\Schemas\MediaForm;
+use Awcodes\Curator\Resources\Media\Tables\MediaTable;
 use Awcodes\Curator\View\Components\Curation;
 use Awcodes\Curator\View\Components\Glider;
 use Filament\Support\Assets\AlpineComponent;
@@ -56,10 +58,7 @@ class CuratorServiceProvider extends PackageServiceProvider
             abstract: CurationManager::class,
             concrete: fn (): CurationManager => new CurationManager(),
         );
-    }
 
-    public function packageBooted(): void
-    {
         $this->app->bind(
             abstract: Media::class,
             concrete: config('curator.model'),
@@ -85,6 +84,19 @@ class CuratorServiceProvider extends PackageServiceProvider
             concrete: config('curator.resource.pages.index'),
         );
 
+        $this->app->bind(
+            abstract: MediaForm::class,
+            concrete: config('curator.resource.schemas.form'),
+        );
+
+        $this->app->bind(
+            abstract: MediaTable::class,
+            concrete: config('curator.resource.tables.table'),
+        );
+    }
+
+    public function packageBooted(): void
+    {
         Livewire::component(name: 'curator-panel', class: CuratorPanel::class);
         Livewire::component(name: 'curator-curation', class: CuratorCuration::class);
 

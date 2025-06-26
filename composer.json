@@ -1,5 +1,5 @@
 {
-  "name": "awcodes/curator",
+  "name": "awcodes/filament-curator",
   "description": "A media picker plugin for FilamentPHP.",
   "keywords": [
     "awcodes",
@@ -24,8 +24,7 @@
   "require": {
     "php": "^8.2",
     "filament/filament": "^4.0",
-    "intervention/image": "^2.7",
-    "league/glide-symfony": "^2.0",
+    "league/glide": "^3.0",
     "spatie/laravel-package-tools": "^1.15.0"
   },
   "require-dev": {

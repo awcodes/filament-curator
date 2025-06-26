@@ -52,25 +52,33 @@
         .fi-ta-record:has(.curator-grid-column) {
             @apply block;
 
-            > div {
-                @apply flex-col p-0;
+            .fi-ta-record-checkbox {
+                @apply absolute top-0 left-0 z-10;
+            }
 
-                > div {
-                    @apply p-0;
+            .fi-ta-record-content-ctn {
+                @apply p-0;
+
+                > div:first-child {
+                    @apply flex-col p-0;
                 }
-            }
 
-            label {
-                @apply w-full h-auto aspect-video;
-                z-index: 1;
-            }
+                .fi-ta-record-content {
+                    @apply h-[9.5rem];
+                }
 
-            input:not(:checked) {
-                @apply bg-white dark:bg-gray-800;
-            }
+                label {
+                    @apply w-full h-auto aspect-video;
+                    z-index: 1;
+                }
 
-            .fi-ta-actions {
-                @apply pb-3 px-3;
+                input:not(:checked) {
+                    @apply bg-white dark:bg-gray-800;
+                }
+
+                .fi-ta-actions {
+                    @apply flex flex-row pb-3 px-3;
+                }
             }
         }
     }

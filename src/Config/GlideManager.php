@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Awcodes\Curator\Config;
 
 use Awcodes\Curator\Config\Concerns\HasGliderFallbacks;
+use Awcodes\Curator\Glide\SymfonyResponseFactory;
 use Filament\Support\Concerns\EvaluatesClosures;
 use Illuminate\Support\Str;
-use League\Glide\Responses\SymfonyResponseFactory;
 use League\Glide\Server;
 use League\Glide\ServerFactory;
 use League\Glide\Urls\UrlBuilderFactory;
