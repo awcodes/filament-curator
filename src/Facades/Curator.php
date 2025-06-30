@@ -39,6 +39,8 @@ use Illuminate\Support\Facades\Facade;
  * @method static bool isPreviewable(string $ext)
  * @method static bool isVideo(string $ext)
  * @method static bool isDocument(string $ext)
+ * @method static bool isSvg(string $ext)
+ * @method static bool isAudio(string $ext)
  * @method static bool isUsingCloudinary()
  * @method static bool isUsingCloudDisk()
  * @method static bool isUsingGCS()

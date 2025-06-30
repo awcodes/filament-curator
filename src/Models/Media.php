@@ -12,7 +12,10 @@ use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\ImageManager;
 use Throwable;
 
 /**
@@ -33,6 +36,7 @@ use Throwable;
  * @property string|null $caption
  * @property array|null $exif
  * @property array|null $curations
+ * @property-read string $placeholder
  * @property-read CarbonInterface $created_at
  * @property-read CarbonInterface $updated_at
  * @property-read string $url
@@ -138,6 +142,23 @@ class Media extends Model
     {
         return Attribute::make(
             get: fn (): string => $this->getPrettyName()
+        );
+    }
+
+    public function placeholder(): Attribute
+    {
+        return Attribute::make(
+            get: function (): string {
+                $key = 'placeholder:'.$this->name.filemtime($this->full_path);
+
+                return Cache::rememberForever($key, function () {
+                    $manager = new ImageManager(new Driver());
+                    $image = $manager->read($this->full_path);
+                    $placeholder = $image->scaleDown(400)->blur(10)->toJpeg(30)->toString();
+
+                    return 'data:image/jpeg;base64,'.base64_encode($placeholder);
+                });
+            }
         );
     }
 

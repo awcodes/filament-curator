@@ -107,7 +107,6 @@
     <!-- End Toolbar -->
 
     <div class="flex-1 relative flex flex-col lg:flex-row overflow-hidden dark:bg-gray-950/30">
-
         <!-- Gallery -->
         <div class="curator-panel-gallery flex-1 h-full overflow-auto p-4">
             <ul @class([
@@ -166,7 +165,10 @@
                         <button
                             type="button"
                             x-on:click="handleItemClick(@js($file))"
-                            class="block w-full h-full overflow-hidden bg-gray-700 rounded-md"
+                            @class([
+                              'block w-full h-full overflow-hidden bg-gray-700 rounded-md',
+                              'p-2 checkered' => curator()->isSvg($file['ext']),
+                            ])
                         >
                             <x-curator::display
                                 :item="$file"

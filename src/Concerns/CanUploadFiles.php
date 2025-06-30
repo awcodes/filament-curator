@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Awcodes\Curator\Concerns;
 
+use Awcodes\Curator\Enums\MimeType;
 use Closure;
 
 trait CanUploadFiles
@@ -53,13 +54,8 @@ trait CanUploadFiles
 
     public function getAcceptedFileTypes(): array
     {
-        return $this->evaluate($this->acceptedFileTypes) ?? [
-            'image/jpeg',
-            'image/png',
-            'image/webp',
-            'image/svg+xml',
-            'application/pdf',
-        ];
+        return $this->evaluate($this->acceptedFileTypes)
+            ?? MimeType::toArray();
     }
 
     public function getDiskName(): string

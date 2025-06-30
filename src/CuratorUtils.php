@@ -8,7 +8,8 @@ use Awcodes\Curator\Facades\Curator;
 use Exception;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Intervention\Image\Facades\Image;
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\ImageManager;
 
 class CuratorUtils
 {
@@ -58,10 +59,10 @@ class CuratorUtils
         }
 
         if (Curator::isResizable($ext)) {
-            $image = Image::make($fileContents);
-            $image->orientate();
-            $width = $image->getWidth();
-            $height = $image->getHeight();
+            $manager = new ImageManager(new Driver());
+            $image = $manager->read($fileContents);
+            $width = $image->width();
+            $height = $image->height();
             $exif = $image->exif();
         }
 

@@ -18,6 +18,7 @@ use Filament\Support\Components\Attributes\ExposedLivewireMethod;
 use Filament\Support\Concerns\HasColor;
 use Filament\Support\Enums\Size;
 use Filament\Support\Enums\Width;
+use Filament\Support\Icons\Heroicon;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Model;
@@ -70,9 +71,7 @@ class CuratorPicker extends Field
 
     protected ?string $typeValue = null;
 
-    /**
-     * @throws Exception
-     */
+    /** @throws Exception */
     protected function setUp(): void
     {
         parent::setUp();
@@ -250,34 +249,23 @@ class CuratorPicker extends Field
     {
         return Action::make('reorder')
             ->label(trans('curator::views.picker.reorder'))
-            ->icon('heroicon-s-arrows-up-down')
+            ->icon(Heroicon::ArrowsPointingOut)
             ->iconButton()
             ->size('xs')
             ->color('gray')
             ->livewireClickHandlerEnabled(false)
-            ->extraAttributes(['style' => 'cursor: move;'])
+            ->extraAttributes(['style' => 'cursor: move; transform: rotate(45deg);'])
             ->action(function (array $arguments, CuratorPicker $component): void {
-                if (empty($arguments['items'])) {
-                    return;
-                }
-
-                $state = $component->getState();
-
-                foreach ($arguments['items'] as $key => $item) {
-                    if (! str_contains($item, '-')) {
-                        $uuid = (string) Str::uuid();
-                        $arguments['items'][$key] = $uuid;
-                        $state[$uuid] = $state[(int) $item];
-                        unset($state[(int) $item]);
-                    }
-                }
-
                 $items = [
                     ...array_flip($arguments['items']),
-                    ...$state,
+                    ...$component->getRawState(),
                 ];
 
-                $component->state($items);
+                $component->rawState($items);
+
+                $component->callAfterStateUpdated();
+
+                $component->partiallyRender();
             });
     }
 
@@ -285,7 +273,7 @@ class CuratorPicker extends Field
     {
         return Action::make('download')
             ->label(trans('curator::views.picker.download'))
-            ->icon('heroicon-s-arrow-down-tray')
+            ->icon(Heroicon::ArrowDownTray)
             ->color('gray')
             ->action(function (array $arguments, CuratorPicker $component): StreamedResponse {
                 $item = $component->getState()[$arguments['uuid']];
@@ -298,7 +286,7 @@ class CuratorPicker extends Field
     {
         return Action::make('edit')
             ->label(trans('curator::views.picker.edit'))
-            ->icon('heroicon-s-pencil')
+            ->icon(Heroicon::Pencil)
             ->color('gray')
             ->hidden(fn (CuratorPicker $component): bool => $component->isDisabled())
             ->url(fn (array $arguments): string => App::make(MediaResource::class)
@@ -313,7 +301,6 @@ class CuratorPicker extends Field
             ->color($this->getColor())
             ->outlined($this->isOutlined())
             ->size($this->getSize())
-            ->modalHeading(null)
             ->modalSubmitAction(false)
             ->modalCancelAction(false)
             ->modalWidth(Width::Screen)
@@ -352,7 +339,7 @@ class CuratorPicker extends Field
     {
         return Action::make('remove')
             ->label(trans('curator::views.picker.remove'))
-            ->icon('heroicon-s-minus-circle')
+            ->icon(Heroicon::MinusCircle)
             ->color('gray')
             ->hidden(fn (CuratorPicker $component): bool => $component->isDisabled())
             ->action(function (array $arguments, CuratorPicker $component): void {
@@ -379,7 +366,7 @@ class CuratorPicker extends Field
     {
         return Action::make('view')
             ->label(trans('curator::views.picker.view'))
-            ->icon('heroicon-s-eye')
+            ->icon(Heroicon::Eye)
             ->color('gray')
             ->url(fn (array $arguments): string => $arguments['url'], true);
     }

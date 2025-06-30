@@ -4,22 +4,18 @@ declare(strict_types=1);
 
 namespace Awcodes\Curator\Components\Modals;
 
-use Awcodes\Curator\Components\Forms\CuratorPicker;
 use Awcodes\Curator\Components\Forms\Uploader;
 use Awcodes\Curator\Components\Modals\Concerns\HasBreadcrumbs;
 use Awcodes\Curator\Components\Modals\Concerns\InteractsWithStorage;
 use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Models\Media;
 use Awcodes\Curator\PathGenerators\Contracts\PathGenerator;
-use Awcodes\Curator\Resources\Media\MediaResource;
 use Awcodes\Curator\Resources\Media\Schemas\MediaForm;
 use Closure;
 use Exception;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
-use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
@@ -115,6 +111,8 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
 
     public bool $showAll = false;
 
+    public ?array $rules = null;
+
     public function mount(): void
     {
         foreach ($this->settings as $key => $value) {
@@ -169,9 +167,7 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
     public function getFiles(int $page = 0, bool $excludeSelected = false): array
     {
         $files = Media::query()
-            ->when(filled($this->directory), function ($query) {
-                return $query->where('directory', $this->directory);
-            })
+            ->where('directory', $this->directory)
             ->when(filament()->hasTenancy() && $this->isTenantAware, fn ($query) => $query->where($this->tenantOwnershipRelationshipName.'_id', filament()->getTenant()->id))
 //            ->when($this->selected, function ($query, $selected) {
 //                $selected = collect($selected)->pluck('id')->toArray();
@@ -323,8 +319,11 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
             ->icon(Heroicon::Pencil)
             ->modalWidth(Width::Medium)
             ->schema(App::make(MediaForm::class)::getAdditionalInformationFormSchema())
-            ->record(fn (array $arguments) => Media::query()->where('id', $arguments['item']['id'])->first() ?? null)
-            ->fillForm(fn (Media $record) => $record->toArray())
+            ->fillForm(function (array $arguments): array {
+                $record = Media::query()->where('id', $arguments['item']['id'])->first() ?? null;
+
+                return $record ? $record->toArray() : [];
+            })
             ->action(function (array $data, Media $record): void {
                 try {
                     $record->update($data);
