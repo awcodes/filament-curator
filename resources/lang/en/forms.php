@@ -11,7 +11,7 @@ return [
         'preview' => 'Preview',
         'replace' => 'Replace',
         'upload_new_helper' => 'If you have any curations for this media you will possibly need to recreate them, it will not happen automatically.',
-        'curation' => 'Curation',
+        'curation' => 'Curations',
     ],
     'fields' => [
         'alt' => 'Alt Text',

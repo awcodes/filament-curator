@@ -7,6 +7,7 @@ namespace Awcodes\Curator\Components\Forms;
 use Awcodes\Curator\Concerns\CanGeneratePaths;
 use Awcodes\Curator\Concerns\CanNormalizePaths;
 use Awcodes\Curator\Facades\Curator;
+use Awcodes\Curator\Facades\Glide;
 use Awcodes\Curator\PathGenerators\Contracts\PathGenerator;
 use Closure;
 use Filament\Facades\Filament;
@@ -56,7 +57,7 @@ class Uploader extends FileUpload
                     $content = $file->getRealPath();
                 }
 
-                $manager = new ImageManager(new Driver());
+                $manager = Glide::getServer()->getApi()->getImageManager();
                 $image = $manager->read($content);
                 $width = $image->width();
                 $height = $image->height();

@@ -6,6 +6,7 @@ namespace Awcodes\Curator\Models;
 
 use Awcodes\Curator\Concerns\HasPackageFactory;
 use Awcodes\Curator\Facades\Curator;
+use Awcodes\Curator\Facades\Glide;
 use Awcodes\Curator\Observers\MediaObserver;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
@@ -14,8 +15,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
-use Intervention\Image\Drivers\Gd\Driver;
-use Intervention\Image\ImageManager;
 use Throwable;
 
 /**
@@ -152,7 +151,7 @@ class Media extends Model
                 $key = 'placeholder:'.$this->name.filemtime($this->full_path);
 
                 return Cache::rememberForever($key, function () {
-                    $manager = new ImageManager(new Driver());
+                    $manager = Glide::getServer()->getApi()->getImageManager();
                     $image = $manager->read($this->full_path);
                     $placeholder = $image->scaleDown(400)->blur(10)->toJpeg(30)->toString();
 

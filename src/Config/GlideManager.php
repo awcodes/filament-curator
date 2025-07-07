@@ -69,7 +69,6 @@ class GlideManager
     private function getDefaultServerConfig(): array
     {
         return [
-            'driver' => 'gd',
             'response' => new SymfonyResponseFactory(app('request')),
             'source' => storage_path('app'),
             'source_path_prefix' => 'public',

@@ -27,6 +27,7 @@ class MediaTable
                     ? static::getDefaultGridTableColumns()
                     : static::getDefaultTableColumns(),
             )
+            ->searchable(['title', 'caption', 'description'])
             ->recordActions([
                 EditAction::make(),
                 DeleteAction::make(),

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Awcodes\Curator\Components\Modals;
 
+use Awcodes\Curator\Facades\Glide;
 use Awcodes\Curator\Models\Media;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Storage;
-use Intervention\Image\Facades\Image;
 use Livewire\Component;
 
 class CuratorCuration extends Component
@@ -24,19 +24,17 @@ class CuratorCuration extends Component
 
     public function saveCuration($data = null): void
     {
-        if (in_array($this->media->disk, config('curator.cloud_disks'))) {
-            $filePath = Storage::disk($this->media->disk)->url($this->media->path);
-        } else {
-            $filePath = Storage::disk($this->media->disk)->path($this->media->path);
-        }
+        $filePath = Storage::disk($this->media->disk)->path($this->media->path);
 
-        $image = Image::make($filePath);
-        $extension = $data['format'] ?? $image->extension;
+        $manager =  Glide::getServer()->getApi()->getImageManager();
+        $image = $manager->read($filePath);
+        dd($image);
+        $extension = $data['format'] ?? $image->encodeByMediaType()->mediaType();
 
         $aspectWidth = floor(($data['canvasData']['width'] / $data['canvasData']['naturalWidth']) * $data['width']);
         $aspectHeight = floor(($data['canvasData']['height'] / $data['canvasData']['naturalHeight']) * $data['height']);
 
-        $image->orientate();
+        $image->orient();
 
         if ($image->exif('Orientation') > 1) {
             $rotateCorrection = match ($image->exif('Orientation')) {
@@ -77,7 +75,7 @@ class CuratorCuration extends Component
             'path' => $curationPath,
             'width' => $aspectWidth,
             'height' => $aspectHeight,
-            'size' => $image->filesize(),
+            'size' => $image->size(),
             'type' => $image->mime(),
             'ext' => $extension,
             'url' => Storage::disk($this->media->disk)->url($curationPath),

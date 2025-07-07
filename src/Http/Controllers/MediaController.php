@@ -10,11 +10,17 @@ use Awcodes\Curator\Models\Media;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Storage;
+use League\Glide\Filesystem\FileNotFoundException;
+use League\Glide\Filesystem\FilesystemException;
 use League\Glide\Signatures\SignatureException;
 use League\Glide\Signatures\SignatureFactory;
 
 class MediaController extends Controller
 {
+    /**
+     * @throws FilesystemException
+     * @throws FileNotFoundException
+     */
     public function show(Request $request, string $path, GlideManager $glide)
     {
         try {

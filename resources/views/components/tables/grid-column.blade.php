@@ -1,11 +1,12 @@
 @php
     $record = $getRecord();
+    $isSvg = curator()->isSvg($record->ext);
 @endphp
 
 <div {{ $attributes->merge($getExtraAttributes())->class(['curator-grid-column absolute inset-0 rounded-t-xl overflow-hidden aspect-video']) }}>
     <div @class([
         'rounded-t-xl h-full overflow-hidden bg-gray-100 dark:bg-gray-950/50',
-        'checkered' => curator()->isSvg($record->ext),
+        'checkered' => $isSvg,
     ])>
         <x-curator::display
             :item="$record"
@@ -15,8 +16,8 @@
             x-on:click="toggleSelectedRecord('{{ $record->id }}')"
             @class([
                 'h-full',
-                'w-auto mx-auto' => curator()->isSvg($record->ext),
-                'object-cover w-full' => ! curator()->isSvg($record->ext),
+                'w-auto mx-auto p-2' => $isSvg,
+                'object-cover w-full' => ! $isSvg,
             ])
         />
         <x-curator::display.info-overlay :label="$record->pretty_name" :size="$record->size" />

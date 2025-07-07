@@ -174,6 +174,7 @@
                                 :item="$file"
                                 :src="$file['thumbnail_url']"
                                 :alt="$file['alt'] ?? ''"
+                                icon-classes="size-12"
                                 width="200"
                                 height="200"
                             />

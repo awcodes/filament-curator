@@ -5,11 +5,10 @@ declare(strict_types=1);
 namespace Awcodes\Curator;
 
 use Awcodes\Curator\Facades\Curator;
+use Awcodes\Curator\Facades\Glide;
 use Exception;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Intervention\Image\Drivers\Gd\Driver;
-use Intervention\Image\ImageManager;
 
 class CuratorUtils
 {
@@ -59,7 +58,7 @@ class CuratorUtils
         }
 
         if (Curator::isResizable($ext)) {
-            $manager = new ImageManager(new Driver());
+            $manager =  Glide::getServer()->getApi()->getImageManager();
             $image = $manager->read($fileContents);
             $width = $image->width();
             $height = $image->height();

@@ -137,3 +137,9 @@
         @apply hidden;
     }
 }
+
+.fi-modal-window:has(.curation) {
+    .fi-input-wrp-prefix {
+        @apply w-20 flex justify-center;
+    }
+}

@@ -7,7 +7,7 @@
     @endif
     <select
         @class([
-            'block w-full !rounded-l-none transition duration-75 focus:border-primary-500 focus:ring-1 focus:ring-inset focus:ring-primary-500 disabled:opacity-70 rounded-lg shadow-sm bg-white text-sm border-none dark:text-white dark:focus:border-primary-500 dark:bg-gray-700',
+            'fi-select-input block w-full !rounded-l-none transition duration-75 focus:border-primary-500 focus:ring-1 focus:ring-inset focus:ring-primary-500 disabled:opacity-70 rounded-lg shadow-sm bg-white text-sm border-none dark:text-white dark:focus:border-primary-500 dark:bg-gray-700',
             "!rounded-lg" => ! $prefix,
         ])
         {{ $attributes->except(['prefix', 'suffix']) }}

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Awcodes\Curator\Concerns;
 
+use Awcodes\Curator\Facades\Curation;
+
 trait HasCurationPresets
 {
     public function getPresets(): ?array
     {
-        return collect(config('curator.curation_presets'))->map(function ($preset): array {
-            $preset = new $preset;
-
+        return collect(Curation::getPresets())->map(function ($preset): array {
             return [
                 'key' => $preset->getKey(),
                 'label' => $preset->getLabel(),

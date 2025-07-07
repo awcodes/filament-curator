@@ -186,7 +186,7 @@ class Glider extends Component
                 $srcset .= $this->buildGlideSource(['w' => $width, 'h' => $height]).' '.$s.', ';
             }
 
-            return Str::of($srcset)->rtrim(', ');
+            return (string) Str::of($srcset)->rtrim(', ');
         }
 
         return null;

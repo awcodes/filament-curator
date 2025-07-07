@@ -2,6 +2,9 @@
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/awcodes/filament-curator.svg?style=flat-square)](https://packagist.org/packages/awcodes/filament-curator)
 [![Total Downloads](https://img.shields.io/packagist/dt/awcodes/filament-curator.svg?style=flat-square)](https://packagist.org/packages/awcodes/filament-curator)
 
+> **Warning**
+> This branch is a work in progress, DO NOT use.
+
 # Filament Curator
 
 A media picker/manager plugin for Filament Admin.

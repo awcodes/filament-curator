@@ -75,6 +75,7 @@ class CuratorEditor extends Field
             ->color($this->getColor())
             ->outlined($this->isOutlined())
             ->size($this->getSize())
+            ->modalCloseButton(false)
             ->modalWidth('screen')
             ->modalFooterActions(fn (): array => [])->modalHeading(static fn (CuratorEditor $component): string => trans('curator::views.curation.heading').' '.$component->getRecord()->name)
             ->modalContent(static fn (CuratorEditor $component, Component $livewire) => View::make('curator::components.actions.curation-action', [

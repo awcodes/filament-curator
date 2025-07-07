@@ -73,5 +73,6 @@ return [
         'quality' => 'Quality',
         'rotate' => 'Rotate',
         'rotate_deg' => 'deg',
+        'preset' => 'Preset',
     ],
 ];
