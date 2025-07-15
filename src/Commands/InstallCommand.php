@@ -14,28 +14,32 @@ class InstallCommand extends Command
 {
     use CanManipulateFiles;
 
-    public $signature = 'curator:install';
+    public $signature = 'curator:install
+        {--use-uuid= : Use UUID for the primary key (default: false)}
+        {--tenancy-name= : The name of the tenant model (e.g., Team)}
+        {--run-migrations= : Run migrations after installation (default: false)}
+    ';
 
     public $description = 'Install Curator plugin into the app.';
 
     public function handle(): int
     {
         // use uuid
-        $useUuid = confirm(
+        $useUuid = $this->option('use-uuid') ?? confirm(
             label: 'Use UUID?',
             default: false,
         );
 
         // supports tenancy
         $tenancyName = null;
-        $useTenancy = confirm(
+        $useTenancy = $this->option('tenancy-name') ?? confirm(
             label: 'Use Tenancy?',
             default: false,
         );
 
         // ask for tenant model name
         if ($useTenancy) {
-            $tenancyName = text(
+            $tenancyName = $this->option('tenancy-name') ?? text(
                 label: 'Tenant Model?',
                 placeholder: 'Team',
                 required: true,
@@ -50,26 +54,35 @@ class InstallCommand extends Command
         ])->filter()->keys()->implode("\n");
 
         // handle migration stub
+
+        $migrationPath = database_path('migrations/'.date('Y_m_d_His', time()).'_create_curator_table.php');
+
         $this->copyStubToApp(
             'migration',
-            database_path('migrations/'.date('Y_m_d_His', time()).'_create_curator_table.php'),
+            $migrationPath,
             [
                 'use_uuid' => $useUuid ? '$table->uuid(\'id\')->primary();' : '$table->id();',
                 'tenancy_name' => $useTenancy ? str($tenancyName)->snake() : 'tenant',
             ]
         );
 
+        $this->info("Curator migration [{$migrationPath}] created successfully.");
+
         // handle model stub
         if ($useUuid || $useTenancy) {
+            $modelPath = app_path('Models/Media.php');
+
             $this->copyStubToApp(
                 'media',
-                app_path('Models/Media.php'),
+                $modelPath,
                 [
                     'imports' => $imports,
                     'traits' => $useUuid ? 'use HasUuids;' : '',
                     'tenancy' => $useTenancy ? 'public function '.str($tenancyName)->snake().'(): BelongsTo'.PHP_EOL.'    {'.PHP_EOL.'        return $this->belongsTo('.$tenancyName.'::class);'.PHP_EOL.'    }' : '',
                 ]
             );
+
+            $this->info("Media model [{$modelPath}] created successfully.");
 
             $this->callSilently('vendor:publish', [
                 '--tag' => 'curator-config',
@@ -105,7 +118,7 @@ class InstallCommand extends Command
         $this->call('curator:token');
 
         // ask to run migrations
-        if (confirm('Would you like to run the migrations now?')) {
+        if ($this->option('run-migrations') ?? confirm('Would you like to run the migrations now?')) {
             $this->comment('Running migrations...');
 
             $this->call('migrate');
