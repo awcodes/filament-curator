@@ -47,11 +47,11 @@ class CuratorCuration extends Component
         }
 
         if ($data['scaleX'] === -1) {
-            $image->flip('v');
+            $image->flip('h');
         }
 
         if ($data['scaleY'] === -1) {
-            $image->flip('h');
+            $image->flip('v');
         }
 
         $image->crop($data['width'], $data['height'], $data['x'], $data['y'])
