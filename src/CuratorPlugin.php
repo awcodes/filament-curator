@@ -51,7 +51,7 @@ class CuratorPlugin implements Plugin
     {
         $panel
             ->resources([
-                MediaResource::class,
+                config('curator.resource.resource', MediaResource::class),
             ]);
     }
 
