@@ -305,16 +305,18 @@ class CuratorPanel extends Component implements HasActions, HasForms
 
     public function updatedSearch(): void
     {
+        $flexibleSearch = str_replace([' ', '-', '_'], '%', $this->search);
+
         $this->files = $this->mediaClass
             ->query()
             ->when($this->isLimitedToDirectory, function ($query) {
                 return $query->where('directory', $this->directory);
             })
-            ->where('name', 'like', '%' . $this->search . '%')
-            ->orWhere('title', 'like', '%' . $this->search . '%')
-            ->orWhere('alt', 'like', '%' . $this->search . '%')
-            ->orWhere('caption', 'like', '%' . $this->search . '%')
-            ->orWhere('description', 'like', '%' . $this->search . '%')
+            ->where('name', 'like', '%' . $flexibleSearch . '%')
+            ->orWhere('title', 'like', '%' . $flexibleSearch . '%')
+            ->orWhere('alt', 'like', '%' . $flexibleSearch . '%')
+            ->orWhere('caption', 'like', '%' . $flexibleSearch . '%')
+            ->orWhere('description', 'like', '%' . $flexibleSearch . '%')
             ->limit(50)
             ->get()
             ->toArray();
