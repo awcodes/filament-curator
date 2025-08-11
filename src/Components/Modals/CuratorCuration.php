@@ -24,12 +24,12 @@ class CuratorCuration extends Component
 
     public function saveCuration($data = null): void
     {
-        $filePath = Storage::disk($this->media->disk)->path($this->media->path);
+        $storage = Storage::disk($this->media->disk);
+        $filePath = $storage->path($this->media->path);
 
-        $manager =  Glide::getServer()->getApi()->getImageManager();
+        $manager = Glide::getServer()->getApi()->getImageManager();
         $image = $manager->read($filePath);
-        dd($image);
-        $extension = $data['format'] ?? $image->encodeByMediaType()->mediaType();
+        $extension = $data['format'] ?? $this->media->ext;
 
         $aspectWidth = floor(($data['canvasData']['width'] / $data['canvasData']['naturalWidth']) * $data['width']);
         $aspectHeight = floor(($data['canvasData']['height'] / $data['canvasData']['naturalHeight']) * $data['height']);
@@ -50,21 +50,22 @@ class CuratorCuration extends Component
         }
 
         if ($data['scaleX'] === -1) {
-            $image->flip('v');
+            $image->flop();
         }
 
         if ($data['scaleY'] === -1) {
-            $image->flip('h');
+            $image->flip();
         }
 
-        $image->crop($data['width'], $data['height'], $data['x'], $data['y'])
-            ->resize($aspectWidth, $aspectHeight)
-            ->encode($extension, $data['quality'] ?? 60);
+        $encodedImage = $image
+            ->crop($data['width'], $data['height'], $data['x'], $data['y'])
+            ->resize((int) $aspectWidth, (int) $aspectHeight)
+            ->encodeByExtension(extension: $extension, quality: $data['quality'] ?? 60);
 
         // save image to directory base on media
         $curationPath = $this->media->directory.'/'.$this->media->name.'/'.$data['key'].'.'.$extension;
 
-        Storage::disk($this->media->disk)->put($curationPath, $image->stream());
+        $storage->put($curationPath, $encodedImage);
 
         $curation = [
             'key' => $data['key'] ?? $aspectWidth.'x'.$aspectHeight,
@@ -75,10 +76,10 @@ class CuratorCuration extends Component
             'path' => $curationPath,
             'width' => $aspectWidth,
             'height' => $aspectHeight,
-            'size' => $image->size(),
-            'type' => $image->mime(),
+            'size' => $storage->size($curationPath),
+            'type' => $encodedImage->mediaType(),
             'ext' => $extension,
-            'url' => Storage::disk($this->media->disk)->url($curationPath),
+            'url' => $storage->url($curationPath),
         ];
 
         $this->dispatch(

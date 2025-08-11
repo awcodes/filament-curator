@@ -58,7 +58,7 @@ class CuratorUtils
         }
 
         if (Curator::isResizable($ext)) {
-            $manager =  Glide::getServer()->getApi()->getImageManager();
+            $manager = Glide::getServer()->getApi()->getImageManager();
             $image = $manager->read($fileContents);
             $width = $image->width();
             $height = $image->height();

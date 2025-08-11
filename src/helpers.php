@@ -60,7 +60,7 @@ if (! function_exists('get_media_items')) {
         if (filled($ids)) {
             return app(Media::class)::whereIn('id', $ids)
                 ->get()
-                ->sortBy(fn ($model) => array_search($model->id, $ids));
+                ->sortBy(fn ($model): int|string|false => array_search($model->id, $ids));
         }
 
         return [];

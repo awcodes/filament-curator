@@ -150,7 +150,7 @@ class Media extends Model
             get: function (): string {
                 $key = 'placeholder:'.$this->name.filemtime($this->full_path);
 
-                return Cache::rememberForever($key, function () {
+                return Cache::rememberForever($key, function (): string {
                     $manager = Glide::getServer()->getApi()->getImageManager();
                     $image = $manager->read($this->full_path);
                     $placeholder = $image->scaleDown(400)->blur(10)->toJpeg(30)->toString();

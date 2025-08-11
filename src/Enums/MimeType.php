@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Awcodes\Curator\Enums;
 
 enum MimeType: string
@@ -80,6 +82,11 @@ enum MimeType: string
     case VideoQuicktime = 'video/quicktime';
     case VideoWebm = 'video/webm';
     case VideoXMsvideo = 'video/x-msvideo';
+
+    public static function toArray(): array
+    {
+        return array_column(self::cases(), 'value');
+    }
 
     public function getExt(): string
     {
@@ -237,10 +244,5 @@ enum MimeType: string
             self::VideoWebm => 'WEBM video',
             self::VideoXMsvideo => 'AVI: Audio Video Interleave',
         };
-    }
-
-    public static function toArray(): array
-    {
-        return array_column(self::cases(), 'value');
     }
 }

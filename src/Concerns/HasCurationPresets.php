@@ -10,16 +10,14 @@ trait HasCurationPresets
 {
     public function getPresets(): ?array
     {
-        return collect(Curation::getPresets())->map(function ($preset): array {
-            return [
-                'key' => $preset->getKey(),
-                'label' => $preset->getLabel(),
-                'width' => $preset->getWidth(),
-                'height' => $preset->getHeight(),
-                'format' => $preset->getFormat(),
-                'quality' => $preset->getQuality(),
-            ];
-        })->toArray();
+        return collect(Curation::getPresets())->map(fn ($preset): array => [
+            'key' => $preset->getKey(),
+            'label' => $preset->getLabel(),
+            'width' => $preset->getWidth(),
+            'height' => $preset->getHeight(),
+            'format' => $preset->getFormat(),
+            'quality' => $preset->getQuality(),
+        ])->toArray();
     }
 
     public function getPreset(string $key): ?array

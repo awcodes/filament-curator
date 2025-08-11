@@ -13,13 +13,12 @@ use Closure;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\BaseFileUpload;
 use Filament\Forms\Components\FileUpload;
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Intervention\Image\Drivers\Gd\Driver;
-use Intervention\Image\ImageManager;
 use League\Flysystem\UnableToCheckFileExistence;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use ReflectionClass;
@@ -96,6 +95,9 @@ class Uploader extends FileUpload
         });
     }
 
+    /**
+     * @throws BindingResolutionException
+     */
     public function getDirectory(): ?string
     {
         $directory = $this->directory ?? config('curator.directory');

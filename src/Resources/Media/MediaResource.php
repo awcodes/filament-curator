@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Awcodes\Curator\Resources\Media;
 
-use Awcodes\Curator\Components\Forms\Uploader;
-use Awcodes\Curator\Config\CuratorManager;
 use Awcodes\Curator\CuratorPlugin;
 use Awcodes\Curator\Models\Media;
 use Awcodes\Curator\Resources\Media\Pages\CreateMedia;

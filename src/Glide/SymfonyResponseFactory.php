@@ -13,19 +13,11 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class SymfonyResponseFactory implements ResponseFactoryInterface
 {
     /**
-     * Request object to check "is not modified".
-     */
-    protected ?Request $request;
-
-    /**
      * Create SymfonyResponseFactory instance.
      *
      * @param  Request|null  $request  Request object to check "is not modified".
      */
-    public function __construct(?Request $request = null)
-    {
-        $this->request = $request;
-    }
+    public function __construct(protected ?Request $request = null) {}
 
     /**
      * Create the response.
@@ -47,12 +39,12 @@ class SymfonyResponseFactory implements ResponseFactoryInterface
         $response->setMaxAge(31536000);
         $response->setExpires(date_create_immutable()->modify('+1 years'));
 
-        if ($this->request) {
+        if ($this->request instanceof Request) {
             $response->setLastModified(date_create_immutable()->setTimestamp($cache->lastModified($path)));
             $response->isNotModified($this->request);
         }
 
-        $response->setCallback(function () use ($stream) {
+        $response->setCallback(function () use ($stream): void {
             if (ftell($stream) !== 0) {
                 rewind($stream);
             }
