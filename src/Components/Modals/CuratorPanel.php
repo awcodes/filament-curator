@@ -324,8 +324,10 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
 
                 return $record ? $record->toArray() : [];
             })
-            ->action(function (array $data, Media $record): void {
+            ->action(function (array $data, array $arguments): void {
                 try {
+                    $record = App::make(Media::class)->find($arguments['item']['id']);
+
                     $record->update($data);
 
                     Notification::make('curator_update_success')

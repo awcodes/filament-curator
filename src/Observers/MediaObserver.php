@@ -96,6 +96,10 @@ class MediaObserver
 
     private function hasMediaUpload(Media $media): bool
     {
+        if (! isset($media->file)) {
+            return false;
+        }
+
         return is_array($media->file) || $media->file instanceof stdClass;
     }
 }

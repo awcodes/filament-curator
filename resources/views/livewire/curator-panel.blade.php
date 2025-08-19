@@ -165,8 +165,8 @@
                             type="button"
                             x-on:click="handleItemClick(@js($file))"
                             @class([
-                              'block w-full h-full overflow-hidden bg-gray-700 rounded-md',
-                              'p-2 checkered' => curator()->isSvg($file['ext']),
+                              'block w-full h-full overflow-hidden bg-gray-700 rounded-md checkered',
+                              'p-2' => curator()->isSvg($file['ext']),
                             ])
                         >
                             <x-curator::display
