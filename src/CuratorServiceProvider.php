@@ -90,6 +90,7 @@ class CuratorServiceProvider extends PackageServiceProvider
 
         FilamentAsset::register([
             AlpineComponent::make(id: 'curation', path: __DIR__ . '/../resources/dist/curation.js'),
+            AlpineComponent::make(id: 'richeditor-integration', path: __DIR__ . '/../resources/dist/richeditor-integration.js'),
             Css::make(id: 'curator', path: __DIR__ . '/../resources/dist/curator.css')->loadedOnRequest(),
         ], package: 'awcodes/curator');
     }
