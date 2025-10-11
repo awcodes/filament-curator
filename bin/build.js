@@ -45,12 +45,14 @@ const defaultOptions = {
 
 compile({
     ...defaultOptions,
-    entryPoints: ['./resources/js/curator.js'],
-    outfile: './resources/dist/curator.js',
+    entryPoints: ['./resources/js/curation.js'],
+    outfile: './resources/dist/curation.js',
+}).then(() => {
+    console.log('Curation JS build completed.')
 })
 
 compile({
     ...defaultOptions,
-    entryPoints: ['./resources/js/curation.js'],
-    outfile: './resources/dist/curation.js',
+    entryPoints: ['./resources/js/richeditor-integration.js'],
+    outfile: './resources/dist/richeditor-integration.js',
 })
