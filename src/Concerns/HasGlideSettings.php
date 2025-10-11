@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Awcodes\Curator\Concerns;
 
 use Awcodes\Curator\Glide\DefaultServerFactory;
@@ -10,7 +12,7 @@ trait HasGlideSettings
 {
     protected ?array $gliderFallbacks = [];
 
-    protected Server | ServerFactory | null $glideServer = null;
+    protected Server|ServerFactory|null $glideServer = null;
 
     public function getGliderFallback(string $key): ?array
     {
@@ -19,12 +21,10 @@ trait HasGlideSettings
 
     public function getGliderFallbacks(): ?array
     {
-        return collect($this->gliderFallbacks)->map(function ($preset) {
-            return $preset->getFallback();
-        })->toArray();
+        return collect($this->gliderFallbacks)->map(fn ($preset) => $preset->getFallback())->toArray();
     }
 
-    public function getGlideServer(): Server | ServerFactory
+    public function getGlideServer(): Server|ServerFactory
     {
         if (! $this->glideServer) {
             return (new DefaultServerFactory())->getFactory();
@@ -40,7 +40,7 @@ trait HasGlideSettings
         return $this;
     }
 
-    public function glideServer(Server | ServerFactory | null $server): static
+    public function glideServer(Server|ServerFactory|null $server): static
     {
         $this->glideServer = $server;
 

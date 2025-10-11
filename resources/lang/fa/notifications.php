@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'update_success' => 'رکورد با موفقیت به روز شد',
     'update_error' => 'هنگام به‌روزرسانی رکورد خطایی روی داد',

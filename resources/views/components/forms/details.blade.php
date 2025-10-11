@@ -20,10 +20,10 @@
         </div>
         <div>
             <dt class="{{ $labelClasses }}">
-                {{ trans('curator::views.details.file_type') }}
+                {{ trans('curator::views.details.mime_type') }}
             </dt>
             <dd class="{{ $dataClasses }}">
-                {{ filled($record) ? $record->mime : '-' }}
+                {{ filled($record) ? $record->type : '-' }}
             </dd>
         </div>
         <div>
@@ -64,7 +64,7 @@
             </dt>
             <dd class="{{ $dataClasses }}">
                 @if (filled($record))
-                    <div class="flex items-end justify-between gap-6">
+                    <div class="flex items-start justify-between gap-6">
                         <span class="truncate">{{ $record->url }}</span>
                         <button
                                 type="button"

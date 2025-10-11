@@ -1,23 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Awcodes\Curator\Concerns;
+
+use Awcodes\Curator\Facades\Curation;
 
 trait HasCurationPresets
 {
     public function getPresets(): ?array
     {
-        return collect(config('curator.curation_presets'))->map(function ($preset) {
-            $preset = new $preset;
-
-            return [
-                'key' => $preset->getKey(),
-                'label' => $preset->getLabel(),
-                'width' => $preset->getWidth(),
-                'height' => $preset->getHeight(),
-                'format' => $preset->getFormat(),
-                'quality' => $preset->getQuality(),
-            ];
-        })->toArray();
+        return collect(Curation::getPresets())->map(fn ($preset): array => [
+            'key' => $preset->getKey(),
+            'label' => $preset->getLabel(),
+            'width' => $preset->getWidth(),
+            'height' => $preset->getHeight(),
+            'format' => $preset->getFormat(),
+            'quality' => $preset->getQuality(),
+        ])->toArray();
     }
 
     public function getPreset(string $key): ?array

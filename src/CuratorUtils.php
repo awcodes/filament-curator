@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Awcodes\Curator;
 
 use Awcodes\Curator\Facades\Curator;
+use Awcodes\Curator\Facades\Glide;
 use Exception;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Intervention\Image\Facades\Image;
 
 class CuratorUtils
 {
@@ -17,18 +19,21 @@ class CuratorUtils
         string $path,
         ?string $disk = null,
         ?string $directory = null,
+        ?string $visibility = null,
         ?string $alt = null,
+        ?string $title = null,
         ?string $caption = null,
         ?string $description = null,
     ): array {
-        $disk = $disk ?? Curator::getDiskName();
-        $directory = $directory ?? Curator::getDirectory();
+        $disk ??= Curator::getDiskName();
+        $directory ??= Curator::getDirectory();
+        $visibility ??= Curator::getVisibility();
         $storage = Storage::disk($disk);
 
         if (str_starts_with($path, 'http')) {
             try {
                 $fileContents = file_get_contents($path);
-            } catch (Exception $e) {
+            } catch (Exception) {
                 throw new Exception("Could not download file from {$path}");
             }
         } else {
@@ -41,29 +46,29 @@ class CuratorUtils
             ? (string) Str::of(pathinfo($path, PATHINFO_FILENAME))->slug()
             : (string) Str::uuid();
 
-        $filepath = (string) Str::of($directory . '/' . $filename . '.' . $ext)->trim('/');
+        $filepath = (string) Str::of($directory.'/'.$filename.'.'.$ext)->trim('/');
 
         if ($storage->exists($filepath)) {
-            $filepath = (string) Str::of($directory . '/' . $filename . '-' . time() . '.' . $ext)->trim('/');
+            $filepath = (string) Str::of($directory.'/'.$filename.'-'.time().'.'.$ext)->trim('/');
         }
 
         if (! $storage->exists($filepath)) {
-            $storage->put($filepath, $fileContents, Curator::getVisibility());
+            $storage->put($filepath, $fileContents, $visibility);
             $fileContents = $storage->get($filepath);
         }
 
         if (Curator::isResizable($ext)) {
-            $image = Image::make($fileContents);
-            $image->orientate();
-            $width = $image->getWidth();
-            $height = $image->getHeight();
+            $manager = Glide::getServer()->getApi()->getImageManager();
+            $image = $manager->read($fileContents);
+            $width = $image->width();
+            $height = $image->height();
             $exif = $image->exif();
         }
 
         return [
             'disk' => $disk,
             'directory' => $directory,
-            'visibility' => Curator::getVisibility(),
+            'visibility' => $visibility,
             'name' => $filename,
             'path' => $filepath,
             'width' => $width ?? null,
@@ -72,6 +77,7 @@ class CuratorUtils
             'type' => $storage->mimeType($filepath),
             'ext' => $ext,
             'alt' => $alt ?? null,
+            'title' => $title ?? null,
             'description' => $description ?? null,
             'caption' => $caption ?? null,
             'exif' => $exif ?? null,

@@ -31,16 +31,20 @@
 }
 
 .checkered {
-    background-color: theme("colors.gray.200");
-    background-image: repeating-linear-gradient(45deg, theme("colors.gray.300") 25%, transparent 25%, transparent 75%, theme("colors.gray.300") 75%, theme("colors.gray.300")), repeating-linear-gradient(45deg, theme("colors.gray.300") 25%, theme("colors.gray.200") 25%, theme("colors.gray.200") 75%, theme("colors.gray.300") 75%, theme("colors.gray.300"));
+    background-color: var(--gray-200);
+    background-image:
+        repeating-linear-gradient(45deg, var(--gray-300) 25%, transparent 25%, transparent 75%, var(--gray-300) 75%, var(--gray-300)),
+        repeating-linear-gradient(45deg, var(--gray-300) 25%, var(--gray-200) 25%, var(--gray-200) 75%, var(--gray-300) 75%, var(--gray-300));
 
     background-position: 0 0, 10px 10px;
     background-size: 20px 20px;
 }
 
 .dark .checkered {
-    background-color: theme("colors.gray.800");
-    background-image: repeating-linear-gradient(45deg, theme("colors.gray.700") 25%, transparent 25%, transparent 75%, theme("colors.gray.700") 75%, theme("colors.gray.700")), repeating-linear-gradient(45deg, theme("colors.gray.700") 25%, theme("colors.gray.800") 25%, theme("colors.gray.800") 75%, theme("colors.gray.700") 75%, theme("colors.gray.700"));
+    background-color: var(--gray-800);
+    background-image:
+        repeating-linear-gradient(45deg, var(--gray-700) 25%, transparent 25%, transparent 75%, var(--gray-700) 75%, var(--gray-700)),
+        repeating-linear-gradient(45deg, var(--gray-700) 25%, var(--gray-800) 25%, var(--gray-800) 75%, var(--gray-700) 75%, var(--gray-700));
 }
 
 .fi-resource-media {
@@ -52,25 +56,41 @@
         .fi-ta-record:has(.curator-grid-column) {
             @apply block;
 
-            > div {
-                @apply flex-col p-0;
+            &.fi-selected {
+                @apply ring-primary-600 dark:ring-primary-500;
+            }
 
-                > div {
-                    @apply p-0;
+            .fi-ta-record-checkbox {
+                @apply absolute top-0 left-0 z-10 bg-black;
+
+                &:checked {
+                    @apply bg-primary-500;
                 }
             }
 
-            label {
-                @apply w-full h-auto aspect-video;
-                z-index: 1;
-            }
+            .fi-ta-record-content-ctn {
+                @apply p-0;
 
-            input:not(:checked) {
-                @apply bg-white dark:bg-gray-800;
-            }
+                > div:first-child {
+                    @apply flex-col p-0;
+                }
 
-            .fi-ta-actions {
-                @apply pb-3 px-3;
+                .fi-ta-record-content {
+                    @apply h-[9.5rem];
+                }
+
+                label {
+                    @apply w-full h-auto aspect-video;
+                    z-index: 1;
+                }
+
+                input:not(:checked) {
+                    @apply bg-white dark:bg-gray-800;
+                }
+
+                .fi-ta-actions {
+                    @apply flex flex-row pb-3 px-3;
+                }
             }
         }
     }
@@ -84,7 +104,7 @@
     right: 0;
     bottom: 0;
     z-index: 9999;
-    background-color: theme('colors.info.500');
+    background-color: var(--info-500);
     opacity: 0.25;
 }
 
@@ -110,35 +130,16 @@
     @apply bg-transparent border-dashed border-2 border-gray-950/5 dark:border-white/20;
 }
 
-[wire\:key*="open_curator_picker"],
-[wire\:key*="open_curation_panel"],
-.curator-panel {
-    > .fi-modal-window {
-        @apply !p-0;
+.fi-modal-window:has(.curator-panel) {
+    @apply !p-0;
 
-        > .fi-modal-header {
-            @apply py-2 px-4 border-b border-gray-300 dark:border-gray-800;
+    .fi-modal-header {
+        @apply hidden;
+    }
+}
 
-            .fi-modal-heading {
-                @apply text-base;
-            }
-
-            .fi-modal-close-btn {
-                margin-block-start: -0.75rem;
-
-                &:hover,
-                &:focus {
-                    @apply text-primary-500 !bg-transparent;
-                }
-            }
-        }
-
-        > .fi-modal-content {
-            position: relative;
-        }
-
-        > .fi-modal-footer {
-            @apply pb-0;
-        }
+.fi-modal-window:has(.curation) {
+    .fi-input-wrp-prefix {
+        @apply w-20 flex justify-center;
     }
 }

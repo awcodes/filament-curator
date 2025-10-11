@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'update_success' => 'Catatan berhasil diperbarui.',
     'update_error' => 'Terjadi kesalahan saat memperbarui catatan.',

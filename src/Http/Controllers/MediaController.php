@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Awcodes\Curator\Http\Controllers;
 
 use Awcodes\Curator\Config\GlideManager;
@@ -8,20 +10,26 @@ use Awcodes\Curator\Models\Media;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Storage;
+use League\Glide\Filesystem\FileNotFoundException;
+use League\Glide\Filesystem\FilesystemException;
 use League\Glide\Signatures\SignatureException;
 use League\Glide\Signatures\SignatureFactory;
 
 class MediaController extends Controller
 {
-    public function show(Request $request, $path, GlideManager $glide)
+    /**
+     * @throws FilesystemException
+     * @throws FileNotFoundException
+     */
+    public function show(Request $request, string $path, GlideManager $glide)
     {
         try {
             SignatureFactory::create($glide->getToken())
                 ->validateRequest(
-                    path: $glide->getBasePath() . '/' . $path,
+                    path: $glide->getBasePath().'/'.$path,
                     params: $request->all()
                 );
-        } catch (SignatureException $e) {
+        } catch (SignatureException) {
             abort(403);
         }
 

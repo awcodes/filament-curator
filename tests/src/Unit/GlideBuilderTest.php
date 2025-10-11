@@ -1,8 +1,8 @@
 <?php
 
-use Awcodes\Curator\Glide\GlideBuilder;
+declare(strict_types=1);
 
-use function Awcodes\Curator\glide_builder;
+use Awcodes\Curator\Glide\GlideBuilder;
 
 it('can return proper array from Glide builder', function () {
     $builder = GlideBuilder::make()->width(200)->height(200)->quality(80)->format('webp');

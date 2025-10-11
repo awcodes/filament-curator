@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Awcodes\Curator\Components\Modals\Concerns;
 
-use Illuminate\Support\Facades\Storage;
+use Awcodes\Curator\Models\Media;
 use Illuminate\Support\Str;
 
 trait InteractsWithStorage
@@ -13,7 +15,12 @@ trait InteractsWithStorage
 
     public function getDirectories(): void
     {
-        $directories = Storage::disk($this->diskName)->allDirectories();
+        $directories = Media::query()->select('directory')
+            ->whereNotNull('directory')
+            ->distinct()
+            ->get()
+            ->pluck('directory')
+            ->toArray();
 
         $this->directories = collect($directories)
             ->mapWithKeys(function ($item) {

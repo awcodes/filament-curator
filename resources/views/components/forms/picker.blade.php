@@ -18,7 +18,7 @@
                 'overflow-hidden bg-white border border-gray-300 rounded-lg shadow-sm divide-y divide-gray-300 dark:border-gray-700 dark:text-white dark:divide-gray-700 dark:bg-white/5' => $itemsCount > 0 && $shouldDisplayAsList,
             ])
             x-sortable
-            wire:end.stop="mountFormComponentAction('{{ $statePath }}', 'reorder', { items: $event.target.sortable.toArray() })"
+            wire:end.stop="mountAction('reorder', { items: $event.target.sortable.toArray() }, { schemaComponent: '{{ $getKey() }}' })"
         >
             @foreach ($items as $uuid => $item)
                 <li
@@ -31,9 +31,9 @@
                             <div class="curator-picker-list-preview flex-shrink-0 h-12 w-12 checkered">
                                 <x-curator::display
                                     :item="$item"
-                                    :src="curator()->getThumbnailUrl($item['path'])"
+                                    :src="$item['thumbnail_url']"
                                     :lazy="true"
-                                    icon-classes="size-24"
+                                    icon-classes="size-6"
                                 />
                             </div>
                             <div class="curator-picker-list-details min-w-0 overflow-hidden py-2">
@@ -78,7 +78,7 @@
                         >
                             <x-curator::display
                                 :item="$item"
-                                :src="$constrained ? curator()->getLargeUrl($item['path']) : curator()->getMediumUrl($item['path'])"
+                                :src="$constrained ? $item['large_url'] : $item['medium_url']"
                                 :lazy="true"
                                 icon-classes="size-24"
                                 :constrained="$constrained"

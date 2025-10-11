@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Awcodes\Curator\Components\Modals;
 
 use Awcodes\Curator\Components\Forms\Uploader;
@@ -8,30 +10,32 @@ use Awcodes\Curator\Components\Modals\Concerns\InteractsWithStorage;
 use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Models\Media;
 use Awcodes\Curator\PathGenerators\Contracts\PathGenerator;
-use Awcodes\Curator\Resources\MediaResource;
+use Awcodes\Curator\Resources\Media\Schemas\MediaForm;
 use Closure;
 use Exception;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
-use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
-use Filament\Support\Enums\MaxWidth as FilamentMaxWidth;
+use Filament\Schemas\Concerns\InteractsWithSchemas;
+use Filament\Schemas\Contracts\HasSchemas;
+use Filament\Schemas\Schema;
+use Filament\Support\Enums\Width;
+use Filament\Support\Icons\Heroicon;
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Storage;
-use Livewire\WithPagination;
 use Livewire\Component;
+use Livewire\WithPagination;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-class CuratorPanel extends Component implements HasActions, HasForms
+class CuratorPanel extends Component implements HasActions, HasSchemas
 {
     use HasBreadcrumbs;
     use InteractsWithActions;
-    use InteractsWithForms;
+    use InteractsWithSchemas;
     use InteractsWithStorage;
     use WithPagination;
 
@@ -57,7 +61,7 @@ class CuratorPanel extends Component implements HasActions, HasForms
 
     public bool $isLimitedToDirectory = false;
 
-    public bool | Closure $isTenantAware = true;
+    public bool|Closure $isTenantAware = true;
 
     public ?string $tenantOwnershipRelationshipName = null;
 
@@ -73,7 +77,7 @@ class CuratorPanel extends Component implements HasActions, HasForms
 
     public ?int $mediaId = null;
 
-    public PathGenerator | string | null $pathGenerator = null;
+    public PathGenerator|string|null $pathGenerator = null;
 
     public string $search = '';
 
@@ -83,7 +87,7 @@ class CuratorPanel extends Component implements HasActions, HasForms
 
     public ?string $modalId = null;
 
-    public ?string $statePath;
+    public ?string $statePath = null;
 
     public bool $shouldPreserveFilenames = false;
 
@@ -107,6 +111,8 @@ class CuratorPanel extends Component implements HasActions, HasForms
 
     public bool $showAll = false;
 
+    public ?array $rules = null;
+
     public function mount(): void
     {
         foreach ($this->settings as $key => $value) {
@@ -126,19 +132,14 @@ class CuratorPanel extends Component implements HasActions, HasForms
         $this->form->fill();
     }
 
-    public function form(Form $form): Form
+    /** @throws Exception */
+    public function form(Schema $schema): Schema
     {
-        if ($this->maxItems) {
-            $this->validationRules = array_filter($this->validationRules, function ($value) {
-                if ($value === 'array' || str_starts_with($value, 'max:')) {
-                    return false;
-                }
-
-                return true;
-            });
+        if ($this->maxItems !== null && $this->maxItems !== 0) {
+            $this->validationRules = array_filter($this->validationRules, fn ($value): bool => $value !== 'array' && ! str_starts_with((string) $value, 'max:'));
         }
 
-        return $form
+        return $schema
             ->statePath('panelData')
             ->schema([
                 Uploader::make('files_to_add')
@@ -167,9 +168,7 @@ class CuratorPanel extends Component implements HasActions, HasForms
     {
         $files = Media::query()
             ->where('directory', $this->directory)
-            ->when(filament()->hasTenancy() && $this->isTenantAware, function ($query) {
-                return $query->where($this->tenantOwnershipRelationshipName . '_id', filament()->getTenant()->id);
-            })
+            ->when(filament()->hasTenancy() && $this->isTenantAware, fn ($query) => $query->where($this->tenantOwnershipRelationshipName.'_id', filament()->getTenant()->id))
 //            ->when($this->selected, function ($query, $selected) {
 //                $selected = collect($selected)->pluck('id')->toArray();
 //
@@ -178,7 +177,7 @@ class CuratorPanel extends Component implements HasActions, HasForms
             ->when(filled($this->acceptedFileTypes) && ! $this->showAll, function ($query) {
                 $types = $this->acceptedFileTypes;
                 $query = $query->whereIn('type', $types);
-                $wildcardTypes = collect($types)->filter(fn ($type) => str_contains($type, '*'));
+                $wildcardTypes = collect($types)->filter(fn ($type): bool => str_contains($type, '*'));
                 $wildcardTypes?->map(fn ($type) => $query->orWhere('type', 'LIKE', str_replace('*', '%', $type)));
 
                 return $query;
@@ -193,27 +192,25 @@ class CuratorPanel extends Component implements HasActions, HasForms
 
         $items = $paginator->items();
 
-//        if (! $excludeSelected && $this->selected) {
-//            $selected = collect($this->selected)->pluck('id')->toArray();
-//
-//            $selectedItems = Media::query()
-//                ->whereIn('id', $selected)
-//                ->get()
-//                ->sortBy(function ($model) use ($selected) {
-//                    return array_search($model->id, $selected);
-//                });
-//
-//            array_unshift($items, ...$selectedItems);
-//
-//            $this->setMediaForm();
-//        }
+        //        if (! $excludeSelected && $this->selected) {
+        //            $selected = collect($this->selected)->pluck('id')->toArray();
+        //
+        //            $selectedItems = Media::query()
+        //                ->whereIn('id', $selected)
+        //                ->get()
+        //                ->sortBy(function ($model) use ($selected) {
+        //                    return array_search($model->id, $selected);
+        //                });
+        //
+        //            array_unshift($items, ...$selectedItems);
+        //
+        //            $this->setMediaForm();
+        //        }
 
         $this->getSubDirectories();
         $this->getBreadCrumbs();
 
-        return collect($items)->map(function ($item) {
-            return $item->toArray();
-        })->toArray();
+        return collect($items)->map(fn ($item) => $item->toArray())->toArray();
     }
 
     public function loadMoreFiles(): void
@@ -228,27 +225,23 @@ class CuratorPanel extends Component implements HasActions, HasForms
         ];
     }
 
-    public function removeFromFiles(int | string $id): void
+    public function removeFromFiles(int|string $id): void
     {
-        $this->files = collect($this->files)->reject(function ($selectedItem) use ($id) {
-            return $selectedItem['id'] === $id;
-        })->toArray();
+        $this->files = collect($this->files)->reject(fn (array $selectedItem): bool => $selectedItem['id'] === $id)->toArray();
     }
 
     public function updatedSearch(): void
     {
-        if (empty($this->search)) {
+        if ($this->search === '' || $this->search === '0') {
             $this->files = $this->getFiles();
         } else {
             $this->files = App::make(Media::class)
-                ->when($this->isLimitedToDirectory, function ($query) {
-                    return $query->where('directory', $this->directory);
-                })
-                ->where('name', 'like', '%' . $this->search . '%')
-                ->orWhere('title', 'like', '%' . $this->search . '%')
-                ->orWhere('alt', 'like', '%' . $this->search . '%')
-                ->orWhere('caption', 'like', '%' . $this->search . '%')
-                ->orWhere('description', 'like', '%' . $this->search . '%')
+                ->when($this->isLimitedToDirectory, fn ($query) => $query->where('directory', $this->directory))
+                ->where('name', 'like', '%'.$this->search.'%')
+                ->orWhere('title', 'like', '%'.$this->search.'%')
+                ->orWhere('alt', 'like', '%'.$this->search.'%')
+                ->orWhere('caption', 'like', '%'.$this->search.'%')
+                ->orWhere('description', 'like', '%'.$this->search.'%')
                 ->limit(50)
                 ->get()
                 ->toArray();
@@ -274,12 +267,8 @@ class CuratorPanel extends Component implements HasActions, HasForms
             ->size('sm')
             ->color('primary')
             ->label(trans('curator::views.panel.add_files'))
-            ->visible(function (): bool {
-                return count($this->form->getRawState()['files_to_add'] ?? []) !== 0;
-            })
-            ->disabled(function (): bool {
-                return count($this->form->getRawState()['files_to_add'] ?? []) === 0;
-            })
+            ->visible(fn (): bool => count($this->form->getRawState()['files_to_add'] ?? []) !== 0)
+            ->disabled(fn (): bool => count($this->form->getRawState()['files_to_add'] ?? []) === 0)
             ->action(function () use ($insertAfter): void {
                 $media = self::createMediaFiles();
 
@@ -315,23 +304,30 @@ class CuratorPanel extends Component implements HasActions, HasForms
             ->name('addInsertFiles')
             ->color('success')
             ->label(trans('curator::views.panel.use_selected_image'))
-            ->visible(function (): bool {
-                return count($this->form->getRawState()['files_to_add'] ?? []) !== 0;
-            });
+            ->visible(fn (): bool => count($this->form->getRawState()['files_to_add'] ?? []) !== 0);
     }
 
+    /**
+     * @throws BindingResolutionException
+     * @throws Exception
+     */
     public function editItemAction(): Action
     {
         return Action::make('editItem')
             ->label(trans('curator::views.panel.edit'))
             ->color('gray')
-            ->icon('heroicon-s-pencil')
-            ->modalWidth(FilamentMaxWidth::Medium)
-            ->record(fn (array $arguments) => Media::query()->where('id', $arguments['item']['id'])->first() ?? null)
-            ->fillForm(fn (Media $record) => $record->toArray())
-            ->form(App::make(MediaResource::class)->getAdditionalInformationFormSchema())
-            ->action(function (array $data, Media $record): void {
+            ->icon(Heroicon::Pencil)
+            ->modalWidth(Width::Medium)
+            ->schema(App::make(MediaForm::class)::getAdditionalInformationFormSchema())
+            ->fillForm(function (array $arguments): array {
+                $record = Media::query()->where('id', $arguments['item']['id'])->first() ?? null;
+
+                return $record ? $record->toArray() : [];
+            })
+            ->action(function (array $data, array $arguments): void {
                 try {
+                    $record = App::make(Media::class)->find($arguments['item']['id']);
+
                     $record->update($data);
 
                     Notification::make('curator_update_success')
@@ -352,10 +348,10 @@ class CuratorPanel extends Component implements HasActions, HasForms
         return Action::make('destroyItem')
             ->label(trans('curator::views.panel.edit_delete'))
             ->color('danger')
-            ->icon('heroicon-s-trash')
+            ->icon(Heroicon::Trash)
             ->requiresConfirmation()
             ->action(function (array $arguments): void {
-                if (empty($arguments)) {
+                if ($arguments === []) {
                     return;
                 }
 
@@ -390,7 +386,7 @@ class CuratorPanel extends Component implements HasActions, HasForms
             ->icon('heroicon-s-arrow-down-tray')
             ->color('gray')
             ->action(function (array $arguments): ?StreamedResponse {
-                if (empty($arguments)) {
+                if ($arguments === []) {
                     return null;
                 }
 
@@ -406,7 +402,7 @@ class CuratorPanel extends Component implements HasActions, HasForms
             ->color('success')
             ->label(trans('curator::views.panel.use_selected_image'))
             ->action(function (): void {
-                $this->dispatch('insert-media', type: 'media', statePath: $this->statePath, media: $this->selected);
+                $this->dispatch('insert-media', ['statePath' => $this->statePath, 'media' => $this->selected]);
             });
     }
 
@@ -417,12 +413,17 @@ class CuratorPanel extends Component implements HasActions, HasForms
             ->icon('heroicon-s-eye')
             ->color('gray')
             ->url(function (array $arguments): ?string {
-                if (empty($arguments)) {
+                if ($arguments === []) {
                     return null;
                 }
 
                 return $arguments['item']['url'] ?? null;
             }, true);
+    }
+
+    public function render(): View
+    {
+        return view('curator::livewire.curator-panel');
     }
 
     protected function createMediaFiles(): array
@@ -431,20 +432,15 @@ class CuratorPanel extends Component implements HasActions, HasForms
         $formData = $this->form->getState();
 
         foreach ($formData['files_to_add'] as $item) {
-            $item['exif'] = ! empty($item['exif']) ? Curator::sanitizeExif($item['exif']) : null;
-            $item['title'] = pathinfo($formData['originalFilenames'][$item['path']] ?? null, PATHINFO_FILENAME);
+            $item['exif'] = empty($item['exif']) ? null : Curator::sanitizeExif($item['exif']);
+            $item['title'] = pathinfo((string) ($formData['originalFilenames'][$item['path']] ?? null), PATHINFO_FILENAME);
 
             $media[] = tap(
                 App::make(Media::class)->create($item),
-                fn (Media $media) => $media->getPrettyName(),
+                fn (Media $media): string => $media->getPrettyName(),
             )->toArray();
         }
 
         return $media;
-    }
-
-    public function render(): View
-    {
-        return view('curator::livewire.curator-panel');
     }
 }

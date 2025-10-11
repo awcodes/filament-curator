@@ -8,7 +8,7 @@
     @endif
     <input
         @class([
-            "text-sm block w-full transition duration-75 border-none focus:border-primary-500 focus:ring-1 focus:ring-inset focus:ring-primary-500 disabled:opacity-70 dark:bg-gray-700 dark:text-white dark:focus:border-primary-500",
+            "fi-input text-sm block w-full transition duration-75 border-none focus:border-primary-500 focus:ring-1 focus:ring-inset focus:ring-primary-500 disabled:opacity-70 dark:bg-gray-700 dark:text-white dark:focus:border-primary-500",
             "!rounded-l-lg" => ! $prefix,
             "!rounded-r-lg" => ! $suffix,
         ])

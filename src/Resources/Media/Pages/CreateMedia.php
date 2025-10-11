@@ -1,8 +1,10 @@
 <?php
 
-namespace Awcodes\Curator\Resources\MediaResource;
+declare(strict_types=1);
 
-use Awcodes\Curator\Resources\MediaResource;
+namespace Awcodes\Curator\Resources\Media\Pages;
+
+use Awcodes\Curator\Resources\Media\MediaResource;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateMedia extends CreateRecord
@@ -12,7 +14,7 @@ class CreateMedia extends CreateRecord
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         if (blank($data['title'])) {
-            $data['title'] = pathinfo($data['originalFilename'], PATHINFO_FILENAME);
+            $data['title'] = pathinfo((string) $data['originalFilename'], PATHINFO_FILENAME);
         }
 
         unset($data['originalFilename']);

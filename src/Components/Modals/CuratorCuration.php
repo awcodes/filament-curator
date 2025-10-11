@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Awcodes\Curator\Components\Modals;
 
+use Awcodes\Curator\Facades\Glide;
 use Awcodes\Curator\Models\Media;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Storage;
-use Intervention\Image\Facades\Image;
 use Livewire\Component;
 
 class CuratorCuration extends Component
@@ -14,27 +16,25 @@ class CuratorCuration extends Component
 
     public string $modalId;
 
-    public ?array $presets;
+    public ?array $presets = null;
 
-    public ?array $formats;
+    public ?array $formats = null;
 
     public string $statePath;
 
     public function saveCuration($data = null): void
     {
-        if (in_array($this->media->disk, config('curator.cloud_disks'))) {
-            $filePath = Storage::disk($this->media->disk)->url($this->media->path);
-        } else {
-            $filePath = Storage::disk($this->media->disk)->path($this->media->path);
-        }
+        $storage = Storage::disk($this->media->disk);
+        $filePath = $storage->path($this->media->path);
 
-        $image = Image::make($filePath);
-        $extension = $data['format'] ?? $image->extension;
+        $manager = Glide::getServer()->getApi()->getImageManager();
+        $image = $manager->read($filePath);
+        $extension = $data['format'] ?? $this->media->ext;
 
         $aspectWidth = floor(($data['canvasData']['width'] / $data['canvasData']['naturalWidth']) * $data['width']);
         $aspectHeight = floor(($data['canvasData']['height'] / $data['canvasData']['naturalHeight']) * $data['height']);
 
-        $image->orientate();
+        $image->orient();
 
         if ($image->exif('Orientation') > 1) {
             $rotateCorrection = match ($image->exif('Orientation')) {
@@ -50,35 +50,36 @@ class CuratorCuration extends Component
         }
 
         if ($data['scaleX'] === -1) {
-            $image->flip('v');
+            $image->flop();
         }
 
         if ($data['scaleY'] === -1) {
-            $image->flip('h');
+            $image->flip();
         }
 
-        $image->crop($data['width'], $data['height'], $data['x'], $data['y'])
-            ->resize($aspectWidth, $aspectHeight)
-            ->encode($extension, $data['quality'] ?? 60);
+        $encodedImage = $image
+            ->crop($data['width'], $data['height'], $data['x'], $data['y'])
+            ->resize((int) $aspectWidth, (int) $aspectHeight)
+            ->encodeByExtension(extension: $extension, quality: $data['quality'] ?? 60);
 
         // save image to directory base on media
-        $curationPath = $this->media->directory . '/' . $this->media->name . '/' . $data['key'] . '.' . $extension;
+        $curationPath = $this->media->directory.'/'.$this->media->name.'/'.$data['key'].'.'.$extension;
 
-        Storage::disk($this->media->disk)->put($curationPath, $image->stream());
+        $storage->put($curationPath, $encodedImage);
 
         $curation = [
-            'key' => $data['key'] ?? $aspectWidth . 'x' . $aspectHeight,
+            'key' => $data['key'] ?? $aspectWidth.'x'.$aspectHeight,
             'disk' => $this->media->disk,
             'directory' => $this->media->name,
             'visibility' => $this->media->visibility,
-            'name' => ($data['key'] ?? $aspectWidth . 'x' . $aspectHeight) . '.' . $extension,
+            'name' => ($data['key'] ?? $aspectWidth.'x'.$aspectHeight).'.'.$extension,
             'path' => $curationPath,
             'width' => $aspectWidth,
             'height' => $aspectHeight,
-            'size' => $image->filesize(),
-            'type' => $image->mime(),
+            'size' => $storage->size($curationPath),
+            'type' => $encodedImage->mediaType(),
             'ext' => $extension,
-            'url' => Storage::disk($this->media->disk)->url($curationPath),
+            'url' => $storage->url($curationPath),
         ];
 
         $this->dispatch(

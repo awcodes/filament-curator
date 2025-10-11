@@ -20,8 +20,8 @@
 
     $resolution = $getResolution();
 
-    $height = $getHeight();
-    $width = $getWidth() ?? ($isRounded() ? $height : null);
+    $height = $getImageHeight();
+    $width = $getImageWidth() ?? ($isRounded() ? $height : null);
 @endphp
 
 <div
@@ -53,16 +53,16 @@
 
                 <x-curator::display
                     :item="$item"
-                    :src="glide()->getUrl($item->path, ['w' => $img_width, 'h' => $img_height, 'fit' => 'crop', 'fm' => 'webp'])"
+                    :src="$item->thumbnailUrl"
                     :lazy="true"
                     icon-classes="size-6"
                     :width="$width"
                     :height="$height"
                     @class([
                         'bg-gray-100 dark:bg-gray-950/50',
-                        'h-full w-auto' => str($item->mime)->contains('svg'),
+                        'h-full w-auto checkered' => curator()->isSvg($item->ext),
                         'max-w-none' => $height && ! $width,
-                        'object-cover object-center' => ! str($item->mime)->contains('svg') && ($isRounded() || $width || $height),
+                        'object-cover object-center' => ! curator()->isSvg($item->ext) && ($isRounded() || $width || $height),
                         'w-full h-full' => curator()->isDocument($item->ext)
                     ])
                 />

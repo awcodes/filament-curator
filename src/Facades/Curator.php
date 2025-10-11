@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Awcodes\Curator\Facades;
 
+use Awcodes\Curator\Concerns\UrlProvider;
 use Awcodes\Curator\Config\CuratorManager;
 use Closure;
 use Illuminate\Support\Facades\Facade;
@@ -18,6 +21,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static CuratorManager maxSize(string | Closure | null $maxSize)
  * @method static CuratorManager minSize(string | Closure | null $minSize)
  * @method static CuratorManager preserveFilenames(bool | Closure $shouldPreserveFilenames)
+ * @method static CuratorManager urlProvider(UrlProvider | string | Closure $provider)
  * @method static CuratorManager visibility(string | Closure | null $visibility)
  * @method static array getAcceptedFileTypes()
  * @method static string getDiskName()
@@ -28,15 +32,15 @@ use Illuminate\Support\Facades\Facade;
  * @method static string | null getImageResizeTargetWidth()
  * @method static string | null getMaxSize()
  * @method static string | null getMinSize()
- * @method static string getLargeUrl(string $path)
- * @method static string getMediumUrl(string $path)
- * @method static string getThumbnailUrl(string $path)
+ * @method static UrlProvider getUrlProvider()
  * @method static string | null getVisibility()
  * @method static bool | null shouldPreserveFilenames()
  * @method static bool isResizable(string $ext)
  * @method static bool isPreviewable(string $ext)
  * @method static bool isVideo(string $ext)
  * @method static bool isDocument(string $ext)
+ * @method static bool isSvg(string $ext)
+ * @method static bool isAudio(string $ext)
  * @method static bool isUsingCloudinary()
  * @method static bool isUsingCloudDisk()
  * @method static bool isUsingGCS()

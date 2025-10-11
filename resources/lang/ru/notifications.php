@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'update_success' => 'Запись обновлена успешно.',
     'update_error' => 'При обновлении записи произошла ошибка.',

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Awcodes\Curator\PathGenerators;
 
 use Awcodes\Curator\PathGenerators\Contracts\PathGenerator;

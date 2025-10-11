@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'update_success' => 'Der Datensatz wurde erfolgreich aktualisiert.',
     'update_error' => 'Beim Aktualisieren des Datensatzes ist ein Fehler aufgetreten.',

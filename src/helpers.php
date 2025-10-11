@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Awcodes\Curator\Config\CurationManager;
 use Awcodes\Curator\Config\CuratorManager;
 use Awcodes\Curator\Config\GlideManager;
@@ -43,7 +45,7 @@ if (! function_exists('is_media_resizable')) {
 }
 
 if (! function_exists('get_media_items')) {
-    function get_media_items(array | Media | int $ids): Collection | array
+    function get_media_items(array|Media|int $ids): Collection|array
     {
         if ($ids instanceof Media) {
             return [$ids];
@@ -58,9 +60,7 @@ if (! function_exists('get_media_items')) {
         if (filled($ids)) {
             return app(Media::class)::whereIn('id', $ids)
                 ->get()
-                ->sortBy(function ($model) use ($ids) {
-                    return array_search($model->id, $ids);
-                });
+                ->sortBy(fn ($model): int|string|false => array_search($model->id, $ids));
         }
 
         return [];

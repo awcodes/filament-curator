@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Awcodes\Curator\DTO;
 
 class MediaDTO
@@ -15,8 +17,7 @@ class MediaDTO
         public ?int $height = null,
         public ?bool $isResizable = null,
         public ?bool $isPreviewable = null,
-    ) {
-    }
+    ) {}
 
     public function getName(): ?string
     {

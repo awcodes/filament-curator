@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Awcodes\Curator\Config\Concerns;
 
 use Awcodes\Curator\Glide\GliderFallback;

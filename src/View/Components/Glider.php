@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Awcodes\Curator\View\Components;
 
 use Awcodes\Curator\Config\GlideManager;
-use Awcodes\Curator\CuratorUtils;
 use Awcodes\Curator\DTO\MediaDTO;
 use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Models\Media;
@@ -25,7 +26,7 @@ class Glider extends Component
      * @throws Exception
      */
     public function __construct(
-        public int | Media | string $media,
+        public int|Media|string $media,
         public ?string $fallback = null,
         public ?array $srcset = null,
         public ?string $sizes = null,
@@ -68,7 +69,7 @@ class Glider extends Component
             $this->handleMedia($media);
         }
 
-        if (! $this->mediaItem) {
+        if (! $this->mediaItem instanceof MediaDTO) {
             throw new Exception(message: 'Invalid media item provided to Glider component.');
         }
     }
@@ -79,14 +80,14 @@ class Glider extends Component
 
         $this->mediaItem = new MediaDTO(
             path: $media,
-            isResizable: CuratorUtils::isResizable($extension),
-            isPreviewable: CuratorUtils::isPreviewable($extension),
+            isResizable: Curator::isResizable($extension),
+            isPreviewable: Curator::isPreviewable($extension),
         );
     }
 
     public function handleInt(int $media): void
     {
-        $media = Curator::getModel()->where('id', $media)->first();
+        $media = app(Media::class)->where('id', $media)->first();
 
         if (! $this->media && $this->fallback) {
             $fallback = app(GlideManager::class)->getGliderFallback($this->fallback);
@@ -176,35 +177,29 @@ class Glider extends Component
     public function buildSrcSet(): ?string
     {
         $srcset = '';
-        if ($this->srcset) {
+        if ($this->srcset !== null && $this->srcset !== []) {
             foreach ($this->srcset as $s) {
-                $width = preg_replace("/\D/", '', $s);
+                $width = preg_replace("/\D/", '', (string) $s);
 
-                if ($this->height === 'auto') {
-                    $height = null;
-                } else {
-                    $height = floor($width * ($this->media->height / $this->media->width));
-                }
+                $height = $this->height === 'auto' ? null : floor($width * ($this->media->height / $this->media->width));
 
-                $srcset .= $this->buildGlideSource(['w' => $width, 'h' => $height]) . ' ' . $s . ', ';
+                $srcset .= $this->buildGlideSource(['w' => $width, 'h' => $height]).' '.$s.', ';
             }
 
-            return Str::of($srcset)->rtrim(', ');
+            return (string) Str::of($srcset)->rtrim(', ');
         }
 
         return null;
     }
 
-    public function render(): View | Closure | string
+    public function render(): View|Closure|string
     {
         $this->source = $this->buildGlideSource();
 
-        if ($this->srcset) {
+        if ($this->srcset !== null && $this->srcset !== []) {
             $this->sourceSet = $this->buildSrcSet();
         }
 
-        return function (array $data) {
-            return 'curator::components.glider';
-        };
+        return fn (array $data): string => 'curator::components.glider';
     }
 }

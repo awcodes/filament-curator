@@ -1,16 +1,33 @@
-# Filament Curator
-
+![curator-og](https://res.cloudinary.com/aw-codes/image/upload/w_1200,f_auto,q_auto/plugins/curator/awcodes-curator.jpg)
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/awcodes/filament-curator.svg?style=flat-square)](https://packagist.org/packages/awcodes/filament-curator)
 [![Total Downloads](https://img.shields.io/packagist/dt/awcodes/filament-curator.svg?style=flat-square)](https://packagist.org/packages/awcodes/filament-curator)
 
+> [!CAUTION]
+> This branch is a work in progress, DO NOT use.
+
+# Filament Curator
+
 A media picker/manager plugin for Filament Admin.
 
-> **Warning**
+> [!Warning]
 > This package does not work with Spatie Media Library.
 
-![curator-og](https://res.cloudinary.com/aw-codes/image/upload/w_1200,f_auto,q_auto/plugins/curator/awcodes-curator.jpg)
+## Compatibility
 
-<!-- docs_start -->
+| Package Version | Filament Version |
+|-----------------|------------------|
+| 1.x             | 2.x              |
+| 2.x             | 2.x              |
+| 3.x             | 3.x              |
+| 4.x             | 4.x              |
+
+## Upgrading from v3 to v4
+
+TODO: This section will be updated soon.
+
+```bash
+php artisan curator:upgrade
+```
 
 ## Installation
 
@@ -24,54 +41,21 @@ composer require awcodes/filament-curator
 php artisan curator:install
 ```
 
-***If you are using the stand-alone forms package then you will need to include the Curator modal in your layout file, typically you would place this, before the closing `body` tag.***
+> [!NOTE]
+> If you are using the stand-alone forms package then you will need to include the Curator modal in your layout file, typically you would place this, before the closing `body` tag.
 
 ```html
 <x-curator::modals.modal />
 ```
 
-In an effort to align with Filament's theming methodology you will need to use a custom theme to use this plugin.
+> [!IMPORTANT]
+> If you have not set up a custom theme and are using Filament Panels follow the instructions in the [Filament Docs](https://filamentphp.com/docs/4.x/styling/overview#creating-a-custom-theme) first.
 
-> **Note**
-> If you have not set up a custom theme and are using a Panel follow the instructions in the [Filament Docs](https://filamentphp.com/docs/3.x/panels/themes#creating-a-custom-theme) first. The following applies to both the Panels Package and the standalone Forms package.
-
-You will also need to add cropper.js.
-
-```bash
-npm install -D cropperjs
-```
-
-1. Import the plugin's stylesheet and cropperjs' stylesheet into your theme's css file.
+After setting up a custom theme add the plugin's views to your theme css file or your app's css file if using the standalone packages.
 
 ```css
-@import '<path-to-node-modules>/cropperjs/dist/cropper.css';
-@import '<path-to-vendor>/awcodes/filament-curator/resources/css/plugin.css';
+@source '../../../../vendor/awcodes/filament-curator/resources/**/*.blade.php';
 ```
-
-2. Add the plugin's views to your `tailwind.config.js` file.
-
-```js
-content: [
-    './vendor/awcodes/filament-curator/resources/**/*.blade.php',
-]
-```
-
-## Upgrading
-
-If you are upgrading from 2.x to 3.x you will also need to run:
-
-```bash
-php artisan curator:upgrade
-```
-
-This will update Curator's database schema and create a backup of your media table that can be deleted after upgrade
-should you choose to do so.
-
-### Additional Steps
-
-1. `CurationPreset` will need to be updated to the [new format](#curation-presets).
-2. `GliderFallback` will need to be updated to the [new format](#glider-fallback-images).
-3. Custom Glide Server Factories will need to be updated to use the [new format](#custom-glide-server).
 
 ## Usage
 
@@ -88,11 +72,13 @@ php artisan vendor:publish --tag="curator-config"
 If you are using Filament Panels you will need to add the Plugin to you Panel's configuration. This will register the plugin's resources with the Panel. All methods are optional, and will be read from the config file if not provided.
 
 ```php
+use Awcodes\Curator\CuratorPlugin;
+
 public function panel(Panel $panel): Panel
 {
     return $panel
         ->plugins([
-            \Awcodes\Curator\CuratorPlugin::make()
+            CuratorPlugin::make()
                 ->label('Media')
                 ->pluralLabel('Media')
                 ->navigationIcon('heroicon-o-photo')
@@ -545,17 +531,11 @@ class CustomMedia extends Media
 'model' => \App\Models\Cms\Media::class,
 ```
 
-<!-- docs_end -->
-
 ## Testing
 
 ```bash
 composer test
 ```
-
-## Changelog
-
-Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
 
 ## Contributing
 
@@ -563,7 +543,7 @@ Please see [CONTRIBUTING](.github/CONTRIBUTING.md) for details.
 
 ## Security Vulnerabilities
 
-Please review [our security policy](../../security/policy) on how to report security vulnerabilities.
+Please review [our security policy](.github/SECURITY.md) on how to report security vulnerabilities.
 
 ## Credits
 

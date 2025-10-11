@@ -1,8 +1,10 @@
 <?php
 
-namespace Awcodes\Curator\Resources\MediaResource;
+declare(strict_types=1);
 
-use Awcodes\Curator\Resources\MediaResource;
+namespace Awcodes\Curator\Resources\Media\Pages;
+
+use Awcodes\Curator\Resources\Media\MediaResource;
 use Exception;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
@@ -12,9 +14,7 @@ class EditMedia extends EditRecord
 {
     protected static string $resource = MediaResource::class;
 
-    /**
-     * @throws Exception
-     */
+    /** @throws Exception */
     public function getHeaderActions(): array
     {
         return [
@@ -31,13 +31,13 @@ class EditMedia extends EditRecord
 
     protected function afterSave(): void
     {
-        $state = $this->getForm('form')->getRawState();
+        $state = $this->getSchema('form')->getRawState();
 
         if ($state['file'] !== null) {
-            $livewire = $this->getForm('form')->getLivewire();
-            $statePath = $this->getForm('form')->getStatePath();
+            $livewire = $this->getSchema('form')->getLivewire();
+            $statePath = $this->getSchema('form')->getStatePath();
 
-            data_set($livewire, $statePath . '.file', null);
+            data_set($livewire, $statePath.'.file', null);
         }
     }
 }

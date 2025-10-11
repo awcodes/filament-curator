@@ -45,13 +45,16 @@
 @else
     <div
         @class([
-            'curator-document-image grid place-items-center w-full h-full text-xs uppercase relative',
+            'curator-document-image grid place-items-center w-full h-full text-xs uppercase relative bg-gray-100 dark:bg-gray-900',
             $attributes->get('class')
         ])
         {{ $attributes->except(['src', 'alt', 'lazy', 'item', 'class']) }}
     >
         @if (curator()->isVideo($item->ext))
             @svg('heroicon-o-film', ['class' => 'opacity-20 ' . $iconClasses])
+            <span class="block absolute">{{ $item->ext }}</span>
+        @elseif (curator()->isAudio($item->ext))
+            @svg('heroicon-o-speaker-wave', ['class' => 'opacity-20 ' . $iconClasses])
             <span class="block absolute">{{ $item->ext }}</span>
         @else
             @svg('heroicon-o-document', ['class' => 'opacity-20 ' . $iconClasses])

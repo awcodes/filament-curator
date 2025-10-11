@@ -1,48 +1,51 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Awcodes\Curator\Concerns;
 
+use Awcodes\Curator\Enums\MimeType;
 use Closure;
 
 trait CanUploadFiles
 {
-    protected array | Closure | null $acceptedFileTypes = null;
+    protected array|Closure|null $acceptedFileTypes = null;
 
-    protected string | Closure | null $directory = null;
+    protected string|Closure|null $directory = null;
 
-    protected string | Closure | null $diskName = null;
+    protected string|Closure|null $diskName = null;
 
-    protected string | Closure | null $imageCropAspectRatio = null;
+    protected string|Closure|null $imageCropAspectRatio = null;
 
-    protected string | Closure | null $imageResizeMode = null;
+    protected string|Closure|null $imageResizeMode = null;
 
-    protected string | Closure | null $imageResizeTargetHeight = null;
+    protected string|Closure|null $imageResizeTargetHeight = null;
 
-    protected string | Closure | null $imageResizeTargetWidth = null;
+    protected string|Closure|null $imageResizeTargetWidth = null;
 
-    protected string | Closure | null $maxSize = null;
+    protected int|Closure|null $maxSize = null;
 
-    protected string | Closure | null $minSize = null;
+    protected int|Closure|null $minSize = null;
 
-    protected bool | Closure $shouldPreserveFilenames = false;
+    protected bool|Closure $shouldPreserveFilenames = false;
 
-    protected string | Closure | null $visibility = null;
+    protected string|Closure|null $visibility = null;
 
-    public function acceptedFileTypes(array | Closure $types): static
+    public function acceptedFileTypes(array|Closure $types): static
     {
         $this->acceptedFileTypes = $types;
 
         return $this;
     }
 
-    public function directory(Closure | string | null $directory): static
+    public function directory(Closure|string|null $directory): static
     {
         $this->directory = $directory;
 
         return $this;
     }
 
-    public function disk(string | Closure $disk): static
+    public function disk(string|Closure $disk): static
     {
         $this->diskName = $disk;
 
@@ -51,18 +54,13 @@ trait CanUploadFiles
 
     public function getAcceptedFileTypes(): array
     {
-        return $this->evaluate($this->acceptedFileTypes) ?? [
-            'image/jpeg',
-            'image/png',
-            'image/webp',
-            'image/svg+xml',
-            'application/pdf',
-        ];
+        return $this->evaluate($this->acceptedFileTypes)
+            ?? MimeType::toArray();
     }
 
     public function getDiskName(): string
     {
-        return $this->evaluate($this->diskName) ?? config('filament.default_filesystem_disk');
+        return $this->evaluate($this->diskName) ?? config('curator.default_disk');
     }
 
     public function getDirectory(): ?string
@@ -90,12 +88,12 @@ trait CanUploadFiles
         return $this->evaluate($this->imageResizeTargetWidth) ?? null;
     }
 
-    public function getMaxSize(): ?string
+    public function getMaxSize(): int
     {
         return $this->evaluate($this->maxSize) ?? 5000;
     }
 
-    public function getMinSize(): ?string
+    public function getMinSize(): int
     {
         return $this->evaluate($this->minSize) ?? 0;
     }
@@ -105,49 +103,49 @@ trait CanUploadFiles
         return $this->evaluate($this->visibility) ?? 'public';
     }
 
-    public function imageCropAspectRatio(string | Closure | null $ratio): static
+    public function imageCropAspectRatio(string|Closure|null $ratio): static
     {
         $this->imageCropAspectRatio = $ratio;
 
         return $this;
     }
 
-    public function imageResizeMode(string | Closure | null $mode): static
+    public function imageResizeMode(string|Closure|null $mode): static
     {
         $this->imageResizeMode = $mode;
 
         return $this;
     }
 
-    public function imageResizeTargetHeight(string | Closure | null $height): static
+    public function imageResizeTargetHeight(string|Closure|null $height): static
     {
         $this->imageResizeTargetHeight = $height;
 
         return $this;
     }
 
-    public function imageResizeTargetWidth(string | Closure | null $width): static
+    public function imageResizeTargetWidth(string|Closure|null $width): static
     {
         $this->imageResizeTargetWidth = $width;
 
         return $this;
     }
 
-    public function maxSize(int | Closure $size): static
+    public function maxSize(int|Closure $size): static
     {
         $this->maxSize = $size;
 
         return $this;
     }
 
-    public function minSize(int | Closure $size): static
+    public function minSize(int|Closure $size): static
     {
         $this->minSize = $size;
 
         return $this;
     }
 
-    public function preserveFilenames(bool | Closure $condition = true): static
+    public function preserveFilenames(bool|Closure $condition = true): static
     {
         $this->shouldPreserveFilenames = $condition;
 
@@ -159,7 +157,7 @@ trait CanUploadFiles
         return $this->evaluate($this->shouldPreserveFilenames) ?? false;
     }
 
-    public function visibility(string | Closure $visibility): static
+    public function visibility(string|Closure $visibility): static
     {
         $this->visibility = $visibility;
 

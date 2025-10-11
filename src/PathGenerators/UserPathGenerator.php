@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Awcodes\Curator\PathGenerators;
 
 use Awcodes\Curator\PathGenerators\Contracts\PathGenerator;
@@ -11,6 +13,6 @@ class UserPathGenerator implements PathGenerator
     {
         $user = Auth::user();
 
-        return ($baseDir ? $baseDir . '/' : '') . $user->getAuthIdentifier();
+        return ($baseDir !== null && $baseDir !== '' && $baseDir !== '0' ? $baseDir.'/' : '').$user->getAuthIdentifier();
     }
 }

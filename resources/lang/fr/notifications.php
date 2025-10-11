@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'update_success' => 'Le média a été mis à jour avec succès !',
     'update_error' => 'Il y a eu une erreur lors de la mise à jour du média.',

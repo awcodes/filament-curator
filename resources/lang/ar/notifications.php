@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'update_success' => 'تم تحديث السجل بنجاح',
     'update_error' => 'حدث خطأ أثناء تحديث السجل',

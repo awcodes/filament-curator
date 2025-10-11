@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'sections' => [
         'details' => 'Details',
@@ -7,9 +9,9 @@ return [
         'file' => 'File',
         'meta' => 'Meta',
         'preview' => 'Preview',
-        'upload_new' => 'Upload New',
+        'replace' => 'Replace',
         'upload_new_helper' => 'If you have any curations for this media you will possibly need to recreate them, it will not happen automatically.',
-        'curation' => 'Curation',
+        'curation' => 'Curations',
     ],
     'fields' => [
         'alt' => 'Alt Text',

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Awcodes\Curator\Curations;
 
 use Illuminate\Support\Str;
@@ -9,12 +11,11 @@ class CurationPreset
     final public function __construct(
         public string $key,
         public string $label,
-        public int $height,
-        public string $format,
-        public int $quality,
-        public int $width,
-    ) {
-    }
+        public ?int $height,
+        public ?string $format,
+        public ?int $quality,
+        public ?int $width,
+    ) {}
 
     public static function make(string $label): static
     {
@@ -66,21 +67,21 @@ class CurationPreset
 
     public function getHeight(): int
     {
-        return $this->height;
+        return $this->height ?? 200;
     }
 
     public function getFormat(): string
     {
-        return $this->format;
+        return $this->format ?? 'jpg';
     }
 
     public function getQuality(): int
     {
-        return $this->quality;
+        return $this->quality ?? 100;
     }
 
     public function getWidth(): int
     {
-        return $this->width;
+        return $this->width ?? 200;
     }
 }

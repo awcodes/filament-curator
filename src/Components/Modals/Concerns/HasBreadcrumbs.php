@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Awcodes\Curator\Components\Modals\Concerns;
 
 trait HasBreadcrumbs
@@ -19,7 +21,7 @@ trait HasBreadcrumbs
         ];
     }
 
-    public function generateBreadcrumbs($currentDir, $dirs): array
+    public function generateBreadcrumbs($currentDir, array $dirs): array
     {
         if (! $currentDir) {
             return [];
