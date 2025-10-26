@@ -21,6 +21,7 @@ Curator v4 brings significant architectural improvements and breaking changes:
 - **Asset Management**: Complete overhaul using Tailwind 4's new system
 
 ### Configuration Restructuring
+- **Database table renamed**: `media` → `curator` (requires migration or model override)
 - Flattened config structure reorganized into nested groups
 - Many config keys renamed or relocated
 - New required environment variables
@@ -46,9 +47,70 @@ Update your `composer.json`:
 composer require awcodes/filament-curator:^4.0 filament/filament:^4.0
 ```
 
-### Step 2: Remove cropper.js Dependency
+### Step 2: Handle Database Table Name Change (CRITICAL)
 
-> **Important Note**: Unlike the v2→v3 upgrade, there is **no database migration** required for v3→v4. The database schema remains the same. The `curator:upgrade` command (which was for v2→v3) does not exist in v4.
+**Breaking Change**: Curator v4 changes the database table name from `media` to `curator`.
+
+You have **two options** to handle this:
+
+#### Option 1: Rename Your Database Table (Recommended)
+
+Rename the existing `media` table to `curator`:
+
+```php
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::rename('media', 'curator');
+    }
+
+    public function down(): void
+    {
+        Schema::rename('curator', 'media');
+    }
+};
+```
+
+Run the migration:
+
+```bash
+php artisan make:migration rename_media_table_to_curator
+# Add the code above, then:
+php artisan migrate
+```
+
+#### Option 2: Override the Table Name in Your Model
+
+If you cannot rename the table, extend the Media model and override the table name:
+
+```php
+// app/Models/Media.php
+namespace App\Models;
+
+use Awcodes\Curator\Models\Media as CuratorMedia;
+
+class Media extends CuratorMedia
+{
+    protected $table = 'media'; // Keep using 'media' table
+}
+```
+
+Then update your `config/curator.php`:
+
+```php
+return [
+    'model' => \App\Models\Media::class,
+    // ... rest of config
+];
+```
+
+> **Note**: The table structure itself hasn't changed - only the table name. No schema migration is needed.
+
+### Step 3: Remove cropper.js Dependency
 
 Curator v4 no longer requires cropper.js. Remove it from your `package.json`:
 
@@ -56,7 +118,7 @@ Curator v4 no longer requires cropper.js. Remove it from your `package.json`:
 npm uninstall cropperjs
 ```
 
-### Step 3: Update Theme CSS Files (CRITICAL)
+### Step 4: Update Theme CSS Files (CRITICAL)
 
 This is the most critical change due to Tailwind 4's new CSS-first architecture.
 
@@ -142,7 +204,7 @@ If `tailwindcss()` is missing, install it:
 npm install -D @tailwindcss/vite
 ```
 
-### Step 4: Rebuild Your Assets
+### Step 5: Rebuild Your Assets
 
 After updating your theme files:
 
@@ -152,7 +214,7 @@ php artisan filament:assets
 php artisan optimize:clear
 ```
 
-### Step 5: Update Configuration File
+### Step 6: Update Configuration File
 
 Publish the new config file (this will overwrite your existing one, so **backup first**):
 
@@ -262,7 +324,7 @@ These v3 config keys have been removed in v4:
 - `tabs.display_upload_new` - Removed
 - `table.layout` - Use `resource.default_layout`
 
-### Step 6: Generate Glide Token
+### Step 7: Generate Glide Token
 
 v4 requires a secure token for Glide image serving. Generate one:
 
@@ -272,7 +334,7 @@ php artisan curator:token
 
 This will add `CURATOR_GLIDE_TOKEN` to your `.env` file.
 
-### Step 7: Update Plugin Registration
+### Step 8: Update Plugin Registration
 
 If you're using Filament Panels, update your plugin registration:
 
@@ -333,7 +395,7 @@ public function panel(Panel $panel): Panel
 | - | `curations()` | New: Enable/disable curations |
 | - | `fileSwap()` | New: Enable/disable file swapping |
 
-### Step 8: Update Form Components
+### Step 9: Update Form Components
 
 The `CuratorPicker` component has some minor changes:
 
@@ -370,7 +432,7 @@ These methods have been removed from `CuratorPicker` in v4:
 
 All other methods remain compatible.
 
-### Step 9: Update Custom Components (If Any)
+### Step 10: Update Custom Components (If Any)
 
 If you've extended Curator's components:
 
@@ -393,7 +455,7 @@ use Filament\Support\Enums\Width;
 ->width(Width::Full)
 ```
 
-### Step 10: Update Curation Presets
+### Step 11: Update Curation Presets
 
 The `CurationPreset` class structure has changed slightly.
 
@@ -452,7 +514,7 @@ The `CurationPreset` API remains the same in v4, so your existing presets should
 
 > **Note**: Curation preset registration has moved from config to the `CurationManager` class.
 
-### Step 11: Update Glide Server Factories (If Customized)
+### Step 12: Update Glide Server Factories (If Customized)
 
 If you have a custom Glide server factory, the interface hasn't changed, but be aware:
 
@@ -469,7 +531,7 @@ class CustomServerFactory implements ServerFactory
 }
 ```
 
-### Step 12: Test Your Application
+### Step 13: Test Your Application
 
 After completing all the steps above:
 
@@ -501,6 +563,10 @@ After completing all the steps above:
 
 ## Breaking Changes Summary
 
+### Database Changes
+
+- **Table name changed**: `media` → `curator` (requires migration or model override)
+
 ### Removed Features
 
 - **cropper.js dependency**: No longer needed
@@ -516,6 +582,7 @@ After completing all the steps above:
 - `visibility` → `default_visibility`
 - `navigationCountBadge()` → `showBadge()`
 - Config structure: flat → nested (`resource`, `features`)
+- Table name: `media` → `curator`
 
 ### New Requirements
 
@@ -666,9 +733,10 @@ Curator v4 brings significant improvements in code organization, performance, an
 
 The most critical changes to watch for are:
 
-1. **Asset management**: Completely different with Tailwind 4
-2. **Configuration structure**: Heavily reorganized
-3. **Glide token**: New security requirement
-4. **Plugin methods**: Several renamed or removed
+1. **Database table name**: Changed from `media` to `curator` (requires migration or model override)
+2. **Asset management**: Completely different with Tailwind 4
+3. **Configuration structure**: Heavily reorganized
+4. **Glide token**: New security requirement
+5. **Plugin methods**: Several renamed or removed
 
 Follow this guide step by step, test thoroughly, and you'll have a successful upgrade to Curator v4.
