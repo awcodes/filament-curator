@@ -21,7 +21,11 @@ use Illuminate\Support\Str;
 
 class MediaResource extends Resource
 {
-    protected static ?string $model = Media::class;
+    public static function getModel(): string
+    {
+        return Config::get('curator.model')
+            ?? Media::class;
+    }
 
     public static function isScopedToTenant(): bool
     {
@@ -73,7 +77,7 @@ class MediaResource extends Resource
                 ? number_format(static::getEloquentQuery()
                     ->where(Config::get('curator.features.tenancy.relationship_name').'_id', Filament::getTenant()->id)
                     ->count())
-                : number_format(static::getModel()::count())
+                : number_format(MediaResource::getModel()::count())
             : null;
     }
 

@@ -89,7 +89,7 @@
                 }
 
                 .fi-ta-actions {
-                    @apply flex flex-row pb-3 px-3;
+                    @apply flex flex-row pb-3 pt-2 px-3;
                 }
             }
         }
