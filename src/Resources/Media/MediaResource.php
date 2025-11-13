@@ -77,7 +77,7 @@ class MediaResource extends Resource
                 ? number_format(static::getEloquentQuery()
                     ->where(Config::get('curator.features.tenancy.relationship_name').'_id', Filament::getTenant()->id)
                     ->count())
-                : number_format(MediaResource::getModel()::count())
+                : number_format(self::getModel()::count())
             : null;
     }
 
