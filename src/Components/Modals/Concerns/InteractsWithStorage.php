@@ -23,7 +23,7 @@ trait InteractsWithStorage
             ->toArray();
 
         $this->directories = collect($directories)
-            ->mapWithKeys(function ($item) {
+            ->mapWithKeys(function ($item): array {
                 $itemArray = explode('/', $item);
                 $name = array_pop($itemArray);
 

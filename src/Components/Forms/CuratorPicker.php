@@ -505,7 +505,7 @@ class CuratorPicker extends Field
                 if ($relationship instanceof BelongsToMany) {
                     $orderColumn = $component->getOrderColumn();
                     if (in_array($orderColumn, $relationship->getPivotColumns())) {
-                        $state = collect(array_values($state))->mapWithKeys(fn (array $item, $index) => [$item['id'] => [$orderColumn => $index + 1]]);
+                        $state = collect(array_values($state))->mapWithKeys(fn (array $item, $index): array => [$item['id'] => [$orderColumn => $index + 1]]);
 
                         $relationship->sync($state ?? []);
 
