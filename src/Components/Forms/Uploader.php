@@ -93,6 +93,10 @@ class Uploader extends FileUpload
 
             return $data;
         });
+
+        $this->dehydrateStateUsing(function ($component) {
+            return $component->getState();
+        });
     }
 
     /**
@@ -100,7 +104,7 @@ class Uploader extends FileUpload
      */
     public function getDirectory(): ?string
     {
-        $directory = $this->directory ?? config('curator.directory');
+        $directory = $this->directory ?? config('curator.default_directory');
         $generator = $this->getPathGenerator() ?? config('curator.path_generator');
 
         if (
@@ -118,17 +122,17 @@ class Uploader extends FileUpload
 
     public function saveUploadedFiles(): void
     {
-        if (blank($this->getState())) {
-            $this->state([]);
+        if (blank($this->getRawState())) {
+            $this->rawState([]);
 
             return;
         }
 
-        if (! is_array($this->getState())) {
-            $this->state([$this->getState()]);
+        if (! is_array($this->getRawState())) {
+            $this->rawState([$this->getRawState()]);
         }
 
-        $state = array_filter(array_map(function (TemporaryUploadedFile|array $file) {
+        $rawState = array_filter(array_map(function (TemporaryUploadedFile|array $file) {
             if (! $file instanceof TemporaryUploadedFile) {
                 return $file;
             }
@@ -145,13 +149,18 @@ class Uploader extends FileUpload
                 'file' => $file,
             ]);
 
+            if ($storedFile === null) {
+                return null;
+            }
+
             $this->storeFileName($storedFile['path'], $file->getClientOriginalName());
 
             $file->delete();
 
             return $storedFile;
-        }, Arr::wrap($this->getState())));
+        }, Arr::wrap($this->getRawState())));
 
-        $this->state($state);
+        $this->rawState($rawState);
+        $this->callAfterStateUpdated();
     }
 }

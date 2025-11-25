@@ -5,6 +5,7 @@ declare(strict_types=1);
 return [
     'curation_formats' => Awcodes\Curator\Enums\PreviewableExtensions::toArray(),
     'default_disk' => env('CURATOR_DEFAULT_DISK', 'public'),
+    'default_directory' => null,
     'default_visibility' => 'public',
     'features' => [
         'curations' => true,

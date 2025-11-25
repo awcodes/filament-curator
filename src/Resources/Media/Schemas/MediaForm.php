@@ -34,7 +34,7 @@ class MediaForm
                         Section::make(trans('curator::forms.sections.file'))
                             ->hiddenOn('edit')
                             ->schema([
-                                static::getUploaderField()
+                                App::make(config('curator.resource.schemas.form'))::getUploaderField()
                                     ->required(),
                             ]),
                         Tabs::make('image')
@@ -70,7 +70,7 @@ class MediaForm
                                 Tab::make(trans('curator::forms.sections.replace'))
                                     ->visible(fn () => CuratorPlugin::get()->supportsFileSwap())
                                     ->schema([
-                                        static::getUploaderField()
+                                        App::make(config('curator.resource.schemas.form'))::getUploaderField()
                                             ->helperText(trans('curator::forms.sections.upload_new_helper')),
                                     ]),
                             ]),
