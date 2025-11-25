@@ -8,7 +8,7 @@ use Illuminate\Support\Str;
 
 trait CanNormalizePaths
 {
-    public function normalizePath(?string $path): string
+    public function normalizePath(?string $path): ?string
     {
         // normalization /path//to/dir/ --> path/to/dir
         $path = preg_replace('#/+#', '/', (string) $path);
@@ -19,6 +19,6 @@ trait CanNormalizePaths
             return mb_substr((string) $path, 0, mb_strlen((string) $path) - 1);
         }
 
-        return $path;
+        return filled($path) ? $path : null;
     }
 }
