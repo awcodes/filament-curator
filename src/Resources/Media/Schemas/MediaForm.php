@@ -20,6 +20,7 @@ use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\App;
 
 class MediaForm
 {
@@ -92,9 +93,7 @@ class MediaForm
                 Group::make()
                     ->schema([
                         Section::make(trans('curator::forms.sections.meta'))
-                            ->schema(
-                                static::getAdditionalInformationFormSchema()
-                            ),
+                            ->schema(App::make(config('curator.resource.schemas.form'))::getAdditionalInformationFormSchema()),
                     ])->columnSpan([
                         'md' => 'full',
                         'lg' => 1,
