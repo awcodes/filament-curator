@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Awcodes\Curator\Glide;
 
-use Awcodes\Curator\CuratorUtils;
+use Awcodes\Curator\Facades\Curator;
 use Illuminate\Support\Str;
 
 class GliderFallback
@@ -90,11 +90,11 @@ class GliderFallback
 
     public function isResizable(): bool
     {
-        return CuratorUtils::isResizable(Str::of($this->getSource())->afterLast('.'));
+        return Curator::isResizable(Str::of($this->getSource())->afterLast('.')->toString());
     }
 
     public function isPreviewable(): bool
     {
-        return CuratorUtils::isResizable(Str::of($this->getSource())->afterLast('.'));
+        return Curator::isResizable(Str::of($this->getSource())->afterLast('.')->toString());
     }
 }

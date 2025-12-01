@@ -75,4 +75,9 @@ return [
         'rotate_deg' => 'deg',
         'preset' => 'Preset',
     ],
+    'attach_curator_media' => [
+        'modal' => [
+            'heading' => 'Select Media from Library',
+        ],
+    ],
 ];

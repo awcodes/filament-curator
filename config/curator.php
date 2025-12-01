@@ -11,6 +11,7 @@ return [
         'curations' => true,
         'file_swap' => true,
         'directory_restriction' => false,
+        'preserve_file_names' => false,
         'tenancy' => [
             'enabled' => false,
             'relationship_name' => null,
