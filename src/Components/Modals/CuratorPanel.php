@@ -113,8 +113,6 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
 
     public ?array $rules = null;
 
-    public ?array $editorSelection = null;
-
     public function mount(): void
     {
         foreach ($this->settings as $key => $value) {
@@ -171,6 +169,11 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
         $files = Media::query()
             ->where('directory', $this->directory)
             ->when(filament()->hasTenancy() && $this->isTenantAware, fn ($query) => $query->where($this->tenantOwnershipRelationshipName.'_id', filament()->getTenant()->id))
+//            ->when($this->selected, function ($query, $selected) {
+//                $selected = collect($selected)->pluck('id')->toArray();
+//
+//                return $query->whereNotIn('id', $selected);
+//            })
             ->when(filled($this->acceptedFileTypes) && ! $this->showAll, function ($query) {
                 $types = $this->acceptedFileTypes;
                 $query = $query->whereIn('type', $types);
@@ -188,6 +191,21 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
         $this->lastPage = $paginator->lastPage();
 
         $items = $paginator->items();
+
+        //        if (! $excludeSelected && $this->selected) {
+        //            $selected = collect($this->selected)->pluck('id')->toArray();
+        //
+        //            $selectedItems = Media::query()
+        //                ->whereIn('id', $selected)
+        //                ->get()
+        //                ->sortBy(function ($model) use ($selected) {
+        //                    return array_search($model->id, $selected);
+        //                });
+        //
+        //            array_unshift($items, ...$selectedItems);
+        //
+        //            $this->setMediaForm();
+        //        }
 
         $this->getSubDirectories();
         $this->getBreadCrumbs();
@@ -384,11 +402,7 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
             ->color('success')
             ->label(trans('curator::views.panel.use_selected_image'))
             ->action(function (): void {
-                $this->dispatch('insert-media', [
-                    'statePath' => $this->statePath,
-                    'media' => $this->selected,
-                    'editorSelection' => $this->editorSelection,
-                ]);
+                $this->dispatch('insert-media', ['statePath' => $this->statePath, 'media' => $this->selected]);
             });
     }
 
