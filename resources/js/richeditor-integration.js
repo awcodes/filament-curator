@@ -14,14 +14,15 @@
     }
     window.__curatorRichEditorInitialized = true;
 
-    // Store editor key and livewire ID when curator button is clicked
+    // Store editor context when curator button is clicked
     let savedKey = null;
     let savedLivewireId = null;
+    let savedEditorSelection = null;
 
     // Prevent duplicate insertions
     let processing = false;
 
-    // Capture key and livewireId when any curator media button is clicked
+    // Capture key, livewireId, and editorSelection when curator media button is clicked
     document.addEventListener('click', function(e) {
         const btn = e.target.closest('button');
         if (!btn) return;
@@ -42,6 +43,24 @@
         // Extract livewireId from closest wire:id element
         const wireEl = wrapper.closest('[wire\\:id]');
         savedLivewireId = wireEl?.getAttribute('wire:id');
+
+        // Capture editor selection directly from TipTap at click time
+        try {
+            const alpine = Alpine.$data(alpineEl);
+            if (alpine?.getEditor) {
+                const editor = alpine.getEditor();
+                if (editor?.state?.selection) {
+                    savedEditorSelection = {
+                        type: 'text',
+                        anchor: editor.state.selection.anchor,
+                        head: editor.state.selection.head
+                    };
+                }
+            }
+        } catch (err) {
+            // Fallback if Alpine data extraction fails
+            savedEditorSelection = { type: 'text', anchor: 1, head: 1 };
+        }
     }, true);
 
     function handleInsertMedia(event) {
@@ -56,7 +75,7 @@
             let data = event.detail;
             if (Array.isArray(data)) data = data[0];
 
-            const { statePath, media, editorSelection } = data || {};
+            const { statePath, media } = data || {};
             if (!statePath || !media) {
                 return;
             }
@@ -71,6 +90,7 @@
             // Use saved key and livewireId, or find them fresh
             let key = savedKey;
             let livewireId = savedLivewireId;
+            let editorSelection = savedEditorSelection;
 
             if (!key || !livewireId) {
                 // Find the RichEditor component
@@ -110,7 +130,7 @@
                             }]
                         }
                     ],
-                    // Pass the editorSelection from the server for proper cursor restoration
+                    // Use the selection captured at click time
                     editorSelection: editorSelection || { type: 'text', anchor: 1, head: 1 }
                 }
             }));
@@ -118,6 +138,7 @@
             // Clear saved values
             savedKey = null;
             savedLivewireId = null;
+            savedEditorSelection = null;
 
             // Close modal after a short delay
             setTimeout(() => {
