@@ -42,33 +42,36 @@ class CuratorMediaAction extends Action
             ->modalCancelAction(false)
             ->modalCloseButton(false)
             ->modalWidth(Width::Screen)
-            ->modalContent(fn (RichEditor $component, array $arguments): View => view('curator::components.modals.curator-panel', [
-                'key' => $component->getKey(),
-                'settings' => [
-                    'acceptedFileTypes' => $component->getFileAttachmentsAcceptedFileTypes() ?? ['image/*'],
-                    'defaultSort' => 'desc',
-                    'directory' => config('curator.default_directory') ?? '',
-                    'diskName' => config('curator.default_disk', 'public'),
-                    'imageCropAspectRatio' => null,
-                    'imageResizeMode' => null,
-                    'imageResizeTargetWidth' => null,
-                    'imageResizeTargetHeight' => null,
-                    'isLimitedToDirectory' => config('curator.features.directory_restriction', false),
-                    'isTenantAware' => config('curator.features.tenancy.enabled', false),
-                    'tenantOwnershipRelationshipName' => config('curator.features.tenancy.relationship_name'),
-                    'isMultiple' => false,
-                    'maxItems' => 1,
-                    'maxSize' => $component->getFileAttachmentsMaxSize() ?? 5000,
-                    'maxWidth' => null,
-                    'minSize' => 0,
-                    'pathGenerator' => config('curator.path_generator'),
-                    'rules' => [],
-                    'selected' => self::getSelectedMedia($arguments),
-                    'shouldPreserveFilenames' => false,
-                    'statePath' => $component->getStatePath(),
-                    'visibility' => config('curator.default_visibility', 'public'),
-                ],
-            ]))
+            ->modalContent(function (RichEditor $component, array $arguments): View {
+                return view('curator::components.modals.curator-panel', [
+                    'key' => $component->getKey(),
+                    'settings' => [
+                        'acceptedFileTypes' => $component->getFileAttachmentsAcceptedFileTypes() ?? ['image/*'],
+                        'defaultSort' => 'desc',
+                        'directory' => config('curator.default_directory') ?? '',
+                        'diskName' => config('curator.default_disk', 'public'),
+                        'editorSelection' => $arguments['editorSelection'] ?? null,
+                        'imageCropAspectRatio' => null,
+                        'imageResizeMode' => null,
+                        'imageResizeTargetWidth' => null,
+                        'imageResizeTargetHeight' => null,
+                        'isLimitedToDirectory' => config('curator.features.directory_restriction', false),
+                        'isTenantAware' => config('curator.features.tenancy.enabled', false),
+                        'tenantOwnershipRelationshipName' => config('curator.features.tenancy.relationship_name'),
+                        'isMultiple' => false,
+                        'maxItems' => 1,
+                        'maxSize' => $component->getFileAttachmentsMaxSize() ?? 5000,
+                        'maxWidth' => null,
+                        'minSize' => 0,
+                        'pathGenerator' => config('curator.path_generator'),
+                        'rules' => [],
+                        'selected' => self::getSelectedMedia($arguments),
+                        'shouldPreserveFilenames' => false,
+                        'statePath' => $component->getStatePath(),
+                        'visibility' => config('curator.default_visibility', 'public'),
+                    ],
+                ]);
+            })
             ->action(fn (): null => null);
     }
 

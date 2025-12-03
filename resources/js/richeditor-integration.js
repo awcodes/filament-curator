@@ -14,8 +14,35 @@
     }
     window.__curatorRichEditorInitialized = true;
 
+    // Store editor key and livewire ID when curator button is clicked
+    let savedKey = null;
+    let savedLivewireId = null;
+
     // Prevent duplicate insertions
     let processing = false;
+
+    // Capture key and livewireId when any curator media button is clicked
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('button');
+        if (!btn) return;
+
+        // Check if this is the curator media toolbar button
+        const wrapper = btn.closest('.fi-fo-rich-editor');
+        if (!wrapper) return;
+
+        // Find the Alpine element with x-data
+        const alpineEl = wrapper.querySelector('[x-data*="richEditorFormComponent"]');
+        if (!alpineEl) return;
+
+        // Extract key from x-data attribute
+        const xData = alpineEl.getAttribute('x-data') || '';
+        const keyMatch = xData.match(/key:\s*['"]([^'"]+)['"]/);
+        savedKey = keyMatch ? keyMatch[1] : null;
+
+        // Extract livewireId from closest wire:id element
+        const wireEl = wrapper.closest('[wire\\:id]');
+        savedLivewireId = wireEl?.getAttribute('wire:id');
+    }, true);
 
     function handleInsertMedia(event) {
         // Prevent concurrent processing
@@ -29,7 +56,7 @@
             let data = event.detail;
             if (Array.isArray(data)) data = data[0];
 
-            const { statePath, media } = data || {};
+            const { statePath, media, editorSelection } = data || {};
             if (!statePath || !media) {
                 return;
             }
@@ -41,36 +68,32 @@
                 return;
             }
 
-            // Find the RichEditor component
-            const wrapper = document.querySelector('.fi-fo-rich-editor');
-            if (!wrapper) {
+            // Use saved key and livewireId, or find them fresh
+            let key = savedKey;
+            let livewireId = savedLivewireId;
+
+            if (!key || !livewireId) {
+                // Find the RichEditor component
+                const wrapper = document.querySelector('.fi-fo-rich-editor');
+                if (!wrapper) return;
+
+                const alpineEl = wrapper.querySelector('[x-data*="richEditorFormComponent"]');
+                if (!alpineEl) return;
+
+                const xData = alpineEl.getAttribute('x-data') || '';
+                const keyMatch = xData.match(/key:\s*['"]([^'"]+)['"]/);
+                key = keyMatch ? keyMatch[1] : null;
+
+                const wireEl = wrapper.closest('[wire\\:id]');
+                livewireId = wireEl?.getAttribute('wire:id');
+            }
+
+            if (!key || !livewireId) {
                 return;
             }
 
-            // Find the Alpine element with x-data
-            const alpineEl = wrapper.querySelector('[x-data*="richEditorFormComponent"]');
-            if (!alpineEl) {
-                return;
-            }
-
-            // Extract the key from x-data attribute
-            const xData = alpineEl.getAttribute('x-data') || '';
-            const keyMatch = xData.match(/key:\s*['"]([^'"]+)['"]/);
-            const key = keyMatch ? keyMatch[1] : null;
-
-            if (!key) {
-                return;
-            }
-
-            // Get livewireId from closest wire:id element
-            const wireEl = wrapper.closest('[wire\\:id]');
-            const livewireId = wireEl?.getAttribute('wire:id');
-
-            if (!livewireId) {
-                return;
-            }
-
-            // Dispatch the native Filament RichEditor command event
+            // Use Filament's native run-rich-editor-commands event
+            // This properly handles selection restoration via setEditorSelection
             window.dispatchEvent(new CustomEvent('run-rich-editor-commands', {
                 detail: {
                     key: key,
@@ -87,9 +110,14 @@
                             }]
                         }
                     ],
-                    editorSelection: { type: 'text', anchor: 1, head: 1 }
+                    // Pass the editorSelection from the server for proper cursor restoration
+                    editorSelection: editorSelection || { type: 'text', anchor: 1, head: 1 }
                 }
             }));
+
+            // Clear saved values
+            savedKey = null;
+            savedLivewireId = null;
 
             // Close modal after a short delay
             setTimeout(() => {
