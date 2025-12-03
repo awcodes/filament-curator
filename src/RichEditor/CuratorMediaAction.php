@@ -42,7 +42,8 @@ class CuratorMediaAction extends Action
             ->modalCancelAction(false)
             ->modalCloseButton(false)
             ->modalWidth(Width::Screen)
-            ->modalContent(fn (RichEditor $component, array $arguments): View => view('curator::rich-editor.curator-panel', [
+            ->modalContent(fn (RichEditor $component, array $arguments): View => view('curator::components.modals.curator-panel', [
+                'key' => $component->getKey(),
                 'settings' => [
                     'acceptedFileTypes' => $component->getFileAttachmentsAcceptedFileTypes() ?? ['image/*'],
                     'defaultSort' => 'desc',
