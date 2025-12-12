@@ -1,174 +1,162 @@
 /**
- * Filament Curator - RichEditor Integration for v4
+ * Filament Curator - RichEditor Integration
  *
- * This script bridges Curator's media picker with Filament v4's RichEditor (TipTap).
- * It listens for the 'insert-media' event from Curator and inserts selected media
- * into the RichEditor as images.
+ * Bridges Curator's media picker with Filament v4's RichEditor (TipTap).
+ * Uses Filament's native 'run-rich-editor-commands' event system.
  *
- * @version 1.0.0
- * @license MIT
+ * Credit to https://github.com/iotron for the JS integration.
  */
 
 (function() {
   'use strict';
 
-  /**
-   * Handle media insertion from Curator into RichEditor
-   * @param {CustomEvent} event - The insert-media event
-   */
-  function handleMediaInsertion(event) {
-    // Handle Livewire v3 dispatch format - event.detail might be wrapped in an array
-    let eventData = event.detail;
-    if (Array.isArray(eventData) && eventData.length > 0) {
-      eventData = eventData[0];
-    }
-
-    const { statePath, media } = eventData || {};
-
-    // Validate event data
-    if (!statePath || !media) {
-      return;
-    }
-
-    // Extract the field name from statePath (e.g., 'data.content' -> 'content')
-    const fieldName = statePath.includes('.') ? statePath.split('.').pop() : statePath;
-
-    // Handle both array and single media object
-    const mediaArray = Array.isArray(media) ? media : [media];
-
-    if (mediaArray.length === 0 || !mediaArray[0] || !mediaArray[0].url) {
-      return;
-    }
-
-    // Find the RichEditor component by field name
-    let editorElement = document.querySelector(`[wire\\:key*="${fieldName}"] .tiptap`);
-
-    // Fallback to first available TipTap editor
-    if (!editorElement) {
-      editorElement = document.querySelector('.tiptap.ProseMirror');
-    }
-
-    if (editorElement) {
-      insertImageIntoEditor(editorElement, mediaArray[0]);
-    }
+  // Singleton flag to prevent multiple initializations
+  if (window.__curatorRichEditorInitialized) {
+    return;
   }
+  window.__curatorRichEditorInitialized = true;
 
-  /**
-   * Insert image into TipTap editor
-   * @param {HTMLElement} editorElement - The TipTap editor DOM element
-   * @param {Object} media - The media object containing url, alt, title, etc.
-   */
-  function insertImageIntoEditor(editorElement, media) {
-    if (typeof Alpine === 'undefined') {
-      return;
-    }
+  // Store editor context when curator button is clicked
+  let savedKey = null;
+  let savedLivewireId = null;
+  let savedEditorSelection = null;
 
-    const alpineComponent = editorElement.closest('[x-data]');
-    if (!alpineComponent) {
-      return;
-    }
+  // Prevent duplicate insertions
+  let processing = false;
 
+  // Capture key, livewireId, and editorSelection when curator media button is clicked
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+
+    // Check if this is the curator media toolbar button
+    const wrapper = btn.closest('.fi-fo-rich-editor');
+    if (!wrapper) return;
+
+    // Find the Alpine element with x-data
+    const alpineEl = wrapper.querySelector('[x-data*="richEditorFormComponent"]');
+    if (!alpineEl) return;
+
+    // Extract key from x-data attribute
+    const xData = alpineEl.getAttribute('x-data') || '';
+    const keyMatch = xData.match(/key:\s*['"]([^'"]+)['"]/);
+    savedKey = keyMatch ? keyMatch[1] : null;
+
+    // Extract livewireId from closest wire:id element
+    const wireEl = wrapper.closest('[wire\\:id]');
+    savedLivewireId = wireEl?.getAttribute('wire:id');
+
+    // Capture editor selection directly from TipTap at click time
     try {
-      const editor = findEditor(editorElement, alpineComponent);
-
-      if (editor && typeof editor.chain === 'function') {
-        insertWithEditor(editor, media);
-      }
-    } catch (error) {
-      // Silently fail
-    }
-  }
-
-  /**
-   * Find the TipTap editor instance using multiple strategies
-   * @param {HTMLElement} editorElement - The TipTap editor DOM element
-   * @param {HTMLElement} alpineComponent - The Alpine component element
-   * @returns {Object|null} - The TipTap editor instance or null
-   */
-  function findEditor(editorElement, alpineComponent) {
-    const alpineData = Alpine.$data(alpineComponent);
-
-    // Strategy 1: Check Alpine data properties
-    const possibleProps = ['editor', '_editor', 'instance', 'tiptap', '$editor'];
-    for (const prop of possibleProps) {
-      if (alpineData[prop] && typeof alpineData[prop].chain === 'function') {
-        return alpineData[prop];
-      }
-    }
-
-    // Strategy 2: Check Vue instance
-    if (editorElement.__vue__ && editorElement.__vue__.editor) {
-      return editorElement.__vue__.editor;
-    }
-
-    // Strategy 3: Check element property
-    if (editorElement.editor) {
-      return editorElement.editor;
-    }
-
-    // Strategy 4: Check global registry
-    if (window.filamentRichEditors) {
-      const editorId = alpineComponent.getAttribute('wire:key');
-      if (editorId && window.filamentRichEditors[editorId]) {
-        return window.filamentRichEditors[editorId];
-      }
-    }
-
-    return null;
-  }
-
-  /**
-   * Insert image using TipTap editor instance
-   * @param {Object} editor - The TipTap editor instance
-   * @param {Object} media - The media object
-   */
-  function insertWithEditor(editor, media) {
-    try {
-      editor
-        .chain()
-        .focus()
-        .setImage({
-          id: media.id,
-          src: media.url,
-          alt: media.alt || '',
-          title: media.title || null,
-        })
-        .run();
-
-      closeModal();
-    } catch (error) {
-      // Silently fail
-    }
-  }
-
-  /**
-   * Close Curator modal after successful insertion
-   */
-  function closeModal() {
-    try {
-      const modal = document.querySelector('[wire\\:key*="curator-panel"]');
-      if (modal) {
-        const closeButton = modal.querySelector('[x-on\\:click*="close"]');
-        if (closeButton) {
-          closeButton.click();
+      const alpine = Alpine.$data(alpineEl);
+      if (alpine?.getEditor) {
+        const editor = alpine.getEditor();
+        if (editor?.state?.selection) {
+          savedEditorSelection = {
+            type: 'text',
+            anchor: editor.state.selection.anchor,
+            head: editor.state.selection.head
+          };
         }
       }
-    } catch (error) {
-      // Silently fail
+    } catch (err) {
+      // Fallback if Alpine data extraction fails
+      savedEditorSelection = { type: 'text', anchor: 1, head: 1 };
+    }
+  }, true);
+
+  function handleInsertMedia(event) {
+    // Prevent concurrent processing
+    if (processing) {
+      return;
+    }
+    processing = true;
+
+    try {
+      // Extract event data (handle Livewire array wrapper)
+      let data = event.detail;
+      if (Array.isArray(data)) data = data[0];
+
+      const { statePath, media } = data || {};
+      if (!statePath || !media) {
+        return;
+      }
+
+      // Get first media item
+      const items = Array.isArray(media) ? media : [media];
+      const item = items[0];
+      if (!item?.url) {
+        return;
+      }
+
+      // Use saved key and livewireId, or find them fresh
+      let key = savedKey;
+      let livewireId = savedLivewireId;
+      let editorSelection = savedEditorSelection;
+
+      if (!key || !livewireId) {
+        // Find the RichEditor component
+        const wrapper = document.querySelector('.fi-fo-rich-editor');
+        if (!wrapper) return;
+
+        const alpineEl = wrapper.querySelector('[x-data*="richEditorFormComponent"]');
+        if (!alpineEl) return;
+
+        const xData = alpineEl.getAttribute('x-data') || '';
+        const keyMatch = xData.match(/key:\s*['"]([^'"]+)['"]/);
+        key = keyMatch ? keyMatch[1] : null;
+
+        const wireEl = wrapper.closest('[wire\\:id]');
+        livewireId = wireEl?.getAttribute('wire:id');
+      }
+
+      if (!key || !livewireId) {
+        return;
+      }
+
+      // Use Filament's native run-rich-editor-commands event
+      // This properly handles selection restoration via setEditorSelection
+      window.dispatchEvent(new CustomEvent('run-rich-editor-commands', {
+        detail: {
+          key: key,
+          livewireId: livewireId,
+          commands: [
+            { name: 'focus' },
+            {
+              name: 'setImage',
+              arguments: [{
+                src: item.url,
+                alt: item.alt || item.title || '',
+                title: item.title || '',
+                id: item.id || null,
+              }]
+            }
+          ],
+          // Use the selection captured at click time
+          editorSelection: editorSelection || { type: 'text', anchor: 1, head: 1 }
+        }
+      }));
+
+      // Clear saved values
+      savedKey = null;
+      savedLivewireId = null;
+      savedEditorSelection = null;
+
+      // Close modal after a short delay
+      setTimeout(() => {
+        const closeBtn = document.querySelector('.fi-modal button[type="button"] svg[class*="x-mark"]')?.closest('button')
+          || document.querySelector('.fi-modal [x-on\\:click*="close"]');
+        if (closeBtn) {
+          closeBtn.click();
+        }
+      }, 100);
+
+    } finally {
+      // Reset processing flag after delay
+      setTimeout(() => { processing = false; }, 300);
     }
   }
 
-  /**
-   * Initialize the event listener
-   */
-  function init() {
-    window.addEventListener('insert-media', handleMediaInsertion);
-  }
-
-  // Initialize when DOM is ready
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
+  // Initialize once
+  window.addEventListener('insert-media', handleInsertMedia);
 })();
