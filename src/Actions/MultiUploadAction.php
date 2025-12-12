@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Awcodes\Curator\Actions;
 
 use Awcodes\Curator\Components\Forms\Uploader;
-use Awcodes\Curator\Config\CuratorManager;
 use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Models\Media;
 use Exception;
@@ -19,8 +18,6 @@ class MultiUploadAction extends Action
     {
         parent::setUp();
 
-        $config = app(CuratorManager::class);
-
         $this
             ->button()
             ->color('gray')
@@ -28,23 +25,23 @@ class MultiUploadAction extends Action
             ->modalHeading(trans('curator::forms.multi_upload.modal_heading'))
             ->schema([
                 Uploader::make('files')
-                    ->acceptedFileTypes($config->getAcceptedFileTypes())
-                    ->directory($config->getDirectory())
-                    ->disk($config->getDiskName())
+                    ->acceptedFileTypes(Curator::getAcceptedFileTypes())
+                    ->directory(Curator::getDirectory())
+                    ->disk(Curator::getDiskName())
                     ->label(trans('curator::forms.multi_upload.modal_file_label'))
-                    ->minSize($config->getMinSize())
-                    ->maxSize($config->getMaxSize())
+                    ->minSize(Curator::getMinSize())
+                    ->maxSize(Curator::getMaxSize())
                     ->multiple()
                     ->panelLayout('grid')
 //                    ->pathGenerator(config('curator.path_generator'))
-                    ->preserveFilenames($config->shouldPreserveFilenames())
+                    ->preserveFilenames(Curator::shouldPreserveFilenames())
                     ->required()
-                    ->visibility($config->getVisibility())
+                    ->visibility(Curator::getVisibility())
                     ->storeFileNamesIn('originalFilename')
-                    ->imageCropAspectRatio($config->getImageCropAspectRatio())
-                    ->imageResizeMode($config->getImageResizeMode())
-                    ->imageResizeTargetWidth($config->getImageResizeTargetWidth())
-                    ->imageResizeTargetHeight($config->getImageResizeTargetHeight()),
+                    ->imageCropAspectRatio(Curator::getImageCropAspectRatio())
+                    ->imageResizeMode(Curator::getImageResizeMode())
+                    ->imageResizeTargetWidth(Curator::getImageResizeTargetWidth())
+                    ->imageResizeTargetHeight(Curator::getImageResizeTargetHeight()),
             ])
             ->action(function (array $data): void {
                 foreach ($data['files'] as $item) {

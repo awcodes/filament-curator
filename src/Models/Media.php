@@ -69,6 +69,7 @@ class Media extends Model
         'caption',
         'exif',
         'curations',
+        'file',
     ];
 
     protected $casts = [

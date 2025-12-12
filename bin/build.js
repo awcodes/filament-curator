@@ -43,10 +43,17 @@ const defaultOptions = {
     }],
 }
 
-compile({
-    ...defaultOptions,
-    entryPoints: ['./resources/js/curation.js'],
-    outfile: './resources/dist/curation.js',
-}).then(() => {
-    console.log('Curation JS build completed.')
+const scripts = [
+  'curation',
+  'rich-editor-integration',
+]
+
+scripts.forEach((script) => {
+    compile({
+        ...defaultOptions,
+        entryPoints: [`./resources/js/${script}.js`],
+        outfile: `./resources/dist/${script}.js`,
+    }).then(() => {
+        console.log(`Build completed for ${script}.js`)
+    })
 })

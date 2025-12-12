@@ -21,6 +21,7 @@ use Awcodes\Curator\Resources\Media\Tables\MediaTable;
 use Awcodes\Curator\View\Components\Curation;
 use Awcodes\Curator\View\Components\Glider;
 use Filament\Support\Assets\AlpineComponent;
+use Filament\Support\Assets\Js;
 use Filament\Support\Facades\FilamentAsset;
 use Illuminate\Support\Facades\Blade;
 use Livewire\Livewire;
@@ -105,6 +106,7 @@ class CuratorServiceProvider extends PackageServiceProvider
 
         FilamentAsset::register([
             AlpineComponent::make(id: 'curation', path: __DIR__.'/../resources/dist/curation.js'),
+            Js::make(id: 'rich-editor-integration', path: __DIR__.'/../resources/dist/rich-editor-integration.js')->loadedOnRequest(),
         ], package: 'awcodes/curator');
     }
 }

@@ -4,19 +4,17 @@ declare(strict_types=1);
 
 namespace Awcodes\Curator\Glide;
 
-use Awcodes\Curator\CuratorUtils;
+use Awcodes\Curator\Facades\Curator;
 use Illuminate\Support\Str;
 
 class GliderFallback
 {
-    final public function __construct(
-        public string $alt,
-        public int $height,
-        public string $name,
-        public string $source,
-        public string $type,
-        public int $width,
-    ) {}
+    public ?string $alt = null;
+    public ?int $height = null;
+    public ?string $name = null;
+    public ?string $source = null;
+    public ?string $type = null;
+    public ?int $width = null;
 
     public static function make(string $name): static
     {
@@ -90,11 +88,11 @@ class GliderFallback
 
     public function isResizable(): bool
     {
-        return CuratorUtils::isResizable(Str::of($this->getSource())->afterLast('.'));
+        return Curator::isResizable(Str::of($this->getSource())->afterLast('.')->toString());
     }
 
     public function isPreviewable(): bool
     {
-        return CuratorUtils::isResizable(Str::of($this->getSource())->afterLast('.'));
+        return Curator::isResizable(Str::of($this->getSource())->afterLast('.')->toString());
     }
 }

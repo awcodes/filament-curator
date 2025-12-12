@@ -6,8 +6,8 @@ namespace Awcodes\Curator\Resources\Media\Schemas;
 
 use Awcodes\Curator\Components\Forms\CuratorEditor;
 use Awcodes\Curator\Components\Forms\Uploader;
-use Awcodes\Curator\Config\CuratorManager;
 use Awcodes\Curator\CuratorPlugin;
+use Awcodes\Curator\Facades\Curator;
 use Exception;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Textarea;
@@ -134,23 +134,21 @@ class MediaForm
     /** @throws Exception */
     public static function getUploaderField(): Uploader
     {
-        $config = app(CuratorManager::class);
-
         return Uploader::make('file')
-            ->acceptedFileTypes($config->getAcceptedFileTypes())
-            ->directory($config->getDirectory())
-            ->disk($config->getDiskName())
+            ->acceptedFileTypes(Curator::getAcceptedFileTypes())
+            ->directory(Curator::getDirectory())
+            ->disk(Curator::getDiskName())
             ->hiddenLabel()
-            ->minSize($config->getMinSize())
+            ->minSize(Curator::getMinSize())
             ->maxFiles(1)
-            ->maxSize($config->getMaxSize())
+            ->maxSize(Curator::getMaxSize())
             ->panelAspectRatio('24:9')
-            ->preserveFilenames($config->shouldPreserveFilenames())
-            ->visibility($config->getVisibility())
+            ->preserveFilenames(Curator::shouldPreserveFilenames())
+            ->visibility(Curator::getVisibility())
             ->storeFileNamesIn('originalFilename')
-            ->imageCropAspectRatio($config->getImageCropAspectRatio())
-            ->imageResizeMode($config->getImageResizeMode())
-            ->imageResizeTargetWidth($config->getImageResizeTargetWidth())
-            ->imageResizeTargetHeight($config->getImageResizeTargetHeight());
+            ->imageCropAspectRatio(Curator::getImageCropAspectRatio())
+            ->imageResizeMode(Curator::getImageResizeMode())
+            ->imageResizeTargetWidth(Curator::getImageResizeTargetWidth())
+            ->imageResizeTargetHeight(Curator::getImageResizeTargetHeight());
     }
 }
