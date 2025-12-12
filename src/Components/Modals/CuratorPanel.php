@@ -274,19 +274,6 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
 
                 $this->form->fill();
 
-                if ($insertAfter) {
-                    $this->dispatch(
-                        'insert-content',
-                        type: 'media',
-                        statePath: $this->statePath,
-                        media: $media
-                    );
-
-                    $this->dispatch('unPounce');
-
-                    return;
-                }
-
                 $this->files = [
                     ...$media,
                     ...$this->files,
@@ -294,6 +281,10 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
 
                 foreach ($media as $item) {
                     $this->selected[] = $item;
+                }
+
+                if ($insertAfter) {
+                    $this->dispatch('insert-media', ['statePath' => $this->statePath, 'media' => $this->selected]);
                 }
             });
     }
