@@ -9,7 +9,7 @@
 
 A media picker/manager plugin for Filament Admin.
 
-> [!Warning]
+> [!WARNING]
 > This package does not work with Spatie Media Library.
 
 ## Compatibility
@@ -23,7 +23,7 @@ A media picker/manager plugin for Filament Admin.
 
 ## Upgrading from v3 to v4
 
-TODO: This section will be updated soon.
+Please see the [UPGRADE guide](UPGRADE.md) for instructions on upgrading from v3 to v4.
 
 ```bash
 php artisan curator:upgrade
@@ -51,9 +51,11 @@ php artisan curator:install
 > [!IMPORTANT]
 > If you have not set up a custom theme and are using Filament Panels follow the instructions in the [Filament Docs](https://filamentphp.com/docs/4.x/styling/overview#creating-a-custom-theme) first.
 
-After setting up a custom theme add the plugin's views to your theme css file or your app's css file if using the standalone packages.
+After setting up a custom theme add the plugin's views and styles to your theme css file or your app's css file if using the standalone packages.
 
 ```css
+@import '../../../../vendor/awcodes/filament-curator/resources/css/plugin.css';
+
 @source '../../../../vendor/awcodes/filament-curator/resources/**/*.blade.php';
 ```
 
@@ -73,6 +75,7 @@ If you are using Filament Panels you will need to add the Plugin to you Panel's 
 
 ```php
 use Awcodes\Curator\CuratorPlugin;
+use Filament\Support\Icons\Heroicon
 
 public function panel(Panel $panel): Panel
 {
@@ -81,11 +84,13 @@ public function panel(Panel $panel): Panel
             CuratorPlugin::make()
                 ->label('Media')
                 ->pluralLabel('Media')
-                ->navigationIcon('heroicon-o-photo')
+                ->navigationIcon(Heroicon::OutlinedPhoto)
                 ->navigationGroup('Content')
                 ->navigationSort(3)
-                ->navigationCountBadge()
-                ->resource(\App\Filament\Resources\CustomMediaResource::class)
+                ->showBadge(true) 
+                ->registerNavigation(true)
+                ->curations(true)
+                ->fileSwap(true),  
         ]);
 }
 ```
@@ -99,20 +104,21 @@ validation, etc. for specific instances of each CuratorPicker.
 
 ```php
 use Awcodes\Curator\Components\Forms\CuratorPicker;
+use Filament\Support\Enums\Size;
 
 CuratorPicker::make(string $fieldName)
     ->label(string $customLabel)
     ->buttonLabel(string | Htmlable | Closure $buttonLabel)
-    ->color('primary|secondary|success|danger') // defaults to primary
+    ->color('primary|secondary|success|danger') // defaults to gray
     ->outlined(true|false) // defaults to true
-    ->size('sm|md|lg') // defaults to md
+    ->size(Size::Medium)
     ->constrained(true|false) // defaults to false (forces image to fit inside the preview area)
     ->pathGenerator(DatePathGenerator::class|UserPathGenerator::class) // see path generators below
     ->lazyLoad(bool | Closure $condition) // defaults to true
     ->listDisplay(bool | Closure $condition) // defaults to true
     ->tenantAware(bool | Closure $condition) // defaults to true
     ->defaultPanelSort(string | Closure $direction) // defaults to 'desc'
-    // see https://filamentphp.com/docs/2.x/forms/fields#file-upload for more information about the following methods
+    // see https://filamentphp.com/docs/4.x/forms/file-upload for more information about the following methods
     ->preserveFilenames()
     ->maxWidth()
     ->minSize()
@@ -177,6 +183,22 @@ public function productPictures(): BelongsToMany
 }
 ```
 
+### RichEditor Integration
+
+Curator comes with built-in integration for Filament's RichEditor field.
+
+```php
+use Awcodes\Curator\Components\Forms\RichEditor\AttachCuratorMediaPlugin;
+
+\Filament\Forms\Components\RichEditor::make('content')
+    ->tools([
+        'attachCuratorMedia'
+    ])
+    ->plugins([
+        AttachCuratorMediaPlugin::make(),
+    ]),
+```
+
 ### Path Generation
 
 By default, Curator will use the directory and disk set in the config to
@@ -197,11 +219,9 @@ public function register()
 
 #### Available Generators
 
-`DefaultPathGenerator` will save files in disk/directory.
-
-`DatePathGenerator` will save files in disk/directory/Y/m/d.
-
-`UserPathGenerator` will save files in disk/directory/user-auth-identifier
+* `DefaultPathGenerator` will save files in disk/directory.
+* `DatePathGenerator` will save files in disk/directory/Y/m/d.
+* `UserPathGenerator` will save files in disk/directory/user-auth-identifier
 
 You are also free to use your own Path Generators by implementing the
 `PathGenerator` interface on your own classes.
@@ -239,8 +259,7 @@ CuratorColumn::make('product_pictures')
 
 #### Relationships
 
-If you are using a relationship to store your media then you will encounter n+1 issues on the column. In order to
-prevent this you should modify your table query to eager load the relationship.
+If you are using a relationship to store your media then you will encounter n+1 issues on the column. In order to prevent this you should modify your table query to eager load the relationship.
 
 For example when using the admin panel in your ListResource
 
@@ -251,71 +270,38 @@ protected function getTableQuery(): Builder
 }
 ```
 
+Or, if you are using a Table class
+
+```php
+public static function configure(Table $table): Table
+{
+    return $table
+        ->modifyQueryUsing(fn (Builder $query) => $query->with('media', 'gallery'));
+}
+```
+
 ### Curations
 
 Curations are a way to create custom sizes and focal points for your images.
 
 #### Curation Presets
 
-If you have a curation that you are constantly using you can create Presets which will be available in the Curation
-modal for easier reuse. After creating curation presets, they can be referenced by their key to output them in your
-blade files.
+If you have a curation that you are constantly using you can create Presets which will be available in the Curation modal for easier reuse. After creating curation presets, they can be referenced by their key to output them in your blade files.
 
 ```php
 use Awcodes\Curator\Curations\CurationPreset;
+use Awcodes\Curator\Facades\Curation;
 
-class ThumbnailPreset extends CurationPreset
+public function register(): void
 {
-    public function getKey(): string
-    {
-        return 'thumbnail';
-    }
-
-    public function getLabel(): string
-    {
-        return 'Thumbnail';
-    }
-
-    public function getWidth(): int
-    {
-        return 200;
-    }
-
-    public function getHeight(): int
-    {
-        return 200;
-    }
-
-    public function getFormat(): string
-    {
-        return 'webp';
-    }
-
-    public function getQuality(): int
-    {
-        return 60;
-    }
+    Curation::presets([
+        CurationPreset::make('Thumbnail')
+            ->height(200)
+            ->format('webp')
+            ->quality(80)
+            ->width(200)
+    ]);
 }
-```
-
-Then simply register your preset in the config.
-
-```php
-'curation_presets' => [
-    ThumbnailPreset::class,
-],
-```
-
-You can also change which formats are available for curations by changing the `curation_formats` in the config file. These should be compatible with Intervention Image's encoding types.
-
-```php
-'curation_formats' => [
-    'jpg',
-    'jpeg',
-    'webp',
-    'png',
-    'avif',
-],
 ```
 
 ### Glider Blade Component
@@ -383,99 +369,59 @@ one of your registered `GliderFallback`s.
 
 ```php
 use Awcodes\Curator\Glide\GliderFallback;
+use Awcodes\Curator\Facades\Glide;
 
-class MyCustomGliderFallback extends GliderFallback
+public function register(): void
 {
-    public function getAlt(): string
-    {
-        return 'boring fallback image';
-    };
-
-    public function getHeight(): int
-    {
-        return 640;
-    };
-
-    public function getKey(): string
-    {
-        return 'card_fallback';
-    };
-
-    public function getSource(): string
-    {
-        return 'https://via.placeholder.com/640x420.jpg';
-    };
-
-    public function getType(): string
-    {
-        return 'image/jpg';
-    };
-
-    public function getWidth(): int
-    {
-        return 420;
-    };
+    Glide::registerGliderFallbacks([
+        GliderFallback::make('thumbnail')
+            ->alt(string)
+            ->height(int)
+            ->source(string)
+            ->type(string)
+            ->width(int),
+    ]);
 }
-```
-
-Then register your fallback in the config.
-
-```php
-'glide' => [
-    'fallbacks' => [
-        MyCustomGliderFallback::class,
-    ],
-],
 ```
 
 Then you can reference your fallback in the blade component.
 
 ```blade
-<x-curator-glider :media="1" fallback="card_fallback"/>
+<x-curator-glider :media="1" fallback="thumbnail"/>
 ```
 
 ### Custom Glide Route
 
-By default, Curator will use the route `curator` when serving images through Glide. If you want to change this you can update the `glide.route_path` setting in the Curator config file.
+By default, Curator will use the route `curator` when serving images through Glide. If you want to change this you can update the `basePath` in a service provider.
 
 ```php
-'glide' => [
-    'route_path' => 'uploads',
-],
+use Awcodes\Curator\Facades\Glide;
+
+public function register(): void 
+{
+    Glide::basePath('media');
+}
 ```
 
 ### Custom Glide Server
 
-If you want to use your own Glide Server for handling served media with Glide you can implement the `ServerFactory` interface on your own classes and set it to the config.
+If you want to use your own Glide Server for handling served media with Glide you can pass the server config to the Glide facade in a service provider.
 
 ```php
-use League\Glide\Responses\LaravelResponseFactory;
-use League\Glide\Server;
-use League\Glide\ServerFactory;
+use Awcodes\Curator\Facades\Glide;
 
-class CustomServerFactory implements Contracts\ServerFactory
+public function register(): void 
 {
-    public function getFactory(): ServerFactory | Server
-    {
-        return ServerFactory::create([
-            'driver' => 'imagick',
-            'response' => new LaravelResponseFactory(app('request')),
-            'source' => storage_path('app'),
-            'source_path_prefix' => 'public',
-            'cache' => storage_path('app'),
-            'cache_path_prefix' => '.cache',
-            'max_image_size' => 2000 * 2000,
-        ]);
-    }
+    Glide::serverConfig([
+        'driver' => 'imagick',
+        'response' => new LaravelResponseFactory(app('request')),
+        'source' => storage_path('app'),
+        'source_path_prefix' => 'public',
+        'cache' => storage_path('app'),
+        'cache_path_prefix' => '.cache',
+        'max_image_size' => 2000 * 2000,
+    ]);
 }
-```
-
-Then register your server in the config.
-
-```php
-'glide' => [
-    'server' => \App\Glide\CustomServerFactory::class,
-],
 ```
 
 ### Curation Blade Component
