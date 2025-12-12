@@ -267,12 +267,14 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
             ->size('sm')
             ->color('primary')
             ->label(trans('curator::views.panel.add_files'))
-            ->visible(fn (): bool => count($this->form->getRawState()['files_to_add'] ?? []) !== 0)
-            ->disabled(fn (): bool => count($this->form->getRawState()['files_to_add'] ?? []) === 0)
+            ->visible(fn(): bool => count($this->form->getRawState()['files_to_add'] ?? []) !== 0)
+            ->disabled(fn(): bool => count($this->form->getRawState()['files_to_add'] ?? []) === 0)
             ->action(function () use ($insertAfter): void {
                 $media = self::createMediaFiles();
 
                 $this->form->fill();
+                $this->resetPage();
+                $this->files = $this->getFiles(); 
 
                 if ($insertAfter) {
                     $this->dispatch(
@@ -282,15 +284,10 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
                         media: $media
                     );
 
-                    $this->dispatch('unPounce');
+                    $this->dispatch('close-modal', id: $this->modalId ?? 'curator-panel');
 
                     return;
                 }
-
-                $this->files = [
-                    ...$media,
-                    ...$this->files,
-                ];
 
                 foreach ($media as $item) {
                     $this->selected[] = $item;
