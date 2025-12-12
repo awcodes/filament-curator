@@ -40,6 +40,29 @@ trait InteractsWithStorage
                 ];
             })
             ->toArray();
+
+        // Handle empty parent directories
+        foreach ($this->directories as $directory) {
+            if (filled($directory['parent_path']) && ! array_key_exists($directory['parent_path'], $this->directories)) {
+                $this->directories[$directory['parent_path']] = [
+                    'label' => Str::of($directory['parent_path'])
+                        ->afterLast('/')
+                        ->replace('-', ' ')
+                        ->title()
+                        ->toString(),
+                    'name' => Str::of($directory['parent_path'])
+                        ->afterLast('/')
+                        ->toString(),
+                    'path' => $directory['parent_path'],
+                    'parent_path' => Str::of($directory['parent_path'])
+                        ->contains('/')
+                        ? Str::of($directory['parent_path'])
+                            ->beforeLast('/')
+                            ->toString()
+                        : '',
+                ];
+            }
+        }
     }
 
     public function getSubDirectories(): void
