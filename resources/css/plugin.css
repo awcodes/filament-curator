@@ -18,13 +18,13 @@
     grid-gap: var(--grid-layout-gap);
 }
 
-@screen md {
+@media md {
     .curator-grid-container {
         --grid-column-count: 2;
     }
 }
 
-@screen lg {
+@media lg {
     .curator-grid-container {
         --grid-column-count: 3;
     }
