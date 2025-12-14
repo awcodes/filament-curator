@@ -97,20 +97,20 @@ class MediaTable
             View::make('curator::components.tables.grid-column'),
             TextColumn::make('name')
                 ->label(trans('curator::tables.columns.name'))
-                ->extraAttributes(['class' => 'hidden'])
+                ->extraAttributes(['style' => 'display: none;'])
                 ->searchable()
                 ->sortable(),
             TextColumn::make('ext')
                 ->label(trans('curator::tables.columns.ext'))
-                ->extraAttributes(['class' => 'hidden'])
+                ->extraAttributes(['style' => 'display: none;'])
                 ->sortable(),
             TextColumn::make('directory')
                 ->label(trans('curator::tables.columns.directory'))
-                ->extraAttributes(['class' => 'hidden'])
+                ->extraAttributes(['style' => 'display: none;'])
                 ->sortable(),
             TextColumn::make('created_at')
                 ->label(trans('curator::tables.columns.created_at'))
-                ->extraAttributes(['class' => 'hidden'])
+                ->extraAttributes(['style' => 'display: none;'])
                 ->sortable(),
         ];
     }

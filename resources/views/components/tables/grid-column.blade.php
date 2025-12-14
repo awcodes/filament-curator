@@ -3,7 +3,7 @@
     $isSvg = curator()->isSvg($record->ext);
 @endphp
 
-<div {{ $attributes->merge($getExtraAttributes())->class(['curator-grid-column absolute inset-0 rounded-t-xl overflow-hidden aspect-video']) }}>
+<div {{ $attributes->merge($getExtraAttributes())->class(['curator-grid-column absolute inset-0 rounded-t-xl overflow-hidden']) }}>
     <div @class([
         'rounded-t-xl h-full overflow-hidden bg-gray-100 dark:bg-gray-950/50',
         'checkered' => $isSvg,
@@ -17,7 +17,7 @@
             @class([
                 'h-full',
                 'w-auto mx-auto p-2' => $isSvg,
-                'object-cover w-full' => ! $isSvg,
+                'w-full' => ! $isSvg,
             ])
         />
         <x-curator::display.info-overlay :label="$record->pretty_name" :size="$record->size" />
