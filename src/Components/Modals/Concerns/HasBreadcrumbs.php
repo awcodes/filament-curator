@@ -27,9 +27,9 @@ trait HasBreadcrumbs
             return [];
         }
 
-        $item = is_string($currentDir) && array_key_exists($currentDir, $dirs) 
-        ? $dirs[$currentDir] 
-        : (is_string($currentDir) ? ['label' => $currentDir, 'path' => $currentDir] : $currentDir); 
+        $item = is_string($currentDir) && array_key_exists($currentDir, $dirs)
+        ? $dirs[$currentDir]
+        : (is_string($currentDir) ? ['label' => $currentDir, 'path' => $currentDir] : $currentDir);
 
         $crumbs = [];
         if (isset($item['parent_path']) && $item['parent_path']) {

@@ -64,34 +64,32 @@ class AttachCuratorMediaPlugin implements RichContentPlugin
                 ->modalHeading(__('curator::views.attach_curator_media.modal.heading'))
                 ->modalSubmitAction(false)
                 ->modalCancelAction(false)
-                ->modalContent(function (RichEditor $component, array $arguments): View {
-                    return view('curator::components.modals.curator-panel', [
-                        'key' => $component->getKey(),
-                        'settings' => [
-                            'acceptedFileTypes' => $component->getFileAttachmentsAcceptedFileTypes() ?? Curator::getAcceptedFileTypes(),
-                            'defaultSort' => 'desc',
-                            'directory' => $component->getFileAttachmentsDirectory() ?? Curator::getDirectory(),
-                            'diskName' => $component->getFileAttachmentsDiskName() ?? Curator::getDiskName(),
-                            'imageCropAspectRatio' => Curator::getImageCropAspectRatio(),
-                            'imageResizeTargetWidth' => Curator::getImageResizeTargetWidth(),
-                            'imageResizeTargetHeight' => Curator::getImageResizeTargetHeight(),
-                            'imageResizeMode' => Curator::getImageResizeMode(),
-                            'isLimitedToDirectory' => false,
-                            'isTenantAware' => Curator::isTenantAware(),
-                            'tenantOwnershipRelationshipName' => Curator::getTenantName(),
-                            'isMultiple' => false,
-                            'maxItems' => 1,
-                            'maxSize' => $component->getFileAttachmentsMaxSize() ?? Curator::getMaxSize(),
-                            'minSize' => Curator::getMinSize(),
-                            'pathGenerator' => Config::get('curator.path_generator'),
-                            'rules' => [],
-                            'selected' => [],
-                            'shouldPreserveFilenames' => Curator::shouldPreserveFilenames(),
-                            'statePath' => $component->getStatePath(),
-                            'visibility' => $component->getFileAttachmentsVisibility() ?? Curator::getVisibility(),
-                        ],
-                    ]);
-                })
+                ->modalContent(fn (RichEditor $component, array $arguments): View => view('curator::components.modals.curator-panel', [
+                    'key' => $component->getKey(),
+                    'settings' => [
+                        'acceptedFileTypes' => $component->getFileAttachmentsAcceptedFileTypes() ?? Curator::getAcceptedFileTypes(),
+                        'defaultSort' => 'desc',
+                        'directory' => $component->getFileAttachmentsDirectory() ?? Curator::getDirectory(),
+                        'diskName' => $component->getFileAttachmentsDiskName() ?? Curator::getDiskName(),
+                        'imageCropAspectRatio' => Curator::getImageCropAspectRatio(),
+                        'imageResizeTargetWidth' => Curator::getImageResizeTargetWidth(),
+                        'imageResizeTargetHeight' => Curator::getImageResizeTargetHeight(),
+                        'imageResizeMode' => Curator::getImageResizeMode(),
+                        'isLimitedToDirectory' => false,
+                        'isTenantAware' => Curator::isTenantAware(),
+                        'tenantOwnershipRelationshipName' => Curator::getTenantName(),
+                        'isMultiple' => false,
+                        'maxItems' => 1,
+                        'maxSize' => $component->getFileAttachmentsMaxSize() ?? Curator::getMaxSize(),
+                        'minSize' => Curator::getMinSize(),
+                        'pathGenerator' => Config::get('curator.path_generator'),
+                        'rules' => [],
+                        'selected' => [],
+                        'shouldPreserveFilenames' => Curator::shouldPreserveFilenames(),
+                        'statePath' => $component->getStatePath(),
+                        'visibility' => $component->getFileAttachmentsVisibility() ?? Curator::getVisibility(),
+                    ],
+                ]))
                 ->action(fn (): null => null),
         ];
     }

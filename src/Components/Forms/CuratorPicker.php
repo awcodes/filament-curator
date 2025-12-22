@@ -530,7 +530,7 @@ class CuratorPicker extends Field
                             'media_id' => $itemId,
                             $orderColumn => $i,
                         ];
-                        if ($typeValue !== null && $typeValue !== '' && $typeValue !== '0') {
+                        if (! in_array($typeValue, [null, '', '0'], true)) {
                             $data[$typeColumn] = $typeValue;
                         }
                         if (isset($existingItems[$itemId])) {

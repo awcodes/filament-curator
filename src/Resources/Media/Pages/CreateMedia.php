@@ -6,7 +6,6 @@ namespace Awcodes\Curator\Resources\Media\Pages;
 
 use Awcodes\Curator\Resources\Media\MediaResource;
 use Filament\Resources\Pages\CreateRecord;
-use Illuminate\Database\Eloquent\Model;
 
 class CreateMedia extends CreateRecord
 {

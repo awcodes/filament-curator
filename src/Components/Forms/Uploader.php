@@ -63,7 +63,7 @@ class Uploader extends FileUpload
                 $exif = $image->exif()->toArray();
             }
 
-            if (Storage::disk($component->getDiskName())->exists(ltrim($component->getDirectory().'/'.$filename.'.'.$extension, '/'))) {
+            if (Storage::disk($component->getDiskName())->exists(mb_ltrim($component->getDirectory().'/'.$filename.'.'.$extension, '/'))) {
                 $filename = $filename.'-'.time();
             }
 
@@ -94,9 +94,7 @@ class Uploader extends FileUpload
             return $data;
         });
 
-        $this->dehydrateStateUsing(function ($component) {
-            return $component->getState();
-        });
+        $this->dehydrateStateUsing(fn ($component) => $component->getState());
     }
 
     /**

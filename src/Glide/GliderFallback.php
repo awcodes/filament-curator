@@ -10,10 +10,15 @@ use Illuminate\Support\Str;
 class GliderFallback
 {
     public ?string $alt = null;
+
     public ?int $height = null;
+
     public ?string $name = null;
+
     public ?string $source = null;
+
     public ?string $type = null;
+
     public ?int $width = null;
 
     public static function make(string $name): static
