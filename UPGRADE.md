@@ -423,15 +423,6 @@ CuratorPicker::make('image')
     ->color('gray');          // New default color
 ```
 
-#### Removed Methods
-
-These methods have been removed from `CuratorPicker` in v4:
-
-- `typeColumn()` - Use at model level
-- `typeValue()` - Use at model level
-
-All other methods remain compatible.
-
 ### Step 10: Update Custom Components (If Any)
 
 If you've extended Curator's components:

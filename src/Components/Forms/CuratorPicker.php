@@ -67,9 +67,9 @@ class CuratorPicker extends Field
 
     protected string|Closure|null $defaultPanelSort = null;
 
-    protected ?string $typeColumn = null;
+    protected string|Closure|null $typeColumn = null;
 
-    protected ?string $typeValue = null;
+    protected string|Closure|null $typeValue = null;
 
     /** @throws Exception */
     protected function setUp(): void
@@ -138,26 +138,6 @@ class CuratorPicker extends Field
 
             return $state;
         });
-
-        //        $this->registerListeners([
-        //            'curator::updateState' => [
-        //                function (CuratorPicker $component, string $statePath, array $arguments): void {
-        //                    if ($component->getStatePath() !== $statePath) {
-        //                        return;
-        //                    }
-        //
-        //                    $items = [];
-        //
-        //                    $state = array_values($arguments['media']);
-        //
-        //                    foreach ($state as $itemData) {
-        //                        $items[(string) Str::uuid()] = $itemData;
-        //                    }
-        //
-        //                    $component->state($items);
-        //                },
-        //            ],
-        //        ]);
 
         $this->registerActions([
             fn (CuratorPicker $component): Action => $component->getDownloadAction(),
@@ -444,6 +424,20 @@ class CuratorPicker extends Field
         return $this;
     }
 
+    public function typeColumn(string|Closure $column): static
+    {
+        $this->typeColumn = $column;
+
+        return $this;
+    }
+
+    public function typeValue(string|Closure $value): static
+    {
+        $this->typeValue = $value;
+
+        return $this;
+    }
+
     public function relationship(string|Closure $relationshipName, string|Closure $titleColumnName, ?Closure $callback = null): static
     {
         $this->relationship = $relationshipName;
@@ -592,11 +586,11 @@ class CuratorPicker extends Field
 
     public function getTypeColumn(): string
     {
-        return $this->typeColumn ?? 'type';
+        return $this->evaluate($this->typeColumn) ?? 'type';
     }
 
     public function getTypeValue(): ?string
     {
-        return $this->typeValue ?? null;
+        return $this->evaluate($this->typeValue) ?? null;
     }
 }
