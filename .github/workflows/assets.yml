@@ -3,7 +3,7 @@ name: "Build Assets"
 on:
   pull_request:
     branches:
-      - 3.x
+      - 5.x
     types:
       - closed
     paths:
