@@ -9,6 +9,7 @@ use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Models\Media;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Storage;
 use League\Glide\Filesystem\FileNotFoundException;
 use League\Glide\Filesystem\FilesystemException;
@@ -33,7 +34,7 @@ class MediaController extends Controller
             abort(403);
         }
 
-        $media = Media::query()
+        $media = App::make(Media::class)::query()
             ->where('path', $path)
             ->first();
 
