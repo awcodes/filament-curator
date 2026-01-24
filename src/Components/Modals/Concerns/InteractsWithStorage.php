@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Awcodes\Curator\Components\Modals\Concerns;
 
 use Awcodes\Curator\Models\Media;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Str;
 
 trait InteractsWithStorage
@@ -16,7 +15,7 @@ trait InteractsWithStorage
 
     public function getDirectories(): void
     {
-        $directories = App::make(Media::class)::query()->select('directory')
+        $directories = Media::query()->select('directory')
             ->whereNotNull('directory')
             ->distinct()
             ->get()

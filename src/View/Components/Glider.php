@@ -108,8 +108,8 @@ class Glider extends Component
                 caption: $media->caption,
                 width: $media->width,
                 height: $media->height,
-                isResizable: Curator::isResizable($media->ext),
-                isPreviewable: Curator::isPreviewable($media->ext),
+                isResizable: $media->is_resizable,
+                isPreviewable: $media->is_previewable,
             );
         }
 
