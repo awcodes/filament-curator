@@ -98,14 +98,20 @@ class Media extends Model
                 try {
                     $isPrivate = $storage->getVisibility($this->path) === 'private';
                 } catch (Throwable) {
-                    // ACL not supported on Storage Bucket, Laravel only throws exception here so need to be careful.
-                    // so we assume it's private
-                    $isPrivate = true;
+                    // Visibility check failed (file missing, ACL not supported, etc.)
+                    // Fall back to regular URL
+                    return $storage->url($this->path);
                 }
 
-                return $isPrivate
-                    ? $storage->temporaryUrl($this->path, now()->addMinutes(5))
-                    : $storage->url($this->path);
+                if ($isPrivate) {
+                    try {
+                        return $storage->temporaryUrl($this->path, now()->addMinutes(5));
+                    } catch (Throwable) {
+                        // Driver doesn't support temporary URLs, fall back to regular URL
+                    }
+                }
+
+                return $storage->url($this->path);
             },
         );
     }
