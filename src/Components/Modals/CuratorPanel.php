@@ -164,9 +164,12 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
             ]);
     }
 
+    /**
+     * @throws BindingResolutionException
+     */
     public function getFiles(int $page = 0, bool $excludeSelected = false): array
     {
-        $files = Media::query()
+        $files = App::make(Media::class)::query()
             ->where('directory', $this->directory)
             ->when(filament()->hasTenancy() && $this->isTenantAware, fn ($query) => $query->where($this->tenantOwnershipRelationshipName.'_id', filament()->getTenant()->id))
 //            ->when($this->selected, function ($query, $selected) {
@@ -311,7 +314,7 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
             ->modalWidth(Width::Medium)
             ->schema(App::make(MediaForm::class)::getAdditionalInformationFormSchema())
             ->fillForm(function (array $arguments): array {
-                $record = Media::query()->where('id', $arguments['item']['id'])->first() ?? null;
+                $record = App::make(Media::class)::query()->where('id', $arguments['item']['id'])->first() ?? null;
 
                 return $record ? $record->toArray() : [];
             })
