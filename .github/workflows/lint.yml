@@ -1,13 +1,17 @@
-name: "Fix PHP code styling"
+name: 'Fix PHP Code Styling'
 
 on:
+  workflow_dispatch:
   pull_request:
-    branches:
-      - 3.x
     types:
       - closed
+    branches:
+      - 5.x
     paths:
       - '**.php'
+
+permissions:
+  contents: write
 
 jobs:
   if_merged:
@@ -19,10 +23,22 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
 
-      - name: Fix PHP code style issues
-        uses: aglipanci/laravel-pint-action@2.6
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.3
+
+      - name: Install dependencies
+        run: composer install --no-interaction
+
+      - name: Run Rector
+        run: composer refactor
+
+      - name: Run Pint
+        run: composer lint
 
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
-          commit_message: "Chore: Fix PHP code styling"
+          commit_message: "Format Code"
+          commit_user_name: 'GitHub Actions'
