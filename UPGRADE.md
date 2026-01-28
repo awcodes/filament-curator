@@ -507,18 +507,22 @@ The `CurationPreset` API remains the same in v4, so your existing presets should
 
 ### Step 12: Update Glide Server Factories (If Customized)
 
-If you have a custom Glide server factory, the interface hasn't changed, but be aware:
+If you have a custom Glide server factory it should be set in a Service Provider with the Glide Facade:
 
 ```php
-// Both v3 and v4 use the same interface
-use Awcodes\Curator\Glide\Contracts\ServerFactory;
+use Awcodes\Curator\Facades\Glide;
 
-class CustomServerFactory implements ServerFactory
+public function register(): void 
 {
-    public function getFactory(): ServerFactory | Server
-    {
-        // Implementation remains the same
-    }
+    Glide::serverConfig([
+        'driver' => 'imagick',
+        'response' => new LaravelResponseFactory(app('request')),
+        'source' => storage_path('app'),
+        'source_path_prefix' => 'public',
+        'cache' => storage_path('app'),
+        'cache_path_prefix' => '.cache',
+        'max_image_size' => 2000 * 2000,
+    ]);
 }
 ```
 
