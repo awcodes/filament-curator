@@ -17,8 +17,6 @@ class GlideManager
     use EvaluatesClosures;
     use HasGliderFallbacks;
 
-    public $config;
-
     protected array $serverConfig;
 
     protected string $token;
@@ -46,7 +44,7 @@ class GlideManager
 
     public function getServer(): Server
     {
-        return ServerFactory::create($this->config ?? $this->getDefaultServerConfig());
+        return ServerFactory::create($this->serverConfig ?? $this->getDefaultServerConfig());
     }
 
     public function getBasePath(): string
