@@ -1,10 +1,11 @@
-![curator-og](https://res.cloudinary.com/aw-codes/image/upload/w_1200,f_auto,q_auto/plugins/curator/awcodes-curator.jpg)
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/awcodes/filament-curator.svg?style=flat-square)](https://packagist.org/packages/awcodes/filament-curator)
-[![Total Downloads](https://img.shields.io/packagist/dt/awcodes/filament-curator.svg?style=flat-square)](https://packagist.org/packages/awcodes/filament-curator)
-
 # Filament Curator
 
 A media picker/manager plugin for Filament Admin.
+
+[![Latest Version](https://img.shields.io/github/release/awcodes/filament-curator.svg?style=flat-square)](https://github.com/awcodes/filament-curator/releases)
+[![MIT Licensed](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.md)
+[![Total Downloads](https://img.shields.io/packagist/dt/awcodes/filament-curator.svg?style=flat-square)](https://packagist.org/packages/awcodes/filament-curator)
+![GitHub Repo stars](https://img.shields.io/github/stars/awcodes/filament-curator?style=flat-square)
 
 > [!WARNING]
 > This package does not work with Spatie Media Library.
