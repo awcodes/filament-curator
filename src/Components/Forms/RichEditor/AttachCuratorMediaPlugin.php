@@ -87,6 +87,7 @@ class AttachCuratorMediaPlugin implements RichContentPlugin
                         'selected' => [],
                         'shouldPreserveFilenames' => Curator::shouldPreserveFilenames(),
                         'statePath' => $component->getStatePath(),
+                        'context' => 'richEditor',
                         'visibility' => $component->getFileAttachmentsVisibility() ?? Curator::getVisibility(),
                     ],
                 ]))
