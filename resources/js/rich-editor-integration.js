@@ -77,6 +77,10 @@
       let data = event.detail;
       if (Array.isArray(data)) data = data[0];
 
+      if (data?.context !== 'richEditor') {
+        return;
+      }
+
       const { statePath, media } = data || {};
       if (!statePath || !media) {
         return;

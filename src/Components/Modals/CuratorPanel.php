@@ -89,6 +89,8 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
 
     public ?string $statePath = null;
 
+    public ?string $context = null;
+
     public bool $shouldPreserveFilenames = false;
 
     public array $types = [];
@@ -287,7 +289,7 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
                 }
 
                 if ($insertAfter) {
-                    $this->dispatch('insert-media', ['statePath' => $this->statePath, 'media' => $this->selected]);
+                    $this->dispatch('insert-media', ['statePath' => $this->statePath, 'media' => $this->selected, 'context' => $this->context]);
                 }
             });
     }
@@ -396,7 +398,7 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
             ->color('success')
             ->label(trans('curator::views.panel.use_selected_image'))
             ->action(function (): void {
-                $this->dispatch('insert-media', ['statePath' => $this->statePath, 'media' => $this->selected]);
+                $this->dispatch('insert-media', ['statePath' => $this->statePath, 'media' => $this->selected, 'context' => $this->context]);
             });
     }
 
