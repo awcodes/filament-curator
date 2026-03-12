@@ -112,7 +112,7 @@ class Uploader extends FileUpload
         ) {
             $path = App::make($generator)->getPath($directory);
         } else {
-            $path = $this->evaluate($this->directory);
+            $path = $this->evaluate($directory);
         }
 
         return $this->normalizePath($path);
