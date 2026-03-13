@@ -100,7 +100,7 @@ trait CanUploadFiles
 
     public function getVisibility(): string
     {
-        return $this->evaluate($this->visibility) ?? 'public';
+        return $this->evaluate($this->visibility) ?? config('curator.default_visibility', 'public');
     }
 
     public function imageCropAspectRatio(string|Closure|null $ratio): static
