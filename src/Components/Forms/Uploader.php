@@ -102,17 +102,15 @@ class Uploader extends FileUpload
      */
     public function getDirectory(): ?string
     {
-        $directory = $this->directory ?? config('curator.default_directory');
-        $generator = $this->getPathGenerator() ?? config('curator.path_generator');
+        $path = $this->evaluate($this->directory) ?? config('curator.default_directory');
+        $generator = $this->getPathGenerator();
 
         if (
             $generator &&
             class_exists($generator) &&
             (new ReflectionClass($generator))->implementsInterface(PathGenerator::class)
         ) {
-            $path = App::make($generator)->getPath($directory);
-        } else {
-            $path = $this->evaluate($this->directory);
+            $path = App::make($generator)->getPath($path);
         }
 
         return $this->normalizePath($path);
