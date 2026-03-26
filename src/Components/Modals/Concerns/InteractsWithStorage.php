@@ -46,28 +46,26 @@ trait InteractsWithStorage
             })
             ->toArray();
 
-        // Handle empty parent directories
-        foreach ($this->directories as $directory) {
-            if (filled($directory['parent_path']) && ! array_key_exists($directory['parent_path'], $this->directories)) {
-                $this->directories[$directory['parent_path']] = [
-                    'label' => Str::of($directory['parent_path'])
-                        ->afterLast('/')
-                        ->replace('-', ' ')
-                        ->title()
-                        ->toString(),
-                    'name' => Str::of($directory['parent_path'])
-                        ->afterLast('/')
-                        ->toString(),
-                    'path' => $directory['parent_path'],
-                    'parent_path' => Str::of($directory['parent_path'])
-                        ->contains('/')
-                        ? Str::of($directory['parent_path'])
-                            ->beforeLast('/')
-                            ->toString()
-                        : '',
-                ];
+        // Synthesize all missing ancestor directories so the full path hierarchy is navigable.
+        // A single foreach only visits the original entries, so we repeat until no new entries are added.
+        do {
+            $addedNew = false;
+            foreach ($this->directories as $directory) {
+                $parentPath = $directory['parent_path'];
+                if (filled($parentPath) && ! array_key_exists($parentPath, $this->directories)) {
+                    $name = Str::of($parentPath)->afterLast('/')->toString();
+                    $this->directories[$parentPath] = [
+                        'label' => Str::of($name)->replace('-', ' ')->title()->toString(),
+                        'name' => $name,
+                        'path' => $parentPath,
+                        'parent_path' => Str::contains($parentPath, '/')
+                            ? Str::of($parentPath)->beforeLast('/')->toString()
+                            : '',
+                    ];
+                    $addedNew = true;
+                }
             }
-        }
+        } while ($addedNew);
     }
 
     public function getSubDirectories(): void
