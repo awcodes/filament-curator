@@ -32,7 +32,7 @@ trait HasBreadcrumbs
         : (is_string($currentDir) ? ['label' => $currentDir, 'path' => $currentDir] : $currentDir);
 
         $crumbs = [];
-        if (isset($item['parent_path']) && $item['parent_path']) {
+        if (isset($item['parent_path']) && $item['parent_path'] && array_key_exists($item['parent_path'], $dirs)) {
             $crumbs = $this->generateBreadcrumbs($dirs[$item['parent_path']], $dirs);
         }
 
