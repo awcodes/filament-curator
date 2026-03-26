@@ -8,6 +8,7 @@ use Awcodes\Curator\Facades\Glide;
 use Awcodes\Curator\Models\Media;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Decoders\BinaryImageDecoder;
 use Livewire\Component;
 
 class CuratorCuration extends Component
@@ -25,10 +26,11 @@ class CuratorCuration extends Component
     public function saveCuration($data = null): void
     {
         $storage = Storage::disk($this->media->disk);
-        $filePath = $storage->path($this->media->path);
+//        $filePath = $storage->path($this->media->path);
+        $file = $storage->get($this->media->path);
 
         $manager = Glide::getServer()->getApi()->getImageManager();
-        $image = $manager->read($filePath);
+        $image = $manager->read($file, BinaryImageDecoder::class);
         $extension = $data['format'] ?? $this->media->ext;
 
         $aspectWidth = floor(($data['canvasData']['width'] / $data['canvasData']['naturalWidth']) * $data['width']);
