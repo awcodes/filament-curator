@@ -172,7 +172,12 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
     public function getFiles(int $page = 0, bool $excludeSelected = false): array
     {
         $files = App::make(Media::class)::query()
-            ->where('directory', $this->directory)
+            ->where(function ($query): void {
+                $query->where('directory', $this->directory);
+                if (filled($this->directory)) {
+                    $query->orWhere('directory', 'LIKE', $this->directory.'/%');
+                }
+            })
             ->when(filament()->hasTenancy() && $this->isTenantAware, fn ($query) => $query->where($this->tenantOwnershipRelationshipName.'_id', filament()->getTenant()->id))
 //            ->when($this->selected, function ($query, $selected) {
 //                $selected = collect($selected)->pluck('id')->toArray();
