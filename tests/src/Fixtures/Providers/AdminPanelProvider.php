@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Awcodes\Curator\Tests\Fixtures\Providers;
 
+use Awcodes\Curator\CuratorPlugin;
 use Awcodes\Curator\Tests\Fixtures\Resources\Authors\AuthorResource;
+use Awcodes\Curator\Tests\Fixtures\Resources\Posts\PostResource;
 use Awcodes\Curator\Tests\Fixtures\Resources\Users\UserResource;
 use Exception;
 use Filament\Http\Middleware\Authenticate;
@@ -31,9 +33,13 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('/admin')
             ->login()
+            ->plugins([
+                CuratorPlugin::make(),
+            ])
             ->resources([
                 UserResource::class,
                 AuthorResource::class,
+                PostResource::class,
             ])
             ->pages([
                 Pages\Dashboard::class,
