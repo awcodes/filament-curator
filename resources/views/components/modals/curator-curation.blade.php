@@ -21,8 +21,6 @@
                     x-ref="image"
                     src="{{ $media->url }}"
                     alt=""
-                    x-on:ready="setData()"
-                    x-on:crop="updateData()"
                     class="h-full w-auto"
                 />
             </div>
@@ -150,7 +148,7 @@
                                 <x-filament::input
                                     type="text"
                                     name="rotate"
-                                    x-on:input="cropper.rotateTo($event.target.value)"
+                                    x-on:input="rotateTo($event.target.value)"
                                     x-bind:value="data.rotate"
                                 />
                             </x-filament::input.wrapper>
@@ -160,28 +158,28 @@
                             <x-filament::button
                                 type="button"
                                 color="gray"
-                                x-on:click="cropper.setAspectRatio(16/9)"
+                                x-on:click="setAspectRatio(16/9)"
                             >
                                 16:9
                             </x-filament::button>
                             <x-filament::button
                                 type="button"
                                 color="gray"
-                                x-on:click="cropper.setAspectRatio(4/3)"
+                                x-on:click="setAspectRatio(4/3)"
                             >
                                 4:3
                             </x-filament::button>
                             <x-filament::button
                                 type="button"
                                 color="gray"
-                                x-on:click="cropper.setAspectRatio(1)"
+                                x-on:click="setAspectRatio(1)"
                             >
                                 1:1
                             </x-filament::button>
                             <x-filament::button
                                 type="button"
                                 color="gray"
-                                x-on:click="cropper.setAspectRatio(2/3)"
+                                x-on:click="setAspectRatio(2/3)"
                             >
                                 2:3
                             </x-filament::button>
@@ -191,7 +189,7 @@
                             <x-filament::button
                                 type="button"
                                 color="gray"
-                                x-on:click="cropper.zoom(0.1)"
+                                x-on:click="zoom(0.1)"
                                 x-tooltip.raw="{{ trans('curator::views.curation.zoom_in') }}"
                             >
                                 <span class="sr-only">{{ trans('curator::views.curation.zoom_in') }}</span>
@@ -204,7 +202,7 @@
                             <x-filament::button
                                 type="button"
                                 color="gray"
-                                x-on:click="cropper.zoom(-0.1)"
+                                x-on:click="zoom(-0.1)"
                                 x-tooltip.raw="{{ trans('curator::views.curation.zoom_out') }}"
                             >
                                 <span class="sr-only">{{ trans('curator::views.curation.zoom_out') }}</span>
@@ -247,7 +245,7 @@
                             <x-filament::button
                                 type="button"
                                 color="gray"
-                                x-on:click="cropper.setDragMode('move')"
+                                x-on:click="setDragMode('move')"
                                 x-tooltip.raw="{{ trans('curator::views.curation.drag_mode') }}"
                             >
                                 <span class="sr-only">{{ trans('curator::views.curation.drag_mode') }}</span>
@@ -258,7 +256,7 @@
                             <x-filament::button
                                 type="button"
                                 color="gray"
-                                x-on:click="cropper.setDragMode('crop')"
+                                x-on:click="setDragMode('crop')"
                                 x-tooltip.raw="{{ trans('curator::views.curation.crop_mode') }}"
                             >
                                 <span class="sr-only">{{ trans('curator::views.curation.crop_mode') }}</span>
@@ -272,7 +270,7 @@
                             type="button"
                             color="gray"
                             class="w-full mt-3"
-                            x-on:click="cropper.reset()"
+                            x-on:click="reset()"
                         >
                             {{ trans('curator::views.curation.reset') }}
                         </x-filament::button>
