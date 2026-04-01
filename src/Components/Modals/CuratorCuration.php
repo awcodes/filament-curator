@@ -11,77 +11,48 @@ use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Decoders\BinaryImageDecoder;
 use Livewire\Component;
 
-class CuratorCuration extends Component
+final class CuratorCuration extends Component
 {
     public Media $media;
 
     public string $modalId;
 
-    public ?array $presets = null;
+    public null|array $presets = null;
 
-    public ?array $formats = null;
+    public null|array $formats = null;
 
     public string $statePath;
 
     public function saveCuration($data = null): void
     {
         $storage = Storage::disk($this->media->disk);
-//        $filePath = $storage->path($this->media->path);
-        $file = $storage->get($this->media->path);
+        $extension = $data['format'] ?? $this->media->ext;
+        $quality = $data['quality'] ?? 60;
+
+        $imageData = base64_decode(explode(',', $data['dataUrl'])[1] ?? '');
 
         $manager = Glide::getServer()->getApi()->getImageManager();
-        $image = $manager->read($file, BinaryImageDecoder::class);
-        $extension = $data['format'] ?? $this->media->ext;
+        $image = $manager->read($imageData, BinaryImageDecoder::class);
 
-        $aspectWidth = floor(($data['canvasData']['width'] / $data['canvasData']['naturalWidth']) * $data['width']);
-        $aspectHeight = floor(($data['canvasData']['height'] / $data['canvasData']['naturalHeight']) * $data['height']);
+        $encodedImage = $image->encodeByExtension(extension: $extension, quality: $quality);
 
-        $image->orient();
-
-        if ($image->exif('Orientation') > 1) {
-            $rotateCorrection = match ($image->exif('Orientation')) {
-                3, 4 => 180,
-                5, 6 => 90,
-                7, 8 => 270,
-                default => 0
-            };
-
-            $image->rotate($rotateCorrection - $data['rotate']);
-        } else {
-            $image->rotate($data['rotate']);
-        }
-
-        if ($data['scaleX'] === -1) {
-            $image->flop();
-        }
-
-        if ($data['scaleY'] === -1) {
-            $image->flip();
-        }
-
-        $encodedImage = $image
-            ->crop($data['width'], $data['height'], $data['x'], $data['y'])
-            ->resize((int) $aspectWidth, (int) $aspectHeight)
-            ->encodeByExtension(extension: $extension, quality: $data['quality'] ?? 60);
-
-        // save image to directory base on media
-        $curationPath = $this->media->directory.'/'.$this->media->name.'/'.$data['key'].'.'.$extension;
+        $curationPath = $this->media->directory . '/' . $this->media->name . '/' . $data['key'] . '.' . $extension;
 
         $storage->put($curationPath, $encodedImage);
 
         $curation = [
-            'key' => $data['key'] ?? $aspectWidth.'x'.$aspectHeight,
+            'key' => $data['key'],
             'disk' => $this->media->disk,
             'directory' => $this->media->name,
             'visibility' => $this->media->visibility,
-            'name' => ($data['key'] ?? $aspectWidth.'x'.$aspectHeight).'.'.$extension,
+            'name' => $data['key'] . '.' . $extension,
             'path' => $curationPath,
-            'width' => $aspectWidth,
-            'height' => $aspectHeight,
+            'width' => $data['width'],
+            'height' => $data['height'],
             'size' => $storage->size($curationPath),
             'type' => $encodedImage->mediaType(),
             'ext' => $extension,
-            'url' => $storage->url($curationPath),
+            'url' => $storage->temporaryUrl($curationPath, now()->addMinutes(5)),
         ];
 
         $this->dispatch(
@@ -93,6 +64,26 @@ class CuratorCuration extends Component
 
     public function render(): View
     {
-        return view('curator::components.modals.curator-curation');
+        return view('curator::components.modals.curator-curation', [
+            'aspectRatios' => $this->getAspectRatios(),
+        ]);
+    }
+
+    private function getAspectRatios(): array
+    {
+        return config(
+            key: 'curator.aspect_ratios',
+            default: $this->getDefaultAspectRatios()
+        );
+    }
+
+    private function getDefaultAspectRatios(): array
+    {
+        return [
+            '16:9' => 16 / 9,
+            '4:3' => 4 / 3,
+            '1:1' => 1,
+            '2:3' => 2 / 3,
+        ];
     }
 }
