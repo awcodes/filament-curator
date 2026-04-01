@@ -19,12 +19,15 @@ use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 
-class MediaForm
+final class MediaForm
 {
-    /** @throws Exception */
+    /**
+     * @throws Exception
+     */
     public static function configure(Schema $schema): Schema
     {
         return $schema
@@ -64,6 +67,28 @@ class MediaForm
                                                     ->hiddenLabel()
                                                     ->buttonLabel(trans('curator::forms.curations.button_label'))
                                                     ->required()
+                                                    ->afterStateHydrated(
+                                                        function (
+                                                            CuratorEditor $component,
+                                                            null|array $state,
+                                                        ): void {
+                                                            if (empty($state)) {
+                                                                return;
+                                                            }
+
+                                                            if ($state['visibility'] === 'public') {
+                                                                return;
+                                                            }
+
+                                                            $state['url'] = Storage::disk($state['disk'])
+                                                                ->temporaryUrl(
+                                                                    $state['path'],
+                                                                    now()->addMinutes(5)
+                                                                );
+
+                                                            $component->state($state);
+                                                        }
+                                                    )
                                                     ->lazy(),
                                             ]),
                                     ]),
@@ -93,7 +118,9 @@ class MediaForm
                 Group::make()
                     ->schema([
                         Section::make(trans('curator::forms.sections.meta'))
-                            ->schema(App::make(config('curator.resource.schemas.form'))::getAdditionalInformationFormSchema()),
+                            ->schema(
+                                App::make(config('curator.resource.schemas.form'))::getAdditionalInformationFormSchema()
+                            ),
                     ])->columnSpan([
                         'md' => 'full',
                         'lg' => 1,
@@ -103,7 +130,9 @@ class MediaForm
             ]);
     }
 
-    /** @throws Exception */
+    /**
+     * @throws Exception
+     */
     public static function getAdditionalInformationFormSchema(): array
     {
         return [
@@ -119,7 +148,13 @@ class MediaForm
                 }),
             TextInput::make('alt')
                 ->label(trans('curator::forms.fields.alt'))
-                ->hint(fn (): HtmlString => new HtmlString('<a href="https://www.w3.org/WAI/tutorials/images/decision-tree" class="filament-link text-primary-500 text-xs" target="_blank">'.trans('curator::forms.fields.alt_hint').'</a>')),
+                ->hint(
+                    fn (): HtmlString => new HtmlString(
+                        '<a href="https://www.w3.org/WAI/tutorials/images/decision-tree" class="filament-link text-primary-500 text-xs" target="_blank">' . trans(
+                            'curator::forms.fields.alt_hint'
+                        ) . '</a>'
+                    )
+                ),
             TextInput::make('title')
                 ->label(trans('curator::forms.fields.title')),
             Textarea::make('caption')
@@ -131,7 +166,9 @@ class MediaForm
         ];
     }
 
-    /** @throws Exception */
+    /**
+     * @throws Exception
+     */
     public static function getUploaderField(): Uploader
     {
         return Uploader::make('file')
