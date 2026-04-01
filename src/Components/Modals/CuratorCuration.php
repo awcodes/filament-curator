@@ -52,7 +52,9 @@ final class CuratorCuration extends Component
             'size' => $storage->size($curationPath),
             'type' => $encodedImage->mediaType(),
             'ext' => $extension,
-            'url' => $storage->temporaryUrl($curationPath, now()->addMinutes(5)),
+            'url' => $this->media->visibility === 'private'
+                ? $storage->temporaryUrl($curationPath, now()->addMinutes(5))
+                : $storage->url($curationPath),
         ];
 
         $this->dispatch(
