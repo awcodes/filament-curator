@@ -13,7 +13,6 @@
             fileType: '{{ $media->type }}',
             presets: @js($presets),
         })"
-        x-on:add-curation.window="$dispatch('close-modal', { id: '{{ $modalId }}' })"
     >
 
         <div class="flex-1 w-full lg:h-full overflow-auto p-4">

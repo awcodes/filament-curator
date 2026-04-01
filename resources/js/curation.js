@@ -45,6 +45,10 @@ export default function curation({ statePath, fileName, fileType, presets = {} }
                 selection.addEventListener("change", () => {
                     this.updateData();
                 });
+
+                window.addEventListener("add-curation", () => {
+                    this.close();
+                });
             }, 100);
 
             this.$watch("preset", ($value) => {
@@ -67,6 +71,7 @@ export default function curation({ statePath, fileName, fileType, presets = {} }
                     this.quality = preset.quality;
                 }
             });
+
         },
         destroy() {
             if (this.cropper == null) return;
@@ -80,13 +85,13 @@ export default function curation({ statePath, fileName, fileType, presets = {} }
                 y: Math.round(selection.y),
                 width: Math.round(selection.width),
                 height: Math.round(selection.height),
-                rotate: this.currentRotation,
+                rotate: this.currentRotation
             };
             this.cropBoxData = {
                 x: Math.round(selection.x),
                 y: Math.round(selection.y),
                 width: Math.round(selection.width),
-                height: Math.round(selection.height),
+                height: Math.round(selection.height)
             };
             this.finalWidth = Math.round(selection.width);
             this.finalHeight = Math.round(selection.height);
@@ -160,7 +165,7 @@ export default function curation({ statePath, fileName, fileType, presets = {} }
 
             const exportCanvas = await selection.$toCanvas({
                 width: outputWidth,
-                height: outputHeight,
+                height: outputHeight
             });
 
             const mimeType = `image/${this.format === "jpg" ? "jpeg" : this.format}`;
