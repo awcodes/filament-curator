@@ -278,7 +278,7 @@
                             type="button"
                             size="sm"
                             color="gray"
-                            wire:click="$dispatch('close-modal', { id: '{{ $modalId }}' })"
+                            x-on:click="close()"
                         >
                             {{ trans('curator::views.curation.cancel') }}
                         </x-filament::button>
