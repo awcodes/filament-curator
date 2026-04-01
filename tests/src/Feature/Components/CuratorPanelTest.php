@@ -101,6 +101,133 @@ test('isMultiple false restricts to single selection indicator', function () {
         ->assertSet('isMultiple', false);
 });
 
+test('getFiles returns files from date-based subdirectories when base directory is set', function () {
+    Storage::fake('public');
+
+    makeMedia(['name' => 'base-dir-photo', 'directory' => 'uploads/authors']);
+    makeMedia(['name' => 'date-subdir-photo', 'directory' => 'uploads/authors/2025/07/15']);
+    makeMedia(['name' => 'other-dir-photo', 'directory' => 'other']);
+
+    $component = Livewire::test(CuratorPanel::class, [
+        'settings' => ['directory' => 'uploads/authors'],
+    ]);
+
+    expect($component->get('files'))
+        ->toHaveCount(2)
+        ->and(collect($component->get('files'))->pluck('name')->toArray())
+        ->toContain('base-dir-photo', 'date-subdir-photo');
+});
+
+test('getFiles does not return files from directories that share a prefix', function () {
+    Storage::fake('public');
+
+    makeMedia(['name' => 'target', 'directory' => 'uploads/authors']);
+    makeMedia(['name' => 'false-match', 'directory' => 'uploads/authors-other']);
+
+    $component = Livewire::test(CuratorPanel::class, [
+        'settings' => ['directory' => 'uploads/authors'],
+    ]);
+
+    expect($component->get('files'))
+        ->toHaveCount(1)
+        ->and(collect($component->get('files'))->pluck('name')->toArray())
+        ->toContain('target');
+});
+
+test('getFiles with null directory only returns files with null directory', function () {
+    Storage::fake('public');
+
+    makeMedia(['name' => 'no-dir', 'directory' => null]);
+    makeMedia(['name' => 'has-dir', 'directory' => 'uploads']);
+
+    $component = Livewire::test(CuratorPanel::class);
+
+    expect($component->get('files'))
+        ->toHaveCount(1)
+        ->and(collect($component->get('files'))->pluck('name')->toArray())
+        ->toContain('no-dir');
+});
+
+test('subdirectory folder icons still appear alongside files from subdirectories', function () {
+    Storage::fake('public');
+
+    makeMedia(['name' => 'base-photo', 'directory' => 'uploads/photos']);
+    makeMedia(['name' => 'subdir-photo', 'directory' => 'uploads/photos/vacation']);
+
+    $component = Livewire::test(CuratorPanel::class, [
+        'settings' => ['directory' => 'uploads/photos'],
+    ]);
+
+    expect($component->get('files'))->toHaveCount(2);
+
+    $subDirs = $component->get('subDirectories');
+    expect(array_values($subDirs))->toHaveCount(1)
+        ->and(array_values($subDirs)[0]['name'])->toBe('vacation');
+});
+
+test('navigating into a subdirectory scopes files to that directory and below', function () {
+    Storage::fake('public');
+
+    makeMedia(['name' => 'base-photo', 'directory' => 'uploads/photos']);
+    makeMedia(['name' => 'vacation-photo', 'directory' => 'uploads/photos/vacation']);
+    makeMedia(['name' => 'work-photo', 'directory' => 'uploads/photos/work']);
+
+    $component = Livewire::test(CuratorPanel::class, [
+        'settings' => ['directory' => 'uploads/photos'],
+    ]);
+
+    expect($component->get('files'))->toHaveCount(3);
+
+    $component->call('handleDirectoryChange', 'uploads/photos/vacation');
+    expect($component->get('files'))->toHaveCount(1)
+        ->and(collect($component->get('files'))->pluck('name')->toArray())->toContain('vacation-photo');
+});
+
+test('deep date-based directory paths synthesize all ancestor folder icons', function () {
+    Storage::fake('public');
+
+    makeMedia(['name' => 'date-photo', 'directory' => 'uploads/authors/2025/07/15']);
+
+    $component = Livewire::test(CuratorPanel::class, [
+        'settings' => ['directory' => 'uploads/authors'],
+    ]);
+
+    // File is visible at the base directory
+    expect($component->get('files'))->toHaveCount(1);
+
+    // Immediate child '2025' is present as a folder icon for navigation
+    $subDirs = $component->get('subDirectories');
+    expect(array_values($subDirs))->toHaveCount(1)
+        ->and(array_values($subDirs)[0]['name'])->toBe('2025');
+});
+
+test('navigating through deep date path shows correct files and subdirs at each level', function () {
+    Storage::fake('public');
+
+    makeMedia(['name' => 'july-photo', 'directory' => 'uploads/authors/2025/07/15']);
+    makeMedia(['name' => 'aug-photo', 'directory' => 'uploads/authors/2025/08/01']);
+
+    $component = Livewire::test(CuratorPanel::class, [
+        'settings' => ['directory' => 'uploads/authors'],
+    ]);
+
+    // Both visible at root
+    expect($component->get('files'))->toHaveCount(2);
+
+    // Navigate into 2025 — both still visible, two month subdirs appear
+    $component->call('handleDirectoryChange', 'uploads/authors/2025');
+    expect($component->get('files'))->toHaveCount(2);
+    $subDirs = collect($component->get('subDirectories'))->pluck('name')->sort()->values()->toArray();
+    expect($subDirs)->toBe(['07', '08']);
+
+    // Navigate into 2025/07 — only july photo, one day subdir
+    $component->call('handleDirectoryChange', 'uploads/authors/2025/07');
+    expect($component->get('files'))->toHaveCount(1)
+        ->and(collect($component->get('files'))->pluck('name')->toArray())->toContain('july-photo');
+    $subDirs = collect($component->get('subDirectories'))->pluck('name')->toArray();
+    expect($subDirs)->toBe(['15']);
+});
+
 test('isLimitedToDirectory scopes search to directory', function () {
     Storage::fake('public');
 
