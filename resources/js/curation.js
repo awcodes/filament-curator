@@ -1,16 +1,16 @@
 import Cropper from "cropperjs";
 
-export default function curation({statePath, fileName, fileType, presets = {}}) {
+export default function curation({ statePath, fileName, fileType, presets = {} }) {
     return {
         statePath: statePath,
         filename: fileName,
         filetype: fileType,
         cropper: null,
         presets: presets,
-        preset: 'custom',
+        preset: "custom",
         flippedHorizontally: false,
         flippedVertically: false,
-        format: 'jpg',
+        format: "jpg",
         quality: 60,
         key: null,
         finalWidth: 0,
@@ -20,14 +20,14 @@ export default function curation({statePath, fileName, fileType, presets = {}}) 
             x: 0,
             y: 0,
             width: 0,
-            height: 0,
+            height: 0
         },
         data: {
             x: 0,
             y: 0,
             width: 0,
             height: 0,
-            rotate: 0,
+            rotate: 0
         },
         init() {
             this.destroy();
@@ -42,16 +42,16 @@ export default function curation({statePath, fileName, fileType, presets = {}}) 
                     this.setData();
                 });
 
-                selection.addEventListener('change', () => {
+                selection.addEventListener("change", () => {
                     this.updateData();
                 });
             }, 100);
 
-            this.$watch('preset', ($value) => {
-                if ($value === 'custom') {
+            this.$watch("preset", ($value) => {
+                if ($value === "custom") {
                     this.cropper.getCropperSelection().$reset();
                     this.key = null;
-                    this.format = 'jpg';
+                    this.format = "jpg";
                     this.quality = 60;
                 } else {
                     const canvas = this.cropper.getCropperCanvas();
@@ -92,22 +92,7 @@ export default function curation({statePath, fileName, fileType, presets = {}}) 
             this.finalHeight = Math.round(selection.height);
         },
         updateData() {
-            const selection = this.cropper.getCropperSelection();
-            this.data = {
-                x: Math.round(selection.x),
-                y: Math.round(selection.y),
-                width: Math.round(selection.width),
-                height: Math.round(selection.height),
-                rotate: this.currentRotation,
-            };
-            this.cropBoxData = {
-                x: Math.round(selection.x),
-                y: Math.round(selection.y),
-                width: Math.round(selection.width),
-                height: Math.round(selection.height),
-            };
-            this.finalWidth = Math.round(selection.width);
-            this.finalHeight = Math.round(selection.height);
+            this.setData();
         },
         setCropBoxX($event) {
             const selection = this.cropper.getCropperSelection();
@@ -160,23 +145,26 @@ export default function curation({statePath, fileName, fileType, presets = {}}) 
         async saveCuration() {
             const selection = this.cropper.getCropperSelection();
             const cropperImage = this.cropper.getCropperImage();
+
             // Extract the isotropic scale factor from the transform matrix (works for
             // scale, rotation, flip, and zoom combinations). Invert it to convert the
             // selection from display coordinates to near-native image resolution.
             const [a, b] = cropperImage.$getTransform();
             const imageScale = Math.sqrt(a * a + b * b);
-            const scaleToNative = imageScale > 0 ? 1 / imageScale : 1;
+            const scaleToNative = (imageScale > 0)
+                ? (1 / imageScale)
+                : 1;
 
             const outputWidth = Math.max(1, Math.round(selection.width * scaleToNative));
             const outputHeight = Math.max(1, Math.round(selection.height * scaleToNative));
 
-            const canvas = await selection.$toCanvas({
+            const exportCanvas = await selection.$toCanvas({
                 width: outputWidth,
                 height: outputHeight,
             });
 
-            const mimeType = `image/${this.format === 'jpg' ? 'jpeg' : this.format}`;
-            const dataUrl = canvas.toDataURL(mimeType, this.quality / 100);
+            const mimeType = `image/${this.format === "jpg" ? "jpeg" : this.format}`;
+            const dataUrl = exportCanvas.toDataURL(mimeType, this.quality / 100);
 
             this.$wire.saveCuration({
                 dataUrl: dataUrl,
@@ -185,8 +173,8 @@ export default function curation({statePath, fileName, fileType, presets = {}}) 
                 format: this.format,
                 quality: this.quality,
                 preset: this.preset,
-                key: this.key ?? this.preset,
+                key: this.key ?? this.preset
             });
-        },
+        }
     };
 };

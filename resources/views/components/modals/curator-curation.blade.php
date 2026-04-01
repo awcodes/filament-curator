@@ -1,3 +1,4 @@
+@php use Filament\Support\Facades\FilamentAsset; @endphp
 <div
     class="curator curation h-full absolute inset-0 flex flex-col"
 >
@@ -5,7 +6,7 @@
         class="flex-1 relative flex flex-col lg:flex-row overflow-hidden"
         x-ignore
         x-load="visible"
-        x-load-src="{{ \Filament\Support\Facades\FilamentAsset::getAlpineComponentSrc('curation', 'awcodes/curator') }}"
+        x-load-src="{{ FilamentAsset::getAlpineComponentSrc('curation', 'awcodes/curator') }}"
         x-data="curation({
             statePath: '{{ $statePath }}',
             fileName: '{{ $media->name }}',
@@ -22,6 +23,7 @@
                     src="{{ $media->url }}"
                     alt=""
                     class="h-full w-auto"
+                    crossorigin="anonymous"
                 />
             </div>
         </div>
@@ -51,7 +53,10 @@
                                     <x-filament::input.select name="preset" x-model="preset">
                                         <option value="custom">{{ trans('curator::views.curation.custom') }}</option>
                                         <template x-for="preset in presets">
-                                            <option x-bind:value="preset.key" x-bind:key="preset.key" x-text="preset.label"></option>
+                                            <option x-bind:value="preset.key"
+                                                    x-bind:key="preset.key"
+                                                    x-text="preset.label"
+                                            ></option>
                                         </template>
                                     </x-filament::input.select>
                                 </x-filament::input.wrapper>
@@ -155,34 +160,15 @@
                         </div>
 
                         <x-filament::button.group class="w-full mt-3">
-                            <x-filament::button
-                                type="button"
-                                color="gray"
-                                x-on:click="setAspectRatio(16/9)"
-                            >
-                                16:9
-                            </x-filament::button>
-                            <x-filament::button
-                                type="button"
-                                color="gray"
-                                x-on:click="setAspectRatio(4/3)"
-                            >
-                                4:3
-                            </x-filament::button>
-                            <x-filament::button
-                                type="button"
-                                color="gray"
-                                x-on:click="setAspectRatio(1)"
-                            >
-                                1:1
-                            </x-filament::button>
-                            <x-filament::button
-                                type="button"
-                                color="gray"
-                                x-on:click="setAspectRatio(2/3)"
-                            >
-                                2:3
-                            </x-filament::button>
+                            @foreach($aspectRatios as $label => $ratio)
+                                <x-filament::button
+                                    type="button"
+                                    color="gray"
+                                    x-on:click="setAspectRatio({{ $ratio }})"
+                                >
+                                    {{ $label }}
+                                </x-filament::button>
+                            @endforeach
                         </x-filament::button.group>
 
                         <x-filament::button.group class="w-full mt-3">
@@ -225,7 +211,8 @@
                                 <svg class="w-4 h-4" viewBox="0 0 24 24">
                                     <path fill="none" stroke="currentColor" stroke-linecap="round"
                                           stroke-linejoin="round" stroke-width="2"
-                                          d="m17 3l-5 5l-5-5h10m0 18l-5-5l-5 5h10M4 12H2m8 0H8m8 0h-2m8 0h-2"/>
+                                          d="m17 3l-5 5l-5-5h10m0 18l-5-5l-5 5h10M4 12H2m8 0H8m8 0h-2m8 0h-2"
+                                    />
                                 </svg>
                             </x-filament::button>
                             <x-filament::button
@@ -236,7 +223,13 @@
                             >
                                 <span class="sr-only">{{ trans('curator::views.curation.flip_vertically') }}</span>
                                 <svg class="w-4 h-4" viewBox="0 0 24 24">
-                                    <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m3 7l5 5l-5 5V7m18 0l-5 5l5 5V7m-9 13v2m0-8v2m0-8v2m0-8v2"/>
+                                    <path fill="none"
+                                          stroke="currentColor"
+                                          stroke-linecap="round"
+                                          stroke-linejoin="round"
+                                          stroke-width="2"
+                                          d="m3 7l5 5l-5 5V7m18 0l-5 5l5 5V7m-9 13v2m0-8v2m0-8v2m0-8v2"
+                                    />
                                 </svg>
                             </x-filament::button>
                         </x-filament::button.group>
@@ -250,7 +243,9 @@
                             >
                                 <span class="sr-only">{{ trans('curator::views.curation.drag_mode') }}</span>
                                 <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                    <path fill="currentColor" d="M13 6v5h5V7.75L22.25 12L18 16.25V13h-5v5h3.25L12 22.25L7.75 18H11v-5H6v3.25L1.75 12L6 7.75V11h5V6H7.75L12 1.75L16.25 6H13Z"/>
+                                    <path fill="currentColor"
+                                          d="M13 6v5h5V7.75L22.25 12L18 16.25V13h-5v5h3.25L12 22.25L7.75 18H11v-5H6v3.25L1.75 12L6 7.75V11h5V6H7.75L12 1.75L16.25 6H13Z"
+                                    />
                                 </svg>
                             </x-filament::button>
                             <x-filament::button
@@ -261,7 +256,9 @@
                             >
                                 <span class="sr-only">{{ trans('curator::views.curation.crop_mode') }}</span>
                                 <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                    <path fill="currentColor" d="M17 23v-4H7q-.825 0-1.412-.587Q5 17.825 5 17V7H1V5h4V1h2v16h16v2h-4v4Zm0-8V7H9V5h8q.825 0 1.413.588Q19 6.175 19 7v8Z"/>
+                                    <path fill="currentColor"
+                                          d="M17 23v-4H7q-.825 0-1.412-.587Q5 17.825 5 17V7H1V5h4V1h2v16h16v2h-4v4Zm0-8V7H9V5h8q.825 0 1.413.588Q19 6.175 19 7v8Z"
+                                    />
                                 </svg>
                             </x-filament::button>
                         </x-filament::button.group>

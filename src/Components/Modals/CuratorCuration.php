@@ -11,15 +11,15 @@ use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Decoders\BinaryImageDecoder;
 use Livewire\Component;
 
-class CuratorCuration extends Component
+final class CuratorCuration extends Component
 {
     public Media $media;
 
     public string $modalId;
 
-    public ?array $presets = null;
+    public null|array $presets = null;
 
-    public ?array $formats = null;
+    public null|array $formats = null;
 
     public string $statePath;
 
@@ -36,7 +36,7 @@ class CuratorCuration extends Component
 
         $encodedImage = $image->encodeByExtension(extension: $extension, quality: $quality);
 
-        $curationPath = $this->media->directory.'/'.$this->media->name.'/'.$data['key'].'.'.$extension;
+        $curationPath = $this->media->directory . '/' . $this->media->name . '/' . $data['key'] . '.' . $extension;
 
         $storage->put($curationPath, $encodedImage);
 
@@ -45,14 +45,14 @@ class CuratorCuration extends Component
             'disk' => $this->media->disk,
             'directory' => $this->media->name,
             'visibility' => $this->media->visibility,
-            'name' => $data['key'].'.'.$extension,
+            'name' => $data['key'] . '.' . $extension,
             'path' => $curationPath,
             'width' => $data['width'],
             'height' => $data['height'],
             'size' => $storage->size($curationPath),
             'type' => $encodedImage->mediaType(),
             'ext' => $extension,
-            'url' => $storage->url($curationPath),
+            'url' => $storage->temporaryUrl($curationPath, now()->addMinutes(5)),
         ];
 
         $this->dispatch(
@@ -64,6 +64,26 @@ class CuratorCuration extends Component
 
     public function render(): View
     {
-        return view('curator::components.modals.curator-curation');
+        return view('curator::components.modals.curator-curation', [
+            'aspectRatios' => $this->getAspectRatios(),
+        ]);
+    }
+
+    private function getAspectRatios(): array
+    {
+        return config(
+            key: 'curator.aspect_ratios',
+            default: $this->getDefaultAspectRatios()
+        );
+    }
+
+    private function getDefaultAspectRatios(): array
+    {
+        return [
+            '16:9' => 16 / 9,
+            '4:3' => 4 / 3,
+            '1:1' => 1,
+            '2:3' => 2 / 3,
+        ];
     }
 }

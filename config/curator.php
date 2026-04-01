@@ -17,6 +17,12 @@ return [
             'relationship_name' => null,
         ],
     ],
+    'aspect_ratios' => [
+        '16:9' => 16 / 9,
+        '4:3' => 4 / 3,
+        '1:1' => 1,
+        '2:3' => 2 / 3,
+    ],
     'glide_token' => env('CURATOR_GLIDE_TOKEN'),
     'model' => Awcodes\Curator\Models\Media::class,
     'path_generator' => null,
