@@ -17,9 +17,9 @@ final class CuratorCuration extends Component
 
     public string $modalId;
 
-    public null|array $presets = null;
+    public ?array $presets = null;
 
-    public null|array $formats = null;
+    public ?array $formats = null;
 
     public string $statePath;
 
@@ -36,7 +36,7 @@ final class CuratorCuration extends Component
 
         $encodedImage = $image->encodeByExtension(extension: $extension, quality: $quality);
 
-        $curationPath = $this->media->directory . '/' . $this->media->name . '/' . $data['key'] . '.' . $extension;
+        $curationPath = $this->media->directory.'/'.$this->media->name.'/'.$data['key'].'.'.$extension;
 
         $storage->put($curationPath, $encodedImage);
 
@@ -45,7 +45,7 @@ final class CuratorCuration extends Component
             'disk' => $this->media->disk,
             'directory' => $this->media->name,
             'visibility' => $this->media->visibility,
-            'name' => $data['key'] . '.' . $extension,
+            'name' => $data['key'].'.'.$extension,
             'path' => $curationPath,
             'width' => $data['width'],
             'height' => $data['height'],

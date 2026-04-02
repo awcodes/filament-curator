@@ -65,7 +65,7 @@ class Uploader extends FileUpload
 
             $disk = Storage::disk($component->getDiskName());
 
-            if ($disk->exists(mb_ltrim($component->getDirectory() . '/' . $filename . '.' . $extension, '/'))) {
+            if ($disk->exists(mb_ltrim($component->getDirectory().'/'.$filename.'.'.$extension, '/'))) {
                 $filename = $filename.'-'.time();
             }
 
