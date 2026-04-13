@@ -181,7 +181,7 @@ class Glider extends Component
             foreach ($this->srcset as $s) {
                 $width = preg_replace("/\D/", '', (string) $s);
 
-                $height = $this->height === 'auto' ? null : floor($width * ($this->media->height / $this->media->width));
+                $height = $this->height === 'auto' ? null : floor($width * ($this->mediaItem->getHeight() / $this->mediaItem->getWidth()));
 
                 $srcset .= $this->buildGlideSource(['w' => $width, 'h' => $height]).' '.$s.', ';
             }

@@ -228,6 +228,35 @@ test('navigating through deep date path shows correct files and subdirs at each 
     expect($subDirs)->toBe(['15']);
 });
 
+test('mediaId accepts an integer', function () {
+    Storage::fake('public');
+
+    $media = makeMedia(['name' => 'int-id-photo']);
+
+    Livewire::test(CuratorPanel::class, [
+        'settings' => ['mediaId' => $media->id],
+    ])
+        ->assertSet('mediaId', $media->id);
+});
+
+test('mediaId accepts a UUID string', function () {
+    Storage::fake('public');
+
+    $uuid = Illuminate\Support\Str::uuid()->toString();
+
+    Livewire::test(CuratorPanel::class, [
+        'settings' => ['mediaId' => $uuid],
+    ])
+        ->assertSet('mediaId', $uuid);
+});
+
+test('mediaId defaults to null when not provided', function () {
+    Storage::fake('public');
+
+    Livewire::test(CuratorPanel::class)
+        ->assertSet('mediaId', null);
+});
+
 test('isLimitedToDirectory scopes search to directory', function () {
     Storage::fake('public');
 
