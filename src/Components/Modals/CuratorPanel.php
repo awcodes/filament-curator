@@ -75,7 +75,7 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
 
     public ?int $minSize = null;
 
-    public ?int $mediaId = null;
+    public int|string|null $mediaId = null;
 
     public PathGenerator|string|null $pathGenerator = null;
 
