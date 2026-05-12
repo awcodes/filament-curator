@@ -27,6 +27,8 @@ Please see the [UPGRADE guide](UPGRADE.md) for instructions on upgrading from v3
 php artisan curator:upgrade
 ```
 
+<!-- [docs_start] -->
+
 ## Installation
 
 You can install the package via composer then run the installation command:
@@ -474,6 +476,8 @@ class CustomMedia extends Media
 ```php
 'model' => \App\Models\Cms\Media::class,
 ```
+
+<!-- [docs_end] -->
 
 ## Testing
 
