@@ -11,6 +11,7 @@ use Awcodes\Curator\Resources\Media\Pages\EditMedia;
 use Awcodes\Curator\Resources\Media\Pages\ListMedia;
 use Awcodes\Curator\Resources\Media\Schemas\MediaForm;
 use Awcodes\Curator\Resources\Media\Tables\MediaTable;
+use BackedEnum;
 use Exception;
 use Filament\Facades\Filament;
 use Filament\Resources\Resource;
@@ -18,6 +19,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
+use UnitEnum;
 
 class MediaResource extends Resource
 {
@@ -55,7 +57,7 @@ class MediaResource extends Resource
             ?? Str::title(static::getModelLabel());
     }
 
-    public static function getNavigationIcon(): string
+    public static function getNavigationIcon(): string|BackedEnum|null
     {
         return CuratorPlugin::get()->getNavigationIcon();
     }
@@ -65,7 +67,7 @@ class MediaResource extends Resource
         return CuratorPlugin::get()->getNavigationSort();
     }
 
-    public static function getNavigationGroup(): ?string
+    public static function getNavigationGroup(): string|UnitEnum|null
     {
         return CuratorPlugin::get()->getNavigationGroup();
     }
