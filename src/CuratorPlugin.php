@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Awcodes\Curator;
 
 use Awcodes\Curator\Resources\Media\MediaResource;
+use BackedEnum;
 use Closure;
 use Filament\Contracts\Plugin;
 use Filament\Panel;
 use Filament\Support\Concerns\EvaluatesClosures;
+use UnitEnum;
 
 class CuratorPlugin implements Plugin
 {
@@ -16,11 +18,11 @@ class CuratorPlugin implements Plugin
 
     protected string|Closure|null $label = null;
 
-    protected string|Closure|null $navigationGroup = null;
+    protected string|UnitEnum|Closure|null $navigationGroup = null;
 
-    protected ?string $navigationIcon = null;
+    protected string|BackedEnum|Closure|null $navigationIcon = null;
 
-    protected ?int $navigationSort = null;
+    protected int|Closure|null $navigationSort = null;
 
     protected string|Closure|null $pluralLabel = null;
 
@@ -75,21 +77,21 @@ class CuratorPlugin implements Plugin
             ?? config('curator.resource.plural_label');
     }
 
-    public function getNavigationGroup(): ?string
+    public function getNavigationGroup(): string|UnitEnum|null
     {
         return $this->evaluate($this->navigationGroup)
             ?? config('curator.resource.navigation.group');
     }
 
-    public function getNavigationIcon(): ?string
+    public function getNavigationIcon(): string|BackedEnum|null
     {
-        return $this->navigationIcon
+        return $this->evaluate($this->navigationIcon)
             ?? config('curator.resource.navigation.icon');
     }
 
     public function getNavigationSort(): ?int
     {
-        return $this->navigationSort
+        return $this->evaluate($this->navigationSort)
             ?? config('curator.resource.navigation.sort');
     }
 
@@ -141,14 +143,14 @@ class CuratorPlugin implements Plugin
         return $this;
     }
 
-    public function navigationGroup(string|Closure|null $group = null): static
+    public function navigationGroup(string|UnitEnum|Closure|null $group = null): static
     {
         $this->navigationGroup = $group;
 
         return $this;
     }
 
-    public function navigationIcon(string|Closure $icon): static
+    public function navigationIcon(string|BackedEnum|Closure $icon): static
     {
         $this->navigationIcon = $icon;
 
