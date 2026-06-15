@@ -160,15 +160,20 @@ export default function curation({
             this.data.rotate = degrees
         },
         setAspectRatio(ratio) {
-            console.log(ratio)
-            this.aspectRatio = ratio
-            this.cropper.getCropperSelection().aspectRatio = ratio
+            if (this.aspectRatio === ratio) {
+                this.aspectRatio = null
+                this.cropper.getCropperSelection().aspectRatio = null
+            } else {
+                this.aspectRatio = ratio
+                this.cropper.getCropperSelection().aspectRatio = ratio
+            }
         },
         setDragMode() {
             // Drag mode is not supported in Cropper.js v2.
             // Move and select actions are handled by the web component handles.
         },
         reset() {
+            this.cropper.getCropperSelection().aspectRatio = null
             this.cropper.getCropperSelection().$reset()
             this.cropper.getCropperImage().$resetTransform()
             this.currentRotation = 0
