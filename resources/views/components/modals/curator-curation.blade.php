@@ -181,27 +181,17 @@
 
                         <x-filament::button.group class="w-full mt-3">
                             @foreach ($aspectRatios as $label => $ratio)
-                                <template x-if="aspectRatio !== {{ $ratio }}">
-                                    <x-filament::button
-                                        type="button"
-                                        color="gray"
-                                        x-on:click="setAspectRatio({{ $ratio }})"
-                                        x-bind:class="aspectRatio === {{ $ratio }} ? 'fi-button-active' : ''"
-                                        x-if="aspectRatio !== {{ $ratio }}"
-                                    >
-                                        {{ $label }}
-                                    </x-filament::button>
-                                </template>
-                                <template x-if="aspectRatio === {{ $ratio }}">
-                                    <x-filament::button
-                                        type="button"
-                                        color="primary"
-                                        x-on:click="setAspectRatio({{ $ratio }})"
-                                        x-bind:class="aspectRatio === {{ $ratio }} ? 'fi-button-active' : ''"
-                                    >
-                                        {{ $label }}
-                                    </x-filament::button>
-                                </template>
+                                <x-filament::button
+                                    type="button"
+                                    color="gray"
+                                    x-on:click="setAspectRatio({{ $ratio }})"
+                                    x-bind:class="aspectRatio === {{ $ratio }} ? 'fi-button-active' : ''"
+                                    x-bind:style="aspectRatio === {{ $ratio }} ? 'background-color: color-mix(in oklab, var(--gray-700)10%, transparent);' : ''"
+                                    x-if="aspectRatio !== {{ $ratio }}"
+                                >
+                                    {{ $label }}
+                                </x-filament::button>
+
                             @endforeach
                         </x-filament::button.group>
 
