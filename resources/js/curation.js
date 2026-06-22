@@ -173,13 +173,8 @@ export default function curation({
             // Move and select actions are handled by the web component handles.
         },
         reset() {
-            this.cropper.getCropperSelection().aspectRatio = null
-            this.cropper.getCropperSelection().$reset()
-            this.cropper.getCropperImage().$resetTransform()
-            this.currentRotation = 0
-            this.flippedHorizontally = false
-            this.flippedVertically = false
-            this.aspectRatio = null
+            this.destroy()
+            this.init()
         },
         async saveCuration() {
             const selection = this.cropper.getCropperSelection()
