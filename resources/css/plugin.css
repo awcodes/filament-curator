@@ -115,3 +115,7 @@
         @apply w-20 flex justify-center;
     }
 }
+
+cropper-canvas {
+    min-height: 100%;
+}

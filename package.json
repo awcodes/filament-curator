@@ -1,19 +1,19 @@
 {
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "dev": "node bin/build.js --dev",
-    "build": "node bin/build.js",
-    "prettier": "npx prettier --write ."
-  },
-  "devDependencies": {
-    "alpinejs": "^3.10.5",
-    "esbuild": "^0.25.0",
-    "prettier": "^3.6.0",
-    "prettier-plugin-blade": "^2.1.21",
-    "prettier-plugin-tailwindcss": "^0.6.13"
-  },
-  "dependencies": {
-    "cropperjs": "^2.0.0"
-  }
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "node bin/build.js --dev",
+        "build": "node bin/build.js",
+        "prettier": "npx prettier --write ."
+    },
+    "devDependencies": {
+        "alpinejs": "^3.10.5",
+        "esbuild": "^0.25.0",
+        "prettier": "^3.8.1",
+        "prettier-plugin-blade": "^3.0.0",
+        "prettier-plugin-tailwindcss": "^0.6.13"
+    },
+    "dependencies": {
+        "cropperjs": "^2.0.0"
+    }
 }

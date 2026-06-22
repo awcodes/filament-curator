@@ -63,7 +63,9 @@ class Uploader extends FileUpload
                 $exif = $image->exif()->toArray();
             }
 
-            if (Storage::disk($component->getDiskName())->exists(mb_ltrim($component->getDirectory().'/'.$filename.'.'.$extension, '/'))) {
+            $disk = Storage::disk($component->getDiskName());
+
+            if ($disk->exists(mb_ltrim($component->getDirectory().'/'.$filename.'.'.$extension, '/'))) {
                 $filename = $filename.'-'.time();
             }
 
@@ -82,8 +84,8 @@ class Uploader extends FileUpload
                 'exif' => $exif ?? null,
                 'width' => $width ?? null,
                 'height' => $height ?? null,
-                'size' => $file->getSize(),
-                'type' => $file->getMimeType(),
+                'size' => $disk->size($path),
+                'type' => $disk->mimeType($path),
                 'ext' => $extension,
             ];
 
