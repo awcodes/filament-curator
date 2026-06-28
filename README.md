@@ -18,14 +18,7 @@ A media picker/manager plugin for Filament Admin.
 | 2.x             | 2.x              |
 | 3.x             | 3.x              |
 | 4.x             | 4.x              |
-
-## Upgrading from v3 to v4
-
-Please see the [UPGRADE guide](UPGRADE.md) for instructions on upgrading from v3 to v4.
-
-```bash
-php artisan curator:upgrade
-```
+| 5.x             | 5.x              |
 
 <!-- [docs_start] -->
 
