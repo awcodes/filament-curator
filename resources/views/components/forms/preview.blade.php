@@ -2,4 +2,4 @@
     $record = $getRecord();
 @endphp
 
-<x-curator::display :item="$record" icon-classes="h-24"/>
+<x-curator::display :item="$record" :src="$record?->large_url" icon-classes="h-24"/>

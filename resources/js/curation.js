@@ -36,6 +36,8 @@ export default function curation({statePath, fileName, fileType, presets = {}}) 
             setTimeout(() => {
                 this.cropper = new Cropper(this.$refs.image, {
                     background: false,
+                    checkCrossOrigin: false,
+                    timestamps: false,
                 });
             }, 100);
 

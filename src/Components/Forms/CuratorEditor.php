@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Awcodes\Curator\Components\Forms;
 
 use Awcodes\Curator\Concerns\HasCurationPresets;
+use Awcodes\Curator\Models\Media;
 use Closure;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\CanBeOutlined;
@@ -36,7 +37,19 @@ class CuratorEditor extends Field
             ->buttonLabel(trans('curator::views.picker.button'))
             ->size('md')
             ->color('primary')
-            ->outlined();
+            ->outlined()
+            // The persisted curation may hold a stale/expiring URL (e.g. a private
+            // disk's temporary URL). Re-resolve it from disk + path on hydration so
+            // the form preview is always valid, regardless of how long it's been.
+            ->afterStateHydrated(static function (CuratorEditor $component, mixed $state): void {
+                if (! is_array($state) || blank($state['disk'] ?? null) || blank($state['path'] ?? null)) {
+                    return;
+                }
+
+                $state['url'] = Media::resolveUrl($state['disk'], $state['path'], $state['visibility'] ?? null);
+
+                $component->state($state);
+            });
 
         $this->registerActions([
             fn (CuratorEditor $component): Action => $component->getCurationAction(),
@@ -80,7 +93,7 @@ class CuratorEditor extends Field
             ->modalFooterActions(fn (): array => [])->modalHeading(static fn (CuratorEditor $component): string => trans('curator::views.curation.heading').' '.$component->getRecord()->name)
             ->modalContent(static fn (CuratorEditor $component, Component $livewire) => View::make('curator::components.actions.curation-action', [
                 'statePath' => $component->getStatePath(),
-                'modalId' => $livewire->getId().'-form-component-action',
+                'modalId' => 'fi-'.$livewire->getId().'-action-0',
                 'media' => $component->getRecord(),
                 'presets' => $component->getPresets(),
                 'formats' => $component->getFormats(),

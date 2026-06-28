@@ -24,6 +24,7 @@
                     x-on:ready="setData()"
                     x-on:crop="updateData()"
                     class="h-full w-auto"
+                    crossorigin="anonymous"
                 />
             </div>
         </div>

@@ -14,6 +14,6 @@
     "prettier-plugin-tailwindcss": "^0.6.13"
   },
   "dependencies": {
-    "cropperjs": "^2.0.0"
+    "cropperjs": "^1.6.2"
   }
 }
