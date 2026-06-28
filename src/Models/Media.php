@@ -89,31 +89,39 @@ class Media extends Model
         'pretty_name',
     ];
 
+    /**
+     * Resolve a publicly accessible URL for a file on the given disk, transparently
+     * handling local and remote (e.g. S3) drivers as well as private visibility.
+     *
+     * Visibility is taken from the stored value (or the configured default) rather
+     * than queried from the driver, so this never makes a network round-trip on
+     * remote disks such as S3 — important because it runs once per media item
+     * whenever a collection of media is serialised (e.g. the CuratorPicker form).
+     */
+    public static function resolveUrl(string $disk, string $path, ?string $visibility = null): ?string
+    {
+        $storage = Storage::disk($disk);
+
+        if (blank($visibility)) {
+            $visibility = config('curator.default_visibility', 'public');
+        }
+
+        if ($visibility === 'private') {
+            try {
+                return $storage->temporaryUrl($path, now()->addMinutes(5));
+            } catch (Throwable) {
+                // Driver doesn't support temporary URLs, fall back to regular URL
+            }
+        }
+
+        return $storage->url($path);
+    }
+
     public function url(): Attribute
     {
         return Attribute::make(
-            get: function (): ?string {
-                $storage = Storage::disk($this->disk);
-
-                try {
-                    $isPrivate = $storage->getVisibility($this->path) === 'private';
-                } catch (Throwable) {
-                    // Visibility check failed (file missing, ACL not supported, etc.)
-                    // Fall back to regular URL
-                    return $storage->url($this->path);
-                }
-
-                if ($isPrivate) {
-                    try {
-                        return $storage->temporaryUrl($this->path, now()->addMinutes(5));
-                    } catch (Throwable) {
-                        // Driver doesn't support temporary URLs, fall back to regular URL
-                    }
-                }
-
-                return $storage->url($this->path);
-            },
-        );
+            get: fn (): ?string => static::resolveUrl($this->disk, $this->path, $this->visibility),
+        )->shouldCache();
     }
 
     public function fullPath(): Attribute
@@ -155,11 +163,12 @@ class Media extends Model
     {
         return Attribute::make(
             get: function (): string {
-                $key = 'placeholder:'.$this->name.filemtime($this->full_path);
+                $storage = Storage::disk($this->disk);
+                $key = 'placeholder:'.$this->name.$storage->lastModified($this->path);
 
-                return Cache::rememberForever($key, function (): string {
+                return Cache::rememberForever($key, function () use ($storage): string {
                     $manager = Glide::getServer()->getApi()->getImageManager();
-                    $image = $manager->read($this->full_path);
+                    $image = $manager->read($storage->get($this->path));
                     $placeholder = $image->scaleDown(400)->blur(10)->toJpeg(30)->toString();
 
                     return 'data:image/jpeg;base64,'.base64_encode($placeholder);
