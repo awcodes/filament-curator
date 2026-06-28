@@ -25,10 +25,9 @@ class CuratorCuration extends Component
     public function saveCuration($data = null): void
     {
         $storage = Storage::disk($this->media->disk);
-        $filePath = $storage->path($this->media->path);
 
         $manager = Glide::getServer()->getApi()->getImageManager();
-        $image = $manager->read($filePath);
+        $image = $manager->read($storage->get($this->media->path));
         $extension = $data['format'] ?? $this->media->ext;
 
         $aspectWidth = floor(($data['canvasData']['width'] / $data['canvasData']['naturalWidth']) * $data['width']);
@@ -79,7 +78,7 @@ class CuratorCuration extends Component
             'size' => $storage->size($curationPath),
             'type' => $encodedImage->mediaType(),
             'ext' => $extension,
-            'url' => $storage->url($curationPath),
+            'url' => Media::resolveUrl($this->media->disk, $curationPath, $this->media->visibility),
         ];
 
         $this->dispatch(

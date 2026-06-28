@@ -67,6 +67,9 @@ class Uploader extends FileUpload
                 $filename = $filename.'-'.time();
             }
 
+            $size = $file->getSize();
+            $type = $file->getMimeType();
+
             $path = $file->{$storeMethod}(
                 $component->getDirectory(),
                 $filename.'.'.$extension,
@@ -82,8 +85,8 @@ class Uploader extends FileUpload
                 'exif' => $exif ?? null,
                 'width' => $width ?? null,
                 'height' => $height ?? null,
-                'size' => $file->getSize(),
-                'type' => $file->getMimeType(),
+                'size' => $size ?? null,
+                'type' => $type ?? null,
                 'ext' => $extension,
             ];
 
