@@ -40,7 +40,7 @@ if (! function_exists('glide_builder')) {
 if (! function_exists('is_media_resizable')) {
     function is_media_resizable(string $ext): bool
     {
-        return in_array($ext, ['jpeg', 'jpg', 'png', 'webp', 'bmp']);
+        return in_array(mb_strtolower($ext), ['jpeg', 'jpg', 'png', 'webp', 'bmp']);
     }
 }
 

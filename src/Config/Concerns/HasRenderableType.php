@@ -12,17 +12,19 @@ trait HasRenderableType
 {
     public function isResizable(string $extension): bool
     {
+        $extension = mb_strtolower($extension);
+
         return in_array($extension, PreviewableExtensions::toArray()) && $extension !== PreviewableExtensions::Svg->value;
     }
 
     public function isPreviewable(string $extension): bool
     {
-        return in_array($extension, PreviewableExtensions::toArray());
+        return in_array(mb_strtolower($extension), PreviewableExtensions::toArray());
     }
 
     public function isVideo(string $extension): bool
     {
-        return in_array($extension, VideoExtensions::toArray());
+        return in_array(mb_strtolower($extension), VideoExtensions::toArray());
     }
 
     public function isDocument(string $extension): bool
@@ -32,11 +34,11 @@ trait HasRenderableType
 
     public function isSvg(string $extension): bool
     {
-        return $extension === PreviewableExtensions::Svg->value;
+        return mb_strtolower($extension) === PreviewableExtensions::Svg->value;
     }
 
     public function isAudio(string $extension): bool
     {
-        return in_array($extension, AudioExtensions::toArray());
+        return in_array(mb_strtolower($extension), AudioExtensions::toArray());
     }
 }

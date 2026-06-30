@@ -25,6 +25,27 @@ test('local image file import returns expected array keys', function () {
     ]);
 });
 
+test('normalizes uppercase extensions to lowercase', function () {
+    Storage::fake('public');
+
+    $tmpPath = sys_get_temp_dir().'/curator-test-image.JPG';
+    $image = imagecreatetruecolor(100, 100);
+    imagejpeg($image, $tmpPath);
+    imagedestroy($image);
+
+    $result = CuratorUtils::importMedia(
+        path: $tmpPath,
+        disk: 'public',
+        directory: 'test',
+        visibility: 'public',
+    );
+
+    expect($result['ext'])->toBe('jpg')
+        ->and($result['path'])->toEndWith('.jpg');
+
+    @unlink($tmpPath);
+});
+
 test('sets width and height for resizable images', function () {
     Storage::fake('public');
 

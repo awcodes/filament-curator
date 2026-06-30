@@ -102,3 +102,18 @@ test('shouldPreserveFilenames returns true when set', function () {
 
     expect($manager->shouldPreserveFilenames())->toBeTrue();
 });
+
+test('renderable type checks are case-insensitive', function (string $extension) {
+    $manager = new CuratorManager();
+
+    expect($manager->isResizable($extension))->toBeTrue()
+        ->and($manager->isPreviewable($extension))->toBeTrue()
+        ->and($manager->isDocument($extension))->toBeFalse();
+})->with(['JPG', 'JPEG', 'PNG', 'WebP', 'Bmp']);
+
+test('isSvg and isAudio are case-insensitive', function () {
+    $manager = new CuratorManager();
+
+    expect($manager->isSvg('SVG'))->toBeTrue()
+        ->and($manager->isAudio('MP3'))->toBeTrue();
+});
