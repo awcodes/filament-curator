@@ -307,14 +307,19 @@ class CuratorPanel extends Component implements HasActions, HasForms
     {
         $this->files = $this->mediaClass
             ->query()
+            ->when(filament()->hasTenancy() && $this->isTenantAware, function ($query) {
+                return $query->where($this->tenantOwnershipRelationshipName . '_id', filament()->getTenant()->id);
+            })
             ->when($this->isLimitedToDirectory, function ($query) {
                 return $query->where('directory', $this->directory);
             })
-            ->where('name', 'like', '%' . $this->search . '%')
-            ->orWhere('title', 'like', '%' . $this->search . '%')
-            ->orWhere('alt', 'like', '%' . $this->search . '%')
-            ->orWhere('caption', 'like', '%' . $this->search . '%')
-            ->orWhere('description', 'like', '%' . $this->search . '%')
+            ->where(function ($query) {
+                $query->where('name', 'like', '%' . $this->search . '%')
+                    ->orWhere('title', 'like', '%' . $this->search . '%')
+                    ->orWhere('alt', 'like', '%' . $this->search . '%')
+                    ->orWhere('caption', 'like', '%' . $this->search . '%')
+                    ->orWhere('description', 'like', '%' . $this->search . '%');
+            })
             ->limit(50)
             ->get()
             ->toArray();
