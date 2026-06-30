@@ -245,13 +245,16 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
         if ($this->search === '' || $this->search === '0') {
             $this->files = $this->getFiles();
         } else {
-            $this->files = App::make(Media::class)
+            $this->files = App::make(Media::class)::query()
                 ->when($this->isLimitedToDirectory, fn ($query) => $query->where('directory', $this->directory))
-                ->where('name', 'like', '%'.$this->search.'%')
-                ->orWhere('title', 'like', '%'.$this->search.'%')
-                ->orWhere('alt', 'like', '%'.$this->search.'%')
-                ->orWhere('caption', 'like', '%'.$this->search.'%')
-                ->orWhere('description', 'like', '%'.$this->search.'%')
+                ->when(filament()->hasTenancy() && $this->isTenantAware, fn ($query) => $query->where($this->tenantOwnershipRelationshipName.'_id', filament()->getTenant()->id))
+                ->where(function ($query): void {
+                    $query->where('name', 'like', '%'.$this->search.'%')
+                        ->orWhere('title', 'like', '%'.$this->search.'%')
+                        ->orWhere('alt', 'like', '%'.$this->search.'%')
+                        ->orWhere('caption', 'like', '%'.$this->search.'%')
+                        ->orWhere('description', 'like', '%'.$this->search.'%');
+                })
                 ->limit(50)
                 ->get()
                 ->toArray();
