@@ -45,7 +45,7 @@ class Uploader extends FileUpload
                 ? Str::of(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME))->slug()
                 : (string) Str::uuid();
 
-            $extension = $file->getClientOriginalExtension();
+            $extension = mb_strtolower($file->getClientOriginalExtension());
 
             $storeMethod = $component->getVisibility() === 'public' ? 'storePubliclyAs' : 'storeAs';
 

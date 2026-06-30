@@ -40,7 +40,7 @@ class CuratorUtils
             $fileContents = file_get_contents($path);
         }
 
-        $ext = (string) Str::of($path)->afterLast('.');
+        $ext = (string) Str::of($path)->afterLast('.')->lower();
 
         $filename = Curator::shouldPreserveFilenames()
             ? (string) Str::of(pathinfo($path, PATHINFO_FILENAME))->slug()
