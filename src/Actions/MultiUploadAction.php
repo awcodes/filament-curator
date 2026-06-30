@@ -24,16 +24,19 @@ class MultiUploadAction extends Action
             ->button()
             ->color('gray')
             ->authorize(function (): bool {
-                $policy = Gate::getPolicyFor(MediaResource::getModel());
+                // Resolve the resource from the container so any config override
+                // (curator.resource.resource / curator.model) is respected.
+                $resource = App::make(MediaResource::class);
+                $policy = Gate::getPolicyFor($resource::getModel());
 
                 // Restrict bulk upload with a dedicated `bulkUpload` policy ability
                 // when one is provided, otherwise fall back to the standard `create`
                 // ability so it matches the resource's create authorization.
                 if ($policy !== null && method_exists($policy, 'bulkUpload')) {
-                    return MediaResource::can('bulkUpload');
+                    return $resource::can('bulkUpload');
                 }
 
-                return MediaResource::canCreate();
+                return $resource::canCreate();
             })
             ->label(trans('curator::forms.multi_upload.action_label'))
             ->modalHeading(trans('curator::forms.multi_upload.modal_heading'))
