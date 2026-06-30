@@ -274,3 +274,23 @@ test('isLimitedToDirectory scopes search to directory', function () {
 
     expect($component->get('files'))->toBeEmpty();
 });
+
+test('search does not leak records outside the directory via non-name fields', function () {
+    Storage::fake('public');
+
+    makeMedia(['name' => 'in-dir', 'directory' => 'uploads']);
+    makeMedia(['name' => 'other', 'directory' => 'secret', 'title' => 'findme']);
+
+    $component = Livewire::test(CuratorPanel::class, [
+        'settings' => [
+            'isLimitedToDirectory' => true,
+            'directory' => 'uploads',
+        ],
+    ]);
+
+    // Matches on `title` — the unscoped orWhere chain previously broke out of
+    // the directory filter and leaked records from other directories.
+    $component->set('search', 'findme');
+
+    expect($component->get('files'))->toBeEmpty();
+});
