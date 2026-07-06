@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Awcodes\Curator\Config\Concerns;
 
+use enshrined\svgSanitize\Sanitizer;
+
 trait HasSanitizers
 {
     public function sanitizeExif(array $exif): array
@@ -15,5 +17,21 @@ trait HasSanitizers
         });
 
         return $exif;
+    }
+
+    /**
+     * Strip scripts, event handlers and remote references from SVG markup so it
+     * cannot execute JavaScript when served inline as a top-level document.
+     */
+    public function sanitizeSvg(string $svg): string
+    {
+        $sanitizer = new Sanitizer;
+        $sanitizer->removeRemoteReferences(true);
+
+        $clean = $sanitizer->sanitize($svg);
+
+        // The sanitizer returns false when the markup cannot be parsed. Fail
+        // closed by storing an empty file rather than the untrusted original.
+        return $clean === false ? '' : $clean;
     }
 }

@@ -117,3 +117,29 @@ test('isSvg and isAudio are case-insensitive', function () {
     expect($manager->isSvg('SVG'))->toBeTrue()
         ->and($manager->isAudio('MP3'))->toBeTrue();
 });
+
+test('sanitizeSvg strips scripts, event handlers and javascript hrefs', function () {
+    $manager = new CuratorManager();
+
+    $dirty = <<<'SVG'
+    <svg xmlns="http://www.w3.org/2000/svg" onload="alert(1)">
+      <script>alert(document.cookie)</script>
+      <a xlink:href="javascript:alert(1)"><text>x</text></a>
+      <rect width="10" height="10" fill="green"/>
+    </svg>
+    SVG;
+
+    $clean = $manager->sanitizeSvg($dirty);
+
+    expect($clean)
+        ->not->toContain('<script')
+        ->not->toContain('onload')
+        ->not->toContain('javascript:')
+        ->toContain('rect');
+});
+
+test('sanitizeSvg fails closed on unparseable markup', function () {
+    $manager = new CuratorManager();
+
+    expect($manager->sanitizeSvg('<svg><rect'))->toBe('');
+});
