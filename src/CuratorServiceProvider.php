@@ -28,6 +28,7 @@ class CuratorServiceProvider extends PackageServiceProvider
             ->hasMigrations(['create_media_table', 'add_tenant_aware_column_to_media_table'])
             ->hasCommands([
                 Commands\UpgradeCommand::class,
+                Commands\SanitizeSvgsCommand::class,
             ])
             ->hasInstallCommand(function (InstallCommand $command) {
                 $command

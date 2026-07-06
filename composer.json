@@ -18,6 +18,7 @@
   ],
   "require": {
     "php": "^8.1",
+    "enshrined/svg-sanitize": "^0.22",
     "intervention/image": "^2.7.2",
     "league/glide-symfony": "^2.0.1",
     "spatie/laravel-package-tools": "^1.19.0"

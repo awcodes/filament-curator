@@ -3,6 +3,7 @@
 namespace Awcodes\Curator;
 
 use Awcodes\Curator\Models\Media;
+use enshrined\svgSanitize\Sanitizer;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Str;
@@ -15,6 +16,31 @@ if (! function_exists('is_media_resizable')) {
         }
 
         return in_array($type, ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/bmp']);
+    }
+}
+
+if (! function_exists('is_media_svg')) {
+    function is_media_svg(?string $type): bool
+    {
+        return $type === 'image/svg+xml';
+    }
+}
+
+if (! function_exists('sanitize_svg')) {
+    /**
+     * Strip scripts, event handlers and remote references from SVG markup so it
+     * cannot execute JavaScript when served inline as a top-level document.
+     */
+    function sanitize_svg(string $svg): string
+    {
+        $sanitizer = new Sanitizer;
+        $sanitizer->removeRemoteReferences(true);
+
+        $clean = $sanitizer->sanitize($svg);
+
+        // The sanitizer returns false when the markup cannot be parsed. Fail
+        // closed by returning an empty string rather than the untrusted original.
+        return $clean === false ? '' : $clean;
     }
 }
 

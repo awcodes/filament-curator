@@ -16,6 +16,8 @@ use League\Flysystem\UnableToCheckFileExistence;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 use function Awcodes\Curator\is_media_resizable;
+use function Awcodes\Curator\is_media_svg;
+use function Awcodes\Curator\sanitize_svg;
 
 class Uploader extends FileUpload
 {
@@ -133,6 +135,16 @@ class Uploader extends FileUpload
                 $component->getDiskName()
             );
 
+            $size = $file->getSize();
+
+            // SVGs are served as raw markup (they are not routed through Glide),
+            // so strip any embedded scripts before they can execute inline.
+            if (is_media_svg($file->getMimeType())) {
+                $disk = Storage::disk($component->getDiskName());
+                $disk->put($path, sanitize_svg($disk->get($path)), $component->getVisibility());
+                $size = $disk->size($path);
+            }
+
             $data = [
                 'disk' => $component->getDiskName(),
                 'directory' => $component->getDirectory(),
@@ -142,7 +154,7 @@ class Uploader extends FileUpload
                 'exif' => $exif ?? null,
                 'width' => $width ?? null,
                 'height' => $height ?? null,
-                'size' => $file->getSize(),
+                'size' => $size,
                 'type' => $file->getMimeType(),
                 'ext' => $extension,
             ];
