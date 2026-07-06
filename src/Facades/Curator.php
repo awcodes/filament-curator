@@ -49,6 +49,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static bool isUsingS3()
  * @method static bool isTenantAware()
  * @method static array sanitizeExif(array $exif)
+ * @method static string sanitizeSvg(string $svg)
  * @method static string sizeForHumans(int $size, int | null $precision = 2)
  *
  * @see CuratorManager

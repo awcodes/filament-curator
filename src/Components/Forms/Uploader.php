@@ -76,6 +76,14 @@ class Uploader extends FileUpload
                 $component->getDiskName()
             );
 
+            // SVGs are served as raw markup (they are not routed through Glide),
+            // so strip any embedded scripts before they can execute inline.
+            if (Curator::isSvg($extension)) {
+                $disk = Storage::disk($component->getDiskName());
+                $disk->put($path, Curator::sanitizeSvg($disk->get($path)), $component->getVisibility());
+                $size = $disk->size($path);
+            }
+
             $data = [
                 'disk' => $component->getDiskName(),
                 'directory' => $component->getDirectory(),
