@@ -78,6 +78,7 @@ return [
     'attach_curator_media' => [
         'modal' => [
             'heading' => 'Select Media from Library',
+            'selected_files' => 'Selected Files',
         ],
     ],
 ];
