@@ -241,7 +241,7 @@
             <div class="flex-1 overflow-hidden">
                 <div class="flex flex-col overflow-y-auto" x-show="hasSelection()">
                     <h4 class="font-bold p-4 pb-0 mb-0">
-                        Selected Files
+                        {{ trans('curator::views.attach_curator_media.modal.selected_files') }}
                     </h4>
                     <div class="flex flex-wrap gap-2 px-4 mt-2">
                         <template x-for="media in selected" :key="media.id">
