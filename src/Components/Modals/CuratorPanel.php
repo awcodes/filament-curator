@@ -10,6 +10,7 @@ use Awcodes\Curator\Components\Modals\Concerns\InteractsWithStorage;
 use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Models\Media;
 use Awcodes\Curator\PathGenerators\Contracts\PathGenerator;
+use Awcodes\Curator\Resources\Media\MediaResource;
 use Awcodes\Curator\Resources\Media\Schemas\MediaForm;
 use Closure;
 use Exception;
@@ -324,13 +325,17 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
             ->modalWidth(Width::Medium)
             ->schema(App::make(MediaForm::class)::getAdditionalInformationFormSchema())
             ->fillForm(function (array $arguments): array {
-                $record = App::make(Media::class)::query()->where('id', $arguments['item']['id'])->first() ?? null;
+                $record = $this->resolveAuthorizedMedia($arguments, 'update');
 
-                return $record ? $record->toArray() : [];
+                return $record instanceof Media ? $record->toArray() : [];
             })
             ->action(function (array $data, array $arguments): void {
                 try {
-                    $record = App::make(Media::class)->find($arguments['item']['id']);
+                    $record = $this->resolveAuthorizedMedia($arguments, 'update');
+
+                    if (! $record instanceof Media) {
+                        throw new Exception();
+                    }
 
                     $record->update($data);
 
@@ -360,8 +365,8 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
                 }
 
                 try {
-                    $item = App::make(Media::class)->find($arguments['item']['id']);
-                    if ($item) {
+                    $item = $this->resolveAuthorizedMedia($arguments, 'delete');
+                    if ($item instanceof Media) {
                         $this->form->fill();
                         $item->delete();
                         $this->selected = [];
@@ -394,7 +399,16 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
                     return null;
                 }
 
-                return Storage::disk($arguments['item']['disk'])->download($arguments['item']['path']);
+                $record = $this->resolveAuthorizedMedia($arguments, 'view');
+
+                if (! $record instanceof Media) {
+                    return null;
+                }
+
+                // Resolve the disk and path from the authorized record rather than the
+                // client-supplied arguments, so a tampered payload cannot stream an
+                // arbitrary file from an arbitrary disk.
+                return Storage::disk($record->disk)->download($record->path);
             });
     }
 
@@ -428,6 +442,46 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
     public function render(): View
     {
         return view('curator::livewire.curator-panel');
+    }
+
+    /**
+     * Resolve the Media record targeted by a per-item action, enforcing both tenant
+     * scoping and the resource's authorization policy for the given ability.
+     *
+     * The record id (and, previously, the disk/path) arrive as client-supplied
+     * Livewire action arguments, so they must never be trusted directly. This
+     * mirrors the tenant scoping applied to the panel's list/search queries and
+     * defers to MediaResource's authorization — which defaults to "allow" when the
+     * host app has registered no policy, preserving existing behaviour, and honours
+     * the policy when one exists.
+     *
+     * Returns null when the id is missing, the record is out of tenant scope, or the
+     * ability is denied; callers treat null as "do nothing".
+     *
+     * @param  array<string, mixed>  $arguments
+     */
+    protected function resolveAuthorizedMedia(array $arguments, string $ability): ?Media
+    {
+        $id = $arguments['item']['id'] ?? null;
+
+        if (blank($id)) {
+            return null;
+        }
+
+        $record = App::make(Media::class)::query()
+            ->when(filament()->hasTenancy() && $this->isTenantAware, fn ($query) => $query->where($this->tenantOwnershipRelationshipName.'_id', filament()->getTenant()->id))
+            ->whereKey($id)
+            ->first();
+
+        if ($record === null) {
+            return null;
+        }
+
+        // Resolve the resource from the container so any config override
+        // (curator.resource.resource / curator.model) is respected.
+        $resource = App::make(MediaResource::class);
+
+        return $resource::can($ability, $record) ? $record : null;
     }
 
     protected function createMediaFiles(): array
