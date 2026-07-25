@@ -401,6 +401,39 @@ class CuratorPanel extends Component implements HasActions, HasForms
             });
     }
 
+    /**
+     * Resolve the Media record targeted by a per-item action, enforcing both tenant
+     * scoping and the model's authorization policy for the given ability.
+     *
+     * The record id arrives from client-supplied state (Livewire action arguments
+     * or the `selected` property), so it must never be trusted directly. This
+     * mirrors the tenant scoping applied to the panel's list/search queries, and the
+     * null-policy fallback keeps the existing "allow when no policy is registered"
+     * behaviour while honouring a policy when one exists.
+     *
+     * Returns null when the id is missing, the record is out of tenant scope, or the
+     * ability is denied; callers treat null as "do nothing".
+     */
+    protected function resolveAuthorizedMedia(string | int | null $id, string $ability): ?Media
+    {
+        if (blank($id)) {
+            return null;
+        }
+
+        $record = $this->mediaClass->query()
+            ->when(filament()->hasTenancy() && $this->isTenantAware, function ($query) {
+                return $query->where($this->tenantOwnershipRelationshipName . '_id', filament()->getTenant()->id);
+            })
+            ->whereKey($id)
+            ->first();
+
+        if (! $record) {
+            return null;
+        }
+
+        return (is_null(Gate::getPolicyFor($record)) || Gate::allows($ability, $record)) ? $record : null;
+    }
+
     public function destroyAction(): Action
     {
         return Action::make('destroy')
@@ -421,7 +454,7 @@ class CuratorPanel extends Component implements HasActions, HasForms
                 }
 
                 try {
-                    $item = $this->mediaClass->find($arguments['item']['id']);
+                    $item = $this->resolveAuthorizedMedia($arguments['item']['id'] ?? null, 'delete');
                     if ($item) {
                         $this->form->fill();
                         $item->delete();
@@ -462,7 +495,16 @@ class CuratorPanel extends Component implements HasActions, HasForms
                     return null;
                 }
 
-                return Storage::disk($arguments['item']['disk'])->download($arguments['item']['path']);
+                $record = $this->resolveAuthorizedMedia($arguments['item']['id'] ?? null, 'view');
+
+                if (! $record) {
+                    return null;
+                }
+
+                // Resolve the disk and path from the authorized record rather than the
+                // client-supplied arguments, so a tampered payload cannot stream an
+                // arbitrary file from an arbitrary disk.
+                return Storage::disk($record->disk)->download($record->path);
             });
     }
 
@@ -497,7 +539,7 @@ class CuratorPanel extends Component implements HasActions, HasForms
             })
             ->action(function (): void {
                 try {
-                    $item = $this->mediaClass->find(Arr::first($this->selected)['id']);
+                    $item = $this->resolveAuthorizedMedia(Arr::first($this->selected)['id'] ?? null, 'update');
                     if ($item) {
                         $item->update($this->form->getState());
 
