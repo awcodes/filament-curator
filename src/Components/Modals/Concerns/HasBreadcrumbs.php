@@ -12,7 +12,7 @@ trait HasBreadcrumbs
     {
         $this->breadcrumbs = [
             [
-                'label' => 'Disk',
+                'label' => trans('curator::views.details.disk'),
                 'name' => 'disk',
                 'path' => $this->diskName,
                 'parent_path' => null,
