@@ -43,6 +43,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static bool isDocument(string $ext)
  * @method static bool isSvg(string $ext)
  * @method static bool isAudio(string $ext)
+ * @method static bool isRestricted(string $ext)
  * @method static bool isUsingCloudinary()
  * @method static bool isUsingCloudDisk()
  * @method static bool isUsingGCS()

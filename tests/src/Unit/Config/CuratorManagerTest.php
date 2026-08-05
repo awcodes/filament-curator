@@ -58,10 +58,11 @@ test('getVisibility evaluates closure', function () {
     expect($manager->getVisibility())->toBe('private');
 });
 
-test('getAcceptedFileTypes returns MimeType toArray by default', function () {
+test('getAcceptedFileTypes returns the safe MimeType defaults', function () {
     $manager = new CuratorManager();
 
-    expect($manager->getAcceptedFileTypes())->toBe(MimeType::toArray());
+    expect($manager->getAcceptedFileTypes())->toBe(MimeType::defaults())
+        ->and($manager->getAcceptedFileTypes())->not->toContain('text/html');
 });
 
 test('getAcceptedFileTypes returns custom types when set', function () {

@@ -62,6 +62,30 @@ Global settings can be managed through the plugin's config file. You can publish
 php artisan vendor:publish --tag="curator-config"
 ```
 
+### Accepted File Types
+
+When you don't set `acceptedFileTypes()` yourself, Curator falls back to `MimeType::defaults()` — the full `MimeType` list minus types that are effectively executable content:
+
+`text/html`, `application/xhtml+xml`, `text/javascript`, `application/xml`, `application/vnd.mozilla.xul+xml`, `application/x-httpd-php`, `application/x-sh`, `application/x-csh`, `application/x-shockwave-flash` and `application/octet-stream`.
+
+These are excluded because uploaded files are served from your application's own origin. An HTML or XML document containing a `<script>` tag executes with the session of whoever opens it, and with the default `public` disk the storage directory sits inside the document root, where a server may execute scripts directly. `application/octet-stream` is excluded separately: it's what `finfo` reports for anything it can't classify, so allowing it turns the allow list into a wildcard.
+
+You can still opt back in, per field or globally, if your application genuinely needs to host these:
+
+```php
+use Awcodes\Curator\Enums\MimeType;
+
+// globally
+Curator::acceptedFileTypes([...MimeType::defaults(), 'text/html']);
+
+// or per field
+CuratorPicker::make('attachment')
+    ->acceptedFileTypes([...MimeType::defaults(), 'text/html']);
+```
+
+> [!WARNING]
+> Curator only sanitizes SVG uploads. Any other type you opt into is stored and served verbatim. Media served through Curator's route is sent with `X-Content-Type-Options: nosniff`, and restricted types are forced to `Content-Disposition: attachment`, but files on the `public` disk are also reachable directly through the `storage` symlink where those headers do not apply. If you allow executable types, serve them from a private disk.
+
 ### With Filament Panels
 
 If you are using Filament Panels you will need to add the Plugin to you Panel's configuration. This will register the plugin's resources with the Panel. All methods are optional, and will be read from the config file if not provided.

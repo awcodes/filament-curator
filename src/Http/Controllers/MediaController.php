@@ -43,7 +43,15 @@ class MediaController extends Controller
         abort_unless(filled($media), 404);
 
         if (! Curator::isResizable($media->ext)) {
-            return Storage::disk($media->disk)->response($media->path);
+            // Media that bypasses Glide is streamed straight from disk, so pin the
+            // declared content type and force restricted types to download rather
+            // than render as a document in the application's origin.
+            return Storage::disk($media->disk)->response(
+                path: $media->path,
+                name: null,
+                headers: ['X-Content-Type-Options' => 'nosniff'],
+                disposition: Curator::isRestricted($media->ext) ? 'attachment' : 'inline',
+            );
         }
 
         return $glide->getServer()->getImageResponse($path, request()->all());

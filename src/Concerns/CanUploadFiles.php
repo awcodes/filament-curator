@@ -55,7 +55,7 @@ trait CanUploadFiles
     public function getAcceptedFileTypes(): array
     {
         return $this->evaluate($this->acceptedFileTypes)
-            ?? MimeType::toArray();
+            ?? MimeType::defaults();
     }
 
     public function getDiskName(): string
