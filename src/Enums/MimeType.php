@@ -88,6 +88,59 @@ enum MimeType: string
         return array_column(self::cases(), 'value');
     }
 
+    /**
+     * Types that are never accepted by default because uploading them is
+     * equivalent to publishing executable content:
+     *
+     * - html, xhtml, js, xml and xul render as documents in the application's
+     *   own origin, so embedded script runs with the user's session.
+     * - php, sh and csh execute server side if the storage directory sits
+     *   inside the document root, which the default `public` disk does.
+     * - flash is legacy plugin content with the same inline-execution problem.
+     * - octet-stream is what finfo reports for anything it cannot classify, so
+     *   allowing it turns the allow list into a wildcard.
+     *
+     * Applications that genuinely need these can still opt back in per field
+     * with `->acceptedFileTypes()`, or globally via `Curator::acceptedFileTypes()`.
+     */
+    public static function restricted(): array
+    {
+        return [
+            self::ApplicationOctetStream->value,
+            self::ApplicationVndMozillaXulXml->value,
+            self::ApplicationXCsh->value,
+            self::ApplicationXHttpdPhp->value,
+            self::ApplicationXhtmlXml->value,
+            self::ApplicationXml->value,
+            self::ApplicationXSh->value,
+            self::ApplicationXShockwaveFlash->value,
+            self::TextHtml->value,
+            self::TextJavascript->value,
+        ];
+    }
+
+    /**
+     * The accepted file types used when a developer has not set their own.
+     */
+    public static function defaults(): array
+    {
+        return array_values(array_diff(self::toArray(), self::restricted()));
+    }
+
+    /**
+     * File extensions belonging to the restricted types, used to decide whether
+     * stored media may be served inline.
+     */
+    public static function restrictedExtensions(): array
+    {
+        $restricted = self::restricted();
+
+        return array_values(array_unique(array_map(
+            fn (self $type): string => $type->getExt(),
+            array_filter(self::cases(), fn (self $type): bool => in_array($type->value, $restricted, true)),
+        )));
+    }
+
     public function getExt(): string
     {
         return match ($this) {

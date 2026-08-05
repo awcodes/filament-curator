@@ -38,3 +38,53 @@ test('video/mp4 is present', function () {
 
     expect($types)->toContain('video/mp4');
 });
+
+test('defaults exclude every executable type', function (string $type) {
+    expect(MimeType::defaults())->not->toContain($type)
+        ->and(MimeType::toArray())->toContain($type);
+})->with([
+    'text/html',
+    'application/xhtml+xml',
+    'text/javascript',
+    'application/xml',
+    'application/x-httpd-php',
+    'application/x-sh',
+    'application/x-csh',
+    'application/x-shockwave-flash',
+    'application/vnd.mozilla.xul+xml',
+    'application/octet-stream',
+]);
+
+test('defaults still contain the media types the package exists to serve', function () {
+    expect(MimeType::defaults())
+        ->toContain('image/jpeg')
+        ->toContain('image/png')
+        ->toContain('image/webp')
+        ->toContain('image/svg+xml')
+        ->toContain('application/pdf')
+        ->toContain('video/mp4')
+        ->toContain('audio/mpeg')
+        ->toContain('text/plain');
+});
+
+test('defaults are exactly toArray minus restricted', function () {
+    expect(MimeType::defaults())
+        ->toHaveCount(count(MimeType::toArray()) - count(MimeType::restricted()));
+});
+
+test('restrictedExtensions maps the restricted types to extensions', function () {
+    expect(MimeType::restrictedExtensions())
+        ->toContain('html')
+        ->toContain('xhtml')
+        ->toContain('js')
+        ->toContain('xml')
+        ->toContain('php')
+        ->toContain('sh')
+        ->toContain('csh')
+        ->toContain('svf')
+        ->toContain('xul')
+        ->toContain('bin')
+        ->not->toContain('jpg')
+        ->not->toContain('svg')
+        ->not->toContain('pdf');
+});
