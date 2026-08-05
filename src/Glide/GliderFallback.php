@@ -23,7 +23,12 @@ class GliderFallback
 
     public static function make(string $name): static
     {
-        return app(static::class, ['name' => $name]);
+        // The class has no constructor, so container parameters would be
+        // discarded. Assign the name after resolving instead.
+        $static = app(static::class);
+        $static->name = $name;
+
+        return $static;
     }
 
     public function alt(string $alt): static
@@ -61,43 +66,48 @@ class GliderFallback
         return $this;
     }
 
-    public function getAlt(): string
+    public function getAlt(): ?string
     {
         return $this->alt;
     }
 
-    public function getHeight(): int
+    public function getHeight(): ?int
     {
         return $this->height;
     }
 
     public function getName(): string
     {
-        return $this->name;
+        return $this->name ?? '';
     }
 
-    public function getSource(): string
+    public function getSource(): ?string
     {
         return $this->source;
     }
 
-    public function getType(): string
+    public function getType(): ?string
     {
         return $this->type;
     }
 
-    public function getWidth(): int
+    public function getWidth(): ?int
     {
         return $this->width;
     }
 
     public function isResizable(): bool
     {
-        return Curator::isResizable(Str::of($this->getSource())->afterLast('.')->toString());
+        return Curator::isResizable($this->getExtension());
     }
 
     public function isPreviewable(): bool
     {
-        return Curator::isResizable(Str::of($this->getSource())->afterLast('.')->toString());
+        return Curator::isPreviewable($this->getExtension());
+    }
+
+    protected function getExtension(): string
+    {
+        return Str::of((string) $this->getSource())->afterLast('.')->toString();
     }
 }

@@ -26,7 +26,7 @@ class Glider extends Component
      * @throws Exception
      */
     public function __construct(
-        public int|Media|string $media,
+        public int|Media|string|null $media = null,
         public ?string $fallback = null,
         public ?array $srcset = null,
         public ?string $sizes = null,
@@ -57,7 +57,7 @@ class Glider extends Component
         public ?string $watermarkPosition = null,
         public ?string $watermarkAlpha = null,
     ) {
-        if (is_string($media)) {
+        if (is_string($media) && filled($media)) {
             $this->handleString($media);
         }
 
@@ -67,6 +67,12 @@ class Glider extends Component
 
         if (is_a($media, Media::class)) {
             $this->handleMedia($media);
+        }
+
+        // A null media item, or an id that no longer resolves, is the case the
+        // fallback exists for.
+        if (! $this->mediaItem instanceof MediaDTO) {
+            $this->handleFallback();
         }
 
         if (! $this->mediaItem instanceof MediaDTO) {
@@ -87,33 +93,36 @@ class Glider extends Component
 
     public function handleInt(int $media): void
     {
-        $media = app(Media::class)->where('id', $media)->first();
+        $record = app(Media::class)->where('id', $media)->first();
 
-        if (! $this->media && $this->fallback) {
-            $fallback = app(GlideManager::class)->getGliderFallback($this->fallback);
-            $dto = new MediaDTO(
-                path: $fallback->getSource(),
-                alt: $fallback->getAlt(),
-                width: $fallback->getWidth(),
-                height: $fallback->getHeight(),
-                isResizable: $fallback->isResizable(),
-                isPreviewable: $fallback->isPreviewable(),
-            );
-        } else {
-            $dto = new MediaDTO(
-                path: $media->path,
-                alt: $media->alt,
-                title: $media->title,
-                description: $media->description,
-                caption: $media->caption,
-                width: $media->width,
-                height: $media->height,
-                isResizable: Curator::isResizable($media->ext),
-                isPreviewable: Curator::isPreviewable($media->ext),
-            );
+        // Leave mediaItem unset so the constructor can reach for the fallback.
+        if (! $record instanceof Media) {
+            return;
         }
 
-        $this->mediaItem = $dto;
+        $this->handleMedia($record);
+    }
+
+    public function handleFallback(): void
+    {
+        if ($this->fallback === null) {
+            return;
+        }
+
+        $fallback = app(GlideManager::class)->getGliderFallback($this->fallback);
+
+        if (blank($fallback?->getSource())) {
+            return;
+        }
+
+        $this->mediaItem = new MediaDTO(
+            path: $fallback->getSource(),
+            alt: $fallback->getAlt(),
+            width: $fallback->getWidth(),
+            height: $fallback->getHeight(),
+            isResizable: $fallback->isResizable(),
+            isPreviewable: $fallback->isPreviewable(),
+        );
     }
 
     public function handleMedia(Media $media): void
