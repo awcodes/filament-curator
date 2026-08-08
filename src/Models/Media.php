@@ -164,14 +164,14 @@ class Media extends Model
         return Attribute::make(
             get: function (): string {
                 $storage = Storage::disk($this->disk);
-                $key = 'placeholder:'.$this->name.$storage->lastModified($this->path);
+                $key = 'placeholder:' . $this->name . $storage->lastModified($this->path);
 
                 return Cache::rememberForever($key, function () use ($storage): string {
                     $manager = Glide::getServer()->getApi()->getImageManager();
                     $image = $manager->read($storage->get($this->path));
                     $placeholder = $image->scaleDown(400)->blur(10)->toJpeg(30)->toString();
 
-                    return 'data:image/jpeg;base64,'.base64_encode($placeholder);
+                    return 'data:image/jpeg;base64,' . base64_encode($placeholder);
                 });
             }
         );
@@ -183,7 +183,7 @@ class Media extends Model
             return $this->title;
         }
 
-        return $this->name.'.'.$this->ext;
+        return $this->name . '.' . $this->ext;
     }
 
     public function getCuration(string $key): array

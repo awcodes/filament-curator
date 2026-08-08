@@ -41,18 +41,18 @@ class MediaObserver
 
         // Replace image
         if ($this->hasMediaUpload($media)) {
-            if ($storage->exists($media->directory.'/'.$media->getOriginal()['name'].'.'.$media->getOriginal()['ext'])) {
-                $storage->delete($media->directory.'/'.$media->getOriginal()['name'].'.'.$media->getOriginal()['ext']);
+            if ($storage->exists($media->directory . '/' . $media->getOriginal()['name'] . '.' . $media->getOriginal()['ext'])) {
+                $storage->delete($media->directory . '/' . $media->getOriginal()['name'] . '.' . $media->getOriginal()['ext']);
             }
 
             foreach ($media->file as $k => $v) {
                 $media->{$k} = $v;
             }
 
-            $storage->move($media->path, $media->directory.'/'.$media->getOriginal()['name'].'.'.$media->ext);
+            $storage->move($media->path, $media->directory . '/' . $media->getOriginal()['name'] . '.' . $media->ext);
 
             $media->name = $media->getOriginal()['name'];
-            $media->path = $media->directory.'/'.$media->getOriginal()['name'].'.'.$media->ext;
+            $media->path = $media->directory . '/' . $media->getOriginal()['name'] . '.' . $media->ext;
 
             // Delete glide-cache for replaced image
             $server = Glide::getServer();
@@ -61,11 +61,11 @@ class MediaObserver
 
         // Rename file name
         if ($media->isDirty(['name']) && ! blank($media->name)) {
-            if ($storage->exists($media->directory.'/'.$media->name.'.'.$media->ext)) {
-                $media->name = $media->name.'-'.time();
+            if ($storage->exists($media->directory . '/' . $media->name . '.' . $media->ext)) {
+                $media->name = $media->name . '-' . time();
             }
-            $storage->move($media->path, $media->directory.'/'.$media->name.'.'.$media->ext);
-            $media->path = $media->directory.'/'.$media->name.'.'.$media->ext;
+            $storage->move($media->path, $media->directory . '/' . $media->name . '.' . $media->ext);
+            $media->path = $media->directory . '/' . $media->name . '.' . $media->ext;
         }
 
         $media->__unset('file');
@@ -81,8 +81,8 @@ class MediaObserver
 
         $storage->delete($media->path);
 
-        if ($storage->allFiles($media->directory.'/'.$media->name)) {
-            $storage->deleteDirectory($media->directory.'/'.$media->name);
+        if ($storage->allFiles($media->directory . '/' . $media->name)) {
+            $storage->deleteDirectory($media->directory . '/' . $media->name);
         }
 
         if (count($storage->allFiles($media->directory)) === 0) {

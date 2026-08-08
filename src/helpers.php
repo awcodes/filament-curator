@@ -45,7 +45,7 @@ if (! function_exists('is_media_resizable')) {
 }
 
 if (! function_exists('get_media_items')) {
-    function get_media_items(array|Media|int $ids): Collection|array
+    function get_media_items(array | Media | int $ids): Collection | array
     {
         if ($ids instanceof Media) {
             return [$ids];
@@ -60,7 +60,7 @@ if (! function_exists('get_media_items')) {
         if (filled($ids)) {
             return app(Media::class)::whereIn('id', $ids)
                 ->get()
-                ->sortBy(fn ($model): int|string|false => array_search($model->id, $ids));
+                ->sortBy(fn ($model): int | string | false => array_search($model->id, $ids));
         }
 
         return [];

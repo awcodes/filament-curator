@@ -23,7 +23,7 @@ test('DatePathGenerator returns Y/m/d with no prefix when base dir is null', fun
     $generator = new DatePathGenerator();
     $now = Carbon::now();
 
-    $expected = $now->format('Y').'/'.$now->format('m').'/'.$now->format('d');
+    $expected = $now->format('Y') . '/' . $now->format('m') . '/' . $now->format('d');
 
     expect($generator->getPath(null))->toBe($expected);
 });
@@ -32,7 +32,7 @@ test('DatePathGenerator returns base dir prefixed with Y/m/d', function () {
     $generator = new DatePathGenerator();
     $now = Carbon::now();
 
-    $expected = 'media/'.$now->format('Y').'/'.$now->format('m').'/'.$now->format('d');
+    $expected = 'media/' . $now->format('Y') . '/' . $now->format('m') . '/' . $now->format('d');
 
     expect($generator->getPath('media'))->toBe($expected);
 });
@@ -41,7 +41,7 @@ test('DatePathGenerator omits blank prefix for empty string', function () {
     $generator = new DatePathGenerator();
     $now = Carbon::now();
 
-    $expected = $now->format('Y').'/'.$now->format('m').'/'.$now->format('d');
+    $expected = $now->format('Y') . '/' . $now->format('m') . '/' . $now->format('d');
 
     expect($generator->getPath(''))->toBe($expected);
 });
@@ -50,7 +50,7 @@ test('DatePathGenerator omits blank prefix for "0" string', function () {
     $generator = new DatePathGenerator();
     $now = Carbon::now();
 
-    $expected = $now->format('Y').'/'.$now->format('m').'/'.$now->format('d');
+    $expected = $now->format('Y') . '/' . $now->format('m') . '/' . $now->format('d');
 
     expect($generator->getPath('0'))->toBe($expected);
 });
@@ -66,5 +66,5 @@ test('UserPathGenerator returns base dir prefixed with user id', function () {
     $generator = new UserPathGenerator();
     $userId = auth()->user()->getAuthIdentifier();
 
-    expect($generator->getPath('media'))->toBe('media/'.$userId);
+    expect($generator->getPath('media'))->toBe('media/' . $userId);
 });

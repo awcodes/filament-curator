@@ -72,7 +72,7 @@ class MediaTable
                 ->sortable(),
             TextColumn::make('dimensions')
                 ->label(trans('curator::tables.columns.dimensions'))
-                ->getStateUsing(fn ($record): ?string => $record->width ? $record->width.'x'.$record->height : null),
+                ->getStateUsing(fn ($record): ?string => $record->width ? $record->width . 'x' . $record->height : null),
             TextColumn::make('disk')
                 ->label(trans('curator::tables.columns.disk'))
                 ->toggledHiddenByDefault()

@@ -46,10 +46,10 @@ class CuratorUtils
             ? (string) Str::of(pathinfo($path, PATHINFO_FILENAME))->slug()
             : (string) Str::uuid();
 
-        $filepath = (string) Str::of($directory.'/'.$filename.'.'.$ext)->trim('/');
+        $filepath = (string) Str::of($directory . '/' . $filename . '.' . $ext)->trim('/');
 
         if ($storage->exists($filepath)) {
-            $filepath = (string) Str::of($directory.'/'.$filename.'-'.time().'.'.$ext)->trim('/');
+            $filepath = (string) Str::of($directory . '/' . $filename . '-' . time() . '.' . $ext)->trim('/');
         }
 
         if (! $storage->exists($filepath)) {

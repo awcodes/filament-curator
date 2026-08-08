@@ -36,7 +36,7 @@ class SanitizeSvgsCommand extends Command
             return self::SUCCESS;
         }
 
-        $this->info(($dryRun ? '[dry run] ' : '')."Scanning {$total} SVG file(s)...");
+        $this->info(($dryRun ? '[dry run] ' : '') . "Scanning {$total} SVG file(s)...");
 
         $cleaned = 0;
         $unchanged = 0;
@@ -77,7 +77,7 @@ class SanitizeSvgsCommand extends Command
                         $media->forceFill(['size' => $disk->size($media->path)])->saveQuietly();
                     }
 
-                    $this->line(($dryRun ? '  would sanitize: ' : '  sanitized: ')."[{$media->id}] {$media->path}");
+                    $this->line(($dryRun ? '  would sanitize: ' : '  sanitized: ') . "[{$media->id}] {$media->path}");
                     $cleaned++;
                 } catch (Throwable $e) {
                     $this->error("  error: [{$media->id}] {$media->path} — {$e->getMessage()}");

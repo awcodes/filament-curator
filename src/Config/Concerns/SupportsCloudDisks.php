@@ -10,21 +10,21 @@ trait SupportsCloudDisks
     {
         $diskBeforeTestFake = config('livewire.temporary_file_upload.disk') ?: config('filesystems.default');
 
-        return config('filesystems.disks.'.mb_strtolower((string) $diskBeforeTestFake).'.driver') === 's3';
+        return config('filesystems.disks.' . mb_strtolower((string) $diskBeforeTestFake) . '.driver') === 's3';
     }
 
     public function isUsingGCS(): bool
     {
         $diskBeforeTestFake = config('livewire.temporary_file_upload.disk') ?: config('filesystems.default');
 
-        return config('filesystems.disks.'.mb_strtolower((string) $diskBeforeTestFake).'.driver') === 'gcs';
+        return config('filesystems.disks.' . mb_strtolower((string) $diskBeforeTestFake) . '.driver') === 'gcs';
     }
 
     public function isUsingCloudinary(): bool
     {
         $diskBeforeTestFake = config('livewire.temporary_file_upload.disk') ?: config('filesystems.default');
 
-        return config('filesystems.disks.'.mb_strtolower((string) $diskBeforeTestFake).'.driver') === 'cloudinary';
+        return config('filesystems.disks.' . mb_strtolower((string) $diskBeforeTestFake) . '.driver') === 'cloudinary';
     }
 
     public function isUsingCloudDisk(): bool

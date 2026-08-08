@@ -10,9 +10,9 @@ trait SupportsTenancy
 {
     protected ?bool $isTenantAware = null;
 
-    protected string|Closure|null $tenantName = null;
+    protected string | Closure | null $tenantName = null;
 
-    public function tenant(string|Closure $tenantName): static
+    public function tenant(string | Closure $tenantName): static
     {
         $this->isTenantAware = true;
         $this->tenantName = $tenantName;

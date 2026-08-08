@@ -37,7 +37,7 @@ class EditMedia extends EditRecord
             $livewire = $this->getSchema('form')->getLivewire();
             $statePath = $this->getSchema('form')->getStatePath();
 
-            data_set($livewire, $statePath.'.file', null);
+            data_set($livewire, $statePath . '.file', null);
         }
     }
 }

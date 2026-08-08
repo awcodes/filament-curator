@@ -33,12 +33,12 @@ class UpgradeCommand extends Command
         }
 
         foreach (glob(database_path("{$migrationsPath}*.php")) as $filename) {
-            if ((mb_substr($filename, -$len) === $migrationFileName.'.php')) {
+            if ((mb_substr($filename, -$len) === $migrationFileName . '.php')) {
                 return $filename;
             }
         }
 
-        return database_path($migrationsPath.$now->format('Y_m_d_His').'_'.Str::of($migrationFileName)->snake()->finish('.php'));
+        return database_path($migrationsPath . $now->format('Y_m_d_His') . '_' . Str::of($migrationFileName)->snake()->finish('.php'));
     }
 
     public function handle(): int
@@ -62,21 +62,21 @@ class UpgradeCommand extends Command
         // clone db as a backup
         match ($driver) {
             'sqlite' => function () use ($tableName): void {
-                DB::statement('CREATE TABLE media_tmp AS SELECT * FROM '.$tableName);
+                DB::statement('CREATE TABLE media_tmp AS SELECT * FROM ' . $tableName);
             },
             'pgsql' => function () use ($tableName): void {
-                DB::statement('CREATE TABLE media_tmp AS (SELECT * FROM '.$tableName.')');
+                DB::statement('CREATE TABLE media_tmp AS (SELECT * FROM ' . $tableName . ')');
             },
             default => function () use ($tableName): void {
                 DB::statement('CREATE TABLE media_tmp LIKE media');
-                DB::statement('INSERT media_tmp SELECT * FROM '.$tableName);
+                DB::statement('INSERT media_tmp SELECT * FROM ' . $tableName);
             }
         };
 
         // publish migration
         $this->info('Publishing migration...');
 
-        $migrationsPath = realpath(__DIR__.'/../../database/migrations');
+        $migrationsPath = realpath(__DIR__ . '/../../database/migrations');
 
         foreach (glob("{$migrationsPath}/upgrade_*.php.stub") as $filename) {
             File::copy(

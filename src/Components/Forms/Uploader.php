@@ -63,8 +63,8 @@ class Uploader extends FileUpload
                 $exif = $image->exif()->toArray();
             }
 
-            if (Storage::disk($component->getDiskName())->exists(mb_ltrim($component->getDirectory().'/'.$filename.'.'.$extension, '/'))) {
-                $filename = $filename.'-'.time();
+            if (Storage::disk($component->getDiskName())->exists(mb_ltrim($component->getDirectory() . '/' . $filename . '.' . $extension, '/'))) {
+                $filename = $filename . '-' . time();
             }
 
             $size = $file->getSize();
@@ -72,7 +72,7 @@ class Uploader extends FileUpload
 
             $path = $file->{$storeMethod}(
                 $component->getDirectory(),
-                $filename.'.'.$extension,
+                $filename . '.' . $extension,
                 $component->getDiskName()
             );
 
@@ -99,7 +99,7 @@ class Uploader extends FileUpload
             ];
 
             if (Config::get('curator.is_tenant_aware') && Filament::hasTenancy()) {
-                $data[Config::get('curator.tenant_ownership_relationship_name').'_id'] = Filament::getTenant()->id;
+                $data[Config::get('curator.tenant_ownership_relationship_name') . '_id'] = Filament::getTenant()->id;
             }
 
             return $data;
@@ -139,7 +139,7 @@ class Uploader extends FileUpload
             $this->rawState([$this->getRawState()]);
         }
 
-        $rawState = array_filter(array_map(function (TemporaryUploadedFile|array $file) {
+        $rawState = array_filter(array_map(function (TemporaryUploadedFile | array $file) {
             if (! $file instanceof TemporaryUploadedFile) {
                 return $file;
             }

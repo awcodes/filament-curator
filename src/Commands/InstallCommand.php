@@ -55,7 +55,7 @@ class InstallCommand extends Command
 
         // handle migration stub
 
-        $migrationPath = database_path('migrations/'.date('Y_m_d_His', time()).'_create_curator_table.php');
+        $migrationPath = database_path('migrations/' . date('Y_m_d_His', time()) . '_create_curator_table.php');
 
         $this->copyStubToApp(
             'migration',
@@ -78,7 +78,7 @@ class InstallCommand extends Command
                 [
                     'imports' => $imports,
                     'traits' => $useUuid ? 'use HasUuids;' : '',
-                    'tenancy' => $useTenancy ? 'public function '.str($tenancyName)->snake().'(): BelongsTo'.PHP_EOL.'    {'.PHP_EOL.'        return $this->belongsTo('.$tenancyName.'::class);'.PHP_EOL.'    }' : '',
+                    'tenancy' => $useTenancy ? 'public function ' . str($tenancyName)->snake() . '(): BelongsTo' . PHP_EOL . '    {' . PHP_EOL . '        return $this->belongsTo(' . $tenancyName . '::class);' . PHP_EOL . '    }' : '',
                 ]
             );
 
@@ -99,7 +99,7 @@ class InstallCommand extends Command
                 $this->replaceInFile(
                     config_path('curator.php'),
                     [
-                        "tenancy' => [\n            'enabled' => false,\n            'relationship_name' => null,\n        ]," => "tenancy' => [\n            'enabled' => true,\n            'relationship_name' => ".str($tenancyName)->snake().",\n        ],",
+                        "tenancy' => [\n            'enabled' => false,\n            'relationship_name' => null,\n        ]," => "tenancy' => [\n            'enabled' => true,\n            'relationship_name' => " . str($tenancyName)->snake() . ",\n        ],",
                     ]
                 );
             }

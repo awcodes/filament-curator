@@ -107,8 +107,8 @@ class CuratorServiceProvider extends PackageServiceProvider
         Blade::component(class: 'curator-curation', alias: Curation::class);
 
         FilamentAsset::register([
-            AlpineComponent::make(id: 'curation', path: __DIR__.'/../resources/dist/curation.js'),
-            Js::make(id: 'rich-editor-integration', path: __DIR__.'/../resources/dist/rich-editor-integration.js')->loadedOnRequest(),
+            AlpineComponent::make(id: 'curation', path: __DIR__ . '/../resources/dist/curation.js'),
+            Js::make(id: 'rich-editor-integration', path: __DIR__ . '/../resources/dist/rich-editor-integration.js')->loadedOnRequest(),
         ], package: 'awcodes/curator');
     }
 }

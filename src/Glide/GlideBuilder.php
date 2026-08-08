@@ -23,7 +23,7 @@ class GlideBuilder
         public ?float $gam = null,
         public ?int $h = null,
         public ?int $q = null,
-        public string|int|null $or = null,
+        public string | int | null $or = null,
         public ?int $pixel = null,
         public ?int $sharp = null,
         public ?int $w = null,
@@ -156,7 +156,7 @@ class GlideBuilder
         return $this;
     }
 
-    public function orientation(string|int $value): static
+    public function orientation(string | int $value): static
     {
         $this->or = $value;
 

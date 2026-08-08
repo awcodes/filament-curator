@@ -14,11 +14,11 @@ use Illuminate\Support\Arr;
 
 class CuratorColumn extends ImageColumn
 {
-    protected int|Closure|null $resolution = null;
+    protected int | Closure | null $resolution = null;
 
     protected string $view = 'curator::components.tables.curator-column';
 
-    public function getMedia(): Media|Collection|array|null
+    public function getMedia(): Media | Collection | array | null
     {
         $record = $this->getRecord();
 
@@ -46,14 +46,14 @@ class CuratorColumn extends ImageColumn
         return $this->evaluate($this->resolution);
     }
 
-    public function resolution(int|Closure|null $resolution): static
+    public function resolution(int | Closure | null $resolution): static
     {
         $this->resolution = $resolution;
 
         return $this;
     }
 
-    public function applyEagerLoading(EloquentBuilder|Relation $query): EloquentBuilder|Relation
+    public function applyEagerLoading(EloquentBuilder | Relation $query): EloquentBuilder | Relation
     {
         $model = $query->getModel();
 
