@@ -1,14 +1,41 @@
-# Please see the documentation for all configuration options:
-# https://help.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
-
+# Dependabot config for a package on the shared CI baseline (awcodes/.github).
 version: 2
 updates:
-
-  - package-ecosystem: "github-actions"
+  # Composer — keeps this package's dev tooling current (pint, phpstan/larastan,
+  # pest + plugins, rector, testbench). Grouped into one weekly PR to cut noise.
+  # The runtime `require` block is constrained loosely on purpose; review those bumps.
+  - package-ecosystem: composer
     directory: "/"
     schedule:
-      interval: "weekly"
-    labels:
-      - "dependencies"
+      interval: weekly
+    open-pull-requests-limit: 5
+    # Wait for a release to settle before opening a PR — longer for majors.
     cooldown:
       default-days: 7
+      semver-major-days: 14
+    groups:
+      dev-dependencies:
+        dependency-type: development
+      production-dependencies:
+        dependency-type: production
+
+  # GitHub Actions — covers any actions the package repo adds (release, changelog, etc.).
+  #
+  # The awcodes/.github caller is excluded on purpose. It tracks the moving major tag
+  # (@v1) so CI fixes reach every package at once (docs/versioning.md). Dependabot has no
+  # concept of a moving major: it reads @v1 as version "1" and offers the newest semver
+  # tag, which pins the package to a snapshot and can even be a downgrade, since v1 moves
+  # ahead of older release tags. Moving to a new major is a deliberate migration, not a
+  # Dependabot bump.
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    ignore:
+      - dependency-name: "awcodes/.github/*"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
