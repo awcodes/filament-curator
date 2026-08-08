@@ -3,6 +3,10 @@
     "rules": {
         "array_push": true,
         "backtick_to_shell_exec": true,
+        "blank_line_before_statement": true,
+        "concat_space": {
+            "spacing": "one"
+        },
         "date_time_immutable": true,
         "declare_strict_types": true,
         "lowercase_keywords": true,
@@ -14,6 +18,7 @@
             "import_functions": true
         },
         "mb_str_functions": true,
+        "method_argument_space": true,
         "modernize_types_casting": true,
         "new_with_parentheses": false,
         "no_superfluous_elseif": true,
@@ -49,7 +54,11 @@
         "protected_to_private": true,
         "self_accessor": true,
         "self_static_accessor": true,
+        "single_trait_insert_per_statement": true,
         "strict_comparison": true,
+        "types_spaces": {
+            "space": "single"
+        },
         "visibility_required": true
     }
 }
