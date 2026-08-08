@@ -392,14 +392,18 @@ public function register(): void
 {
     Glide::registerGliderFallbacks([
         GliderFallback::make('thumbnail')
-            ->alt(string)
-            ->height(int)
-            ->source(string)
-            ->type(string)
-            ->width(int),
+            ->alt(?string)
+            ->height(?int)
+            ->source(?string)
+            ->type(?string)
+            ->width(?int),
     ]);
 }
 ```
+
+Everything except the name is optional and may be null, so a conditional
+value is fine. A fallback that ends up without a source can't be rendered
+though, and referencing it from the blade component will throw.
 
 Then you can reference your fallback in the blade component.
 
