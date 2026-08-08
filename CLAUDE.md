@@ -13,9 +13,12 @@ composer test:lint      # Dry-run style check
 composer refactor       # Run Rector
 composer test:refactor  # Dry-run Rector check
 
+# Static analysis
+composer test:types     # Run PHPStan (level 5, larastan)
+
 # Testing
 composer test:unit      # Run Pest unit tests
-composer test           # Run all checks (refactor, lint, unit)
+composer test           # Run all checks (refactor, lint, types, unit)
 
 # Run a single test file or method
 vendor/bin/pest tests/src/Unit/Models/MediaTest.php
@@ -28,7 +31,7 @@ npm run build           # Production build
 
 ## Architecture
 
-This is a **Filament 4.x plugin** — a Laravel Composer package, not a standalone app. The entry points are:
+This is a **Filament 5.x plugin** — a Laravel Composer package, not a standalone app. (The `4.x` branch tracks Filament 4; changes usually start there and merge forward.) The entry points are:
 
 - **`CuratorPlugin`** — registered with Filament panels via `CuratorPlugin::make()`. Configures all plugin defaults.
 - **`CuratorServiceProvider`** — registers facades, routes, config, migrations, views, and Livewire components.
@@ -58,6 +61,10 @@ Uploaded files are stored via Laravel's filesystem (`disk` + `directory` columns
 
 ### Testing
 
-Tests use **Pest 3.x** and live in `tests/src/Unit/` and `tests/src/Feature/`. All tests extend `Awcodes\Curator\Tests\TestCase` which boots Orchestra Testbench with an in-memory SQLite database.
+Tests use **Pest 4.x** and live in `tests/src/Unit/` and `tests/src/Feature/`. All tests extend `Awcodes\Curator\Tests\TestCase` which boots Orchestra Testbench with an in-memory SQLite database.
 
-The current branch (`chore/better-test-suite`) is actively expanding test coverage.
+### CI
+
+CI runs on the shared baseline in [`awcodes/.github`](https://github.com/awcodes/.github), called from a branch-scoped workflow (`ci-filament-5.yml` here, `ci-filament-4.yml` on `4.x`). It reports four checks — `Tests`, `Lint`, `Static Analysis`, `Reformat` — mirroring `composer test`, so run that locally before pushing.
+
+Two pinning rules apply: the `awcodes/.github` caller is pinned to the **moving major tag** `@v1` (never a SHA) so shared CI fixes propagate, and Dependabot is configured to ignore it. Third-party actions in this repo's own workflows are pinned to **full commit SHAs**.
