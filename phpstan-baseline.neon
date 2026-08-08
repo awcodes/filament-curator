@@ -19,7 +19,7 @@ parameters:
 			path: src/Actions/MultiUploadAction.php
 
 		-
-			message: '#^Parameter \#1 \$string of function str expects string\|null, Illuminate\\Support\\Stringable\|null given\.$#'
+			message: '#^Parameter \#1 \$string of function str expects string\|null, Illuminate\\Support\\Stringable given\.$#'
 			identifier: argument.type
 			count: 3
 			path: src/Commands/InstallCommand.php
@@ -49,12 +49,6 @@ parameters:
 			path: src/Components/Forms/CuratorPicker.php
 
 		-
-			message: '#^Parameter \#1 \$view of function view expects view\-string\|null, string given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Components/Forms/CuratorPicker.php
-
-		-
 			message: '#^Variable \$state on left side of \?\? always exists and is not nullable\.$#'
 			identifier: nullCoalesce.variable
 			count: 2
@@ -64,12 +58,6 @@ parameters:
 			message: '#^Expression on left side of \?\? is not nullable\.$#'
 			identifier: nullCoalesce.expr
 			count: 2
-			path: src/Components/Forms/RichEditor/AttachCuratorMediaPlugin.php
-
-		-
-			message: '#^Parameter \#1 \$view of function view expects view\-string\|null, string given\.$#'
-			identifier: argument.type
-			count: 1
 			path: src/Components/Forms/RichEditor/AttachCuratorMediaPlugin.php
 
 		-
@@ -103,12 +91,6 @@ parameters:
 			path: src/Components/Modals/CuratorCuration.php
 
 		-
-			message: '#^Parameter \#1 \$view of function view expects view\-string\|null, string given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Components/Modals/CuratorCuration.php
-
-		-
 			message: '#^Access to an undefined property Awcodes\\Curator\\Components\\Modals\\CuratorPanel\:\:\$form\.$#'
 			identifier: property.notFound
 			count: 9
@@ -123,12 +105,6 @@ parameters:
 		-
 			message: '#^Expression on left side of \?\? is not nullable\.$#'
 			identifier: nullCoalesce.expr
-			count: 1
-			path: src/Components/Modals/CuratorPanel.php
-
-		-
-			message: '#^Parameter \#1 \$view of function view expects view\-string\|null, string given\.$#'
-			identifier: argument.type
 			count: 1
 			path: src/Components/Modals/CuratorPanel.php
 
@@ -307,19 +283,7 @@ parameters:
 			path: src/Resources/Media/Schemas/MediaForm.php
 
 		-
-			message: '#^Parameter \#1 \$view of method Filament\\Support\\Components\\ViewComponent\:\:view\(\) expects view\-string\|null, string given\.$#'
-			identifier: argument.type
-			count: 2
-			path: src/Resources/Media/Schemas/MediaForm.php
-
-		-
 			message: '#^Access to an undefined property Filament\\Tables\\Contracts\\HasTable\:\:\$layoutView\.$#'
 			identifier: property.notFound
-			count: 1
-			path: src/Resources/Media/Tables/MediaTable.php
-
-		-
-			message: '#^Parameter \#1 \$view of static method Filament\\Tables\\Columns\\Layout\\View\:\:make\(\) expects view\-string, string given\.$#'
-			identifier: argument.type
 			count: 1
 			path: src/Resources/Media/Tables/MediaTable.php

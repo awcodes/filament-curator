@@ -8,3 +8,8 @@ parameters:
         - src
         - config
     tmpDir: build/phpstan
+    # composer.lock is gitignored, so CI resolves dependencies fresh on every run.
+    # When a Filament or larastan release improves its type information, baselined
+    # errors stop firing and unmatched ignores would fail the build — on unrelated
+    # PRs. Local deviation from the awcodes/.github template.
+    reportUnmatchedIgnoredErrors: false
