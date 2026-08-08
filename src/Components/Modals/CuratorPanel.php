@@ -40,6 +40,11 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
     use InteractsWithStorage;
     use WithPagination;
 
+    /**
+     * @var array<int, string>
+     */
+    protected const SEARCH_COLUMNS = ['name', 'title', 'alt', 'caption', 'description'];
+
     public ?array $settings = [];
 
     public array $acceptedFileTypes = [];
@@ -243,23 +248,36 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
 
     public function updatedSearch(): void
     {
-        if ($this->search === '' || $this->search === '0') {
+        $terms = $this->getSearchTerms();
+
+        if ($terms === []) {
             $this->files = $this->getFiles();
-        } else {
-            $this->files = App::make(Media::class)::query()
-                ->when($this->isLimitedToDirectory, fn ($query) => $query->where('directory', $this->directory))
-                ->when(filament()->hasTenancy() && $this->isTenantAware, fn ($query) => $query->where($this->tenantOwnershipRelationshipName.'_id', filament()->getTenant()->id))
-                ->where(function ($query): void {
-                    $query->where('name', 'like', '%'.$this->search.'%')
-                        ->orWhere('title', 'like', '%'.$this->search.'%')
-                        ->orWhere('alt', 'like', '%'.$this->search.'%')
-                        ->orWhere('caption', 'like', '%'.$this->search.'%')
-                        ->orWhere('description', 'like', '%'.$this->search.'%');
-                })
-                ->limit(50)
-                ->get()
-                ->toArray();
+
+            return;
         }
+
+        $this->files = App::make(Media::class)::query()
+            ->when($this->isLimitedToDirectory, fn ($query) => $query->where('directory', $this->directory))
+            ->when(filament()->hasTenancy() && $this->isTenantAware, fn ($query) => $query->where($this->tenantOwnershipRelationshipName.'_id', filament()->getTenant()->id))
+            ->where(function ($query) use ($terms): void {
+                // Every term has to match, but any of the columns may be the
+                // one matching it, so "my image" finds my-image.png no matter
+                // which order the words are typed in.
+                foreach ($terms as $term) {
+                    $query->where(function ($query) use ($term): void {
+                        foreach (static::SEARCH_COLUMNS as $column) {
+                            $query->orWhereRaw(
+                                $query->getGrammar()->wrap($column)." like ? escape '~'",
+                                ['%'.$term.'%'],
+                            );
+                        }
+                    });
+                }
+            })
+            ->orderBy('created_at', $this->defaultSort)
+            ->limit(50)
+            ->get()
+            ->toArray();
     }
 
     public function setMediaForm(): void
@@ -442,6 +460,30 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
     public function render(): View
     {
         return view('curator::livewire.curator-panel');
+    }
+
+    /**
+     * Split the search on the separators that show up in file names so each
+     * word can be matched on its own, and escape the LIKE wildcards so a
+     * literal % or _ in the search is not treated as one.
+     *
+     * @return array<int, string>
+     */
+    protected function getSearchTerms(): array
+    {
+        $terms = preg_split('/[\s\-_]+/', $this->search, flags: PREG_SPLIT_NO_EMPTY);
+
+        if ($terms === false) {
+            return [];
+        }
+
+        // '~' is the escape character, so an input containing one has to
+        // escape it too. Backslash is avoided because MySQL and Postgres
+        // disagree on how it is read inside a string literal.
+        return array_map(
+            fn (string $term): string => str_replace(['~', '%', '_'], ['~~', '~%', '~_'], $term),
+            $terms,
+        );
     }
 
     /**
