@@ -1,0 +1,325 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 3
+			path: config/curator.php
+
+		-
+			message: '#^Parameter \#1 \$size of method Filament\\Forms\\Components\\BaseFileUpload\:\:maxSize\(\) expects Closure\|int\|null, string\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Actions/MultiUploadAction.php
+
+		-
+			message: '#^Parameter \#1 \$size of method Filament\\Forms\\Components\\BaseFileUpload\:\:minSize\(\) expects Closure\|int\|null, string\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Actions/MultiUploadAction.php
+
+		-
+			message: '#^Parameter \#1 \$string of function str expects string\|null, Illuminate\\Support\\Stringable\|null given\.$#'
+			identifier: argument.type
+			count: 3
+			path: src/Commands/InstallCommand.php
+
+		-
+			message: '#^Expression "match \(\$driver\) \{…" on a separate line does not do anything\.$#'
+			identifier: expr.resultUnused
+			count: 1
+			path: src/Commands/UpgradeCommand.php
+
+		-
+			message: '#^Cannot access property \$name on array\<string, mixed\>\|Illuminate\\Database\\Eloquent\\Model\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: src/Components/Forms/CuratorEditor.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$media\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Components/Forms/CuratorPicker.php
+
+		-
+			message: '#^Call to function is_array\(\) with non\-empty\-array\<mixed\> will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: src/Components/Forms/CuratorPicker.php
+
+		-
+			message: '#^Parameter \#1 \$view of function view expects view\-string\|null, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Components/Forms/CuratorPicker.php
+
+		-
+			message: '#^Variable \$state on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
+			count: 2
+			path: src/Components/Forms/CuratorPicker.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 2
+			path: src/Components/Forms/RichEditor/AttachCuratorMediaPlugin.php
+
+		-
+			message: '#^Parameter \#1 \$view of function view expects view\-string\|null, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Components/Forms/RichEditor/AttachCuratorMediaPlugin.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Components/Forms/Uploader.php
+
+		-
+			message: '#^Call to an undefined method League\\Glide\\Api\\ApiInterface\:\:getImageManager\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Components/Forms/Uploader.php
+
+		-
+			message: '#^Variable \$size on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
+			count: 1
+			path: src/Components/Forms/Uploader.php
+
+		-
+			message: '#^Variable \$type on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
+			count: 1
+			path: src/Components/Forms/Uploader.php
+
+		-
+			message: '#^Call to an undefined method League\\Glide\\Api\\ApiInterface\:\:getImageManager\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Components/Modals/CuratorCuration.php
+
+		-
+			message: '#^Parameter \#1 \$view of function view expects view\-string\|null, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Components/Modals/CuratorCuration.php
+
+		-
+			message: '#^Access to an undefined property Awcodes\\Curator\\Components\\Modals\\CuratorPanel\:\:\$form\.$#'
+			identifier: property.notFound
+			count: 9
+			path: src/Components/Modals/CuratorPanel.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 3
+			path: src/Components/Modals/CuratorPanel.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 1
+			path: src/Components/Modals/CuratorPanel.php
+
+		-
+			message: '#^Parameter \#1 \$view of function view expects view\-string\|null, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Components/Modals/CuratorPanel.php
+
+		-
+			message: '#^Parameter \#1 \$width of method Filament\\Schemas\\Components\\Component\:\:maxWidth\(\) expects Closure\|Filament\\Support\\Enums\\Width\|string\|null, int\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Components/Modals/CuratorPanel.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type Illuminate\\Support\\Collection\<\(int\|string\), mixed\>\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: src/Components/Modals/CuratorPanel.php
+
+		-
+			message: '#^Method Filament\\Tables\\Columns\\Column\:\:getRelationshipName\(\) invoked with 0 parameters, 1 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: src/Components/Tables/CuratorColumn.php
+
+		-
+			message: '#^Parameter \#2 \$class of function is_subclass_of expects string, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Components/Tables/CuratorColumn.php
+
+		-
+			message: '#^Call to an undefined method League\\Glide\\Api\\ApiInterface\:\:getImageManager\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/CuratorUtils.php
+
+		-
+			message: '#^Call to an undefined method League\\Glide\\Api\\ApiInterface\:\:getImageManager\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Models/Media.php
+
+		-
+			message: '#^Property ''full_path'' does not exist in model\.$#'
+			identifier: rules.modelAppends
+			count: 1
+			path: src/Models/Media.php
+
+		-
+			message: '#^Property ''large_url'' does not exist in model\.$#'
+			identifier: rules.modelAppends
+			count: 1
+			path: src/Models/Media.php
+
+		-
+			message: '#^Property ''medium_url'' does not exist in model\.$#'
+			identifier: rules.modelAppends
+			count: 1
+			path: src/Models/Media.php
+
+		-
+			message: '#^Property ''pretty_name'' does not exist in model\.$#'
+			identifier: rules.modelAppends
+			count: 1
+			path: src/Models/Media.php
+
+		-
+			message: '#^Property ''thumbnail_url'' does not exist in model\.$#'
+			identifier: rules.modelAppends
+			count: 1
+			path: src/Models/Media.php
+
+		-
+			message: '#^Property ''url'' does not exist in model\.$#'
+			identifier: rules.modelAppends
+			count: 1
+			path: src/Models/Media.php
+
+		-
+			message: '#^Access to an undefined property Awcodes\\Curator\\Models\\Media\:\:\$file\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Observers/MediaObserver.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Resources/Media/MediaResource.php
+
+		-
+			message: '#^Call to an undefined method Filament\\Contracts\\Plugin\:\:getLabel\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Resources/Media/MediaResource.php
+
+		-
+			message: '#^Call to an undefined method Filament\\Contracts\\Plugin\:\:getNavigationGroup\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Resources/Media/MediaResource.php
+
+		-
+			message: '#^Call to an undefined method Filament\\Contracts\\Plugin\:\:getNavigationIcon\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Resources/Media/MediaResource.php
+
+		-
+			message: '#^Call to an undefined method Filament\\Contracts\\Plugin\:\:getNavigationSort\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Resources/Media/MediaResource.php
+
+		-
+			message: '#^Call to an undefined method Filament\\Contracts\\Plugin\:\:getPluralLabel\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Resources/Media/MediaResource.php
+
+		-
+			message: '#^Call to an undefined method Filament\\Contracts\\Plugin\:\:shouldRegisterNavigation\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Resources/Media/MediaResource.php
+
+		-
+			message: '#^Call to an undefined method Filament\\Contracts\\Plugin\:\:shouldShowBadge\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Resources/Media/MediaResource.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 1
+			path: src/Resources/Media/MediaResource.php
+
+		-
+			message: '#^Cannot access property \$url on Illuminate\\Database\\Eloquent\\Model\|int\|string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: src/Resources/Media/Pages/EditMedia.php
+
+		-
+			message: '#^Call to an undefined method Filament\\Contracts\\Plugin\:\:getLabel\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Resources/Media/Pages/ListMedia.php
+
+		-
+			message: '#^Call to an undefined method Filament\\Contracts\\Plugin\:\:getPluralLabel\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Resources/Media/Pages/ListMedia.php
+
+		-
+			message: '#^Call to an undefined method Filament\\Contracts\\Plugin\:\:supportsCurations\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Resources/Media/Schemas/MediaForm.php
+
+		-
+			message: '#^Call to an undefined method Filament\\Contracts\\Plugin\:\:supportsFileSwap\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Resources/Media/Schemas/MediaForm.php
+
+		-
+			message: '#^Parameter \#1 \$size of method Filament\\Forms\\Components\\BaseFileUpload\:\:maxSize\(\) expects Closure\|int\|null, string\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Resources/Media/Schemas/MediaForm.php
+
+		-
+			message: '#^Parameter \#1 \$size of method Filament\\Forms\\Components\\BaseFileUpload\:\:minSize\(\) expects Closure\|int\|null, string\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Resources/Media/Schemas/MediaForm.php
+
+		-
+			message: '#^Parameter \#1 \$view of method Filament\\Support\\Components\\ViewComponent\:\:view\(\) expects view\-string\|null, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: src/Resources/Media/Schemas/MediaForm.php
+
+		-
+			message: '#^Access to an undefined property Filament\\Tables\\Contracts\\HasTable\:\:\$layoutView\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Resources/Media/Tables/MediaTable.php
+
+		-
+			message: '#^Parameter \#1 \$view of static method Filament\\Tables\\Columns\\Layout\\View\:\:make\(\) expects view\-string, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Resources/Media/Tables/MediaTable.php
