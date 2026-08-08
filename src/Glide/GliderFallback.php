@@ -31,35 +31,37 @@ class GliderFallback
         return $static;
     }
 
-    public function alt(string $alt): static
+    // Every value except the name is optional, and these are commonly set from
+    // a conditional expression, so null is accepted rather than a TypeError.
+    public function alt(?string $alt): static
     {
         $this->alt = $alt;
 
         return $this;
     }
 
-    public function height(int $height): static
+    public function height(?int $height): static
     {
         $this->height = $height;
 
         return $this;
     }
 
-    public function source(string $source): static
+    public function source(?string $source): static
     {
         $this->source = $source;
 
         return $this;
     }
 
-    public function type(string $type): static
+    public function type(?string $type): static
     {
         $this->type = $type;
 
         return $this;
     }
 
-    public function width(int $width): static
+    public function width(?int $width): static
     {
         $this->width = $width;
 

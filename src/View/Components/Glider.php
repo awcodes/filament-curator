@@ -7,6 +7,7 @@ namespace Awcodes\Curator\View\Components;
 use Awcodes\Curator\Config\GlideManager;
 use Awcodes\Curator\DTO\MediaDTO;
 use Awcodes\Curator\Facades\Curator;
+use Awcodes\Curator\Glide\GliderFallback;
 use Awcodes\Curator\Models\Media;
 use Closure;
 use Exception;
@@ -111,8 +112,15 @@ class Glider extends Component
 
         $fallback = app(GlideManager::class)->getGliderFallback($this->fallback);
 
-        if (blank($fallback?->getSource())) {
+        if (! $fallback instanceof GliderFallback) {
             return;
+        }
+
+        // A registered fallback whose source resolved to null is a
+        // configuration mistake, so say which one rather than reporting the
+        // media item as invalid.
+        if (blank($fallback->getSource())) {
+            throw new Exception(message: 'The ['.$this->fallback.'] glider fallback does not have a source.');
         }
 
         $this->mediaItem = new MediaDTO(

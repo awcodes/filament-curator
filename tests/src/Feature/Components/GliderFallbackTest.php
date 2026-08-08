@@ -43,6 +43,18 @@ test('optional getters return null instead of throwing when unset', function () 
         ->and($fallback->isPreviewable())->toBeFalse();
 });
 
+test('the setters accept null so a conditional value does not throw', function () {
+    $fallback = GliderFallback::make('conditional')
+        ->alt(null)
+        ->height(null)
+        ->source(null)
+        ->type(null)
+        ->width(null);
+
+    expect($fallback->getSource())->toBeNull()
+        ->and($fallback->getAlt())->toBeNull();
+});
+
 test('isPreviewable reports svg sources as previewable but not resizable', function () {
     $fallback = GliderFallback::make('vector')->source('logo.svg');
 
@@ -93,3 +105,9 @@ test('a null media item without a fallback still throws', function () {
 test('an unregistered fallback name throws rather than dereferencing null', function () {
     new Glider(media: null, fallback: 'does-not-exist');
 })->throws(Exception::class, 'Invalid media item provided to Glider component.');
+
+test('a registered fallback without a source names itself in the exception', function () {
+    Glide::registerGliderFallbacks([GliderFallback::make('logo')->source(null)]);
+
+    new Glider(media: null, fallback: 'logo');
+})->throws(Exception::class, 'The [logo] glider fallback does not have a source.');
