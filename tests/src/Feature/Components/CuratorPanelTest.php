@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Awcodes\Curator\Components\Modals\CuratorPanel;
+use Awcodes\Curator\Models\Media;
 use Livewire\Livewire;
 
 test('can mount with default settings', function () {
@@ -75,6 +76,104 @@ test('search update re-filters files list', function () {
     $component->set('search', 'matching');
 
     expect($component->get('files'))->toHaveCount(1);
+});
+
+test('search matches across the separators used in file names', function (string $search) {
+    Storage::fake('public');
+
+    makeMedia(['name' => 'my-image']);
+    makeMedia(['name' => 'unrelated']);
+
+    $component = Livewire::test(CuratorPanel::class);
+
+    $component->set('search', $search);
+
+    expect($component->get('files'))->toHaveCount(1)
+        ->and($component->get('files')[0]['name'])->toBe('my-image');
+    // Case sensitivity is left to the database — Postgres LIKE is case
+    // sensitive where MySQL and SQLite are not — so it is not asserted here.
+})->with(['my image', 'my-image', 'my_image', 'image my']);
+
+test('every search term has to match, not just the first', function () {
+    Storage::fake('public');
+
+    makeMedia(['name' => 'my-image']);
+    makeMedia(['name' => 'my-document']);
+
+    $component = Livewire::test(CuratorPanel::class);
+
+    $component->set('search', 'my image');
+
+    expect($component->get('files'))->toHaveCount(1)
+        ->and($component->get('files')[0]['name'])->toBe('my-image');
+});
+
+test('a term may match any of the searchable columns', function (string $column) {
+    Storage::fake('public');
+
+    makeMedia(['name' => 'no-match-here', $column => 'seaside sunset']);
+    makeMedia(['name' => 'unrelated']);
+
+    $component = Livewire::test(CuratorPanel::class);
+
+    $component->set('search', 'sunset seaside');
+
+    expect($component->get('files'))->toHaveCount(1);
+})->with(['title', 'alt', 'caption', 'description']);
+
+test('like wildcards in the search are treated as literal characters', function () {
+    Storage::fake('public');
+
+    makeMedia(['name' => 'literal%percent']);
+    makeMedia(['name' => 'no-percent-sign']);
+
+    $component = Livewire::test(CuratorPanel::class);
+
+    $component->set('search', '%percent');
+
+    expect($component->get('files'))->toHaveCount(1)
+        ->and($component->get('files')[0]['name'])->toBe('literal%percent');
+});
+
+test('the escape character itself is escaped rather than swallowed', function () {
+    Storage::fake('public');
+
+    makeMedia(['name' => 'tilde~name']);
+    makeMedia(['name' => 'tildename']);
+
+    $component = Livewire::test(CuratorPanel::class);
+
+    $component->set('search', 'tilde~name');
+
+    expect($component->get('files'))->toHaveCount(1)
+        ->and($component->get('files')[0]['name'])->toBe('tilde~name');
+});
+
+test('search results honour the panel sort order', function () {
+    Storage::fake('public');
+
+    // created_at is not fillable, so it has to be set after the fact.
+    $older = tap(makeMedia(['name' => 'sorted-older']), fn (Media $media) => $media->forceFill(['created_at' => now()->subDay()])->save());
+    $newer = makeMedia(['name' => 'sorted-newer']);
+
+    $component = Livewire::test(CuratorPanel::class);
+
+    $component->set('search', 'sorted');
+
+    expect(array_column($component->get('files'), 'id'))->toBe([$newer->id, $older->id]);
+});
+
+test('a whitespace only search falls back to the unfiltered list', function () {
+    Storage::fake('public');
+
+    makeMedia(['name' => 'first']);
+    makeMedia(['name' => 'second']);
+
+    $component = Livewire::test(CuratorPanel::class);
+
+    $component->set('search', '   ');
+
+    expect($component->get('files'))->toHaveCount(2);
 });
 
 test('isMultiple false restricts to single selection indicator', function () {
