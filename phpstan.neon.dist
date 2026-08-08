@@ -13,3 +13,17 @@ parameters:
     # errors stop firing and unmatched ignores would fail the build — on unrelated
     # PRs. Local deviation from the awcodes/.github template.
     reportUnmatchedIgnoredErrors: false
+
+    # These two families are environment-dependent rather than version-dependent:
+    # identical larastan/phpstan/Filament versions report them on a clean CI runner
+    # but not on a local checkout, so a generated baseline cannot capture them
+    # reliably. Ignored by pattern instead of baselined.
+    ignoreErrors:
+        # larastan narrows a string literal to view-string only when it can resolve
+        # the view namespace. It does not consistently resolve this package's own
+        # `curator::` namespace outside a booted app.
+        - identifier: argument.type
+          message: '#expects view\-string#'
+        # str() given an Illuminate\Support\Stringable in InstallCommand.
+        - identifier: argument.type
+          message: '#\$string of function str expects string\|null#'
