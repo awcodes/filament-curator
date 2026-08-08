@@ -29,7 +29,7 @@ class MediaController extends Controller
         try {
             SignatureFactory::create($glide->getToken())
                 ->validateRequest(
-                    path: $glide->getBasePath().'/'.$path,
+                    path: $glide->getBasePath() . '/' . $path,
                     params: $request->all()
                 );
         } catch (SignatureException) {

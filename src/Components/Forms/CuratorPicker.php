@@ -41,35 +41,35 @@ class CuratorPicker extends Field
 
     protected string $view = 'curator::components.forms.picker';
 
-    protected string|Htmlable|Closure|null $buttonLabel = null;
+    protected string | Htmlable | Closure | null $buttonLabel = null;
 
-    protected bool|Closure|null $isConstrained = false;
+    protected bool | Closure | null $isConstrained = false;
 
     protected ?bool $isLimitedToDirectory = null;
 
-    protected bool|Closure|null $isMultiple = false;
+    protected bool | Closure | null $isMultiple = false;
 
-    protected bool|Closure|null $isTenantAware = null;
+    protected bool | Closure | null $isTenantAware = null;
 
     protected ?string $tenantOwnershipRelationshipName = null;
 
-    protected bool|Closure|null $shouldLazyLoad = null;
+    protected bool | Closure | null $shouldLazyLoad = null;
 
-    protected int|Closure|null $maxItems = null;
+    protected int | Closure | null $maxItems = null;
 
     protected ?string $orderColumn = null;
 
-    protected string|Closure|null $relationship = null;
+    protected string | Closure | null $relationship = null;
 
-    protected string|Closure|null $relationshipTitleColumnName = null;
+    protected string | Closure | null $relationshipTitleColumnName = null;
 
-    protected bool|Closure|null $shouldDisplayAsList = null;
+    protected bool | Closure | null $shouldDisplayAsList = null;
 
-    protected string|Closure|null $defaultPanelSort = null;
+    protected string | Closure | null $defaultPanelSort = null;
 
-    protected string|Closure|null $typeColumn = null;
+    protected string | Closure | null $typeColumn = null;
 
-    protected string|Closure|null $typeValue = null;
+    protected string | Closure | null $typeValue = null;
 
     /** @throws Exception */
     protected function setUp(): void
@@ -82,7 +82,7 @@ class CuratorPicker extends Field
             ->color('gray')
             ->outlined();
 
-        $this->afterStateHydrated(static function (CuratorPicker $component, array|int|string|null $state): void {
+        $this->afterStateHydrated(static function (CuratorPicker $component, array | int | string | null $state): void {
             if (blank($state)) {
                 $component->state([]);
 
@@ -109,7 +109,7 @@ class CuratorPicker extends Field
             $component->state($items);
         });
 
-        $this->afterStateUpdated(function (CuratorPicker $component, array|int|null $state): void {
+        $this->afterStateUpdated(function (CuratorPicker $component, array | int | null $state): void {
             if (! filled($state)) {
                 $component->state([]);
             }
@@ -168,21 +168,21 @@ class CuratorPicker extends Field
         $this->state($items);
     }
 
-    public function buttonLabel(string|Htmlable|Closure $label): static
+    public function buttonLabel(string | Htmlable | Closure $label): static
     {
         $this->buttonLabel = $label;
 
         return $this;
     }
 
-    public function constrained(bool|Closure|null $condition = true): static
+    public function constrained(bool | Closure | null $condition = true): static
     {
         $this->isConstrained = $condition;
 
         return $this;
     }
 
-    public function defaultPanelSort(string|Closure|null $direction = 'desc'): static
+    public function defaultPanelSort(string | Closure | null $direction = 'desc'): static
     {
         $this->defaultPanelSort = $direction;
 
@@ -209,7 +209,7 @@ class CuratorPicker extends Field
         return $this->orderColumn ?? 'order';
     }
 
-    public function getRelationship(): BelongsTo|BelongsToMany|MorphMany|null
+    public function getRelationship(): BelongsTo | BelongsToMany | MorphMany | null
     {
         $name = $this->getRelationshipName();
 
@@ -381,21 +381,21 @@ class CuratorPicker extends Field
         return $this->tenantOwnershipRelationshipName ?? config('curator.features.tenancy.relationship_name');
     }
 
-    public function lazyLoad(bool|Closure $condition = true): static
+    public function lazyLoad(bool | Closure $condition = true): static
     {
         $this->shouldLazyLoad = $condition;
 
         return $this;
     }
 
-    public function limitToDirectory(bool|Closure|null $condition = true): static
+    public function limitToDirectory(bool | Closure | null $condition = true): static
     {
         $this->isLimitedToDirectory = $condition;
 
         return $this;
     }
 
-    public function maxItems(int|Closure $items): static
+    public function maxItems(int | Closure $items): static
     {
         $this->maxItems = $items;
 
@@ -410,7 +410,7 @@ class CuratorPicker extends Field
         return $this;
     }
 
-    public function multiple(bool|Closure $condition = true): static
+    public function multiple(bool | Closure $condition = true): static
     {
         $this->isMultiple = $condition;
 
@@ -424,21 +424,21 @@ class CuratorPicker extends Field
         return $this;
     }
 
-    public function typeColumn(string|Closure $column): static
+    public function typeColumn(string | Closure $column): static
     {
         $this->typeColumn = $column;
 
         return $this;
     }
 
-    public function typeValue(string|Closure $value): static
+    public function typeValue(string | Closure $value): static
     {
         $this->typeValue = $value;
 
         return $this;
     }
 
-    public function relationship(string|Closure $relationshipName, string|Closure $titleColumnName, ?Closure $callback = null): static
+    public function relationship(string | Closure $relationshipName, string | Closure $titleColumnName, ?Closure $callback = null): static
     {
         $this->relationship = $relationshipName;
         $this->relationshipTitleColumnName = $titleColumnName;
@@ -565,14 +565,14 @@ class CuratorPicker extends Field
         return $this->evaluate($this->shouldLazyLoad) ?? false;
     }
 
-    public function tenantAware(bool|Closure $condition = true): static
+    public function tenantAware(bool | Closure $condition = true): static
     {
         $this->isTenantAware = $condition;
 
         return $this;
     }
 
-    public function listDisplay(bool|Closure $condition = true): static
+    public function listDisplay(bool | Closure $condition = true): static
     {
         $this->shouldDisplayAsList = $condition;
 

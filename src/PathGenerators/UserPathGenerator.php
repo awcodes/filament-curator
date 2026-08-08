@@ -13,6 +13,6 @@ class UserPathGenerator implements PathGenerator
     {
         $user = Auth::user();
 
-        return (in_array($baseDir, [null, '', '0'], true) ? '' : $baseDir.'/').$user->getAuthIdentifier();
+        return (in_array($baseDir, [null, '', '0'], true) ? '' : $baseDir . '/') . $user->getAuthIdentifier();
     }
 }

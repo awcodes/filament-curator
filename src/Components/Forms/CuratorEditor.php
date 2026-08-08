@@ -23,9 +23,9 @@ class CuratorEditor extends Field
     use HasCurationPresets;
     use HasSize;
 
-    protected string|Htmlable|Closure|null $buttonLabel = null;
+    protected string | Htmlable | Closure | null $buttonLabel = null;
 
-    protected array|Closure|null $formats = null;
+    protected array | Closure | null $formats = null;
 
     protected string $view = 'curator::components.forms.curation';
 
@@ -56,21 +56,21 @@ class CuratorEditor extends Field
         ]);
     }
 
-    public function buttonLabel(string|Htmlable|Closure|null $label): static
+    public function buttonLabel(string | Htmlable | Closure | null $label): static
     {
         $this->buttonLabel = $label;
 
         return $this;
     }
 
-    public function formats(array|Closure $formats): static
+    public function formats(array | Closure $formats): static
     {
         $this->formats = $formats;
 
         return $this;
     }
 
-    public function getButtonLabel(): string|Htmlable|null
+    public function getButtonLabel(): string | Htmlable | null
     {
         return $this->evaluate($this->buttonLabel);
     }
@@ -90,10 +90,10 @@ class CuratorEditor extends Field
             ->size($this->getSize())
             ->modalCloseButton(false)
             ->modalWidth('screen')
-            ->modalFooterActions(fn (): array => [])->modalHeading(static fn (CuratorEditor $component): string => trans('curator::views.curation.heading').' '.$component->getRecord()->name)
+            ->modalFooterActions(fn (): array => [])->modalHeading(static fn (CuratorEditor $component): string => trans('curator::views.curation.heading') . ' ' . $component->getRecord()->name)
             ->modalContent(static fn (CuratorEditor $component, Component $livewire) => View::make('curator::components.actions.curation-action', [
                 'statePath' => $component->getStatePath(),
-                'modalId' => 'fi-'.$livewire->getId().'-action-0',
+                'modalId' => 'fi-' . $livewire->getId() . '-action-0',
                 'media' => $component->getRecord(),
                 'presets' => $component->getPresets(),
                 'formats' => $component->getFormats(),

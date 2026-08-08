@@ -9,43 +9,43 @@ use Closure;
 
 trait CanUploadFiles
 {
-    protected array|Closure|null $acceptedFileTypes = null;
+    protected array | Closure | null $acceptedFileTypes = null;
 
-    protected string|Closure|null $directory = null;
+    protected string | Closure | null $directory = null;
 
-    protected string|Closure|null $diskName = null;
+    protected string | Closure | null $diskName = null;
 
-    protected string|Closure|null $imageCropAspectRatio = null;
+    protected string | Closure | null $imageCropAspectRatio = null;
 
-    protected string|Closure|null $imageResizeMode = null;
+    protected string | Closure | null $imageResizeMode = null;
 
-    protected string|Closure|null $imageResizeTargetHeight = null;
+    protected string | Closure | null $imageResizeTargetHeight = null;
 
-    protected string|Closure|null $imageResizeTargetWidth = null;
+    protected string | Closure | null $imageResizeTargetWidth = null;
 
-    protected int|Closure|null $maxSize = null;
+    protected int | Closure | null $maxSize = null;
 
-    protected int|Closure|null $minSize = null;
+    protected int | Closure | null $minSize = null;
 
-    protected bool|Closure $shouldPreserveFilenames = false;
+    protected bool | Closure $shouldPreserveFilenames = false;
 
-    protected string|Closure|null $visibility = null;
+    protected string | Closure | null $visibility = null;
 
-    public function acceptedFileTypes(array|Closure $types): static
+    public function acceptedFileTypes(array | Closure $types): static
     {
         $this->acceptedFileTypes = $types;
 
         return $this;
     }
 
-    public function directory(Closure|string|null $directory): static
+    public function directory(Closure | string | null $directory): static
     {
         $this->directory = $directory;
 
         return $this;
     }
 
-    public function disk(string|Closure $disk): static
+    public function disk(string | Closure $disk): static
     {
         $this->diskName = $disk;
 
@@ -103,49 +103,49 @@ trait CanUploadFiles
         return $this->evaluate($this->visibility) ?? config('curator.default_visibility', 'public');
     }
 
-    public function imageCropAspectRatio(string|Closure|null $ratio): static
+    public function imageCropAspectRatio(string | Closure | null $ratio): static
     {
         $this->imageCropAspectRatio = $ratio;
 
         return $this;
     }
 
-    public function imageResizeMode(string|Closure|null $mode): static
+    public function imageResizeMode(string | Closure | null $mode): static
     {
         $this->imageResizeMode = $mode;
 
         return $this;
     }
 
-    public function imageResizeTargetHeight(string|Closure|null $height): static
+    public function imageResizeTargetHeight(string | Closure | null $height): static
     {
         $this->imageResizeTargetHeight = $height;
 
         return $this;
     }
 
-    public function imageResizeTargetWidth(string|Closure|null $width): static
+    public function imageResizeTargetWidth(string | Closure | null $width): static
     {
         $this->imageResizeTargetWidth = $width;
 
         return $this;
     }
 
-    public function maxSize(int|Closure $size): static
+    public function maxSize(int | Closure $size): static
     {
         $this->maxSize = $size;
 
         return $this;
     }
 
-    public function minSize(int|Closure $size): static
+    public function minSize(int | Closure $size): static
     {
         $this->minSize = $size;
 
         return $this;
     }
 
-    public function preserveFilenames(bool|Closure $condition = true): static
+    public function preserveFilenames(bool | Closure $condition = true): static
     {
         $this->shouldPreserveFilenames = $condition;
 
@@ -157,7 +157,7 @@ trait CanUploadFiles
         return $this->evaluate($this->shouldPreserveFilenames) ?? false;
     }
 
-    public function visibility(string|Closure $visibility): static
+    public function visibility(string | Closure $visibility): static
     {
         $this->visibility = $visibility;
 

@@ -67,7 +67,7 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
 
     public bool $isLimitedToDirectory = false;
 
-    public bool|Closure $isTenantAware = true;
+    public bool | Closure $isTenantAware = true;
 
     public ?string $tenantOwnershipRelationshipName = null;
 
@@ -81,9 +81,9 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
 
     public ?int $minSize = null;
 
-    public int|string|null $mediaId = null;
+    public int | string | null $mediaId = null;
 
-    public PathGenerator|string|null $pathGenerator = null;
+    public PathGenerator | string | null $pathGenerator = null;
 
     public string $search = '';
 
@@ -181,10 +181,10 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
             ->where(function ($query): void {
                 $query->where('directory', $this->directory);
                 if (filled($this->directory)) {
-                    $query->orWhere('directory', 'LIKE', $this->directory.'/%');
+                    $query->orWhere('directory', 'LIKE', $this->directory . '/%');
                 }
             })
-            ->when(filament()->hasTenancy() && $this->isTenantAware, fn ($query) => $query->where($this->tenantOwnershipRelationshipName.'_id', filament()->getTenant()->id))
+            ->when(filament()->hasTenancy() && $this->isTenantAware, fn ($query) => $query->where($this->tenantOwnershipRelationshipName . '_id', filament()->getTenant()->id))
 //            ->when($this->selected, function ($query, $selected) {
 //                $selected = collect($selected)->pluck('id')->toArray();
 //
@@ -241,7 +241,7 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
         ];
     }
 
-    public function removeFromFiles(int|string $id): void
+    public function removeFromFiles(int | string $id): void
     {
         $this->files = collect($this->files)->reject(fn (array $selectedItem): bool => $selectedItem['id'] === $id)->toArray();
     }
@@ -258,7 +258,7 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
 
         $this->files = App::make(Media::class)::query()
             ->when($this->isLimitedToDirectory, fn ($query) => $query->where('directory', $this->directory))
-            ->when(filament()->hasTenancy() && $this->isTenantAware, fn ($query) => $query->where($this->tenantOwnershipRelationshipName.'_id', filament()->getTenant()->id))
+            ->when(filament()->hasTenancy() && $this->isTenantAware, fn ($query) => $query->where($this->tenantOwnershipRelationshipName . '_id', filament()->getTenant()->id))
             ->where(function ($query) use ($terms): void {
                 // Every term has to match, but any of the columns may be the
                 // one matching it, so "my image" finds my-image.png no matter
@@ -267,8 +267,8 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
                     $query->where(function ($query) use ($term): void {
                         foreach (static::SEARCH_COLUMNS as $column) {
                             $query->orWhereRaw(
-                                $query->getGrammar()->wrap($column)." like ? escape '~'",
-                                ['%'.$term.'%'],
+                                $query->getGrammar()->wrap($column) . " like ? escape '~'",
+                                ['%' . $term . '%'],
                             );
                         }
                     });
@@ -511,7 +511,7 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
         }
 
         $record = App::make(Media::class)::query()
-            ->when(filament()->hasTenancy() && $this->isTenantAware, fn ($query) => $query->where($this->tenantOwnershipRelationshipName.'_id', filament()->getTenant()->id))
+            ->when(filament()->hasTenancy() && $this->isTenantAware, fn ($query) => $query->where($this->tenantOwnershipRelationshipName . '_id', filament()->getTenant()->id))
             ->whereKey($id)
             ->first();
 

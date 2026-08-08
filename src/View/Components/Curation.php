@@ -14,7 +14,7 @@ class Curation extends Component
     public ?array $curatedMedia = null;
 
     public function __construct(
-        public int|Media|null $media,
+        public int | Media | null $media,
         public ?string $curation = null,
     ) {
         if (! $media instanceof Media) {
@@ -29,7 +29,7 @@ class Curation extends Component
     /**
      * Get the view / contents that represent the component.
      */
-    public function render(): View|string|Closure
+    public function render(): View | string | Closure
     {
         if ($this->curatedMedia !== null && $this->curatedMedia !== []) {
             $this->curatedMedia['url'] = Media::resolveUrl($this->curatedMedia['disk'], $this->curatedMedia['path'], $this->curatedMedia['visibility'] ?? null);

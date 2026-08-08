@@ -57,7 +57,7 @@ class MediaResource extends Resource
             ?? Str::title(static::getModelLabel());
     }
 
-    public static function getNavigationIcon(): string|BackedEnum|null
+    public static function getNavigationIcon(): string | BackedEnum | null
     {
         return CuratorPlugin::get()->getNavigationIcon();
     }
@@ -67,7 +67,7 @@ class MediaResource extends Resource
         return CuratorPlugin::get()->getNavigationSort();
     }
 
-    public static function getNavigationGroup(): string|UnitEnum|null
+    public static function getNavigationGroup(): string | UnitEnum | null
     {
         return CuratorPlugin::get()->getNavigationGroup();
     }
@@ -77,7 +77,7 @@ class MediaResource extends Resource
         return CuratorPlugin::get()->shouldShowBadge()
             ? (Filament::hasTenancy() && Config::get('curator.features.tenancy.enabled'))
                 ? number_format(static::getEloquentQuery()
-                    ->where(Config::get('curator.features.tenancy.relationship_name').'_id', Filament::getTenant()->id)
+                    ->where(Config::get('curator.features.tenancy.relationship_name') . '_id', Filament::getTenant()->id)
                     ->count())
                 : number_format(self::getModel()::count())
             : null;

@@ -22,7 +22,7 @@ class GenerateGlideTokenCommand extends Command
         $file = file_get_contents($path);
 
         if (! str_contains($file, $key)) {
-            $file = $file."\r\n".$key.'='.$token;
+            $file = $file . "\r\n" . $key . '=' . $token;
 
             file_put_contents($path, $file);
         } else {

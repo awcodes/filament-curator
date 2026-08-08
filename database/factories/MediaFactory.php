@@ -139,10 +139,10 @@ class MediaFactory extends Factory
             'robert-lukeman-_RBcxo9AU-U-unsplash',
             'robert-lukeman-zNN6ubHmruI-unsplash',
             'tim-swaan-eOpewngf68w-unsplash',
-        ])->random().'.jpg';
+        ])->random() . '.jpg';
 
         return CuratorUtils::importMedia(
-            path: $this->getFixturesPath().$filename,
+            path: $this->getFixturesPath() . $filename,
             disk: $this->getDisk(),
             directory: $this->getDirectory(),
             alt: $this->faker->words(rand(3, 8), true),
@@ -163,10 +163,10 @@ class MediaFactory extends Factory
             'brand',
             'apps',
             'link',
-        ])->random().'.svg';
+        ])->random() . '.svg';
 
         return CuratorUtils::importMedia(
-            path: $this->getFixturesPath().$filename,
+            path: $this->getFixturesPath() . $filename,
             disk: $this->getDisk(),
             directory: $this->getDirectory(),
             alt: $this->faker->words(rand(3, 8), true),
@@ -188,7 +188,7 @@ class MediaFactory extends Factory
         ])->random();
 
         return CuratorUtils::importMedia(
-            path: $this->getFixturesPath().$filename,
+            path: $this->getFixturesPath() . $filename,
             disk: $this->getDisk(),
             directory: $this->getDirectory(),
         );
@@ -206,7 +206,7 @@ class MediaFactory extends Factory
         ])->random();
 
         return CuratorUtils::importMedia(
-            path: $this->getFixturesPath().$filename,
+            path: $this->getFixturesPath() . $filename,
             disk: $this->getDisk(),
             directory: $this->getDirectory(),
         );
@@ -217,7 +217,7 @@ class MediaFactory extends Factory
         $filename = fake()->word();
 
         $file = UploadedFile::fake()
-            ->image($filename.'.jpg', 1024, 576)
+            ->image($filename . '.jpg', 1024, 576)
             ->size(1000)
             ->mimeType('image/jpeg');
 

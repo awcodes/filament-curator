@@ -28,7 +28,7 @@ test('local image file import returns expected array keys', function () {
 test('normalizes uppercase extensions to lowercase', function () {
     Storage::fake('public');
 
-    $tmpPath = sys_get_temp_dir().'/curator-test-image.JPG';
+    $tmpPath = sys_get_temp_dir() . '/curator-test-image.JPG';
     $image = imagecreatetruecolor(100, 100);
     imagejpeg($image, $tmpPath);
     imagedestroy($image);
@@ -49,7 +49,7 @@ test('normalizes uppercase extensions to lowercase', function () {
 test('sets width and height for resizable images', function () {
     Storage::fake('public');
 
-    $tmpPath = sys_get_temp_dir().'/curator-test-image.jpg';
+    $tmpPath = sys_get_temp_dir() . '/curator-test-image.jpg';
     $image = imagecreatetruecolor(200, 150);
     imagejpeg($image, $tmpPath);
     imagedestroy($image);
@@ -70,7 +70,7 @@ test('sets width and height for resizable images', function () {
 test('sets width and height to null for non-resizable files', function () {
     Storage::fake('public');
 
-    $tmpPath = sys_get_temp_dir().'/curator-test-doc.pdf';
+    $tmpPath = sys_get_temp_dir() . '/curator-test-doc.pdf';
     file_put_contents($tmpPath, 'PDF content');
 
     $result = CuratorUtils::importMedia(
@@ -89,7 +89,7 @@ test('sets width and height to null for non-resizable files', function () {
 test('generates UUID filename by default', function () {
     Storage::fake('public');
 
-    $tmpPath = sys_get_temp_dir().'/curator-test-uuid.pdf';
+    $tmpPath = sys_get_temp_dir() . '/curator-test-uuid.pdf';
     file_put_contents($tmpPath, 'content');
 
     $result = CuratorUtils::importMedia(
@@ -107,7 +107,7 @@ test('generates UUID filename by default', function () {
 test('preserves slugified filename when shouldPreserveFilenames is true', function () {
     Storage::fake('public');
 
-    $tmpPath = sys_get_temp_dir().'/my-test-document.pdf';
+    $tmpPath = sys_get_temp_dir() . '/my-test-document.pdf';
     file_put_contents($tmpPath, 'content');
 
     app(CuratorManager::class)->preserveFilenames(true);
@@ -129,7 +129,7 @@ test('preserves slugified filename when shouldPreserveFilenames is true', functi
 test('appends timestamp when file already exists', function () {
     Storage::fake('public');
 
-    $tmpPath = sys_get_temp_dir().'/collision-test-file.pdf';
+    $tmpPath = sys_get_temp_dir() . '/collision-test-file.pdf';
     file_put_contents($tmpPath, 'content');
 
     app(CuratorManager::class)->preserveFilenames(true);
@@ -156,7 +156,7 @@ test('appends timestamp when file already exists', function () {
 test('passes through optional alt title caption description', function () {
     Storage::fake('public');
 
-    $tmpPath = sys_get_temp_dir().'/curator-test-meta.pdf';
+    $tmpPath = sys_get_temp_dir() . '/curator-test-meta.pdf';
     file_put_contents($tmpPath, 'content');
 
     $result = CuratorUtils::importMedia(

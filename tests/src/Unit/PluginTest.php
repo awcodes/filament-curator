@@ -28,7 +28,7 @@ it('can register the plugin', function () {
     expect(Filament::getPlugin('awcodes/curator'))->toBeInstanceOf(CuratorPlugin::class);
 });
 
-it('sets curations config', function (bool|Closure $condition) {
+it('sets curations config', function (bool | Closure $condition) {
     $this->panel
         ->plugins([
             CuratorPlugin::make()
@@ -41,7 +41,7 @@ it('sets curations config', function (bool|Closure $condition) {
     fn () => false,
 ]);
 
-it('sets file swap config', function (bool|Closure $condition) {
+it('sets file swap config', function (bool | Closure $condition) {
     $this->panel
         ->plugins([
             CuratorPlugin::make()
@@ -55,8 +55,8 @@ it('sets file swap config', function (bool|Closure $condition) {
 ]);
 
 it('sets labels config', function (
-    string|Closure $label,
-    string|Closure $pluralLabel,
+    string | Closure $label,
+    string | Closure $pluralLabel,
 ) {
     $this->panel
         ->plugins([
@@ -74,10 +74,10 @@ it('sets labels config', function (
 ]);
 
 it('sets navigation config', function (
-    string|Closure $group,
-    string|Closure $icon,
-    int|Closure $sort,
-    bool|Closure $badge
+    string | Closure $group,
+    string | Closure $icon,
+    int | Closure $sort,
+    bool | Closure $badge
 ) {
     $this->panel
         ->plugins([
@@ -131,7 +131,7 @@ it('sets navigation sort with a closure', function () {
     expect(Filament::getPlugin('awcodes/curator')->getNavigationSort())->toBe(5);
 });
 
-it('sets register navigation config', function (bool|Closure $condition) {
+it('sets register navigation config', function (bool | Closure $condition) {
     $this->panel
         ->plugins([
             CuratorPlugin::make()

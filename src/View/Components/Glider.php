@@ -27,7 +27,7 @@ class Glider extends Component
      * @throws Exception
      */
     public function __construct(
-        public int|Media|string|null $media = null,
+        public int | Media | string | null $media = null,
         public ?string $fallback = null,
         public ?array $srcset = null,
         public ?string $sizes = null,
@@ -120,7 +120,7 @@ class Glider extends Component
         // configuration mistake, so say which one rather than reporting the
         // media item as invalid.
         if (blank($fallback->getSource())) {
-            throw new Exception(message: 'The ['.$this->fallback.'] glider fallback does not have a source.');
+            throw new Exception(message: 'The [' . $this->fallback . '] glider fallback does not have a source.');
         }
 
         $this->mediaItem = new MediaDTO(
@@ -200,7 +200,7 @@ class Glider extends Component
 
                 $height = $this->height === 'auto' ? null : floor($width * ($this->mediaItem->getHeight() / $this->mediaItem->getWidth()));
 
-                $srcset .= $this->buildGlideSource(['w' => $width, 'h' => $height]).' '.$s.', ';
+                $srcset .= $this->buildGlideSource(['w' => $width, 'h' => $height]) . ' ' . $s . ', ';
             }
 
             return (string) Str::of($srcset)->rtrim(', ');
@@ -209,7 +209,7 @@ class Glider extends Component
         return null;
     }
 
-    public function render(): View|Closure|string
+    public function render(): View | Closure | string
     {
         $this->source = $this->buildGlideSource();
 

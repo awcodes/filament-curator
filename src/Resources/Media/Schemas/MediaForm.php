@@ -119,7 +119,7 @@ class MediaForm
                 }),
             TextInput::make('alt')
                 ->label(trans('curator::forms.fields.alt'))
-                ->hint(fn (): HtmlString => new HtmlString('<a href="https://www.w3.org/WAI/tutorials/images/decision-tree" class="filament-link text-primary-500 text-xs" target="_blank">'.trans('curator::forms.fields.alt_hint').'</a>')),
+                ->hint(fn (): HtmlString => new HtmlString('<a href="https://www.w3.org/WAI/tutorials/images/decision-tree" class="filament-link text-primary-500 text-xs" target="_blank">' . trans('curator::forms.fields.alt_hint') . '</a>')),
             TextInput::make('title')
                 ->label(trans('curator::forms.fields.title')),
             Textarea::make('caption')
