@@ -332,7 +332,7 @@ v4 requires a secure token for Glide image serving. Generate one:
 php artisan curator:token
 ```
 
-This will add `CURATOR_GLIDE_TOKEN` to your `.env` file.
+This will add `CURATOR_GLIDE_TOKEN` to your `.env` file. Since `.env` is normally gitignored, every other environment needs its own value — see [Glide Token](README.md#glide-token) in the README.
 
 ### Step 8: Update Plugin Registration
 

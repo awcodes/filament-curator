@@ -1,0 +1,54 @@
+name: CI / Filament 4
+
+on:
+  push:
+    branches:
+      - 4.x
+    paths:
+      - "src/**"
+      - "config/**"
+      - "database/**"
+      - "resources/**"
+      - "routes/**"
+      - "tests/**"
+      - "composer.json"
+      - "composer.lock"
+      - "phpunit.xml*"
+      - "phpstan.neon*"
+      - "rector.php"
+      - "pint.json"
+      - ".github/workflows/**"
+  pull_request:
+    branches:
+      - 4.x
+    paths:
+      - "src/**"
+      - "config/**"
+      - "database/**"
+      - "resources/**"
+      - "routes/**"
+      - "tests/**"
+      - "composer.json"
+      - "composer.lock"
+      - "phpunit.xml*"
+      - "phpstan.neon*"
+      - "rector.php"
+      - "pint.json"
+      - ".github/workflows/**"
+
+# Scoped to the 4.x branch: if this file is merged forward into 5.x it simply will not
+# run there, so a single canonical CI file no longer needs manual preservation on merges.
+jobs:
+  ci:
+    uses: awcodes/.github/.github/workflows/filament-plugin.yml@v1
+    with:
+      matrix: |
+        [
+          {"php":"8.4","laravel":"12.*","filament":"4.*","testbench":"10.*","dependencies":"prefer-stable"},
+          {"php":"8.3","laravel":"12.*","filament":"4.*","testbench":"10.*","dependencies":"prefer-stable"}
+        ]
+      run-tests: true
+      run-lint: true
+      run-static-analysis: true
+      run-reformat: true
+      run-build: false
