@@ -38,6 +38,20 @@ composer require awcodes/filament-curator
 php artisan curator:install
 ```
 
+### Glide Token
+
+The install command runs `php artisan curator:token` for you, which writes a freshly generated `CURATOR_GLIDE_TOKEN` into the `.env` file of the machine you ran it on. Curator uses it to sign the image URLs it renders, and the media route rejects any request whose signature doesn't match.
+
+Because `.env` is usually gitignored, that token exists only where you installed. Every other environment — a teammate's checkout, your other machine, CI, staging, production — needs its own value, so add the key to your `.env.example` and set it wherever you deploy:
+
+```dotenv
+CURATOR_GLIDE_TOKEN=
+```
+
+The value does **not** have to match across environments. URLs are signed when they are rendered and validated by the same environment that served them, so each one can hold its own token. It does have to be present: with the variable missing, generating a media URL and serving the media route both fail.
+
+Re-running `php artisan curator:token` overwrites an existing value rather than adding a second one. That invalidates any signed URL that has outlived the request it was rendered in — cached HTML, a CDN copy, an already-sent email, a URL pasted into stored content — which will start returning 403. If your config is cached, run `php artisan config:clear` after changing the token.
+
 > [!NOTE]
 > If you are using the stand-alone forms package then you will need to include the Curator modal in your layout file, typically you would place this, before the closing `body` tag.
 
