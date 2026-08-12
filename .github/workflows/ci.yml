@@ -1,9 +1,9 @@
-name: CI / Filament 4
+name: CI
 
 on:
   push:
     branches:
-      - 4.x
+      - 5.x
     paths:
       - "src/**"
       - "config/**"
@@ -12,7 +12,9 @@ on:
       - "routes/**"
       - "tests/**"
       - "composer.json"
-      - "composer.lock"
+      - "package.json"
+      - "package-lock.json"
+      - "vite.config.*"
       - "phpunit.xml*"
       - "phpstan.neon*"
       - "rector.php"
@@ -20,7 +22,7 @@ on:
       - ".github/workflows/**"
   pull_request:
     branches:
-      - 4.x
+      - 5.x
     paths:
       - "src/**"
       - "config/**"
@@ -29,21 +31,29 @@ on:
       - "routes/**"
       - "tests/**"
       - "composer.json"
-      - "composer.lock"
+      - "package.json"
+      - "package-lock.json"
+      - "vite.config.*"
       - "phpunit.xml*"
       - "phpstan.neon*"
       - "rector.php"
       - "pint.json"
       - ".github/workflows/**"
 
-# Scoped to the 4.x branch: if this file is merged forward into 5.x it simply will not
-# run there, so a single canonical CI file no longer needs manual preservation on merges.
+# 5.x serves both Filament majors from one branch, so one caller covers both: the
+# matrix pins filament/filament per row and the shared workflow installs it before
+# running the suite. The legacy 4.x branch keeps its own ci-filament-4.yml.
 jobs:
   ci:
     uses: awcodes/.github/.github/workflows/filament-plugin.yml@v1
     with:
       matrix: |
         [
+          {"php":"8.5","laravel":"13.*","filament":"5.*","testbench":"11.*","dependencies":"prefer-stable"},
+          {"php":"8.4","laravel":"13.*","filament":"5.*","testbench":"11.*","dependencies":"prefer-stable"},
+          {"php":"8.5","laravel":"12.*","filament":"5.*","testbench":"10.*","dependencies":"prefer-stable"},
+          {"php":"8.4","laravel":"12.*","filament":"5.*","testbench":"10.*","dependencies":"prefer-stable"},
+          {"php":"8.3","laravel":"12.*","filament":"5.*","testbench":"10.*","dependencies":"prefer-stable"},
           {"php":"8.4","laravel":"12.*","filament":"4.*","testbench":"10.*","dependencies":"prefer-stable"},
           {"php":"8.3","laravel":"12.*","filament":"4.*","testbench":"10.*","dependencies":"prefer-stable"}
         ]
