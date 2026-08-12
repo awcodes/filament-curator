@@ -56,7 +56,7 @@ Re-running `php artisan curator:token` overwrites an existing value rather than 
 ```
 
 > [!IMPORTANT]
-> If you have not set up a custom theme and are using Filament Panels follow the instructions in the [Filament Docs](https://filamentphp.com/docs/4.x/styling/overview#creating-a-custom-theme) first.
+> If you have not set up a custom theme and are using Filament Panels follow the instructions in the [Filament Docs](https://filamentphp.com/docs/5.x/styling/overview#creating-a-custom-theme) first.
 
 After setting up a custom theme add the plugin's views and styles to your theme css file or your app's css file if using the standalone packages.
 
@@ -149,7 +149,7 @@ CuratorPicker::make(string $fieldName)
     ->listDisplay(bool | Closure $condition) // defaults to true
     ->tenantAware(bool | Closure $condition) // defaults to true
     ->defaultPanelSort(string | Closure $direction) // defaults to 'desc'
-    // see https://filamentphp.com/docs/4.x/forms/file-upload for more information about the following methods
+    // see https://filamentphp.com/docs/5.x/forms/file-upload for more information about the following methods
     ->preserveFilenames()
     ->maxWidth()
     ->minSize()
