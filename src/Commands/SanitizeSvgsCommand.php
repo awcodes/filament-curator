@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Awcodes\Curator\Commands;
 
+use Awcodes\Curator\Enums\MimeType;
 use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Models\Media;
 use Illuminate\Console\Command;
@@ -26,7 +27,17 @@ class SanitizeSvgsCommand extends Command
 
         // ext is stored lowercased on upload, but guard against legacy/manual
         // records by comparing case-insensitively.
-        $query = $model::query()->whereRaw('LOWER(ext) = ?', ['svg']);
+        //
+        // Selecting on ext alone misses markup stored under a spoofed filename
+        // (uploaded as `payload.txt`, say), which is exactly what skipped
+        // sanitizing in the first place — so match the detected type too.
+        //
+        // Grouped so chunkById's `and id > ?` cannot bind tighter than the or.
+        $query = $model::query()->where(function ($query): void {
+            $query
+                ->whereRaw('LOWER(ext) = ?', ['svg'])
+                ->orWhereRaw('LOWER(type) = ?', [MimeType::ImageSvgXml->value]);
+        });
 
         $total = $query->count();
 

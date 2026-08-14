@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace Awcodes\Curator\Components\Modals;
 
+use Awcodes\Curator\Enums\CurationFormats;
 use Awcodes\Curator\Facades\Glide;
 use Awcodes\Curator\Models\Media;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 
 class CuratorCuration extends Component
@@ -24,6 +28,8 @@ class CuratorCuration extends Component
 
     public function saveCuration($data = null): void
     {
+        $data = $this->validateCuration($data);
+
         $storage = Storage::disk($this->media->disk);
 
         $manager = Glide::getServer()->getApi()->getImageManager();
@@ -91,5 +97,38 @@ class CuratorCuration extends Component
     public function render(): View
     {
         return view('curator::components.modals.curator-curation');
+    }
+
+    /**
+     * The payload is assembled client side, so none of it can be trusted:
+     * `key` lands in a storage path, `format` picks the encoder, and the
+     * canvas dimensions are divisors. Flysystem only refuses traversal that
+     * escapes the disk root, so a key such as `../../other` would still
+     * overwrite a sibling file inside it.
+     *
+     * @throws ValidationException
+     */
+    protected function validateCuration(mixed $data): array
+    {
+        return Validator::make(is_array($data) ? $data : [], [
+            // Keys are typed by hand for custom curations, so allow spaces and
+            // punctuation but require the name to start and end alphanumeric —
+            // that rules out path separators, `..` and leading dots.
+            'key' => ['required', 'string', 'max:100', 'regex:/^[A-Za-z0-9](?:[A-Za-z0-9 ._-]*[A-Za-z0-9])?$/'],
+            'format' => ['nullable', Rule::enum(CurationFormats::class)],
+            'quality' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'width' => ['required', 'numeric', 'min:1'],
+            'height' => ['required', 'numeric', 'min:1'],
+            'x' => ['required', 'numeric'],
+            'y' => ['required', 'numeric'],
+            'rotate' => ['required', 'numeric'],
+            'scaleX' => ['required', 'numeric'],
+            'scaleY' => ['required', 'numeric'],
+            'canvasData' => ['required', 'array'],
+            'canvasData.width' => ['required', 'numeric', 'min:1'],
+            'canvasData.height' => ['required', 'numeric', 'min:1'],
+            'canvasData.naturalWidth' => ['required', 'numeric', 'min:1'],
+            'canvasData.naturalHeight' => ['required', 'numeric', 'min:1'],
+        ])->validate();
     }
 }
