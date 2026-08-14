@@ -14,6 +14,7 @@
     @else
         <x-curator::display.document
             label="{{ $mediaItem->getName() }}"
+            :extension="$mediaItem->getExtension()"
             icon-size="xl"
             {{ $attributes->merge(['class' => 'p-4']) }}
         />

@@ -1,7 +1,7 @@
 @props([
     'label' => null,
     'iconSize' => 'md',
-    'extension' => 'pdf',
+    'extension' => null,
 ])
 
 @php

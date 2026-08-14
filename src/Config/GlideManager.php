@@ -6,6 +6,7 @@ namespace Awcodes\Curator\Config;
 
 use Awcodes\Curator\Config\Concerns\HasGliderFallbacks;
 use Awcodes\Curator\Glide\SymfonyResponseFactory;
+use Exception;
 use Filament\Support\Concerns\EvaluatesClosures;
 use Illuminate\Support\Str;
 use League\Glide\Server;
@@ -52,9 +53,21 @@ class GlideManager
         return $this->basePath ?? 'curator';
     }
 
+    /**
+     * @throws Exception
+     */
     public function getToken(): string
     {
-        return config('curator.glide_token');
+        $token = config('curator.glide_token');
+
+        // curator:install writes this into the .env of the machine it ran on, so
+        // a second checkout or a fresh deploy target reliably arrives without
+        // one. Say which knob is missing rather than raising a return type error.
+        if (blank($token)) {
+            throw new Exception(message: 'Curator has no Glide token. Run `php artisan curator:token` to generate one, or set CURATOR_GLIDE_TOKEN in this environment.');
+        }
+
+        return $token;
     }
 
     public function getUrl(string $path, ?array $params = []): string

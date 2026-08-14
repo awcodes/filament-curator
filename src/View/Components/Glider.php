@@ -58,16 +58,12 @@ class Glider extends Component
         public ?string $watermarkPosition = null,
         public ?string $watermarkAlpha = null,
     ) {
-        if (is_string($media) && filled($media)) {
-            $this->handleString($media);
-        }
-
-        if (is_int($media)) {
-            $this->handleInt($media);
-        }
-
         if (is_a($media, Media::class)) {
             $this->handleMedia($media);
+        } elseif (is_int($media) || (is_string($media) && static::isMediaKey($media))) {
+            $this->handleId($media);
+        } elseif (is_string($media) && filled($media)) {
+            $this->handleString($media);
         }
 
         // A null media item, or an id that no longer resolves, is the case the
@@ -81,6 +77,18 @@ class Glider extends Component
         }
     }
 
+    /**
+     * A media id reaches the component as a string whenever it comes back out of
+     * a json column, a query string or a settings array, so a bare key has to be
+     * looked up rather than taken for a path. Curator's own primary keys are
+     * either auto-incrementing integers or uuids (see stubs/migration.stub), and
+     * a path always carries an extension, so neither shape is ambiguous.
+     */
+    public static function isMediaKey(string $media): bool
+    {
+        return ctype_digit($media) || Str::isUuid($media) || Str::isUlid($media);
+    }
+
     public function handleString(string $media): void
     {
         $extension = (string) Str::of($media)->afterLast('.');
@@ -89,12 +97,13 @@ class Glider extends Component
             path: $media,
             isResizable: Curator::isResizable($extension),
             isPreviewable: Curator::isPreviewable($extension),
+            ext: $extension,
         );
     }
 
-    public function handleInt(int $media): void
+    public function handleId(int | string $media): void
     {
-        $record = app(Media::class)->where('id', $media)->first();
+        $record = app(Media::class)->whereKey($media)->first();
 
         // Leave mediaItem unset so the constructor can reach for the fallback.
         if (! $record instanceof Media) {
@@ -102,6 +111,12 @@ class Glider extends Component
         }
 
         $this->handleMedia($record);
+    }
+
+    /** @deprecated Use handleId(), which also accepts string keys. */
+    public function handleInt(int $media): void
+    {
+        $this->handleId($media);
     }
 
     public function handleFallback(): void
@@ -130,6 +145,7 @@ class Glider extends Component
             height: $fallback->getHeight(),
             isResizable: $fallback->isResizable(),
             isPreviewable: $fallback->isPreviewable(),
+            ext: $fallback->getType() ?? (string) Str::of($fallback->getSource())->afterLast('.'),
         );
     }
 
@@ -145,6 +161,7 @@ class Glider extends Component
             height: $media->height,
             isResizable: Curator::isResizable($media->ext),
             isPreviewable: Curator::isPreviewable($media->ext),
+            ext: $media->ext,
         );
 
         $this->mediaItem = $dto;

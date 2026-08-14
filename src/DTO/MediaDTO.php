@@ -17,6 +17,7 @@ class MediaDTO
         public ?int $height = null,
         public ?bool $isResizable = null,
         public ?bool $isPreviewable = null,
+        public ?string $ext = null,
     ) {}
 
     public function getName(): ?string
@@ -57,6 +58,11 @@ class MediaDTO
     public function getPath(): string
     {
         return $this->path;
+    }
+
+    public function getExtension(): ?string
+    {
+        return $this->ext;
     }
 
     public function isResizable(): bool
