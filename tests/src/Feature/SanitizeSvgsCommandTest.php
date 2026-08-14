@@ -48,3 +48,26 @@ test('reports when there are no svg files', function () {
         ->expectsOutputToContain('No SVG media found.')
         ->assertSuccessful();
 });
+
+test('scanning more rows than one chunk terminates', function () use ($dirtySvg) {
+    Storage::fake('public');
+
+    // Rows match on both type and ext. With the or ungrouped, chunkById's
+    // `and id > ?` binds to the ext test alone, so every type-matched row comes
+    // back on each pass and the scan never advances past the first chunk.
+    //
+    // count() returns a fresh factory instance and would drop the svg state,
+    // so the rows are created one at a time.
+    foreach (range(1, 120) as $ignored) {
+        $media = Media::factory()->type('svg')->create();
+        Storage::disk($media->disk)->put($media->path, $dirtySvg);
+    }
+
+    $this->artisan('curator:sanitize-svgs')->assertSuccessful();
+
+    $dirty = Media::query()->get()->filter(
+        fn (Media $media) => str_contains(Storage::disk($media->disk)->get($media->path), '<script'),
+    );
+
+    expect($dirty)->toHaveCount(0);
+});

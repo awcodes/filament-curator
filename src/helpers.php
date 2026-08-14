@@ -26,6 +26,28 @@ if (! function_exists('is_media_svg')) {
     }
 }
 
+if (! function_exists('is_unsafe_inline_media')) {
+    /**
+     * Whether serving a type inline would let it execute script in the
+     * application's origin. Used to stop a content type sniffed from stored
+     * bytes deciding how the browser renders media the extension never
+     * declared as a document.
+     */
+    function is_unsafe_inline_media(?string $type): bool
+    {
+        return in_array(strtolower((string) $type), [
+            'image/svg+xml',
+            'text/html',
+            'application/xhtml+xml',
+            'application/xml',
+            'text/xml',
+            'text/javascript',
+            'application/javascript',
+            'application/vnd.mozilla.xul+xml',
+        ], true);
+    }
+}
+
 if (! function_exists('sanitize_svg')) {
     /**
      * Strip scripts, event handlers and remote references from SVG markup so it
