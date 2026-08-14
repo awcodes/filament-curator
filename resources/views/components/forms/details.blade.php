@@ -31,7 +31,7 @@
                 {{ trans('curator::views.details.file_size') }}
             </dt>
             <dd class="{{ $dataClasses }}">
-                {{ filled($record) ? curator()->sizeForHumans($record->size) : '-' }}
+                {{ filled($record?->size) ? curator()->sizeForHumans($record->size) : '-' }}
             </dd>
         </div>
         <div>

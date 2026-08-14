@@ -30,6 +30,9 @@ class PostResource extends Resource
             CuratorPicker::make('gallery')
                 ->relationship('gallery', 'name')
                 ->multiple()
+                // Opt-in so a test can exercise the list markup without changing
+                // the default grid display the other tests render.
+                ->listDisplay(fn (): bool => (bool) config('curator_testing.picker_list_display', false))
                 ->orderColumn('order'),
         ]);
     }
