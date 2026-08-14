@@ -20,9 +20,13 @@ class SanitizeSvgsCommand extends Command
     {
         $dryRun = (bool) $this->option('dry-run');
 
-        $query = app(Media::class)::query()
-            ->where('type', 'image/svg+xml')
-            ->orWhereRaw('LOWER(ext) = ?', ['svg']);
+        // Grouped so chunkById's `and id > ?` cannot bind tighter than the or,
+        // which would otherwise hand every type-matched row back on each pass.
+        $query = app(Media::class)::query()->where(function ($query): void {
+            $query
+                ->whereRaw('LOWER(type) = ?', ['image/svg+xml'])
+                ->orWhereRaw('LOWER(ext) = ?', ['svg']);
+        });
 
         $total = $query->count();
 
