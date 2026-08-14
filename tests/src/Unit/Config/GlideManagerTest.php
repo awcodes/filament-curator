@@ -31,6 +31,14 @@ test('getToken returns value from config', function () {
     expect($manager->getToken())->toBe(config('curator.glide_token'));
 });
 
+// A checkout that never ran curator:install has no token, and the return type
+// error that used to surface said nothing about how to fix it.
+test('getToken names the missing token instead of raising a type error', function () {
+    config()->set('curator.glide_token', null);
+
+    (new GlideManager())->getToken();
+})->throws(Exception::class, 'Curator has no Glide token.');
+
 test('getUrl returns a string URL containing the path', function () {
     $manager = new GlideManager();
 
