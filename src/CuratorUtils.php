@@ -57,6 +57,15 @@ class CuratorUtils
             $fileContents = $storage->get($filepath);
         }
 
+        $type = $storage->mimeType($filepath) ?: null;
+
+        // Imported files never pass through the uploader, so they get the same
+        // treatment here: sanitize on the detected type as well as the
+        // extension, since the source path is not authoritative about either.
+        if (Curator::isSvg($ext) || Curator::isSvgMimeType($type)) {
+            $storage->put($filepath, Curator::sanitizeSvg($storage->get($filepath)), $visibility);
+        }
+
         if (Curator::isResizable($ext)) {
             $manager = Glide::getServer()->getApi()->getImageManager();
             $image = $manager->read($fileContents);
@@ -74,7 +83,7 @@ class CuratorUtils
             'width' => $width ?? null,
             'height' => $height ?? null,
             'size' => $storage->size($filepath),
-            'type' => $storage->mimeType($filepath),
+            'type' => $type,
             'ext' => $ext,
             'alt' => $alt ?? null,
             'title' => $title ?? null,

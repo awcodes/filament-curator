@@ -42,6 +42,8 @@ use Illuminate\Support\Facades\Facade;
  * @method static bool isVideo(string $ext)
  * @method static bool isDocument(string $ext)
  * @method static bool isSvg(string $ext)
+ * @method static bool isSvgMimeType(string | null $type)
+ * @method static bool isUnsafeInlineMimeType(string | null $type)
  * @method static bool isAudio(string $ext)
  * @method static bool isRestricted(string $ext)
  * @method static bool isUsingCloudinary()
