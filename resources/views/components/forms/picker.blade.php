@@ -40,7 +40,7 @@
                                 <p>{{ $item['pretty_name'] }}</p>
                             </div>
                             <div class="curator-picker-list-details flex-shrink-0 ml-auto py-2">
-                                <p>{{ curator()->sizeForHumans($item['size']) }}</p>
+                                <p>{{ filled($item['size']) ? curator()->sizeForHumans($item['size']) : null }}</p>
                             </div>
                             <div class="curator-picker-list-actions flex-shrink-0">
                                 <div class="relative flex items-center">

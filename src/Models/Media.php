@@ -20,13 +20,13 @@ use Throwable;
 /**
  * @property-read int|string $id
  * @property string $disk
- * @property string $directory
+ * @property string|null $directory
  * @property string $visibility
  * @property string $name
  * @property string $path
- * @property int $width
- * @property int $height
- * @property int $size
+ * @property int|null $width
+ * @property int|null $height
+ * @property int|null $size
  * @property string $type
  * @property string $ext
  * @property string|null $alt
@@ -38,7 +38,7 @@ use Throwable;
  * @property-read string $placeholder
  * @property-read CarbonInterface $created_at
  * @property-read CarbonInterface $updated_at
- * @property-read string $url
+ * @property-read string|null $url
  * @property-read string $full_path
  * @property-read string $thumbnail_url
  * @property-read string $medium_url
