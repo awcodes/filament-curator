@@ -65,6 +65,8 @@ Tests use **Pest 4.x** and live in `tests/src/Unit/` and `tests/src/Feature/`. A
 
 ### CI
 
-CI runs on the shared baseline in [`awcodes/.github`](https://github.com/awcodes/.github), called from a branch-scoped workflow (`ci-filament-5.yml` here, `ci-filament-4.yml` on `4.x`). It reports four checks — `Tests`, `Lint`, `Static Analysis`, `Reformat` — mirroring `composer test`, so run that locally before pushing.
+CI runs on the shared baseline in [`awcodes/.github`](https://github.com/awcodes/.github), called from `ci.yml` (the legacy `4.x` branch keeps its own `ci-filament-4.yml`). It reports four checks — `Tests`, `Lint`, `Static Analysis`, `Reformat` — mirroring `composer test`, so run that locally before pushing.
+
+A fifth check, `Assets`, is a local job in `ci.yml` rather than part of the shared baseline. `resources/dist` is committed and shipped, so it rebuilds with `npm ci && npm run build` and fails if the result differs from what's committed — run `npm run build` and commit the output whenever you touch `resources/js`. (Don't confuse this with the shared workflow's `run-build` input, which builds assets for test suites that need them and checks nothing; Curator leaves it `false`.)
 
 Two pinning rules apply: the `awcodes/.github` caller is pinned to the **moving major tag** `@v1` (never a SHA) so shared CI fixes propagate, and Dependabot is configured to ignore it. Third-party actions in this repo's own workflows are pinned to **full commit SHAs**.

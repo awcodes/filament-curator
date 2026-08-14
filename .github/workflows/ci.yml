@@ -62,3 +62,36 @@ jobs:
       run-static-analysis: true
       run-reformat: true
       run-build: false
+
+  # resources/dist is committed and shipped, so a change to resources/js that
+  # lands without a rebuild silently publishes stale assets. The build is
+  # deterministic, so rebuilding and diffing catches that on the PR rather than
+  # after a tag is cut. (The shared workflow's run-build input is a different
+  # thing: it builds assets for suites that need them, and checks nothing.)
+  assets:
+    name: Assets
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build assets
+        run: npm run build
+
+      - name: Check that dist is current
+        run: |
+          if [ -n "$(git status --porcelain -- resources/dist)" ]; then
+            echo "::error::resources/dist is out of date. Run 'npm run build' and commit the result."
+            git --no-pager diff --stat -- resources/dist
+            git status --porcelain -- resources/dist
+            exit 1
+          fi
