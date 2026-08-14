@@ -63,3 +63,37 @@ test('skips records whose file is missing', function () {
         ->expectsOutputToContain('skipped (missing file)')
         ->assertSuccessful();
 });
+
+test('sanitizes svg stored under a spoofed extension', function () use ($dirtySvg) {
+    Storage::fake('public');
+    Storage::disk('public')->put('payload.txt', $dirtySvg);
+
+    // Uploaded before the sanitizer was gated on the detected type, so the row
+    // carries the real type but an extension that hides it from an ext-only scan.
+    makeMedia(['path' => 'payload.txt', 'ext' => 'txt', 'type' => 'image/svg+xml']);
+
+    $this->artisan('curator:sanitize-svgs')->assertSuccessful();
+
+    expect(Storage::disk('public')->get('payload.txt'))
+        ->not->toContain('<script')
+        ->not->toContain('onload');
+});
+
+test('chunking still scopes the id cursor to matching rows', function () use ($dirtySvg) {
+    Storage::fake('public');
+
+    // Enough rows to force more than one chunk, mixing both selection criteria
+    // so a mis-grouped `or` would drag unrelated media into the scan.
+    foreach (range(1, 120) as $i) {
+        Storage::disk('public')->put("dirty-{$i}.svg", $dirtySvg);
+        makeMedia(['name' => "dirty-{$i}", 'path' => "dirty-{$i}.svg", 'ext' => 'svg', 'type' => 'image/svg+xml']);
+    }
+
+    Storage::disk('public')->put('photo.jpg', 'not-an-svg');
+    makeMedia(['name' => 'photo', 'path' => 'photo.jpg', 'ext' => 'jpg', 'type' => 'image/jpeg']);
+
+    $this->artisan('curator:sanitize-svgs')->assertSuccessful();
+
+    expect(Storage::disk('public')->get('dirty-120.svg'))->not->toContain('<script')
+        ->and(Storage::disk('public')->get('photo.jpg'))->toBe('not-an-svg');
+});

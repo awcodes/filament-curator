@@ -88,3 +88,18 @@ test('restrictedExtensions maps the restricted types to extensions', function ()
         ->not->toContain('svg')
         ->not->toContain('pdf');
 });
+
+test('tryFromExtension resolves the type an extension declares', function () {
+    expect(MimeType::tryFromExtension('svg'))->toBe(MimeType::ImageSvgXml)
+        ->and(MimeType::tryFromExtension('SVG'))->toBe(MimeType::ImageSvgXml)
+        ->and(MimeType::tryFromExtension('txt'))->toBe(MimeType::TextPlain)
+        ->and(MimeType::tryFromExtension('pdf'))->toBe(MimeType::ApplicationPdf)
+        ->and(MimeType::tryFromExtension('html'))->toBe(MimeType::TextHtml);
+});
+
+test('tryFromExtension returns null for extensions outside the enum', function () {
+    expect(MimeType::tryFromExtension('dat'))->toBeNull()
+        ->and(MimeType::tryFromExtension('ogg'))->toBeNull()
+        ->and(MimeType::tryFromExtension(''))->toBeNull()
+        ->and(MimeType::tryFromExtension(null))->toBeNull();
+});

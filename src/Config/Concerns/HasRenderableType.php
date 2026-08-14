@@ -39,6 +39,30 @@ trait HasRenderableType
     }
 
     /**
+     * Whether the *detected* type is SVG. Filenames are supplied by the client
+     * and the extension can disagree with the bytes on disk, so anything that
+     * decides whether markup needs sanitizing has to consult this as well as
+     * {@see static::isSvg()}.
+     */
+    public function isSvgMimeType(?string $type): bool
+    {
+        return mb_strtolower((string) $type) === MimeType::ImageSvgXml->value;
+    }
+
+    /**
+     * Whether serving a type inline would let it execute script in the
+     * application's origin. Used to stop a sniffed content type from rendering
+     * as a document when the stored extension never declared it.
+     */
+    public function isUnsafeInlineMimeType(?string $type): bool
+    {
+        $type = mb_strtolower((string) $type);
+
+        return $type === MimeType::ImageSvgXml->value
+            || in_array($type, MimeType::restricted(), true);
+    }
+
+    /**
      * Whether the extension belongs to a type Curator does not accept by
      * default because it can execute in the browser or on the server.
      */
