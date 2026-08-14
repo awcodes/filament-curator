@@ -78,7 +78,11 @@ class Uploader extends FileUpload
 
             // SVGs are served as raw markup (they are not routed through Glide),
             // so strip any embedded scripts before they can execute inline.
-            if (Curator::isSvg($extension)) {
+            //
+            // The extension comes from the client and acceptance is decided on
+            // the detected type, so markup uploaded as `payload.txt` would skip
+            // sanitizing entirely if this only looked at the filename.
+            if (Curator::isSvg($extension) || Curator::isSvgMimeType($type)) {
                 $disk = Storage::disk($component->getDiskName());
                 $disk->put($path, Curator::sanitizeSvg($disk->get($path)), $component->getVisibility());
                 $size = $disk->size($path);

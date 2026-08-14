@@ -141,6 +141,28 @@ enum MimeType: string
         )));
     }
 
+    /**
+     * Resolve the type an extension declares, used to pin the content type of
+     * media that is streamed straight from disk instead of being sniffed from
+     * its contents. Returns null for extensions outside the enum.
+     */
+    public static function tryFromExtension(?string $extension): ?self
+    {
+        if (blank($extension)) {
+            return null;
+        }
+
+        $extension = mb_strtolower($extension);
+
+        foreach (self::cases() as $case) {
+            if ($case->getExt() === $extension) {
+                return $case;
+            }
+        }
+
+        return null;
+    }
+
     public function getExt(): string
     {
         return match ($this) {
