@@ -34,6 +34,37 @@ composer require awcodes/filament-curator
 php artisan curator:install
 ```
 
+### What the install command does
+
+`curator:install` asks a few questions and then writes the files Curator needs into your app:
+
+1. **Prompts for UUID and tenancy support.** It asks whether the media table should use a UUID primary key, and whether Curator should be scoped to a tenant. If you answer yes to tenancy it also asks for the tenant model's name (for example `Team`).
+2. **Creates the migration.** A timestamped `create_curator_table.php` is written to `database/migrations`. It creates the `curator` table with the file's storage columns (`disk`, `directory`, `visibility`, `name`, `path`, `ext`, `type`, `size`, `width`, `height`), its metadata columns (`alt`, `title`, `description`, `caption`, `pretty_name`, `exif`, `curations`), and a nullable foreign key for the tenant. The primary key is a UUID or an auto-incrementing ID depending on your answer, and the foreign key is named after your tenant model (`team_id`), or `tenant_id` when tenancy is off.
+3. **Creates a Media model — only if you chose UUID or tenancy.** `app/Models/Media.php` extends `Awcodes\Curator\Models\Media`, adding Laravel's `HasUuids` trait and/or a `BelongsTo` relationship to your tenant model.
+4. **Publishes and edits the config — also only in that case.** `config/curator.php` is published and pointed at your new model, and the `tenancy` block is switched on with your relationship name. If you skip both options, no config file is published; publish it yourself later with `php artisan vendor:publish --tag="curator-config"` when you want to change the defaults.
+5. **Generates the Glide token.** It calls `php artisan curator:token`, which writes `CURATOR_GLIDE_TOKEN` into your `.env`. See [Glide Token](#glide-token) below — this one needs attention beyond your local machine.
+6. **Offers to run the migrations.** Answer yes and it runs `php artisan migrate` for you; answer no and the migration sits in `database/migrations` until you run it.
+
+The prompts can be answered up front if you want the command to run unattended — each option takes a value, so pass `--use-uuid=1`, `--tenancy-name=Team` and `--run-migrations=1` (use `0` to opt out).
+
+> [!IMPORTANT]
+> If you have not set up a custom theme and are using Filament Panels follow the instructions in the [Filament Docs](https://filamentphp.com/docs/5.x/styling/overview#creating-a-custom-theme) first.
+
+After setting up a custom theme add the plugin's views and styles to your theme css file or your app's css file if using the standalone packages.
+
+```css
+@import '../../../../vendor/awcodes/filament-curator/resources/css/plugin.css';
+
+@source '../../../../vendor/awcodes/filament-curator/resources/**/*.blade.php';
+```
+
+> [!NOTE]
+> If you are using the stand-alone forms package then you will need to include the Curator modal in your layout file, typically you would place this, before the closing `body` tag.
+
+```html
+<x-curator::modals.modal />
+```
+
 ### Glide Token
 
 The install command runs `php artisan curator:token` for you, which writes a freshly generated `CURATOR_GLIDE_TOKEN` into the `.env` file of the machine you ran it on. Curator uses it to sign the image URLs it renders, and the media route rejects any request whose signature doesn't match.
@@ -47,24 +78,6 @@ CURATOR_GLIDE_TOKEN=
 The value does **not** have to match across environments. URLs are signed when they are rendered and validated by the same environment that served them, so each one can hold its own token. It does have to be present: with the variable missing, generating a media URL and serving the media route both fail.
 
 Re-running `php artisan curator:token` overwrites an existing value rather than adding a second one. That invalidates any signed URL that has outlived the request it was rendered in — cached HTML, a CDN copy, an already-sent email, a URL pasted into stored content — which will start returning 403. If your config is cached, run `php artisan config:clear` after changing the token.
-
-> [!NOTE]
-> If you are using the stand-alone forms package then you will need to include the Curator modal in your layout file, typically you would place this, before the closing `body` tag.
-
-```html
-<x-curator::modals.modal />
-```
-
-> [!IMPORTANT]
-> If you have not set up a custom theme and are using Filament Panels follow the instructions in the [Filament Docs](https://filamentphp.com/docs/5.x/styling/overview#creating-a-custom-theme) first.
-
-After setting up a custom theme add the plugin's views and styles to your theme css file or your app's css file if using the standalone packages.
-
-```css
-@import '../../../../vendor/awcodes/filament-curator/resources/css/plugin.css';
-
-@source '../../../../vendor/awcodes/filament-curator/resources/**/*.blade.php';
-```
 
 ## Usage
 
