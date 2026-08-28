@@ -251,14 +251,11 @@ Curator comes with Path Generators that can be used to modify the behavior.
 Just set the one you want to use globally in the config or per instance on your `CuratorPicker` field.
 
 ```php
-use Awcodes\Curator\View\Components\CuratorPicker;
+use Awcodes\Curator\Components\Forms\CuratorPicker;
 use Awcodes\Curator\PathGenerators\DatePathGenerator;
 
-public function register()
-{
-    CuratorPicker::make('image')
-        ->pathGenerator(DatePathGenerator::class);
-}
+CuratorPicker::make('image')
+    ->pathGenerator(DatePathGenerator::class);
 ```
 
 #### Available Generators
@@ -271,7 +268,7 @@ You are also free to use your own Path Generators by implementing the
 `PathGenerator` interface on your own classes.
 
 ```php
-use Awcodes\Curator\PathGenerators;
+use Awcodes\Curator\PathGenerators\Contracts\PathGenerator;
 
 class CustomPathGenerator implements PathGenerator
 {
@@ -515,38 +512,40 @@ blade file so images always get rendered appropriately. This also keeps you from
 media item, only the ones where you're trying to change the focal point, etc.
 
 ```blade
-@php
-    $preset = new ThumbnailPreset();
-@endphp
-
 @if ($media->hasCuration('thumbnail'))
     <x-curator-curation :media="$media" curation="thumbnail"/>
 @else
     <x-curator-glider
         class="object-cover w-auto"
         :media="$media"
-        :width="$preset->getWidth()"
-        :height="$preset->getHeight()"
+        width="200"
+        height="200"
     />
 @endif
 ```
+
+Keep the fallback's dimensions in step with the preset's. If you'd rather not repeat them, `Curation::getPresets()` returns the registered `CurationPreset` objects, which expose `getKey()`, `getWidth()`, `getHeight()`, `getFormat()` and `getQuality()`.
 
 ### Custom Model
 
 If you want to use your own model for your media you can extend Curator's `Media` model with your own and set it in the config.
 
 ```php
-use Awcodes\Curator\Models\Media;
+namespace App\Models;
 
-class CustomMedia extends Media
+use Awcodes\Curator\Models\Media as CuratorMedia;
+
+class Media extends CuratorMedia
 {
-    protected $table = 'media';
+    //
 }
 ```
 
 ```php
-'model' => \App\Models\Cms\Media::class,
+'model' => \App\Models\Media::class,
 ```
+
+There's no need to set `$table` — the parent already points at `curator`. Only declare it if you've actually renamed the table.
 
 <!-- [docs_end] -->
 
