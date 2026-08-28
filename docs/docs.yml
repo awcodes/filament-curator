@@ -1,0 +1,27 @@
+version: 1
+
+title: Curator
+
+navigation:
+  - index
+  - installation
+  - configuration
+  - file-types
+
+  - label: Fields
+    children:
+      - fields/picker
+      - fields/relationships
+      - fields/rich-editor
+
+  - label: Rendering
+    children:
+      - rendering/glider
+      - rendering/curations
+      - rendering/column
+
+  - label: Storage & Glide
+    children:
+      - storage/paths
+      - storage/glide
+      - storage/token
