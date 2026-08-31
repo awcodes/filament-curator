@@ -438,7 +438,7 @@ class CuratorPicker extends Field
         return $this;
     }
 
-    public function relationship(string | Closure $relationshipName, string | Closure $titleColumnName, ?Closure $callback = null): static
+    public function relationship(string | Closure $relationshipName, string | Closure $titleColumnName): static
     {
         $this->relationship = $relationshipName;
         $this->relationshipTitleColumnName = $titleColumnName;
