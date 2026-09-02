@@ -555,6 +555,22 @@ There's no need to set `$table` — the parent already points at `curator`. Only
 composer test
 ```
 
+## Development Workbench
+
+Install the PHP dependencies, build the consuming application's assets and
+database, then serve the Workbench:
+
+```bash
+composer install
+composer build
+composer serve
+```
+
+The Filament panel is available at <http://127.0.0.1:8000/admin>. Sign in with
+`test@example.com` and `password`. The Workbench uses Curator's documented
+plugin, installer, and public-disk configuration; Node.js is required to compile
+the consumer-owned Filament theme.
+
 ## Contributing
 
 Please see [CONTRIBUTING](.github/CONTRIBUTING.md) for details.

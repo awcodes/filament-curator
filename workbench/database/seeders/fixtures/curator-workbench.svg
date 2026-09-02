@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360">
+    <rect width="640" height="360" fill="#0f172a"/>
+    <circle cx="500" cy="95" r="55" fill="#f59e0b"/>
+    <path d="M0 300 170 130l115 115 75-75 280 190H0Z" fill="#0ea5e9"/>
+    <path d="M0 330 210 215l95 70 90-50 245 125H0Z" fill="#22c55e"/>
+    <text x="32" y="58" fill="#fff" font-family="sans-serif" font-size="30">Curator Workbench</text>
+</svg>

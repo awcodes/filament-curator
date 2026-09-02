@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Awcodes\Curator\Tests;
 
 use Awcodes\Curator\CuratorServiceProvider;
-use Awcodes\Curator\Tests\Fixtures\Models\User;
 use Awcodes\Curator\Tests\Fixtures\Providers\AdminPanelProvider;
 use BladeUI\Heroicons\BladeHeroiconsServiceProvider;
 use BladeUI\Icons\BladeIconsServiceProvider;
@@ -23,6 +22,7 @@ use Livewire\LivewireServiceProvider;
 use Orchestra\Testbench\Concerns\WithWorkbench;
 use Orchestra\Testbench\TestCase as Orchestra;
 use RyanChandler\BladeCaptureDirective\BladeCaptureDirectiveServiceProvider;
+use Workbench\App\Models\User;
 
 class TestCase extends Orchestra
 {
@@ -59,5 +59,10 @@ class TestCase extends Orchestra
         sort($providers);
 
         return $providers;
+    }
+
+    protected function defineDatabaseMigrations(): void
+    {
+        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
     }
 }

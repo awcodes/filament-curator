@@ -3,10 +3,10 @@
 declare(strict_types=1);
 
 use Awcodes\Curator\Resources\Media\Pages\EditMedia;
-use Awcodes\Curator\Tests\Fixtures\Models\Mediable;
-use Awcodes\Curator\Tests\Fixtures\Models\Post;
-use Awcodes\Curator\Tests\Fixtures\Resources\Posts\Pages\EditPost;
 use Livewire\Livewire;
+use Workbench\App\Filament\Resources\Posts\Pages\EditPost;
+use Workbench\App\Models\Mediable;
+use Workbench\App\Models\Post;
 
 // `size`, `width` and `height` are nullable in stubs/migration.stub, so any view
 // that displays them has to tolerate null rather than handing it straight to

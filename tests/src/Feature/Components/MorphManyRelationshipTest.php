@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 use Awcodes\Curator\Models\Media;
-use Awcodes\Curator\Tests\Fixtures\Models\Mediable;
-use Awcodes\Curator\Tests\Fixtures\Models\Post;
-use Awcodes\Curator\Tests\Fixtures\Resources\Posts\Pages\EditPost;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Livewire\Livewire;
+use Workbench\App\Filament\Resources\Posts\Pages\EditPost;
+use Workbench\App\Models\Mediable;
+use Workbench\App\Models\Post;
 
 function makePost(array $overrides = []): Post
 {

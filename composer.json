@@ -52,22 +52,45 @@
   "autoload-dev": {
     "psr-4": {
       "Awcodes\\Curator\\Tests\\": "tests/src",
-      "Awcodes\\Curator\\Tests\\Database\\Factories\\": "tests/database/factories"
+      "Awcodes\\Curator\\Tests\\Database\\Factories\\": "tests/database/factories",
+      "Workbench\\App\\": "workbench/app/",
+      "Workbench\\Database\\Factories\\": "workbench/database/factories/",
+      "Workbench\\Database\\Seeders\\": "workbench/database/seeders/"
     }
   },
   "scripts": {
-    "post-autoload-dump": "@php ./vendor/bin/testbench package:discover --ansi",
+    "post-autoload-dump": [
+      "@clear",
+      "@prepare"
+    ],
     "lint": "pint",
     "refactor": "rector",
     "test:lint": "pint --test",
     "test:refactor": "rector --dry-run",
     "test:types": "phpstan analyse",
-    "test:unit": "pest",
+    "test:unit": [
+      "@clear",
+      "pest"
+    ],
     "test": [
       "@test:refactor",
       "@test:lint",
       "@test:types",
       "@test:unit"
+    ],
+    "clear": "@php vendor/bin/testbench package:purge-skeleton --ansi",
+    "prepare": "@php vendor/bin/testbench package:discover --ansi",
+    "build:workbench-assets": "npm install --no-audit --no-fund && npm run build:workbench",
+    "build": [
+      "@clear",
+      "@build:workbench-assets",
+      "@prepare",
+      "@php vendor/bin/testbench workbench:build --ansi"
+    ],
+    "serve": [
+      "Composer\\Config::disableProcessTimeout",
+      "@build",
+      "@php vendor/bin/testbench serve --ansi"
     ]
   },
   "extra": {

@@ -1,5 +1,52 @@
+laravel: '@testbench'
+
+providers:
+  - Workbench\App\Providers\WorkbenchServiceProvider
+  - Workbench\App\Providers\Filament\AdminPanelProvider
+
 migrations:
-  - tests/database/migrations
+  - workbench/database/migrations
+
+seeders:
+  - Workbench\Database\Seeders\DatabaseSeeder
+
+env:
+  - AUTH_MODEL='Workbench\App\Models\User'
+  - CURATOR_GLIDE_TOKEN='curator-workbench-token'
+  - FILESYSTEM_DISK=public
+
+purge:
+  files:
+    - database/migrations/*_create_curator_table.php
 
 workbench:
+  start: '/admin'
   install: true
+  health: false
+  discovers:
+    web: true
+    api: false
+    commands: true
+    components: false
+    factories: true
+    views: false
+  build:
+    - asset-publish
+    - filament-assets
+    - create-sqlite-db
+    - curator-install:
+        --use-uuid: 0
+        --tenancy-name: 0
+        --run-migrations: 0
+    - db-wipe
+    - migrate-fresh
+    - storage-link:
+        --force: true
+  assets:
+    - laravel-assets
+  sync:
+    - from: workbench/public/css/filament/admin
+      to: public/css/filament/admin
+    - from: storage
+      to: workbench/storage
+      reverse: true

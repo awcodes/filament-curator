@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Awcodes\Curator\Tests\Fixtures\Resources\Posts\Pages;
+namespace Workbench\App\Filament\Resources\Posts\Pages;
 
-use Awcodes\Curator\Tests\Fixtures\Resources\Posts\PostResource;
 use Filament\Resources\Pages\CreateRecord;
+use Workbench\App\Filament\Resources\Posts\PostResource;
 
 class CreatePost extends CreateRecord
 {

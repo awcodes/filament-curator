@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Awcodes\Curator\Tests\Fixtures\Policies;
 
-use Awcodes\Curator\Tests\Fixtures\Models\User;
+use Workbench\App\Models\User;
 
 class MediaBulkUploadPolicy
 {

@@ -24,4 +24,5 @@
 /tailwind.config.js     export-ignore
 /testbench.yaml         export-ignore
 /tests                  export-ignore
+/workbench              export-ignore
 /UPGRADING.md           export-ignore

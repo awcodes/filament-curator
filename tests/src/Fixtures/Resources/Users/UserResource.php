@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Awcodes\Curator\Tests\Fixtures\Resources\Users;
 
-use Awcodes\Curator\Tests\Fixtures\Models\User;
 use Awcodes\Curator\Tests\Fixtures\Resources\Users\Pages\CreateUser;
 use Awcodes\Curator\Tests\Fixtures\Resources\Users\Pages\EditUser;
 use Awcodes\Curator\Tests\Fixtures\Resources\Users\Pages\ListUsers;
@@ -17,6 +16,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Workbench\App\Models\User;
 
 class UserResource extends Resource
 {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Awcodes\Curator\Tests\Fixtures\Models;
+namespace Workbench\App\Models;
 
 use Awcodes\Curator\Models\Media;
 use Illuminate\Database\Eloquent\Model;
@@ -13,13 +13,13 @@ class Mediable extends Model
 {
     protected $guarded = [];
 
+    public function media(): BelongsTo
+    {
+        return $this->belongsTo(Media::class);
+    }
+
     public function mediable(): MorphTo
     {
         return $this->morphTo();
-    }
-
-    public function media(): BelongsTo
-    {
-        return $this->belongsTo(Media::class, 'media_id');
     }
 }
