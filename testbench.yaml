@@ -38,6 +38,7 @@ workbench:
         --use-uuid: 0
         --tenancy-name: 0
         --run-migrations: 0
+    - workbench:assert-curator-migration
     - db-wipe
     - migrate-fresh
     - storage-link:
