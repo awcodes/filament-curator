@@ -65,12 +65,34 @@
     }
   }, true);
 
+  // Close only the panel that dispatched the event. Curator may be nested
+  // inside another modal (a Mason brick, a relation manager, a custom block),
+  // and a document-wide lookup would close the outermost one instead.
+  function closePanel(modal) {
+    if (!modal) return;
+
+    const id = modal.getAttribute('data-fi-modal-id');
+
+    if (id) {
+      window.dispatchEvent(new CustomEvent('close-modal', { detail: { id } }));
+      return;
+    }
+
+    modal.querySelector('.fi-modal-close-btn')?.click();
+  }
+
   function handleInsertMedia(event) {
     // Prevent concurrent processing
     if (processing) {
       return;
     }
     processing = true;
+
+    // Livewire dispatches from the panel's root element, so the event target
+    // resolves to the modal the selection was actually made in.
+    const panelModal = event.target instanceof Element
+      ? event.target.closest('.fi-modal')
+      : null;
 
     try {
       // Extract event data (handle Livewire array wrapper)
@@ -148,11 +170,7 @@
 
       // Close modal after a short delay
       setTimeout(() => {
-        const closeBtn = document.querySelector('.fi-modal button[type="button"] svg[class*="x-mark"]')?.closest('button')
-          || document.querySelector('.fi-modal [x-on\\:click*="close"]');
-        if (closeBtn) {
-          closeBtn.click();
-        }
+        closePanel(panelModal);
       }, 100);
 
     } finally {
