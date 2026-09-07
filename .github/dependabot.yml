@@ -13,6 +13,20 @@ updates:
     cooldown:
       default-days: 7
       semver-major-days: 14
+    # league/glide majors are excluded on purpose. Glide 4 is not a bump: it requires
+    # PHP ^8.3 (this package declares ^8.2) and moves intervention/image from v3 to v4.
+    # This package calls the Intervention API directly through
+    # `Glide::getServer()->getApi()->getImageManager()` without requiring
+    # intervention/image itself, so Glide's choice of major silently governs that
+    # surface — `read()`, `toJpeg()`, `encodeByExtension()` and `flop()` all move or
+    # disappear in v4, and v3's `flip()` (vertical) becomes v4's `flip()` (horizontal by
+    # default), which changes behaviour without erroring. Adopting it means raising the
+    # PHP floor, declaring intervention/image directly and migrating the image pipeline
+    # — a deliberate major, not a Dependabot PR. Minor and patch updates within 3.x
+    # still come through. See #725.
+    ignore:
+      - dependency-name: "league/glide"
+        update-types: ["version-update:semver-major"]
     groups:
       dev-dependencies:
         dependency-type: development
