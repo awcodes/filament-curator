@@ -1,33 +1,58 @@
-name: "Dependabot Auto-Merge"
+# Auto-merges low-risk Dependabot PRs once CI has actually passed.
+#
+# IMPORTANT — this workflow only waits if something is blocking the PR. `--auto` means
+# "merge when the blockers clear", not "wait for CI". With no required status check
+# there is nothing to wait for, so `gh pr merge --auto` merges on arrival, seconds
+# after the PR opens. Both of these must be true for it to behave as intended:
+#
+#   1. the repo has "Allow auto-merge" enabled (Settings > General), and
+#   2. the active branch has a ruleset requiring the `ci / All Checks`
+#      status check.
+#
+# Both are in place on this repo. If either is ever removed, delete this workflow too —
+# an ungated copy merges everything Dependabot sends, on arrival.
+# See https://github.com/awcodes/.github/blob/main/docs/branch-protection.md
+#
+# Scope is deliberately narrow:
+#   - GitHub Actions bumps — CI config only, so a bad one breaks CI, not consumers.
+#   - the `dev-dependencies` Composer group — test and lint tooling.
+#
+# `production-dependencies` is never auto-merged. These packages commit no
+# composer.lock, so a runtime bump rewrites the `require` constraint in composer.json,
+# which for a library is a published contract change: it narrows what consumers can
+# install. That is a review, not a merge. Majors are excluded from both ecosystems.
+
+name: Dependabot Auto-Merge
 
 on: pull_request_target
 
 permissions:
-  pull-requests: write
   contents: write
+  pull-requests: write
 
 jobs:
   dependabot:
-    runs-on: ubuntu-latest
+    name: Dependabot Auto-Merge
     if: ${{ github.actor == 'dependabot[bot]' }}
+    runs-on: ubuntu-latest
     steps:
-
-      - name: Dependabot metadata
+      # This workflow never checks out the PR branch, so `pull_request_target` does not
+      # expose the elevated token to contributor code.
+      - name: Fetch Dependabot metadata
         id: metadata
         uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
         with:
-          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Auto-merge Dependabot PRs for semver-minor updates
-        if: ${{steps.metadata.outputs.update-type == 'version-update:semver-minor'}}
+      # For a grouped PR, fetch-metadata reports the highest semver bump in the group,
+      # so a group containing a major is skipped as a whole rather than merged.
+      - name: Enable auto-merge
+        if: >-
+          (steps.metadata.outputs.update-type == 'version-update:semver-minor' ||
+           steps.metadata.outputs.update-type == 'version-update:semver-patch') &&
+          (steps.metadata.outputs.package-ecosystem == 'github_actions' ||
+           steps.metadata.outputs.dependency-group == 'dev-dependencies')
         run: gh pr merge --auto --merge "$PR_URL"
         env:
-          PR_URL: ${{github.event.pull_request.html_url}}
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-
-      - name: Auto-merge Dependabot PRs for semver-patch updates
-        if: ${{steps.metadata.outputs.update-type == 'version-update:semver-patch'}}
-        run: gh pr merge --auto --merge "$PR_URL"
-        env:
-          PR_URL: ${{github.event.pull_request.html_url}}
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
