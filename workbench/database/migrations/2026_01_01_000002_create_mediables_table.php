@@ -10,7 +10,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('mediables', function (Blueprint $table) {
+        Schema::create('mediables', function (Blueprint $table): void {
             $table->id();
             $table->string('mediable_type');
             $table->unsignedBigInteger('mediable_id');
