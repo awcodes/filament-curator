@@ -8,6 +8,14 @@ try {
     return RectorConfig::configure()
         ->withPaths([
             __DIR__ . '/src',
+            // Dev-only, but hand-written — refactored on the same terms as src.
+            __DIR__ . '/workbench',
+        ])
+        // Compiled Blade under workbench/storage is gitignored but present locally
+        // once the workbench app has been run, and it is not valid standalone PHP.
+        // Unlike withPaths(), withSkip() tolerates a path that is not there.
+        ->withSkip([
+            __DIR__ . '/workbench/storage',
         ])
         ->withPreparedSets(
             deadCode: true,

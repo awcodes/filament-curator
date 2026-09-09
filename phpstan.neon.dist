@@ -6,7 +6,19 @@ parameters:
     level: 5
     paths:
         - src
+        # The Testbench workbench is dev-only but it is hand-written code that
+        # exercises this package's own public API, so it is analysed like anything else.
+        - workbench
+        # This package ships a real config/ directory, so it is analysed too.
         - config
+    excludePaths:
+        analyse:
+            # workbench/storage is gitignored, but it appears the moment anyone runs the
+            # workbench app and fills up with compiled Blade, which is not valid
+            # standalone PHP. CI never sees it, so without this the config passes in CI
+            # and is unusable locally. `(?)` marks the path optional so this does not
+            # itself hard-error in CI. The marker is only valid here, not in `paths`.
+            - workbench/storage (?)
     tmpDir: build/phpstan
     # composer.lock is gitignored, so CI resolves dependencies fresh on every run.
     # When a Filament or larastan release improves its type information, baselined
