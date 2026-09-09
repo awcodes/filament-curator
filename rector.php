@@ -10,6 +10,8 @@ try {
             __DIR__ . '/src',
             // Dev-only, but hand-written — refactored on the same terms as src.
             __DIR__ . '/workbench',
+            __DIR__ . '/config',
+            __DIR__ . '/database',
         ])
         // Compiled Blade under workbench/storage is gitignored but present locally
         // once the workbench app has been run, and it is not valid standalone PHP.

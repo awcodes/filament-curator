@@ -40,27 +40,23 @@ class MediaFactory extends Factory
 
     public function private(): self
     {
-        return $this->state(function (array $attributes) {
-            return [
-                'visibility' => 'private',
-            ];
-        });
+        return $this->state(fn (array $attributes): array => [
+            'visibility' => 'private',
+        ]);
     }
 
     public function randomTimestamps(): self
     {
-        return $this->state(function (array $attributes) {
-            return [
-                'created_at' => Carbon::now()
-                    ->addDays(rand(-800, 0))
-                    ->addMinutes(rand(0, 60 * 23))
-                    ->addSeconds(rand(0, 60)),
-                'updated_at' => Carbon::now()
-                    ->addDays(rand(-799, 0))
-                    ->addMinutes(rand(0, 60 * 23))
-                    ->addSeconds(rand(0, 60)),
-            ];
-        });
+        return $this->state(fn (array $attributes): array => [
+            'created_at' => Carbon::now()
+                ->addDays(random_int(-800, 0))
+                ->addMinutes(random_int(0, 60 * 23))
+                ->addSeconds(random_int(0, 60)),
+            'updated_at' => Carbon::now()
+                ->addDays(random_int(-799, 0))
+                ->addMinutes(random_int(0, 60 * 23))
+                ->addSeconds(random_int(0, 60)),
+        ]);
     }
 
     public function fixturesPath(string $path): static
@@ -145,9 +141,9 @@ class MediaFactory extends Factory
             path: $this->getFixturesPath() . $filename,
             disk: $this->getDisk(),
             directory: $this->getDirectory(),
-            alt: $this->faker->words(rand(3, 8), true),
-            caption: $this->faker->words(rand(3, 8), true),
-            description: $this->faker->words(rand(3, 8), true),
+            alt: $this->faker->words(random_int(3, 8), true),
+            caption: $this->faker->words(random_int(3, 8), true),
+            description: $this->faker->words(random_int(3, 8), true),
         );
     }
 
@@ -169,9 +165,9 @@ class MediaFactory extends Factory
             path: $this->getFixturesPath() . $filename,
             disk: $this->getDisk(),
             directory: $this->getDirectory(),
-            alt: $this->faker->words(rand(3, 8), true),
-            caption: $this->faker->words(rand(3, 8), true),
-            description: $this->faker->words(rand(3, 8), true),
+            alt: $this->faker->words(random_int(3, 8), true),
+            caption: $this->faker->words(random_int(3, 8), true),
+            description: $this->faker->words(random_int(3, 8), true),
         );
     }
 
