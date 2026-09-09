@@ -19,12 +19,6 @@ parameters:
 			path: src/Actions/MultiUploadAction.php
 
 		-
-			message: '#^Parameter \#1 \$string of function str expects string\|null, Illuminate\\Support\\Stringable given\.$#'
-			identifier: argument.type
-			count: 3
-			path: src/Commands/InstallCommand.php
-
-		-
 			message: '#^Expression "match \(\$driver\) \{…" on a separate line does not do anything\.$#'
 			identifier: expr.resultUnused
 			count: 1
@@ -85,6 +79,12 @@ parameters:
 			path: src/Components/Forms/Uploader.php
 
 		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 1
+			path: src/Components/Modals/Concerns/HasBreadcrumbs.php
+
+		-
 			message: '#^Call to an undefined method League\\Glide\\Api\\ApiInterface\:\:getImageManager\(\)\.$#'
 			identifier: method.notFound
 			count: 1
@@ -100,12 +100,6 @@ parameters:
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
 			identifier: property.notFound
 			count: 3
-			path: src/Components/Modals/CuratorPanel.php
-
-		-
-			message: '#^Expression on left side of \?\? is not nullable\.$#'
-			identifier: nullCoalesce.expr
-			count: 1
 			path: src/Components/Modals/CuratorPanel.php
 
 		-
