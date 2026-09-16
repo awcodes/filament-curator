@@ -31,13 +31,14 @@ function makeMedium(array $overrides = []): Media
     ], $overrides));
 }
 
-function attachMediable(Post $post, Media $media, int $order): Mediable
+function attachMediable(Post $post, Media $media, int $order, ?string $type = null): Mediable
 {
     return Mediable::create([
         'mediable_type' => Post::class,
         'mediable_id' => $post->id,
         'media_id' => $media->id,
         'order' => $order,
+        'type' => $type,
     ]);
 }
 
@@ -159,4 +160,95 @@ test('MorphMany: saving removes deselected items', function () {
 
     expect(Mediable::where('mediable_id', $post->id)->count())->toBe(2);
     expect(Mediable::where(['mediable_id' => $post->id, 'media_id' => $media2->id])->exists())->toBeFalse();
+});
+
+test('MorphMany: a typed picker only updates its own type on save', function () {
+    Storage::fake('public');
+
+    $post = makePost();
+    $media = makeMedium(['name' => 'shared']);
+
+    // The same medium selected in two typed pickers on the same relationship.
+    // The type-scoped update must not rewrite the sibling row's type, which
+    // previously orphaned it and made the next picker create a duplicate.
+    foreach (range(1, 3) as $ignored) {
+        Livewire::test(EditPost::class, ['record' => $post->getRouteKey()])
+            ->set('data.featured', [(string) Str::uuid() => $media->toArray()])
+            ->set('data.thumb', [(string) Str::uuid() => $media->toArray()])
+            ->call('save');
+    }
+
+    $rows = Mediable::where('mediable_id', $post->id)->get();
+
+    expect($rows)->toHaveCount(2)
+        ->and($rows->where('type', 'featured')->count())->toBe(1)
+        ->and($rows->where('type', 'thumb')->count())->toBe(1);
+});
+
+test('MorphMany: an untyped picker ignores rows belonging to typed pickers', function () {
+    Storage::fake('public');
+
+    $post = makePost();
+    $media1 = makeMedium(['name' => 'image-a']);
+    $media2 = makeMedium(['name' => 'image-b']);
+
+    attachMediable($post, $media1, 1, 'featured');
+    attachMediable($post, $media2, 1, 'thumb');
+
+    // The untyped 'gallery' picker shares the relationship with the typed pickers.
+    // It must load nothing here, and saving must not copy the typed rows into
+    // untyped duplicates of itself.
+    Livewire::test(EditPost::class, ['record' => $post->getRouteKey()])
+        ->assertSet('data.gallery', [])
+        ->call('save');
+
+    $rows = Mediable::where('mediable_id', $post->id)->get();
+
+    expect($rows)->toHaveCount(2)
+        ->and($rows->whereNull('type')->count())->toBe(0)
+        ->and($rows->firstWhere('type', 'featured')->media_id)->toBe($media1->id)
+        ->and($rows->firstWhere('type', 'thumb')->media_id)->toBe($media2->id);
+});
+
+test('MorphMany: a typed picker ignores untyped rows on the same relationship', function () {
+    Storage::fake('public');
+
+    $post = makePost();
+    $untyped = makeMedium(['name' => 'image-a']);
+    $featured = makeMedium(['name' => 'image-b']);
+
+    attachMediable($post, $untyped, 1);
+
+    Livewire::test(EditPost::class, ['record' => $post->getRouteKey()])
+        ->assertSet('data.featured', [])
+        ->set('data.featured', [(string) Str::uuid() => $featured->toArray()])
+        ->call('save');
+
+    $rows = Mediable::where('mediable_id', $post->id)->get();
+
+    // The untyped row survives: the typed picker's delete is scoped to its own type.
+    expect($rows)->toHaveCount(2)
+        ->and($rows->firstWhere('type', null)->media_id)->toBe($untyped->id)
+        ->and($rows->firstWhere('type', 'featured')->media_id)->toBe($featured->id);
+});
+
+test('MorphMany: a falsy-but-set type value is written to new rows', function () {
+    Storage::fake('public');
+
+    $post = makePost();
+    $media = makeMedium(['name' => 'image-a']);
+
+    // '0' is falsy but a legitimate type, e.g. a backed enum's zero case. It must be
+    // persisted, otherwise the row can never be matched by the type-scoped lookup and
+    // every save creates another duplicate.
+    foreach (range(1, 2) as $ignored) {
+        Livewire::test(EditPost::class, ['record' => $post->getRouteKey()])
+            ->set('data.numericType', [(string) Str::uuid() => $media->toArray()])
+            ->call('save');
+    }
+
+    $rows = Mediable::where('mediable_id', $post->id)->get();
+
+    expect($rows)->toHaveCount(1)
+        ->and($rows->first()->type)->toBe('0');
 });
