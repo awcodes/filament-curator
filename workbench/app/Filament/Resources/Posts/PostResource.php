@@ -38,6 +38,22 @@ class PostResource extends Resource
                 ->multiple()
                 ->listDisplay(fn (): bool => (bool) config('curator_testing.picker_list_display', false))
                 ->orderColumn('order'),
+            CuratorPicker::make('featured')
+                ->relationship('gallery', 'name')
+                ->multiple()
+                ->typeValue('featured')
+                ->orderColumn('order'),
+            CuratorPicker::make('thumb')
+                ->relationship('gallery', 'name')
+                ->multiple()
+                ->typeValue('thumb')
+                ->orderColumn('order'),
+            // A numeric-string type value, e.g. a backed enum whose first case is 0.
+            CuratorPicker::make('numericType')
+                ->relationship('gallery', 'name')
+                ->multiple()
+                ->typeValue('0')
+                ->orderColumn('order'),
             RichEditor::make('content')
                 ->toolbarButtons([
                     ['bold', 'italic', 'link'],

@@ -452,14 +452,10 @@ class CuratorPicker extends Field
 
             if ($component->isMultiple()) {
                 if ($relationship instanceof MorphMany) {
-                    $typeColumn = $component->getTypeColumn();
-                    $typeValue = $component->getTypeValue();
-
-                    $query = $relationship->with('media');
-                    if ($typeColumn && $typeValue) {
-                        $query->where($typeColumn, $typeValue);
-                    }
-                    $relatedMediaItems = $query->get();
+                    $relatedMediaItems = $relationship
+                        ->with('media')
+                        ->where($component->getTypeColumn(), $component->getTypeValue())
+                        ->get();
 
                     $relatedMedia = $relatedMediaItems->map(fn ($item) => $item->media->toArray())->toArray();
 
@@ -529,10 +525,8 @@ class CuratorPicker extends Field
                         $data = [
                             'media_id' => $itemId,
                             $orderColumn => $i,
+                            $typeColumn => $typeValue,
                         ];
-                        if (! in_array($typeValue, [null, '', '0'], true)) {
-                            $data[$typeColumn] = $typeValue;
-                        }
                         if (isset($existingItems[$itemId])) {
                             $component->getRelationship()->where('media_id', $itemId)->where($typeColumn, $typeValue)->update($data);
                         } else {
