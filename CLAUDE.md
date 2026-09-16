@@ -31,7 +31,7 @@ npm run build           # Production build
 
 ## Architecture
 
-This is a **Filament 5.x plugin** — a Laravel Composer package, not a standalone app. (The `4.x` branch tracks Filament 4; changes usually start there and merge forward.) The entry points are:
+This is a **Filament plugin** — a Laravel Composer package, not a standalone app. The `5.x` branch serves Filament 4 and 5 from a single line (`"filament/filament": "^4.0|^5.0"`), so all new work goes straight onto `5.x`; the `4.x` branch is superseded and there is no forward-merge. The entry points are:
 
 - **`CuratorPlugin`** — registered with Filament panels via `CuratorPlugin::make()`. Configures all plugin defaults.
 - **`CuratorServiceProvider`** — registers facades, routes, config, migrations, views, and Livewire components.
