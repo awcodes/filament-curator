@@ -144,3 +144,17 @@ test('sanitizeSvg fails closed on unparseable markup', function () {
 
     expect($manager->sanitizeSvg('<svg><rect'))->toBe('');
 });
+
+// Uploads already fell back to the configured directory, but pickers opened at
+// the disk root and so never listed what had just been uploaded.
+test('getDirectory falls back to the configured default directory', function () {
+    config()->set('curator.default_directory', 'media');
+
+    expect((new CuratorManager())->getDirectory())->toBe('media');
+});
+
+test('an explicit directory wins over the configured default', function () {
+    config()->set('curator.default_directory', 'media');
+
+    expect((new CuratorManager())->directory('uploads')->getDirectory())->toBe('uploads');
+});

@@ -155,3 +155,43 @@ test('deleted cleans up empty directory', function () {
 
     expect(Storage::disk('public')->allFiles('media'))->toBeEmpty();
 });
+
+// A null directory is the disk root. Once the disk held no files, deleting the
+// last media item used to delete the root itself, empty folders and all.
+test('deleted never removes the disk root when the directory is blank', function () {
+    Storage::fake('public');
+    Storage::disk('public')->put('rootfile.jpg', 'content');
+    Storage::disk('public')->makeDirectory('keep-me');
+
+    $media = makeMedia(['directory' => null, 'name' => 'rootfile', 'path' => 'rootfile.jpg']);
+
+    $media->delete();
+
+    expect(Storage::disk('public')->exists('rootfile.jpg'))->toBeFalse()
+        ->and(Storage::disk('public')->directoryExists('keep-me'))->toBeTrue()
+        ->and(is_dir(Storage::disk('public')->path('')))->toBeTrue();
+});
+
+test('deleted removes curations stored beside root level media', function () {
+    Storage::fake('public');
+    Storage::disk('public')->put('rootfile.jpg', 'content');
+    Storage::disk('public')->put('rootfile/thumbnail.jpg', 'content');
+
+    $media = makeMedia(['directory' => null, 'name' => 'rootfile', 'path' => 'rootfile.jpg']);
+
+    $media->delete();
+
+    expect(Storage::disk('public')->directoryExists('rootfile'))->toBeFalse();
+});
+
+test('renaming root level media does not store a leading slash in the path', function () {
+    Storage::fake('public');
+    Storage::disk('public')->put('original.jpg', 'content');
+
+    $media = makeMedia(['directory' => null, 'name' => 'original', 'path' => 'original.jpg']);
+
+    $media->update(['name' => 'renamed']);
+
+    expect($media->fresh()->path)->toBe('renamed.jpg')
+        ->and(Storage::disk('public')->exists('renamed.jpg'))->toBeTrue();
+});

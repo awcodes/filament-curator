@@ -77,6 +77,6 @@ class MediaController extends Controller
             );
         }
 
-        return $glide->getServer()->getImageResponse($path, request()->all());
+        return $glide->getServer($media->disk)->getImageResponse($path, request()->all());
     }
 }

@@ -5,6 +5,8 @@ declare(strict_types=1);
 use Awcodes\Curator\Facades\Glide;
 use Awcodes\Curator\Glide\GliderFallback;
 use Awcodes\Curator\View\Components\Glider;
+use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Log;
 
 function registerThumbnailFallback(): GliderFallback
 {
@@ -98,13 +100,27 @@ test('an existing media record still wins over the fallback', function () {
     expect($glider->mediaItem->getPath())->toBe('real.jpg');
 });
 
-test('a null media item without a fallback still throws', function () {
-    new Glider(media: null);
-})->throws(Exception::class, 'Invalid media item provided to Glider component.');
+test('a null media item without a fallback renders nothing', function () {
+    $glider = new Glider(media: null);
 
-test('an unregistered fallback name throws rather than dereferencing null', function () {
+    expect($glider->shouldRender())->toBeFalse()
+        ->and(Blade::render('<x-curator-glider :media="null" />'))->toBe('');
+});
+
+// Deleting one media item used to 500 every page that rendered it.
+test('an id that no longer resolves renders nothing and logs a warning', function () {
+    Log::spy();
+
+    $html = Blade::render('<x-curator-glider :media="$media" />', ['media' => 999]);
+
+    expect($html)->toBe('');
+
+    Log::shouldHaveReceived('warning')->once()->withArgs(fn (string $message): bool => str_contains($message, '[999]'));
+});
+
+test('an unregistered fallback name is reported as a configuration mistake', function () {
     new Glider(media: null, fallback: 'does-not-exist');
-})->throws(Exception::class, 'Invalid media item provided to Glider component.');
+})->throws(Exception::class, 'The [does-not-exist] glider fallback is not registered.');
 
 test('a registered fallback without a source names itself in the exception', function () {
     Glide::registerGliderFallbacks([GliderFallback::make('logo')->source(null)]);
