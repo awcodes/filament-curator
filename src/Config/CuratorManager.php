@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Awcodes\Curator\Config;
 
 use Awcodes\Curator\Concerns\CanUploadFiles;
+use Awcodes\Curator\Config\Concerns\HasDeleteActions;
 use Awcodes\Curator\Config\Concerns\HasMediaSizes;
 use Awcodes\Curator\Config\Concerns\HasRenderableType;
 use Awcodes\Curator\Config\Concerns\HasSanitizers;
@@ -16,6 +17,7 @@ class CuratorManager
 {
     use CanUploadFiles;
     use EvaluatesClosures;
+    use HasDeleteActions;
     use HasMediaSizes;
     use HasRenderableType;
     use HasSanitizers;
