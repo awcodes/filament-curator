@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Awcodes\Curator\Resources\Media\Pages;
 
+use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Resources\Media\MediaResource;
 use Exception;
 use Filament\Actions\Action;
@@ -25,7 +26,7 @@ class EditMedia extends EditRecord
                 ->color('gray')
                 ->url($this->record->url, shouldOpenInNewTab: true)
                 ->label(trans('curator::views.panel.view')),
-            DeleteAction::make(),
+            Curator::configureDeleteAction(DeleteAction::make()),
         ];
     }
 

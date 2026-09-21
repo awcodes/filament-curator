@@ -372,11 +372,34 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
 
     public function destroyItemAction(): Action
     {
-        return Action::make('destroyItem')
+        $action = Action::make('destroyItem')
             ->label(trans('curator::views.panel.edit_delete'))
             ->color('danger')
             ->icon(Heroicon::Trash)
             ->requiresConfirmation()
+            // Exposes the target as $record to closures added through
+            // Curator::configureDeleteActionsUsing(), e.g. a modal description.
+            // Every grid item builds this action just to render its button, so
+            // only resolve the item that is actually mounted, then keep it.
+            ->record(function (Action $action, array $arguments): ?Media {
+                $mounted = Arr::last($this->mountedActions);
+
+                if (($mounted['name'] ?? null) !== 'destroyItem') {
+                    return null;
+                }
+
+                if ((string) ($mounted['arguments']['item']['id'] ?? '') !== (string) ($arguments['item']['id'] ?? '')) {
+                    return null;
+                }
+
+                $record = $this->resolveAuthorizedMedia($arguments, 'delete');
+
+                if ($record instanceof Media) {
+                    $action->record($record);
+                }
+
+                return $record;
+            })
             ->action(function (array $arguments): void {
                 if ($arguments === []) {
                     return;
@@ -404,6 +427,8 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
                         ->send();
                 }
             });
+
+        return Curator::configureDeleteAction($action);
     }
 
     public function downloadItemAction(): Action

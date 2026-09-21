@@ -7,11 +7,13 @@ namespace Awcodes\Curator\Facades;
 use Awcodes\Curator\Concerns\UrlProvider;
 use Awcodes\Curator\Config\CuratorManager;
 use Closure;
+use Filament\Actions\Action;
 use Illuminate\Support\Facades\Facade;
 
 /**
  * @method static CuratorManager configure()
  * @method static CuratorManager acceptedFileTypes(array | Closure $types)
+ * @method static CuratorManager configureDeleteActionsUsing(Closure | null $callback)
  * @method static CuratorManager directory(Closure | string | null $directory)
  * @method static CuratorManager disk(string | Closure $disk)
  * @method static CuratorManager imageCropAspectRatio(string | Closure | null $imageCropAspectRatio)
@@ -24,6 +26,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static CuratorManager tenant(string | Closure $tenant)
  * @method static CuratorManager urlProvider(UrlProvider | string | Closure $provider)
  * @method static CuratorManager visibility(string | Closure | null $visibility)
+ * @method static Action configureDeleteAction(Action $action)
  * @method static array getAcceptedFileTypes()
  * @method static string getDiskName()
  * @method static string | null getDirectory()

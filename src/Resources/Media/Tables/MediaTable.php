@@ -30,10 +30,12 @@ class MediaTable
             ->searchable(['title', 'caption', 'description'])
             ->recordActions([
                 EditAction::make(),
-                DeleteAction::make(),
+                Curator::configureDeleteAction(DeleteAction::make()),
             ])
             ->toolbarActions([
-                DeleteBulkAction::make(),
+                // Filament only checks deleteAny for bulk actions, so without
+                // this a policy that denies delete() on some records is bypassed.
+                Curator::configureDeleteAction(DeleteBulkAction::make()->authorizeIndividualRecords()),
             ])
             ->defaultSort('created_at', 'desc')
             ->contentGrid(function () use ($livewire): ?array {
