@@ -426,8 +426,13 @@ public function register(): void
 ```
 
 Everything except the name is optional and may be null, so a conditional
-value is fine. A fallback that ends up without a source can't be rendered
-though, and referencing it from the blade component will throw.
+value is fine. Referencing a fallback that was never registered, or one that
+ends up without a source, is a configuration mistake, so the blade component
+throws.
+
+Without a fallback, a media item that can't be found (a null value, or an id
+whose record has been deleted) renders nothing, and an id that no longer
+resolves is logged as a warning.
 
 Then you can reference your fallback in the blade component.
 
@@ -454,14 +459,14 @@ If you want to use your own Glide Server for handling served media with Glide yo
 
 ```php
 use Awcodes\Curator\Facades\Glide;
+use Illuminate\Support\Facades\Storage;
 
 public function register(): void 
 {
     Glide::serverConfig([
         'driver' => 'imagick',
         'response' => new LaravelResponseFactory(app('request')),
-        'source' => storage_path('app'),
-        'source_path_prefix' => 'public',
+        'source' => Storage::disk('public')->getDriver(),
         'cache' => storage_path('app'),
         'cache_path_prefix' => '.cache',
         'max_image_size' => 2000 * 2000,
@@ -469,28 +474,8 @@ public function register(): void
 }
 ```
 
-> [!IMPORTANT]
-> **Using a cloud disk (S3, MinIO, etc.)?** The default config above points Glide's `source` at the local filesystem (`storage_path('app')` with `source_path_prefix => 'public'`). If your media lives on a cloud disk you **must** point the Glide `source` at that disk's Flysystem driver, otherwise Glide can't find the source images and they will fail to render.
->
-> ```php
-> use Awcodes\Curator\Facades\Glide;
-> use Illuminate\Support\Facades\Storage;
->
-> Glide::serverConfig([
->     'response' => new LaravelResponseFactory(app('request')),
->     'source' => Storage::disk('s3')->getDriver(),
->     'source_path_prefix' => '', // see note below
->     'cache' => Storage::disk('local')->getDriver(),
->     'cache_path_prefix' => '.cache',
->     'max_image_size' => 2000 * 2000,
-> ]);
-> ```
->
-> A few things to watch for:
->
-> - **`source_path_prefix`** must match where your objects actually live on the disk. Because a cloud disk's Flysystem is already rooted at the bucket (and your media `path` is stored relative to it), this is usually an empty string `''`. The `'public'` prefix in the default exists only because the local source is rooted at `storage_path('app')` while files live under `storage/app/public/`. A mismatched prefix is the most common cause of "images don't render" on cloud disks.
-> - **Keep `cache` on a fast local disk.** Transformed images are cached there, so only the first request per variant reads the source from the cloud. A cold cache on a remote source is slow; a warm local cache is fast.
-> - **Stray media on a different disk** (e.g. old records still on `public` while your source is S3) will fail source lookups and can slow things down — make sure existing records' `disk` matches your Glide source.
+> [!NOTE]
+> **Using a cloud disk (S3, MinIO, etc.)?** No custom server is needed. Out of the box, Glide reads each media item from the disk it was stored on, through that disk's Flysystem driver, and caches transformed images locally in `storage/app/.cache`. A config you pass to `Glide::serverConfig()` replaces that default completely. So if you supply one, its `source` has to point at the disk your media actually lives on, for example `'source' => Storage::disk('s3')->getDriver()`. Because Curator stores `path` relative to that disk, `source_path_prefix` should normally be left out or set to `''`.
 
 ### Curation Blade Component
 

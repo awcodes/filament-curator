@@ -63,9 +63,13 @@ trait CanUploadFiles
         return $this->evaluate($this->diskName) ?? config('curator.default_disk');
     }
 
+    /**
+     * Falls back to the configured default, as the Uploader does, so pickers
+     * open in the directory uploads land in rather than at the disk root.
+     */
     public function getDirectory(): ?string
     {
-        return $this->evaluate($this->directory) ?? null;
+        return $this->evaluate($this->directory) ?? config('curator.default_directory');
     }
 
     public function getImageCropAspectRatio(): ?string

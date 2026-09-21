@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Awcodes\Curator\Config\GlideManager;
+use Illuminate\Support\Facades\Storage;
 use League\Glide\Server;
 
 test('getBasePath returns curator by default', function () {
@@ -59,4 +60,35 @@ test('getServer returns a Glide Server instance', function () {
     $manager = new GlideManager();
 
     expect($manager->getServer())->toBeInstanceOf(Server::class);
+});
+
+// Glide used to be hard-wired to storage/app/public, so media on any other disk
+// (a fresh Laravel app's local disk, S3, ...) was stored fine and then 500'd.
+test('getServer reads from the disk it is given', function () {
+    Storage::fake('local');
+    Storage::disk('local')->put('media/private.png', 'content');
+
+    expect((new GlideManager())->getServer('local')->sourceFileExists('media/private.png'))->toBeTrue()
+        ->and((new GlideManager())->getServer('public')->sourceFileExists('media/private.png'))->toBeFalse();
+});
+
+test('getServer reads from the default disk when none is given', function () {
+    Storage::fake('local');
+    Storage::disk('local')->put('media/default.png', 'content');
+    config()->set('curator.default_disk', 'local');
+
+    expect((new GlideManager())->getServer()->sourceFileExists('media/default.png'))->toBeTrue();
+});
+
+test('a registered server config is used as given', function () {
+    Storage::fake('public');
+    Storage::fake('local');
+    Storage::disk('public')->put('custom.png', 'content');
+
+    $manager = (new GlideManager())->serverConfig([
+        'source' => Storage::disk('public')->getDriver(),
+        'cache' => Storage::disk('local')->getDriver(),
+    ]);
+
+    expect($manager->getServer('local')->sourceFileExists('custom.png'))->toBeTrue();
 });

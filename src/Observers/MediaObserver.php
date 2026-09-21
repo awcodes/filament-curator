@@ -41,18 +41,22 @@ class MediaObserver
 
         // Replace image
         if ($this->hasMediaUpload($media)) {
-            if ($storage->exists($media->directory . '/' . $media->getOriginal()['name'] . '.' . $media->getOriginal()['ext'])) {
-                $storage->delete($media->directory . '/' . $media->getOriginal()['name'] . '.' . $media->getOriginal()['ext']);
+            $originalPath = $this->pathIn($media->directory, $media->getOriginal()['name'] . '.' . $media->getOriginal()['ext']);
+
+            if ($storage->exists($originalPath)) {
+                $storage->delete($originalPath);
             }
 
             foreach ($media->file as $k => $v) {
                 $media->{$k} = $v;
             }
 
-            $storage->move($media->path, $media->directory . '/' . $media->getOriginal()['name'] . '.' . $media->ext);
+            $replacedPath = $this->pathIn($media->directory, $media->getOriginal()['name'] . '.' . $media->ext);
+
+            $storage->move($media->path, $replacedPath);
 
             $media->name = $media->getOriginal()['name'];
-            $media->path = $media->directory . '/' . $media->getOriginal()['name'] . '.' . $media->ext;
+            $media->path = $replacedPath;
 
             // Delete glide-cache for replaced image
             $server = Glide::getServer();
@@ -61,11 +65,14 @@ class MediaObserver
 
         // Rename file name
         if ($media->isDirty(['name']) && ! blank($media->name)) {
-            if ($storage->exists($media->directory . '/' . $media->name . '.' . $media->ext)) {
+            if ($storage->exists($this->pathIn($media->directory, $media->name . '.' . $media->ext))) {
                 $media->name = $media->name . '-' . time();
             }
-            $storage->move($media->path, $media->directory . '/' . $media->name . '.' . $media->ext);
-            $media->path = $media->directory . '/' . $media->name . '.' . $media->ext;
+
+            $renamedPath = $this->pathIn($media->directory, $media->name . '.' . $media->ext);
+
+            $storage->move($media->path, $renamedPath);
+            $media->path = $renamedPath;
         }
 
         $media->__unset('file');
@@ -81,17 +88,33 @@ class MediaObserver
 
         $storage->delete($media->path);
 
-        if ($storage->allFiles($media->directory . '/' . $media->name)) {
-            $storage->deleteDirectory($media->directory . '/' . $media->name);
+        // Curations live in a folder named after the media item. Without a
+        // name that path collapses to the directory itself (or the disk root).
+        if (filled($media->name)) {
+            $curations = $this->pathIn($media->directory, $media->name);
+
+            if ($storage->allFiles($curations)) {
+                $storage->deleteDirectory($curations);
+            }
         }
 
-        if (count($storage->allFiles($media->directory)) === 0) {
+        // A blank directory is the disk root, which is never ours to remove.
+        if (filled($media->directory) && count($storage->allFiles($media->directory)) === 0) {
             $storage->deleteDirectory($media->directory);
         }
 
         // Delete glide-cache for delete image
         $server = Glide::getServer();
         $server->deleteCache($media->path);
+    }
+
+    /**
+     * Media stored at the disk root has a null directory, which must not leave
+     * a leading slash in the stored path: lookups by path would miss it.
+     */
+    private function pathIn(?string $directory, string $file): string
+    {
+        return filled($directory) ? rtrim($directory, '/') . '/' . $file : $file;
     }
 
     private function hasMediaUpload(Media $media): bool

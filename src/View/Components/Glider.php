@@ -12,6 +12,7 @@ use Awcodes\Curator\Models\Media;
 use Closure;
 use Exception;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\View\Component;
 
@@ -22,6 +23,10 @@ class Glider extends Component
     public ?string $sourceSet = null;
 
     public ?MediaDTO $mediaItem = null;
+
+    public int | string | null $displayWidth = null;
+
+    public int | string | null $displayHeight = null;
 
     /**
      * @throws Exception
@@ -72,8 +77,12 @@ class Glider extends Component
             $this->handleFallback();
         }
 
-        if (! $this->mediaItem instanceof MediaDTO) {
-            throw new Exception(message: 'Invalid media item provided to Glider component.');
+        // With nothing to show, render nothing (see shouldRender()) rather than
+        // taking the whole page down: deleting one media item used to 500
+        // every page that referenced it. An id that no longer resolves is
+        // still worth hearing about, so say so in the log.
+        if (! $this->mediaItem instanceof MediaDTO && (is_int($media) || (is_string($media) && static::isMediaKey($media)))) {
+            Log::warning('Glider component could not resolve media [' . $media . '] and has no fallback to render.');
         }
     }
 
@@ -87,6 +96,11 @@ class Glider extends Component
     public static function isMediaKey(string $media): bool
     {
         return ctype_digit($media) || Str::isUuid($media) || Str::isUlid($media);
+    }
+
+    public function shouldRender(): bool
+    {
+        return $this->mediaItem instanceof MediaDTO;
     }
 
     public function handleString(string $media): void
@@ -127,8 +141,10 @@ class Glider extends Component
 
         $fallback = app(GlideManager::class)->getGliderFallback($this->fallback);
 
+        // Naming a fallback that was never registered is a configuration
+        // mistake, not missing media, so it stays loud.
         if (! $fallback instanceof GliderFallback) {
-            return;
+            throw new Exception(message: 'The [' . $this->fallback . '] glider fallback is not registered.');
         }
 
         // A registered fallback whose source resolved to null is a
@@ -215,7 +231,11 @@ class Glider extends Component
             foreach ($this->srcset as $s) {
                 $width = preg_replace("/\D/", '', (string) $s);
 
-                $height = $this->height === 'auto' ? null : floor($width * ($this->mediaItem->getHeight() / $this->mediaItem->getWidth()));
+                // A path or fallback may not know its dimensions; let Glide keep
+                // the ratio rather than dividing by zero.
+                $height = $this->height === 'auto' || ! $this->mediaItem->getWidth() || ! $this->mediaItem->getHeight()
+                    ? null
+                    : floor($width * ($this->mediaItem->getHeight() / $this->mediaItem->getWidth()));
 
                 $srcset .= $this->buildGlideSource(['w' => $width, 'h' => $height]) . ' ' . $s . ', ';
             }
@@ -226,9 +246,48 @@ class Glider extends Component
         return null;
     }
 
+    /**
+     * The width and height attributes have to describe the image Glide will
+     * actually serve. Asking for only one side scales the other with it, so
+     * writing the original's other side beside it distorts the box and shifts
+     * the layout once the real image arrives.
+     *
+     * @return array{0: int | string | null, 1: int | string | null}
+     */
+    public function resolveDisplayDimensions(): array
+    {
+        $originalWidth = $this->mediaItem->getWidth();
+        $originalHeight = $this->mediaItem->getHeight();
+
+        $width = is_numeric($this->width) ? (int) $this->width : null;
+        $height = is_numeric($this->height) ? (int) $this->height : null;
+
+        if ($width === null && $height === null) {
+            return [$originalWidth, $originalHeight];
+        }
+
+        $hasRatio = $originalWidth > 0 && $originalHeight > 0;
+
+        if ($height === null) {
+            return [$width, $hasRatio ? (int) round($width * $originalHeight / $originalWidth) : null];
+        }
+
+        if ($width === null) {
+            return [$hasRatio ? (int) round($height * $originalWidth / $originalHeight) : null, $height];
+        }
+
+        return [$width, $height];
+    }
+
     public function render(): View | Closure | string
     {
+        if (! $this->shouldRender()) {
+            return '';
+        }
+
         $this->source = $this->buildGlideSource();
+
+        [$this->displayWidth, $this->displayHeight] = $this->resolveDisplayDimensions();
 
         if ($this->srcset !== null && $this->srcset !== []) {
             $this->sourceSet = $this->buildSrcSet();

@@ -8,6 +8,7 @@ use Awcodes\Curator\Config\Concerns\HasGliderFallbacks;
 use Awcodes\Curator\Glide\SymfonyResponseFactory;
 use Exception;
 use Filament\Support\Concerns\EvaluatesClosures;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use League\Glide\Server;
 use League\Glide\ServerFactory;
@@ -43,9 +44,13 @@ class GlideManager
         return $this;
     }
 
-    public function getServer(): Server
+    /**
+     * Glide has to read from the disk the media was stored on. A server config
+     * registered through serverConfig() is used as given.
+     */
+    public function getServer(?string $disk = null): Server
     {
-        return ServerFactory::create($this->serverConfig ?? $this->getDefaultServerConfig());
+        return ServerFactory::create($this->serverConfig ?? $this->getDefaultServerConfig($disk));
     }
 
     public function getBasePath(): string
@@ -77,12 +82,14 @@ class GlideManager
         return $urlBuilder->getUrl($path, $params);
     }
 
-    private function getDefaultServerConfig(): array
+    private function getDefaultServerConfig(?string $disk = null): array
     {
         return [
             'response' => new SymfonyResponseFactory(app('request')),
-            'source' => storage_path('app'),
-            'source_path_prefix' => 'public',
+            // Media paths are relative to their disk, so read through that disk
+            // rather than assuming storage/app/public: uploads to any other disk
+            // (the local disk of a fresh Laravel app, S3, ...) otherwise 500.
+            'source' => Storage::disk($disk ?? config('curator.default_disk'))->getDriver(),
             'cache' => storage_path('app'),
             'cache_path_prefix' => '.cache',
             'max_image_size' => 2000 * 2000,

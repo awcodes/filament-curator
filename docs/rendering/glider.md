@@ -30,6 +30,10 @@ description: Render media through Glide with the x-curator-glider Blade componen
 | `fallback` | Name of a registered fallback — see below. |
 | `force` | Forces a signed URL. Useful for cloud disks, with possible performance cost. |
 
+The image's `width` and `height` attributes describe what Glide will serve. Give only one of them and the other is worked out from the media's aspect ratio, so the box reserves the right space and the layout doesn't shift when the image loads.
+
+If the media item can't be found (a null value, or an id whose record was deleted) and no fallback is given, the component renders nothing. An id that no longer resolves is also logged as a warning.
+
 Glide's own parameters are passed as attributes: `background`, `blur`, `border`, `brightness`, `contrast`, `crop`, `device-pixel-ratio`, `filter`, `fit`, `flip`, `format`, `gamma`, `height`, `quality`, `orientation`, `pixelate`, `sharpen`, `width`, and the `watermark-*` family. See [Glide's quick reference](https://glide.thephpleague.com/2.0/api/quick-reference/) for what each accepts.
 
 Responsive images need both `srcset` and `sizes`:
@@ -65,7 +69,7 @@ public function register(): void
 Everything but the name is optional and may be null, so a conditional value is fine.
 
 > [!WARNING]
-> A fallback that ends up without a source cannot be rendered, and referencing it from the component will throw.
+> A missing fallback is treated as a configuration mistake, not missing media, so the component throws. That covers a name that was never registered and a fallback that ends up without a source.
 
 Reference it by name:
 

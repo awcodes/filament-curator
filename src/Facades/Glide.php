@@ -17,7 +17,7 @@ use League\Glide\Server;
  * @method static array getGliderFallbacks()
  * @method static void registerGliderFallback(GliderFallback $fallback)
  * @method static void registerGliderFallbacks(array $fallbacks)
- * @method static Server getServer()
+ * @method static Server getServer(?string $disk = null)
  * @method static string getBasePath()
  * @method static string getToken()
  * @method static string getUrl(string $path, ?array $params = [])

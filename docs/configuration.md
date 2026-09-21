@@ -16,7 +16,7 @@ php artisan vendor:publish --tag="curator-config"
 | Key | Purpose |
 |---|---|
 | `default_disk` | Disk uploads are written to. Falls back to `CURATOR_DEFAULT_DISK`, then `FILESYSTEM_DISK`, then `public`. |
-| `default_directory` | Directory within the disk. |
+| `default_directory` | Directory within the disk. Uploads land here, and the picker and rich editor panels open here unless given their own `directory()`. |
 | `default_visibility` | Visibility applied to uploads, `public` by default. |
 | `curation_formats` | Formats offered when creating a curation. |
 | `features.curations` | Whether curations are available. |
