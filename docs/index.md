@@ -17,18 +17,6 @@ Curator is a media picker and manager for Filament. It stores uploaded files in 
 - **Image transformation** — the `<x-curator-glider>` Blade component builds signed Glide URLs, so sizing, cropping and format conversion happen on request.
 - **Curations** — per-image crops and focal points saved against a named preset, for when a single automatic crop is not good enough.
 
-## Compatibility
-
-| Package version | Filament version |
-|-----------------|------------------|
-| 1.x             | 2.x              |
-| 2.x             | 2.x              |
-| 3.x             | 3.x              |
-| 4.x             | 4.x              |
-| 5.x             | 4.x & 5.x        |
-
-Curator requires PHP 8.2 or later and `filament/filament`. It pulls in `league/glide` for image transformation and `enshrined/svg-sanitize` for cleaning SVG uploads.
-
 ## Where to go next
 
 - [Installation](installation.md) — install the package and run the installer.

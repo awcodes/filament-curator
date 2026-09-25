@@ -5,6 +5,18 @@ description: Install Curator, run its installer, and register its styles with yo
 
 # Installation
 
+## Compatibility
+
+| Filament version | Package version |
+|------------------|-----------------|
+| 2.x              | 1.x             |
+| 2.x              | 2.x             |
+| 3.x              | 3.x             |
+| 4.x              | 4.x             |
+| 4.x & 5.x        | 5.x             |
+
+Curator requires PHP 8.2 or later and `filament/filament`. It pulls in `league/glide` for image transformation and `enshrined/svg-sanitize` for cleaning SVG uploads.
+
 ## Requiring the package
 
 Install via Composer, then run the installer:
