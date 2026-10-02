@@ -6,7 +6,7 @@ A media picker and manager for Filament, with Glide-backed image transformations
 [![MIT Licensed](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE.md)
 [![Total Downloads](https://img.shields.io/packagist/dt/awcodes/filament-curator.svg?style=flat-square&color=blue&label=Downloads)](https://packagist.org/packages/awcodes/filament-curator)
 [![GitHub Repo stars](https://img.shields.io/github/stars/awcodes/filament-curator?style=flat-square&color=blue&label=Stars)](https://github.com/awcodes/filament-curator/stargazers)
-[![Filament Version](https://img.shields.io/badge/Filament-4.x%20%26%205.x-d97706.svg?style=flat-square)](https://filamentphp.com/docs/5.x/panels/installation)
+[![Filament Version](https://img.shields.io/badge/Filament-4.x%20%26%205.x-d97706.svg?style=flat-square)](https://filamentphp.com/docs/5.x/introduction/installation)
 
 ## Documentation
 
