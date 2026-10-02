@@ -33,22 +33,19 @@ updates:
       production-dependencies:
         dependency-type: production
 
-  # GitHub Actions — covers any actions the package repo adds (release, changelog, etc.).
+  # GitHub Actions — covers the awcodes/.github shared workflow and any actions the
+  # package repo adds (release, changelog, etc.).
   #
-  # The awcodes/.github caller is excluded on purpose. It tracks the moving major tag
-  # (@v1) so CI fixes reach every package at once (docs/versioning.md). Dependabot has no
-  # concept of a moving major: it reads @v1 as version "1" and offers the newest semver
-  # tag, which pins the package to a snapshot and can even be a downgrade, since v1 moves
-  # ahead of older release tags. Moving to a new major is a deliberate migration, not a
-  # Dependabot bump.
+  # The shared workflow is pinned to a commit SHA with a `# vX.Y.Z` comment, not the
+  # moving @v1 tag, so an upstream change reaches this repo only as a Dependabot PR that
+  # has to pass CI, never silently on the next run. Dependabot advances the SHA and the
+  # comment together to the newest release tag.
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
       interval: weekly
     cooldown:
       default-days: 7
-    ignore:
-      - dependency-name: "awcodes/.github/*"
     groups:
       github-actions:
         patterns:
