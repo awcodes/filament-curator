@@ -52,4 +52,34 @@ If the project maintainer has any additional requirements, you will find them li
 
 - **Send coherent history** - Make sure each individual commit in your pull request is meaningful. If you had to make multiple intermediate commits while developing, please [squash them](https://www.git-scm.com/book/en/v2/Git-Tools-Rewriting-History#Changing-Multiple-Commit-Messages) before submitting.
 
+## Development
+
+Install the PHP dependencies, build the consuming application's assets and
+database, then serve the Workbench:
+
+```bash
+composer install
+composer build
+composer serve
+```
+
+The Filament panel is available at <http://127.0.0.1:8000/admin>. Sign in with
+`test@example.com` and `password` (the login form is pre-filled). The Workbench
+uses Curator's documented plugin, installer, and public-disk configuration;
+Node.js is required to compile the consumer-owned Filament theme.
+
+`composer serve` runs the full build itself before starting the server, so
+`composer build` on its own is only needed to rebuild the Workbench without
+serving it.
+
+## Testing
+
+```bash
+composer test
+```
+
+This runs Rector, Pint and PHPStan in check mode, then the Pest suite. Each step
+can also be run on its own with `composer test:refactor`, `composer test:lint`,
+`composer test:types` and `composer test:unit`.
+
 **Happy coding**!
