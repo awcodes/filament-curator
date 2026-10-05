@@ -1,6 +1,6 @@
 {
   "name": "awcodes/filament-curator",
-  "description": "A media picker plugin for FilamentPHP.",
+  "description": "A media picker and manager for Filament, with Glide-backed image transformations and per-image curations.",
   "keywords": [
     "awcodes",
     "laravel",
@@ -29,6 +29,7 @@
     "spatie/laravel-package-tools": "^1.15.0"
   },
   "require-dev": {
+    "awcodes/focus": "^1.0",
     "larastan/larastan": "^3.0",
     "laravel/pint": "^1.0",
     "nunomaduro/collision": "^8.0",
@@ -86,6 +87,10 @@
       "@build:workbench-assets",
       "@prepare",
       "@php vendor/bin/testbench workbench:build --ansi"
+    ],
+    "focus": [
+      "Composer\\Config::disableProcessTimeout",
+      "focus"
     ],
     "serve": [
       "Composer\\Config::disableProcessTimeout",

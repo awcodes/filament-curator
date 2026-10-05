@@ -7,6 +7,9 @@ description: Create custom crops and focal points per image, and render them wit
 
 A curation is a crop and focal point saved against one image under a named preset. Where Glide applies the same rule to every image, a curation lets an author decide how one particular image should be cropped.
 
+![The Curator curation modal: an image with a 320 by 180 crop box, and an Adjustments sidebar with the Post thumbnail preset selected, its key, format, quality, position and size, aspect ratio, zoom, flip and crop controls](../assets/curation-light.png#gh-light-mode-only)
+![The Curator curation modal: an image with a 320 by 180 crop box, and an Adjustments sidebar with the Post thumbnail preset selected, its key, format, quality, position and size, aspect ratio, zoom, flip and crop controls](../assets/curation-dark.png#gh-dark-mode-only)
+
 ## Presets
 
 Presets appear in the curation modal so authors can reuse a size rather than re-entering it. Register them from a service provider:

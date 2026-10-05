@@ -14,6 +14,9 @@ CuratorColumn::make('featured_image')
     ->size(40);
 ```
 
+![A Filament posts table with a square featured image thumbnail in the Image column and up to three overlapping circular thumbnails in the Gallery column](../assets/table-column-light.png#gh-light-mode-only)
+![A Filament posts table with a square featured image thumbnail in the Image column and up to three overlapping circular thumbnails in the Gallery column](../assets/table-column-dark.png#gh-dark-mode-only)
+
 ## Multiple images
 
 For a relationship holding several images, control how many are shown and how they stack:
