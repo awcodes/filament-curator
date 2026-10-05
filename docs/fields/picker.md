@@ -18,6 +18,14 @@ CuratorPicker::make('featured_image_id')
     ->constrained();
 ```
 
+![A Curator picker field labelled Featured image, showing the selected Mountain dusk image with its file size and an actions menu](../assets/picker-light.png#gh-light-mode-only)
+![A Curator picker field labelled Featured image, showing the selected Mountain dusk image with its file size and an actions menu](../assets/picker-dark.png#gh-dark-mode-only)
+
+The trigger opens Curator's library in a full-screen modal, where an author picks existing media or uploads new files:
+
+![The Curator picker modal: a grid of eight image thumbnails with the first one selected, Insert and Deselect All buttons, and a sidebar listing the selected file above an upload area](../assets/picker-modal-light.png#gh-light-mode-only)
+![The Curator picker modal: a grid of eight image thumbnails with the first one selected, Insert and Deselect All buttons, and a sidebar listing the selected file above an upload area](../assets/picker-modal-dark.png#gh-dark-mode-only)
+
 ## Appearance
 
 | Method | Effect |

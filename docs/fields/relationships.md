@@ -60,3 +60,6 @@ public function productPictures(): BelongsToMany
 
 > [!TIP]
 > Rendering these in a table will cause N+1 queries unless you eager load them — see [Table column](../rendering/column.md).
+
+![A multiple Curator picker labelled Gallery, showing four selected images in a grid, each with reorder and actions controls, above Add media and Remove All buttons](../assets/picker-multiple-light.png#gh-light-mode-only)
+![A multiple Curator picker labelled Gallery, showing four selected images in a grid, each with reorder and actions controls, above Add media and Remove All buttons](../assets/picker-multiple-dark.png#gh-dark-mode-only)

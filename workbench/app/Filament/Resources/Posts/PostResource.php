@@ -32,9 +32,12 @@ class PostResource extends Resource
             TextInput::make('title')->required(),
             CuratorPicker::make('featured_image_id')
                 ->label('Featured image')
-                ->relationship('featuredImage', 'id'),
+                ->relationship('featuredImage', 'id')
+                ->extraFieldWrapperAttributes(['data-focus' => 'featured-image-picker']),
             CuratorPicker::make('gallery')
                 ->relationship('gallery', 'name')
+                ->columnSpanFull()
+                ->extraFieldWrapperAttributes(['data-focus' => 'gallery-picker'])
                 ->multiple()
                 ->listDisplay(fn (): bool => (bool) config('curator_testing.picker_list_display', false))
                 ->orderColumn('order'),
@@ -66,10 +69,20 @@ class PostResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn ($query) => $query->with('featuredImage'))
+            ->modifyQueryUsing(fn ($query) => $query->with(['featuredImage', 'galleryMedia']))
+            ->extraAttributes(['data-focus' => 'posts-table'])
             ->columns([
-                CuratorColumn::make('featuredImage')->label('Image'),
+                CuratorColumn::make('featuredImage')
+                    ->label('Image')
+                    ->imageSize(48),
                 TextColumn::make('title')->searchable(),
+                CuratorColumn::make('galleryMedia')
+                    ->label('Gallery')
+                    ->imageSize(40)
+                    ->circular()
+                    ->ring(2)
+                    ->overlap(4)
+                    ->limit(3),
             ]);
     }
 

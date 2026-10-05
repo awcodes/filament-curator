@@ -13,6 +13,7 @@
 /.vscode                export-ignore
 /art                    export-ignore
 /docs                   export-ignore
+/focus.php              export-ignore
 /images                 export-ignore
 /package.json           export-ignore
 /phpstan-baseline.neon  export-ignore
