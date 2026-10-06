@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Awcodes\Curator\Concerns;
 
+use Awcodes\Curator\Config\CuratorManager;
 use Awcodes\Curator\Enums\MimeType;
 use Closure;
 
@@ -55,12 +56,13 @@ trait CanUploadFiles
     public function getAcceptedFileTypes(): array
     {
         return $this->evaluate($this->acceptedFileTypes)
+            ?? $this->getUploadDefaults()?->getAcceptedFileTypes()
             ?? MimeType::defaults();
     }
 
     public function getDiskName(): string
     {
-        return $this->evaluate($this->diskName) ?? config('curator.default_disk');
+        return $this->evaluate($this->diskName) ?? $this->getUploadDefaults()?->getDiskName() ?? config('curator.default_disk');
     }
 
     /**
@@ -69,42 +71,42 @@ trait CanUploadFiles
      */
     public function getDirectory(): ?string
     {
-        return $this->evaluate($this->directory) ?? config('curator.default_directory');
+        return $this->evaluate($this->directory) ?? $this->getUploadDefaults()?->getDirectory() ?? config('curator.default_directory');
     }
 
     public function getImageCropAspectRatio(): ?string
     {
-        return $this->evaluate($this->imageCropAspectRatio) ?? null;
+        return $this->evaluate($this->imageCropAspectRatio) ?? $this->getUploadDefaults()?->getImageCropAspectRatio();
     }
 
     public function getImageResizeMode(): ?string
     {
-        return $this->evaluate($this->imageResizeMode) ?? null;
+        return $this->evaluate($this->imageResizeMode) ?? $this->getUploadDefaults()?->getImageResizeMode();
     }
 
     public function getImageResizeTargetHeight(): ?string
     {
-        return $this->evaluate($this->imageResizeTargetHeight) ?? null;
+        return $this->evaluate($this->imageResizeTargetHeight) ?? $this->getUploadDefaults()?->getImageResizeTargetHeight();
     }
 
     public function getImageResizeTargetWidth(): ?string
     {
-        return $this->evaluate($this->imageResizeTargetWidth) ?? null;
+        return $this->evaluate($this->imageResizeTargetWidth) ?? $this->getUploadDefaults()?->getImageResizeTargetWidth();
     }
 
     public function getMaxSize(): int
     {
-        return $this->evaluate($this->maxSize) ?? 5000;
+        return $this->evaluate($this->maxSize) ?? $this->getUploadDefaults()?->getMaxSize() ?? 5000;
     }
 
     public function getMinSize(): int
     {
-        return $this->evaluate($this->minSize) ?? 0;
+        return $this->evaluate($this->minSize) ?? $this->getUploadDefaults()?->getMinSize() ?? 0;
     }
 
     public function getVisibility(): string
     {
-        return $this->evaluate($this->visibility) ?? config('curator.default_visibility', 'public');
+        return $this->evaluate($this->visibility) ?? $this->getUploadDefaults()?->getVisibility() ?? config('curator.default_visibility', 'public');
     }
 
     public function imageCropAspectRatio(string | Closure | null $ratio): static
@@ -166,5 +168,14 @@ trait CanUploadFiles
         $this->visibility = $visibility;
 
         return $this;
+    }
+
+    /**
+     * Where unset settings fall back to before config and the built-in defaults. A field returns the `Curator`
+     * facade's manager, so settings made on the facade apply to it; the manager itself has nothing to fall back to.
+     */
+    protected function getUploadDefaults(): ?CuratorManager
+    {
+        return null;
     }
 }

@@ -47,17 +47,17 @@ class CuratorServiceProvider extends PackageServiceProvider
 
     public function packageRegistered(): void
     {
-        $this->app->scoped(
+        $this->app->singleton(
             abstract: CuratorManager::class,
             concrete: fn (): CuratorManager => new CuratorManager(),
         );
 
-        $this->app->scoped(
+        $this->app->singleton(
             abstract: GlideManager::class,
             concrete: fn (): GlideManager => new GlideManager(),
         );
 
-        $this->app->scoped(
+        $this->app->singleton(
             abstract: CurationManager::class,
             concrete: fn (): CurationManager => new CurationManager(),
         );
