@@ -30,6 +30,10 @@ class Glider extends Component
 
     protected bool $isMediaRecord = false;
 
+    protected bool $isFallback = false;
+
+    protected ?bool $isServedByGlide = null;
+
     /**
      * @throws Exception
      */
@@ -156,6 +160,8 @@ class Glider extends Component
             throw new Exception(message: 'The [' . $this->fallback . '] glider fallback does not have a source.');
         }
 
+        $this->isFallback = true;
+
         $this->mediaItem = new MediaDTO(
             path: $fallback->getSource(),
             alt: $fallback->getAlt(),
@@ -232,16 +238,21 @@ class Glider extends Component
     }
 
     /**
-     * Glide serves only paths that belong to a media record. Any other path, such as a fallback placeholder in the
-     * public directory, would 404 through the Glide route, so it is linked as a plain asset instead.
+     * Glide serves only paths that belong to a media record. A fallback placeholder in the public directory would
+     * 404 through the Glide route, so a fallback that isn't stored media is linked as a plain asset instead. Media
+     * records and paths given directly keep going through Glide.
      */
     public function isServedByGlide(): bool
     {
-        if ($this->isMediaRecord) {
+        if ($this->isMediaRecord || ! $this->isFallback) {
             return true;
         }
 
-        return app(Media::class)->newQuery()->where('path', $this->mediaItem->getPath())->exists();
+        $path = $this->mediaItem->getPath();
+
+        return $this->isServedByGlide ??= app(Media::class)->newQuery()
+            ->whereIn('path', array_unique([$path, ltrim($path, '/'), '/' . ltrim($path, '/')]))
+            ->exists();
     }
 
     public function buildSrcSet(): ?string

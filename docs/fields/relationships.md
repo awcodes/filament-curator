@@ -41,7 +41,7 @@ CuratorPicker::make('product_picture_ids')
     ->orderColumn('order');
 ```
 
-`orderColumn()` is only needed if your pivot's order column is named something other than `order`.
+`orderColumn()` is only needed if your pivot's order column is named something other than `order`. The column has to exist: the picker writes each item's position to it, and sorts by it when loading.
 
 The relationship carries the order on its pivot:
 

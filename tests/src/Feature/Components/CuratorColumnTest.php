@@ -68,3 +68,15 @@ test('getMediaUrl keeps the thumbnail with a custom url provider', function () {
     expect(CuratorColumn::make('media')->imageHeight(40)->resolution(2)->getMediaUrl($media))
         ->toBe('https://cdn.example.com/thumb/test-file.jpg');
 });
+
+test('getMediaUrl scales pixel sizes given as strings', function () {
+    $media = makeMedia();
+
+    expect(CuratorColumn::make('media')->imageHeight('40px')->resolution(2)->getMediaUrl($media))->toContain('h=80');
+});
+
+test('getMediaUrl keeps the thumbnail for sizes in other units', function () {
+    $media = makeMedia();
+
+    expect(CuratorColumn::make('media')->imageHeight('2.5rem')->resolution(2)->getMediaUrl($media))->toBe($media->thumbnailUrl);
+});

@@ -49,13 +49,18 @@ class MediaObserver
             $originalName = $media->getOriginal('name');
             $originalPath = $media->path;
 
-            if ($storage->exists($this->pathIn($media->directory, $media->name . '.' . $media->ext))) {
+            // A folder with the new name holds another item's curations, so it counts as taken too.
+            if (
+                $storage->exists($this->pathIn($media->directory, $media->name . '.' . $media->ext))
+                || $storage->directoryExists($this->pathIn($media->directory, $media->name))
+            ) {
                 $media->name = $media->name . '-' . time();
             }
 
             $renamedPath = $this->pathIn($media->directory, $media->name . '.' . $media->ext);
 
-            if (! $storage->move($originalPath, $renamedPath)) {
+            // A record whose file is already missing can still be renamed; there is just nothing to move.
+            if ($storage->exists($originalPath) && ! $storage->move($originalPath, $renamedPath)) {
                 throw new RuntimeException("Unable to rename [{$originalPath}] to [{$renamedPath}].");
             }
 
@@ -110,11 +115,12 @@ class MediaObserver
         $replacedPath = $this->pathIn($media->directory, $originalName . '.' . $media->ext);
 
         // The upload is on its own disk, which may not be the original's.
-        if ($media->path !== $replacedPath && ! Storage::disk($media->disk)->move($media->path, $replacedPath)) {
+        if (! $this->isSamePath($media->path, $replacedPath) && ! Storage::disk($media->disk)->move($media->path, $replacedPath)) {
             throw new RuntimeException("Unable to move the replacement file [{$media->path}] into place.");
         }
 
-        if ($originalDisk !== $media->disk || $originalPath !== $replacedPath) {
+        // Older rows can store the same path with a leading slash, so compare them as the disk resolves them.
+        if ($originalDisk !== $media->disk || ! $this->isSamePath($originalPath, $replacedPath)) {
             Storage::disk($originalDisk)->delete($originalPath);
         }
 
@@ -216,6 +222,11 @@ class MediaObserver
     private function pathIn(?string $directory, string $file): string
     {
         return filled($directory) ? rtrim($directory, '/') . '/' . $file : $file;
+    }
+
+    private function isSamePath(string $first, string $second): bool
+    {
+        return ltrim($first, '/') === ltrim($second, '/');
     }
 
     private function hasMediaUpload(Media $media): bool

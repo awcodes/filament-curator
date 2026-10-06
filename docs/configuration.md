@@ -94,7 +94,7 @@ public function boot(): void
 }
 ```
 
-Configure the facade, and the `Glide` and `Curation` facades, from a service provider. What you set there lasts for the life of the process, including queue workers and Octane, so set it once rather than changing it during a request.
+Configure the facade, and the `Glide` and `Curation` facades, in a service provider's `register()` or `boot()` method. What you set there lasts for the life of the process, including queue workers and Octane. A change made while handling a request or a queued job only applies to that request or job. Settings made in an `$this->app->booted()` callback may only apply to the first request.
 
 ## Customising delete actions
 

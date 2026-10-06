@@ -311,3 +311,47 @@ test('swapping moves an upload from another disk on that disk', function () {
         ->and(Storage::disk('s3')->get('media/photo.jpg'))->toBe('replacement')
         ->and(Storage::disk('public')->exists('media/photo.jpg'))->toBeFalse();
 });
+
+test('swapping a record whose path has a leading slash keeps the replacement', function () {
+    Storage::fake('public');
+    Storage::disk('public')->put('legacy.jpg', 'original');
+    Storage::disk('public')->put('upload.jpg', 'replacement');
+
+    $media = makeMedia(['directory' => null, 'name' => 'legacy', 'path' => '/legacy.jpg']);
+
+    $media->file = ['disk' => 'public', 'directory' => null, 'name' => 'upload', 'path' => 'upload.jpg', 'ext' => 'jpg'];
+    $media->save();
+    $media->refresh();
+
+    expect($media->path)->toBe('legacy.jpg')
+        ->and(Storage::disk('public')->get('legacy.jpg'))->toBe('replacement');
+});
+
+test('renaming onto a name whose curation folder exists takes a new name', function () {
+    Storage::fake('public');
+    Storage::disk('public')->put('media/cat.jpg', 'cat');
+    Storage::disk('public')->put('media/cat/thumbnail.webp', 'cat crop');
+    Storage::disk('public')->put('media/dog.png', 'dog');
+    Storage::disk('public')->put('media/dog/thumbnail.webp', 'dog crop');
+
+    $cat = makeMedia(['directory' => 'media', 'name' => 'cat', 'path' => 'media/cat.jpg', 'curations' => [
+        curationEntry('thumbnail', 'media/cat/thumbnail.webp', 'cat'),
+    ]]);
+
+    $cat->update(['name' => 'dog']);
+    $cat->refresh();
+
+    expect($cat->name)->toStartWith('dog-')
+        ->and(Storage::disk('public')->get('media/dog/thumbnail.webp'))->toBe('dog crop')
+        ->and(Storage::disk('public')->get($cat->getCuration('thumbnail')['path']))->toBe('cat crop');
+});
+
+test('a record whose file is missing can still be renamed', function () {
+    Storage::fake('public');
+
+    $media = makeMedia(['directory' => 'media', 'name' => 'gone', 'path' => 'media/gone.jpg']);
+
+    $media->update(['name' => 'renamed']);
+
+    expect($media->refresh()->path)->toBe('media/renamed.jpg');
+});

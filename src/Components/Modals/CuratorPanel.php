@@ -490,9 +490,9 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
     }
 
     /**
-     * The picker's rules validate its selection, so only the ones that describe a single file, such as `dimensions`
-     * or `mimes`, apply to uploads. `min` and `max` count selected items on the picker, not kilobytes, so they are
-     * left out with the other array rules. File size limits come from minSize() and maxSize().
+     * The picker's rules validate its selection. Only the ones that describe a single file also apply to uploads;
+     * anything else, such as `required`, `exists` or `min`/`max` (which count items on a picker), is left out. File
+     * size limits come from minSize() and maxSize().
      *
      * @return array<string>
      */
@@ -500,7 +500,7 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
     {
         return collect($this->rules ?? [])
             ->filter(fn (mixed $rule): bool => is_string($rule)
-                && ! in_array(strtolower(Str::before($rule, ':')), ['required', 'nullable', 'present', 'filled', 'array', 'list', 'min', 'max', 'size', 'between'], true))
+                && in_array(strtolower(Str::before($rule, ':')), ['dimensions', 'mimes', 'mimetypes', 'extensions', 'image', 'file'], true))
             ->values()
             ->all();
     }
