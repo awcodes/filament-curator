@@ -57,10 +57,14 @@ Add Curator's styles and views to your theme's CSS file — or your application'
 
 ## Standalone forms
 
-If you are using the standalone forms package rather than Panels, the picker's modal is not injected for you. Add it to your layout, normally just before the closing `body` tag:
+The picker and the rich editor tool open Filament action modals. In a Livewire component that renders a form outside a panel, render the action modals in its view, as for any Filament action:
 
 ```blade
-<x-curator::modals.modal />
+<div>
+    {{ $this->form }}
+
+    <x-filament-actions::modals />
+</div>
 ```
 
-With Panels, the plugin handles this — see [Configuration](configuration.md).
+Panel pages already do this.

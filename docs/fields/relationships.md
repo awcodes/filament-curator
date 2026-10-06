@@ -7,13 +7,13 @@ description: Bind the Curator picker to a single media relationship or to many.
 
 ## A single image
 
-Point the picker at the foreign key column and name the relationship:
+Point the picker at the foreign key column and name the relationship. The name is the relationship method on your model, so `featuredImage`, not `featured_image`:
 
 ```php
 use Awcodes\Curator\Components\Forms\CuratorPicker;
 
 CuratorPicker::make('featured_image_id')
-    ->relationship('featured_image', 'id');
+    ->relationship('featuredImage', 'id');
 ```
 
 Then define it on the model:
@@ -37,7 +37,7 @@ use Awcodes\Curator\Components\Forms\CuratorPicker;
 
 CuratorPicker::make('product_picture_ids')
     ->multiple()
-    ->relationship('product_pictures', 'id')
+    ->relationship('productPictures', 'id')
     ->orderColumn('order');
 ```
 

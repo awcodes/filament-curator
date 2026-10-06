@@ -33,16 +33,16 @@ npm run build           # Production build
 
 This is a **Filament plugin** — a Laravel Composer package, not a standalone app. The `5.x` branch serves Filament 4 and 5 from a single line (`"filament/filament": "^4.0|^5.0"`), so all new work goes straight onto `5.x`; the `4.x` branch is superseded and there is no forward-merge. The entry points are:
 
-- **`CuratorPlugin`** — registered with Filament panels via `CuratorPlugin::make()`. Configures all plugin defaults.
-- **`CuratorServiceProvider`** — registers facades, routes, config, migrations, views, and Livewire components.
-- **Three facades:** `Curator` (CuratorManager), `Glide` (GlideManager), `Curation` (CurationManager) — these hold runtime configuration and are the primary programmatic API.
+- **`CuratorPlugin`** — registered with Filament panels via `CuratorPlugin::make()`. Holds the media resource's panel settings (labels, navigation, the curations and file swap tabs). It doesn't forward anything to the facades, and only the resource and its pages read it.
+- **`CuratorServiceProvider`** — registers the managers behind the facades (as singletons), routes, config, views, Blade and Livewire components. It registers no migrations: `curator:install` copies the migration stub into the app.
+- **Three facades:** `Curator` (CuratorManager), `Glide` (GlideManager), `Curation` (CurationManager) — these hold global runtime configuration and are the primary programmatic API. `CuratorPicker` falls back to the `Curator` facade for upload settings it doesn't set itself.
 
 ### Key `src/` layout
 
 | Path | Purpose |
 |---|---|
-| `Models/Media.php` | Eloquent model; has computed appends (`url`, `thumbnail_url`, `placeholder`, etc.) |
-| `CuratorPlugin.php` | Plugin class; fluent config API forwarded to the managers |
+| `Models/Media.php` | Eloquent model; appends `url`, `full_path`, `thumbnail_url`, `medium_url`, `large_url` and `pretty_name` |
+| `CuratorPlugin.php` | Plugin class; panel settings for the media resource |
 | `Config/` | Manager classes (CuratorManager, GlideManager, CurationManager) |
 | `Resources/` | Filament MediaResource (list, create, edit pages + form/table definitions) |
 | `Components/Forms/` | `CuratorPicker` (form field), `Uploader`, `CuratorEditor` |
@@ -69,4 +69,4 @@ CI runs on the shared baseline in [`awcodes/.github`](https://github.com/awcodes
 
 A fifth check, `Assets`, is a local job in `ci.yml` rather than part of the shared baseline. `resources/dist` is committed and shipped, so it rebuilds with `npm ci && npm run build` and fails if the result differs from what's committed — run `npm run build` and commit the output whenever you touch `resources/js`. (Don't confuse this with the shared workflow's `run-build` input, which builds assets for test suites that need them and checks nothing; Curator leaves it `false`.)
 
-Two pinning rules apply: the `awcodes/.github` caller is pinned to the **moving major tag** `@v1` (never a SHA) so shared CI fixes propagate, and Dependabot is configured to ignore it. Third-party actions in this repo's own workflows are pinned to **full commit SHAs**.
+Every action is pinned to a **full commit SHA** with a `# vX.Y.Z` comment, including the `awcodes/.github` caller. Dependabot advances the SHA and the comment together, so a shared CI change reaches this repo only as a Dependabot PR that has to pass CI.
