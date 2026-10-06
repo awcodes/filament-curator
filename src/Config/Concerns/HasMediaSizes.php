@@ -10,9 +10,13 @@ use Illuminate\Support\Number;
 
 trait HasMediaSizes
 {
-    protected UrlProvider | Closure | null $urlProvider = null;
+    /** @var UrlProvider|class-string<UrlProvider>|Closure|null */
+    protected UrlProvider | string | Closure | null $urlProvider = null;
 
-    public function urlProvider(UrlProvider | Closure $provider): static
+    /**
+     * @param  UrlProvider|class-string<UrlProvider>|Closure  $provider
+     */
+    public function urlProvider(UrlProvider | string | Closure $provider): static
     {
         $this->urlProvider = $provider;
 
@@ -23,7 +27,7 @@ trait HasMediaSizes
     {
         $provider = $this->evaluate($this->urlProvider) ?? config('curator.url_provider');
 
-        return app($provider);
+        return $provider instanceof UrlProvider ? $provider : app($provider);
     }
 
     public function sizeForHumans(int $size, ?int $precision = 2): string

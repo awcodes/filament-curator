@@ -11,6 +11,8 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 
 class MediaFactory extends Factory
 {
@@ -217,10 +219,21 @@ class MediaFactory extends Factory
             ->size(1000)
             ->mimeType('image/jpeg');
 
-        return CuratorUtils::importMedia(
-            path: $file->getPathname(),
-            disk: $this->getDisk(),
-            directory: $this->getDirectory(),
-        );
+        // importMedia() reads the name and extension from the path, and a fake upload's temporary path has neither.
+        $directory = sys_get_temp_dir() . '/curator-factory-' . Str::random(8);
+        $path = "{$directory}/{$filename}.jpg";
+
+        File::ensureDirectoryExists($directory);
+        File::copy($file->getPathname(), $path);
+
+        try {
+            return CuratorUtils::importMedia(
+                path: $path,
+                disk: $this->getDisk(),
+                directory: $this->getDirectory(),
+            );
+        } finally {
+            File::deleteDirectory($directory);
+        }
     }
 }

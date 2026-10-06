@@ -91,7 +91,7 @@ class InstallCommand extends Command
             $this->replaceInFile(
                 config_path('curator.php'),
                 [
-                    '\\Awcodes\\Curator\\Models\\Media::class' => '\\App\\Models\\Media::class',
+                    'Awcodes\\Curator\\Models\\Media::class' => 'App\\Models\\Media::class',
                 ]
             );
 
@@ -99,7 +99,7 @@ class InstallCommand extends Command
                 $this->replaceInFile(
                     config_path('curator.php'),
                     [
-                        "tenancy' => [\n            'enabled' => false,\n            'relationship_name' => null,\n        ]," => "tenancy' => [\n            'enabled' => true,\n            'relationship_name' => " . str($tenancyName)->snake() . ",\n        ],",
+                        "tenancy' => [\n            'enabled' => false,\n            'relationship_name' => null,\n        ]," => "tenancy' => [\n            'enabled' => true,\n            'relationship_name' => '" . str($tenancyName)->snake() . "',\n        ],",
                     ]
                 );
             }

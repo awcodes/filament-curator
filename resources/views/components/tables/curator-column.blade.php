@@ -18,8 +18,6 @@
         default => '-space-x-1',
     };
 
-    $resolution = $getResolution();
-
     $height = $getImageHeight();
     $width = $getImageWidth() ?? ($isRounded() ? $height : null);
 @endphp
@@ -41,19 +39,9 @@
                     $ring . ' ring-white dark:ring-gray-900' => $imageCount > 1,
                 ])
             >
-                @php
-                    $img_width = $width ? (int)$width : null;
-                    $img_height = $height ? (int)$height : null;
-
-                    if ($resolution) {
-                        $img_width *= $resolution;
-                        $img_height *= $resolution;
-                    }
-                @endphp
-
                 <x-curator::display
                     :item="$item"
-                    :src="$item->thumbnailUrl"
+                    :src="$getMediaUrl($item)"
                     :lazy="true"
                     icon-classes="size-6"
                     :width="$width"

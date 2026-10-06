@@ -19,12 +19,6 @@ parameters:
 			path: src/Actions/MultiUploadAction.php
 
 		-
-			message: '#^Expression "match \(\$driver\) \{…" on a separate line does not do anything\.$#'
-			identifier: expr.resultUnused
-			count: 1
-			path: src/Commands/UpgradeCommand.php
-
-		-
 			message: '#^Cannot access property \$name on array\<string, mixed\>\|Illuminate\\Database\\Eloquent\\Model\.$#'
 			identifier: property.nonObject
 			count: 1

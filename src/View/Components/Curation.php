@@ -14,11 +14,17 @@ class Curation extends Component
     public ?array $curatedMedia = null;
 
     public function __construct(
-        public int | Media | null $media,
+        public int | string | Media | null $media,
         public ?string $curation = null,
     ) {
+        if (blank($media) || blank($curation)) {
+            $this->media = null;
+
+            return;
+        }
+
         if (! $media instanceof Media) {
-            $this->media = app(Media::class)::where('id', $media)->first();
+            $this->media = app(Media::class)::query()->whereKey($media)->first();
         }
 
         if ($this->media) {

@@ -91,21 +91,21 @@ class MediaResource extends Resource
     /** @throws Exception */
     public static function form(Schema $schema): Schema
     {
-        return MediaForm::configure($schema);
+        return config('curator.resource.schemas.form', MediaForm::class)::configure($schema);
     }
 
     /** @throws Exception */
     public static function table(Table $table): Table
     {
-        return MediaTable::configure($table);
+        return config('curator.resource.tables.table', MediaTable::class)::configure($table);
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => ListMedia::route('/'),
-            'create' => CreateMedia::route('/create'),
-            'edit' => EditMedia::route('/{record}/edit'),
+            'index' => config('curator.resource.pages.index', ListMedia::class)::route('/'),
+            'create' => config('curator.resource.pages.create', CreateMedia::class)::route('/create'),
+            'edit' => config('curator.resource.pages.edit', EditMedia::class)::route('/{record}/edit'),
         ];
     }
 }

@@ -22,6 +22,12 @@ const SVG_SCRIPT_PAYLOAD = '<svg xmlns="http://www.w3.org/2000/svg"><script>aler
  * under runningUnitTests). libmagic reports image/svg+xml for this markup under
  * any filename, so declaring it here matches what a real upload would detect.
  */
+// The upload disk falls back to FILESYSTEM_DISK, which differs between a local Testbench skeleton and CI, so the
+// tests pin it to the disk they fake.
+beforeEach(function () {
+    config(['curator.default_disk' => 'public']);
+});
+
 function svgUploadNamed(string $name): UploadedFile
 {
     return UploadedFile::fake()
