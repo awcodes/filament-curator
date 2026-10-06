@@ -51,7 +51,28 @@ The trigger opens Curator's library in a full-screen modal, where an author pick
 | `limitToDirectory()` | Restrict the picker to its own directory. Requires the `directory_restriction` feature. |
 | `tenantAware()` | Scope to the current tenant. Defaults to `true`. |
 
-Uploads also accept the familiar Filament methods — `preserveFilenames()`, `maxWidth()`, `minSize()`, `maxSize()`, `rules()`, `acceptedFileTypes()`, `disk()`, `visibility()`, `directory()`, `imageCropAspectRatio()`, `imageResizeMode()`, `imageResizeTargetWidth()` and `imageResizeTargetHeight()`. See Filament's [file upload documentation](https://filamentphp.com/docs/5.x/forms/file-upload) for what each does.
+Uploads also accept the familiar Filament methods — `preserveFilenames()`, `minSize()`, `maxSize()`, `rules()`, `acceptedFileTypes()`, `disk()`, `visibility()`, `directory()`, `imageCropAspectRatio()`, `imageResizeMode()`, `imageResizeTargetWidth()` and `imageResizeTargetHeight()`. See Filament's [file upload documentation](https://filamentphp.com/docs/5.x/forms/file-upload) for what each does.
+
+`rules()` validates the picker's selection, and its rules that describe a single file, such as `dimensions:min_width=1200` or `mimes:jpg,png`, also apply to each upload. Rules about the selection itself, such as `required`, `min` and `max` (which count selected items here, not kilobytes), don't apply to uploads. Use `minSize()` and `maxSize()` for file sizes.
+
+To limit image dimensions, reject uploads with a `dimensions` rule, or have the browser shrink them before upload instead:
+
+```php
+use Awcodes\Curator\Components\Forms\CuratorPicker;
+
+// Reject images wider than 2000px.
+CuratorPicker::make('featured_image_id')
+    ->rules(['dimensions:max_width=2000']);
+
+// Or scale them down to 2000px wide before they are uploaded.
+CuratorPicker::make('featured_image_id')
+    ->imageResizeMode('contain')
+    ->imageResizeTargetWidth('2000');
+```
+
+`maxWidth()` isn't an upload limit. It's Filament's layout method, which sets how wide the field itself is.
+
+A picker that holds one item accepts one upload at a time, and uploading replaces the current selection.
 
 > [!NOTE]
 > `acceptedFileTypes()` defaults to Curator's own safe list rather than allowing everything — see [Accepted file types](../file-types.md).

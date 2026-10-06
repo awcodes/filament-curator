@@ -252,3 +252,19 @@ test('MorphMany: a falsy-but-set type value is written to new rows', function ()
     expect($rows)->toHaveCount(1)
         ->and($rows->first()->type)->toBe('0');
 });
+
+test('MorphMany: items load in their saved order', function () {
+    Storage::fake('public');
+
+    $post = makePost();
+    $first = makeMedium(['name' => 'image-a']);
+    $second = makeMedium(['name' => 'image-b']);
+
+    // Inserted in id order, but saved with the second item first.
+    attachMediable($post, $first, 2);
+    attachMediable($post, $second, 1);
+
+    $state = Livewire::test(EditPost::class, ['record' => $post->getRouteKey()])->get('data.gallery');
+
+    expect(collect($state)->pluck('id')->values()->all())->toBe([$second->id, $first->id]);
+});

@@ -302,7 +302,6 @@ class CuratorPicker extends Field
                     'isMultiple' => $component->isMultiple(),
                     'maxItems' => $component->getMaxItems(),
                     'maxSize' => $component->getMaxSize(),
-                    'maxWidth' => $component->getMaxWidth(),
                     'minSize' => $component->getMinSize(),
                     'pathGenerator' => $component->getPathGenerator(),
                     'rules' => $component->getValidationRules(),
@@ -455,6 +454,7 @@ class CuratorPicker extends Field
                     $relatedMediaItems = $relationship
                         ->with('media')
                         ->where($component->getTypeColumn(), $component->getTypeValue())
+                        ->orderBy($component->getOrderColumn())
                         ->get();
 
                     $relatedMedia = $relatedMediaItems->map(fn ($item) => $item->media->toArray())->toArray();

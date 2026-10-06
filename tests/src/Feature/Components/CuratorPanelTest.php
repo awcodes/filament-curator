@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Awcodes\Curator\Components\Modals\CuratorPanel;
 use Awcodes\Curator\Models\Media;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 test('can mount with default settings', function () {
@@ -377,4 +378,34 @@ test('search does not leak records outside the directory via non-name fields', f
     $component->set('search', 'findme');
 
     expect($component->get('files'))->toBeEmpty();
+});
+
+test('load more does nothing while a search is active', function () {
+    Storage::fake('public');
+
+    foreach (range(1, 30) as $i) {
+        makeMedia(['name' => "photo-{$i}", 'title' => $i === 1 ? 'needle' : "photo {$i}"]);
+    }
+
+    $panel = Livewire::test(CuratorPanel::class)->set('search', 'needle');
+
+    expect($panel->get('files'))->toHaveCount(1);
+
+    $panel->call('loadMoreFiles');
+
+    expect($panel->get('files'))->toHaveCount(1);
+
+    $panel->set('search', '');
+
+    expect(count($panel->get('files')))->toBeGreaterThan(1)
+        ->and($panel->get('currentPage'))->toBeLessThan($panel->get('lastPage'));
+});
+
+test('the selection controls quote a UUID key', function () {
+    $media = makeMedia(['name' => 'keyed', 'width' => 800, 'height' => 600])->toArray();
+    $media['id'] = '9b2c3f10-1a2b-4c3d-8e9f-0a1b2c3d4e5f';
+
+    Livewire::test(CuratorPanel::class)
+        ->set('files', [$media])
+        ->assertSeeHtml("removeFromSelection('9b2c3f10-1a2b-4c3d-8e9f-0a1b2c3d4e5f')");
 });

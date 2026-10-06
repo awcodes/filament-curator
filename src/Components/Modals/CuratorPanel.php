@@ -28,6 +28,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -77,8 +78,6 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
 
     public ?int $maxSize = null;
 
-    public ?int $maxWidth = null;
-
     public ?int $minSize = null;
 
     public int | string | null $mediaId = null;
@@ -127,6 +126,8 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
             $this->{$key} = $value;
         }
 
+        $this->validationRules = $this->getUploadValidationRules();
+
         $this->getDirectories();
 
         $this->breadcrumbs[] = $this->directory;
@@ -143,21 +144,17 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
     /** @throws Exception */
     public function form(Schema $schema): Schema
     {
-        if ($this->maxItems !== null && $this->maxItems !== 0) {
-            $this->validationRules = array_filter($this->validationRules, fn ($value): bool => $value !== 'array' && ! str_starts_with((string) $value, 'max:'));
-        }
-
         return $schema
             ->statePath('panelData')
             ->schema([
                 Uploader::make('files_to_add')
                     ->hiddenLabel()
                     ->multiple()
+                    ->when(! $this->isMultiple, fn (Uploader $uploader): Uploader => $uploader->maxFiles(1))
                     ->label(trans('curator::forms.fields.file'))
                     ->preserveFilenames($this->shouldPreserveFilenames)
-                    ->maxWidth($this->maxWidth)
-                    ->minSize($this->minSize)
-                    ->maxSize($this->maxSize)
+                    ->when(filled($this->minSize), fn (Uploader $uploader): Uploader => $uploader->minSize($this->minSize))
+                    ->when(filled($this->maxSize), fn (Uploader $uploader): Uploader => $uploader->maxSize($this->maxSize))
                     ->rules($this->validationRules)
                     ->acceptedFileTypes($this->acceptedFileTypes)
                     ->disk($this->diskName)
@@ -278,6 +275,10 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
             ->limit(50)
             ->get()
             ->toArray();
+
+        // Search results arrive in one set, so there is nothing more to load until the search is cleared, which
+        // fetches the first page again.
+        $this->currentPage = $this->lastPage;
     }
 
     public function setMediaForm(): void
@@ -311,9 +312,10 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
                     ...$this->files,
                 ];
 
-                foreach ($media as $item) {
-                    $this->selected[] = $item;
-                }
+                // A single picker holds one item, so an upload replaces the selection rather than adding to it.
+                $this->selected = $this->isMultiple
+                    ? [...$this->selected, ...$media]
+                    : array_slice($media, 0, 1);
 
                 if ($insertAfter) {
                     $this->dispatch('insert-media', ['statePath' => $this->statePath, 'media' => $this->selected, 'context' => $this->context]);
@@ -485,6 +487,22 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
     public function render(): View
     {
         return view('curator::livewire.curator-panel');
+    }
+
+    /**
+     * The picker's rules validate its selection, so only the ones that describe a single file, such as `dimensions`
+     * or `mimes`, apply to uploads. `min` and `max` count selected items on the picker, not kilobytes, so they are
+     * left out with the other array rules. File size limits come from minSize() and maxSize().
+     *
+     * @return array<string>
+     */
+    protected function getUploadValidationRules(): array
+    {
+        return collect($this->rules ?? [])
+            ->filter(fn (mixed $rule): bool => is_string($rule)
+                && ! in_array(strtolower(Str::before($rule, ':')), ['required', 'nullable', 'present', 'filled', 'array', 'list', 'min', 'max', 'size', 'between'], true))
+            ->values()
+            ->all();
     }
 
     /**
