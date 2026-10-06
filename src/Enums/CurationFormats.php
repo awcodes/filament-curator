@@ -11,4 +11,9 @@ enum CurationFormats: string
     case Webp = 'webp';
     case Png = 'png';
     case Avif = 'avif';
+
+    public static function toArray(): array
+    {
+        return array_column(self::cases(), 'value');
+    }
 }
