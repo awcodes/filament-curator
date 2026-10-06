@@ -6,6 +6,7 @@ namespace Awcodes\Curator\Commands;
 
 use Filament\Support\Commands\Concerns\CanManipulateFiles;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\File;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\text;
@@ -84,9 +85,7 @@ class InstallCommand extends Command
 
             $this->info("Media model [{$modelPath}] created successfully.");
 
-            $this->callSilently('vendor:publish', [
-                '--tag' => 'curator-config',
-            ]);
+            $this->publishConfig();
 
             $this->replaceInFile(
                 config_path('curator.php'),
@@ -127,6 +126,22 @@ class InstallCommand extends Command
         $this->info('Curator has been installed successfully.');
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Copies the package config the way `vendor:publish --tag=curator-config` does, without overwriting an existing
+     * file, but resolved against the app's config path when the command runs.
+     */
+    private function publishConfig(): void
+    {
+        $path = config_path('curator.php');
+
+        if (File::exists($path)) {
+            return;
+        }
+
+        File::ensureDirectoryExists(dirname($path));
+        File::copy(dirname(__DIR__, 2) . '/config/curator.php', $path);
     }
 
     private function replaceInFile(string $file, array $replacements): void
