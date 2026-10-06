@@ -17,6 +17,20 @@ CuratorColumn::make('featured_image')
 ![A Filament posts table with a square featured image thumbnail in the Image column and up to three overlapping circular thumbnails in the Gallery column](../assets/table-column-light.png#gh-light-mode-only)
 ![A Filament posts table with a square featured image thumbnail in the Image column and up to three overlapping circular thumbnails in the Gallery column](../assets/table-column-dark.png#gh-dark-mode-only)
 
+## Sharper images
+
+By default the column shows each image's thumbnail. `resolution()` requests the image from Glide at the column's display size multiplied by the given factor instead, so it stays sharp on high-density screens:
+
+```php
+use Awcodes\Curator\Components\Tables\CuratorColumn;
+
+CuratorColumn::make('featured_image')
+    ->size(40)
+    ->resolution(2);
+```
+
+This needs a width or height on the column. Images Glide can't resize, such as SVGs and documents, keep their thumbnail, and so does every image when a custom [URL provider](../configuration.md) is configured.
+
 ## Multiple images
 
 For a relationship holding several images, control how many are shown and how they stack:
