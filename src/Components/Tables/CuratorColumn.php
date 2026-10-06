@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Awcodes\Curator\Components\Tables;
 
+use Awcodes\Curator\Facades\Curator;
+use Awcodes\Curator\Glide\GlideBuilder;
 use Awcodes\Curator\Models\Media;
+use Awcodes\Curator\Providers\GlideUrlProvider;
 use Closure;
 use Filament\Tables\Columns\ImageColumn;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
@@ -39,6 +42,38 @@ class CuratorColumn extends ImageColumn
         }
 
         return Arr::wrap($record);
+    }
+
+    /**
+     * With a resolution set, the image is requested from Glide at the column's display size multiplied by it, so it
+     * stays sharp on high-density screens. Without one, or with a custom URL provider, the thumbnail is used.
+     */
+    public function getMediaUrl(Media $item): string
+    {
+        $resolution = $this->getResolution();
+
+        if (! $resolution || ! is_media_resizable((string) $item->ext) || ! Curator::getUrlProvider() instanceof GlideUrlProvider) {
+            return $item->thumbnail_url;
+        }
+
+        $height = (int) $this->getImageHeight() * $resolution;
+        $width = (int) ($this->getImageWidth() ?? ($this->isRounded() ? $this->getImageHeight() : null)) * $resolution;
+
+        if (! $width && ! $height) {
+            return $item->thumbnail_url;
+        }
+
+        $glide = GlideBuilder::make()->format('webp')->fit('crop');
+
+        if ($width) {
+            $glide->width($width);
+        }
+
+        if ($height) {
+            $glide->height($height);
+        }
+
+        return $glide->toUrl($item->path);
     }
 
     public function getResolution(): ?int

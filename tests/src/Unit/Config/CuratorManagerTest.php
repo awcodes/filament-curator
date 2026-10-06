@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Awcodes\Curator\Config\CuratorManager;
 use Awcodes\Curator\Enums\MimeType;
+use Awcodes\Curator\Providers\GlideUrlProvider;
 
 test('getDiskName returns config default', function () {
     $manager = new CuratorManager();
@@ -157,4 +158,33 @@ test('an explicit directory wins over the configured default', function () {
     config()->set('curator.default_directory', 'media');
 
     expect((new CuratorManager())->directory('uploads')->getDirectory())->toBe('uploads');
+});
+
+test('getTenantName returns the configured relationship when tenancy is enabled only in config', function () {
+    config([
+        'curator.features.tenancy.enabled' => true,
+        'curator.features.tenancy.relationship_name' => 'team',
+    ]);
+
+    expect((new CuratorManager)->getTenantName())->toBe('team');
+});
+
+test('getTenantName returns null when tenancy is disabled', function () {
+    config([
+        'curator.features.tenancy.enabled' => false,
+        'curator.features.tenancy.relationship_name' => 'team',
+    ]);
+
+    expect((new CuratorManager)->getTenantName())->toBeNull();
+});
+
+test('getTenantName returns the explicit tenant', function () {
+    expect((new CuratorManager)->tenant('company')->getTenantName())->toBe('company');
+});
+
+test('getUrlProvider accepts a provider instance or class name', function () {
+    $provider = new GlideUrlProvider;
+
+    expect((new CuratorManager)->urlProvider($provider)->getUrlProvider())->toBe($provider)
+        ->and((new CuratorManager)->urlProvider(GlideUrlProvider::class)->getUrlProvider())->toBeInstanceOf(GlideUrlProvider::class);
 });

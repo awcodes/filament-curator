@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Awcodes\Curator\Models\Media;
+use Illuminate\Support\Facades\Storage;
 
 test('to array', function () {
     Storage::fake('media');
@@ -38,4 +39,16 @@ test('to array', function () {
             'medium_url',
             'large_url',
         ]);
+});
+
+test('the default factory state stores a jpg with its name, extension and dimensions', function () {
+    Storage::fake('public');
+
+    $media = Media::factory()->create();
+
+    expect($media->ext)->toBe('jpg')
+        ->and($media->path)->toEndWith('.jpg')
+        ->and($media->path)->not->toContain(sys_get_temp_dir())
+        ->and($media->width)->toBe(1024)
+        ->and($media->height)->toBe(576);
 });
