@@ -181,7 +181,7 @@
 
                         <button
                             type="button"
-                            x-on:click="removeFromSelection({{ $file['id']}})"
+                            x-on:click="removeFromSelection(@js($file['id']))"
                             x-show="isSelected('{{ $file['id'] }}')"
                             x-cloak
                             class="absolute inset-0 flex items-center justify-center w-full h-full rounded-md shadow text-primary-600 bg-primary-500/20 ring-2 ring-primary-500"
