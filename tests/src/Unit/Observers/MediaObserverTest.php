@@ -177,7 +177,9 @@ test('deleted removes curations stored beside root level media', function () {
     Storage::disk('public')->put('rootfile.jpg', 'content');
     Storage::disk('public')->put('rootfile/thumbnail.jpg', 'content');
 
-    $media = makeMedia(['directory' => null, 'name' => 'rootfile', 'path' => 'rootfile.jpg']);
+    $media = makeMedia(['directory' => null, 'name' => 'rootfile', 'path' => 'rootfile.jpg', 'curations' => [
+        ['curation' => ['key' => 'thumbnail', 'path' => 'rootfile/thumbnail.jpg', 'directory' => 'rootfile']],
+    ]]);
 
     $media->delete();
 
@@ -194,4 +196,118 @@ test('renaming root level media does not store a leading slash in the path', fun
 
     expect($media->fresh()->path)->toBe('renamed.jpg')
         ->and(Storage::disk('public')->exists('renamed.jpg'))->toBeTrue();
+});
+
+function curationEntry(string $key, string $path, ?string $directory = null): array
+{
+    return ['curation' => ['key' => $key, 'disk' => 'public', 'directory' => $directory, 'visibility' => 'public', 'path' => $path]];
+}
+
+test('deleted leaves a folder that only shares the media name', function () {
+    Storage::fake('public');
+    Storage::disk('public')->put('uploads.jpg', 'content');
+    Storage::disk('public')->put('uploads/someone-elses.jpg', 'content');
+
+    makeMedia(['directory' => null, 'name' => 'uploads', 'path' => 'uploads.jpg'])->delete();
+
+    expect(Storage::disk('public')->exists('uploads/someone-elses.jpg'))->toBeTrue();
+});
+
+test('deleted removes only the curation files it owns', function () {
+    Storage::fake('public');
+    Storage::disk('public')->put('media/photo.jpg', 'content');
+    Storage::disk('public')->put('media/photo/thumbnail.webp', 'crop');
+    Storage::disk('public')->put('media/photo/unrelated.txt', 'keep');
+
+    makeMedia(['directory' => 'media', 'name' => 'photo', 'path' => 'media/photo.jpg', 'curations' => [
+        curationEntry('thumbnail', 'media/photo/thumbnail.webp', 'photo'),
+    ]])->delete();
+
+    expect(Storage::disk('public')->exists('media/photo/thumbnail.webp'))->toBeFalse()
+        ->and(Storage::disk('public')->exists('media/photo/unrelated.txt'))->toBeTrue();
+});
+
+test('renaming moves the curations and updates their paths', function () {
+    Storage::fake('public');
+    Storage::disk('public')->put('media/photo.jpg', 'content');
+    Storage::disk('public')->put('media/photo/thumbnail.webp', 'crop');
+
+    $media = makeMedia(['directory' => 'media', 'name' => 'photo', 'path' => 'media/photo.jpg', 'curations' => [
+        curationEntry('thumbnail', 'media/photo/thumbnail.webp', 'photo'),
+    ]]);
+
+    $media->update(['name' => 'renamed']);
+    $media->refresh();
+
+    expect($media->path)->toBe('media/renamed.jpg')
+        ->and($media->getCuration('thumbnail')['path'])->toBe('media/renamed/thumbnail.webp')
+        ->and($media->getCuration('thumbnail')['directory'])->toBe('renamed')
+        ->and(Storage::disk('public')->exists('media/renamed/thumbnail.webp'))->toBeTrue()
+        ->and(Storage::disk('public')->directoryExists('media/photo'))->toBeFalse();
+
+    $media->delete();
+
+    expect(Storage::disk('public')->directoryExists('media/renamed'))->toBeFalse();
+});
+
+test('swapping keeps the original when the replacement cannot be moved into place', function () {
+    Storage::fake('public');
+    Storage::disk('public')->put('media/photo.jpg', 'original');
+
+    $media = makeMedia(['directory' => 'media', 'name' => 'photo', 'path' => 'media/photo.jpg']);
+
+    $media->file = ['disk' => 'public', 'directory' => 'media', 'name' => 'upload', 'path' => 'livewire-tmp/missing.png', 'ext' => 'png'];
+
+    expect(fn () => $media->save())->toThrow(RuntimeException::class);
+
+    expect(Storage::disk('public')->get('media/photo.jpg'))->toBe('original');
+});
+
+test('swapping replaces the original under its name with the new extension', function () {
+    Storage::fake('public');
+    Storage::disk('public')->put('media/photo.jpg', 'original');
+    Storage::disk('public')->put('media/upload.png', 'replacement');
+
+    $media = makeMedia(['directory' => 'media', 'name' => 'photo', 'path' => 'media/photo.jpg']);
+
+    $media->file = ['disk' => 'public', 'directory' => 'media', 'name' => 'upload', 'path' => 'media/upload.png', 'ext' => 'png', 'type' => 'image/png'];
+    $media->save();
+    $media->refresh();
+
+    expect($media->path)->toBe('media/photo.png')
+        ->and($media->name)->toBe('photo')
+        ->and(Storage::disk('public')->get('media/photo.png'))->toBe('replacement')
+        ->and(Storage::disk('public')->exists('media/photo.jpg'))->toBeFalse()
+        ->and(Storage::disk('public')->exists('media/upload.png'))->toBeFalse();
+});
+
+test('swapping with the same extension overwrites the original in place', function () {
+    Storage::fake('public');
+    Storage::disk('public')->put('media/photo.jpg', 'original');
+    Storage::disk('public')->put('media/upload.jpg', 'replacement');
+
+    $media = makeMedia(['directory' => 'media', 'name' => 'photo', 'path' => 'media/photo.jpg']);
+
+    $media->file = ['disk' => 'public', 'directory' => 'media', 'name' => 'upload', 'path' => 'media/upload.jpg', 'ext' => 'jpg'];
+    $media->save();
+
+    expect(Storage::disk('public')->get('media/photo.jpg'))->toBe('replacement')
+        ->and(Storage::disk('public')->exists('media/upload.jpg'))->toBeFalse();
+});
+
+test('swapping moves an upload from another disk on that disk', function () {
+    Storage::fake('public');
+    Storage::fake('s3');
+    Storage::disk('public')->put('media/photo.jpg', 'original');
+    Storage::disk('s3')->put('media/upload.jpg', 'replacement');
+
+    $media = makeMedia(['directory' => 'media', 'name' => 'photo', 'path' => 'media/photo.jpg']);
+
+    $media->file = ['disk' => 's3', 'directory' => 'media', 'name' => 'upload', 'path' => 'media/upload.jpg', 'ext' => 'jpg'];
+    $media->save();
+    $media->refresh();
+
+    expect($media->disk)->toBe('s3')
+        ->and(Storage::disk('s3')->get('media/photo.jpg'))->toBe('replacement')
+        ->and(Storage::disk('public')->exists('media/photo.jpg'))->toBeFalse();
 });
