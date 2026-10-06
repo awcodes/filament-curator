@@ -35,8 +35,8 @@ The trigger opens Curator's library in a full-screen modal, where an author pick
 | `outlined()` | Outlined trigger. Defaults to `true`. |
 | `size()` | Trigger size, taking a `Size` enum case. |
 | `constrained()` | Fits the image inside the preview area. Defaults to `false`. |
-| `listDisplay()` | Shows selections as a list. Defaults to `true`. |
-| `lazyLoad()` | Lazy-loads previews. Defaults to `true`. |
+| `listDisplay()` | Shows selections as a list instead of a grid. Off unless you call it. |
+| `lazyLoad()` | Lazy-loads previews. Off unless you call it. |
 | `defaultPanelSort()` | Sort direction for the picker panel. Defaults to `desc`. |
 
 ## Selection and storage
@@ -49,7 +49,7 @@ The trigger opens Curator's library in a full-screen modal, where an author pick
 | `orderColumn()` | Rename the order column used by multiple relationships. Defaults to `order`. |
 | `pathGenerator()` | Where uploads are written — see [Path generation](../storage/paths.md). |
 | `limitToDirectory()` | Restrict the picker to its own directory. Requires the `directory_restriction` feature. |
-| `tenantAware()` | Scope to the current tenant. Defaults to `true`. |
+| `tenantAware()` | Scope to the current tenant. Without it, the `features.tenancy.enabled` config value decides, which is off by default. |
 
 Uploads also accept the familiar Filament methods — `preserveFilenames()`, `minSize()`, `maxSize()`, `rules()`, `acceptedFileTypes()`, `disk()`, `visibility()`, `directory()`, `imageCropAspectRatio()`, `imageResizeMode()`, `imageResizeTargetWidth()` and `imageResizeTargetHeight()`. See Filament's [file upload documentation](https://filamentphp.com/docs/5.x/forms/file-upload) for what each does.
 
