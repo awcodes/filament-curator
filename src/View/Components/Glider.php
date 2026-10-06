@@ -28,6 +28,8 @@ class Glider extends Component
 
     public int | string | null $displayHeight = null;
 
+    protected bool $isMediaRecord = false;
+
     /**
      * @throws Exception
      */
@@ -181,6 +183,7 @@ class Glider extends Component
         );
 
         $this->mediaItem = $dto;
+        $this->isMediaRecord = true;
     }
 
     public function buildGlideSource(array $overrides = []): string
@@ -221,14 +224,38 @@ class Glider extends Component
             return $this->mediaItem->getPath();
         }
 
+        if (! $this->isServedByGlide()) {
+            return asset($this->mediaItem->getPath());
+        }
+
         return app(GlideManager::class)->getUrl($this->mediaItem->getPath(), $params);
+    }
+
+    /**
+     * Glide serves only paths that belong to a media record. Any other path, such as a fallback placeholder in the
+     * public directory, would 404 through the Glide route, so it is linked as a plain asset instead.
+     */
+    public function isServedByGlide(): bool
+    {
+        if ($this->isMediaRecord) {
+            return true;
+        }
+
+        return app(Media::class)->newQuery()->where('path', $this->mediaItem->getPath())->exists();
     }
 
     public function buildSrcSet(): ?string
     {
         $srcset = '';
-        if ($this->srcset !== null && $this->srcset !== []) {
+        if ($this->srcset !== null && $this->srcset !== [] && $this->isServedByGlide()) {
             foreach ($this->srcset as $s) {
+                // A density descriptor such as `2x` keeps the requested size and asks Glide for that pixel ratio.
+                if (preg_match('/^(\d+(?:\.\d+)?)x$/', trim((string) $s), $density)) {
+                    $srcset .= $this->buildGlideSource(['dpr' => $density[1]]) . ' ' . $s . ', ';
+
+                    continue;
+                }
+
                 $width = preg_replace("/\D/", '', (string) $s);
 
                 // A path or fallback may not know its dimensions; let Glide keep

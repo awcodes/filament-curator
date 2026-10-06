@@ -54,6 +54,8 @@ test('media without known dimensions omits the side it cannot derive', function 
 });
 
 test('a srcset on media without known dimensions does not divide by zero', function () {
+    makeMedia(['path' => 'images/banner.jpg', 'width' => null, 'height' => null]);
+
     $html = Blade::render(
         '<x-curator-glider media="images/banner.jpg" :srcset="[\'640w\']" sizes="100vw" />',
     );

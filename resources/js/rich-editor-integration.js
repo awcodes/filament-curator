@@ -150,11 +150,12 @@
             { name: 'focus' },
             {
               name: 'setImage',
+              // No id: Filament treats an image's id as a file attachment path, and its renderer replaces the
+              // src of any image that has one, which left Curator images without a src when rendered.
               arguments: [{
                 src: item.url,
                 alt: item.alt || item.title || '',
                 title: item.title || '',
-                id: item.id || null,
               }]
             }
           ],
