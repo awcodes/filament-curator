@@ -8,6 +8,7 @@ use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Facades\Glide;
 use Awcodes\Curator\Models\Media;
 use Illuminate\Support\Facades\Storage;
+use RuntimeException;
 use stdClass;
 
 class MediaObserver
@@ -37,42 +38,34 @@ class MediaObserver
      */
     public function updating(Media $media): void
     {
-        $storage = Storage::disk($media->disk);
-
         // Replace image
         if ($this->hasMediaUpload($media)) {
-            $originalPath = $this->pathIn($media->directory, $media->getOriginal()['name'] . '.' . $media->getOriginal()['ext']);
-
-            if ($storage->exists($originalPath)) {
-                $storage->delete($originalPath);
-            }
-
-            foreach ($media->file as $k => $v) {
-                $media->{$k} = $v;
-            }
-
-            $replacedPath = $this->pathIn($media->directory, $media->getOriginal()['name'] . '.' . $media->ext);
-
-            $storage->move($media->path, $replacedPath);
-
-            $media->name = $media->getOriginal()['name'];
-            $media->path = $replacedPath;
-
-            // Delete glide-cache for replaced image
-            $server = Glide::getServer();
-            $server->deleteCache($media->path);
+            $this->swapFile($media);
         }
 
         // Rename file name
         if ($media->isDirty(['name']) && ! blank($media->name)) {
+            $storage = Storage::disk($media->disk);
+            $originalName = $media->getOriginal('name');
+            $originalPath = $media->path;
+
             if ($storage->exists($this->pathIn($media->directory, $media->name . '.' . $media->ext))) {
                 $media->name = $media->name . '-' . time();
             }
 
             $renamedPath = $this->pathIn($media->directory, $media->name . '.' . $media->ext);
 
-            $storage->move($media->path, $renamedPath);
+            if (! $storage->move($originalPath, $renamedPath)) {
+                throw new RuntimeException("Unable to rename [{$originalPath}] to [{$renamedPath}].");
+            }
+
             $media->path = $renamedPath;
+
+            if (filled($originalName)) {
+                $this->moveCurations($media, $originalName, $media->name);
+            }
+
+            Glide::getServer()->deleteCache($originalPath);
         }
 
         $media->__unset('file');
@@ -88,15 +81,7 @@ class MediaObserver
 
         $storage->delete($media->path);
 
-        // Curations live in a folder named after the media item. Without a
-        // name that path collapses to the directory itself (or the disk root).
-        if (filled($media->name)) {
-            $curations = $this->pathIn($media->directory, $media->name);
-
-            if ($storage->allFiles($curations)) {
-                $storage->deleteDirectory($curations);
-            }
-        }
+        $this->deleteCurations($media);
 
         // A blank directory is the disk root, which is never ours to remove.
         if (filled($media->directory) && count($storage->allFiles($media->directory)) === 0) {
@@ -106,6 +91,122 @@ class MediaObserver
         // Delete glide-cache for delete image
         $server = Glide::getServer();
         $server->deleteCache($media->path);
+    }
+
+    /**
+     * Moves the uploaded replacement to the original's name, keeping its new extension. The original is removed
+     * only once the replacement is in place, so a failed move never loses the file being replaced.
+     */
+    protected function swapFile(Media $media): void
+    {
+        $originalDisk = $media->getOriginal('disk');
+        $originalPath = $media->getOriginal('path');
+        $originalName = $media->getOriginal('name');
+
+        foreach ($media->file as $k => $v) {
+            $media->{$k} = $v;
+        }
+
+        $replacedPath = $this->pathIn($media->directory, $originalName . '.' . $media->ext);
+
+        // The upload is on its own disk, which may not be the original's.
+        if ($media->path !== $replacedPath && ! Storage::disk($media->disk)->move($media->path, $replacedPath)) {
+            throw new RuntimeException("Unable to move the replacement file [{$media->path}] into place.");
+        }
+
+        if ($originalDisk !== $media->disk || $originalPath !== $replacedPath) {
+            Storage::disk($originalDisk)->delete($originalPath);
+        }
+
+        $media->name = $originalName;
+        $media->path = $replacedPath;
+
+        $server = Glide::getServer();
+        $server->deleteCache($originalPath);
+        $server->deleteCache($replacedPath);
+    }
+
+    /**
+     * Curations are stored in a folder named after the media item. Renaming the item moves them with it and updates
+     * the stored paths, so they keep resolving and are found again when the item is deleted.
+     */
+    protected function moveCurations(Media $media, string $fromName, string $toName): void
+    {
+        if (blank($media->curations)) {
+            return;
+        }
+
+        $storage = Storage::disk($media->disk);
+        $fromFolder = $this->pathIn($media->directory, $fromName);
+        $toFolder = $this->pathIn($media->directory, $toName);
+
+        $curations = [];
+
+        foreach ($media->curations as $item) {
+            $path = $item['curation']['path'] ?? null;
+
+            if (! is_string($path) || ! str_starts_with(ltrim($path, '/'), $fromFolder . '/')) {
+                $curations[] = $item;
+
+                continue;
+            }
+
+            $newPath = $toFolder . '/' . basename($path);
+
+            if ($storage->exists($path) && ! $storage->move($path, $newPath)) {
+                throw new RuntimeException("Unable to move the curation [{$path}] to [{$newPath}].");
+            }
+
+            $item['curation']['path'] = $newPath;
+            $item['curation']['directory'] = $toName;
+            $item['curation']['url'] = Media::resolveUrl($media->disk, $newPath, $item['curation']['visibility'] ?? $media->visibility);
+
+            $curations[] = $item;
+        }
+
+        $media->curations = $curations;
+
+        $this->deleteFolderIfEmpty($media->disk, $fromFolder);
+    }
+
+    /**
+     * Deletes only the files the media's curations point to, then their folder if that leaves it empty. A folder that
+     * merely shares the item's name, such as `uploads/` beside `uploads.jpg`, is never touched.
+     */
+    protected function deleteCurations(Media $media): void
+    {
+        if (blank($media->curations)) {
+            return;
+        }
+
+        $storage = Storage::disk($media->disk);
+        $folders = [];
+
+        foreach ($media->curations as $item) {
+            $path = $item['curation']['path'] ?? null;
+
+            if (! is_string($path) || blank($path)) {
+                continue;
+            }
+
+            $storage->delete($path);
+            $folders[] = dirname(ltrim($path, '/'));
+        }
+
+        foreach (array_unique($folders) as $folder) {
+            if ($folder !== '.' && $folder !== rtrim((string) $media->directory, '/')) {
+                $this->deleteFolderIfEmpty($media->disk, $folder);
+            }
+        }
+    }
+
+    protected function deleteFolderIfEmpty(string $disk, string $folder): void
+    {
+        $storage = Storage::disk($disk);
+
+        if ($storage->directoryExists($folder) && $storage->allFiles($folder) === [] && $storage->allDirectories($folder) === []) {
+            $storage->deleteDirectory($folder);
+        }
     }
 
     /**
