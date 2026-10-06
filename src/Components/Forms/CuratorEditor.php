@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Awcodes\Curator\Components\Forms;
 
 use Awcodes\Curator\Concerns\HasCurationPresets;
+use Awcodes\Curator\Enums\CurationFormats;
 use Awcodes\Curator\Models\Media;
 use Closure;
 use Filament\Actions\Action;
@@ -77,7 +78,11 @@ class CuratorEditor extends Field
 
     public function getFormats(): array
     {
-        return $this->evaluate($this->formats) ?? config('curator.curation_formats');
+        // Only offer formats the curation can be saved in, even from a config published before the list was narrowed.
+        return array_values(array_intersect(
+            $this->evaluate($this->formats) ?? config('curator.curation_formats'),
+            CurationFormats::toArray(),
+        ));
     }
 
     public function getCurationAction(): Action

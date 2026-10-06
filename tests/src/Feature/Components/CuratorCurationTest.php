@@ -117,3 +117,97 @@ test('an out of range quality is rejected', function () {
         ->call('saveCuration', curationPayload(['quality' => 5000]))
         ->assertHasErrors('quality');
 });
+
+// A 200×100 image whose left half is red and right half blue, so the result shows which way it was turned.
+function splitImageComponent(): \Livewire\Features\SupportTesting\Testable
+{
+    Storage::fake('public');
+
+    $image = imagecreatetruecolor(200, 100);
+    imagefilledrectangle($image, 0, 0, 99, 99, imagecolorallocate($image, 255, 0, 0));
+    imagefilledrectangle($image, 100, 0, 199, 99, imagecolorallocate($image, 0, 0, 255));
+    ob_start();
+    imagepng($image);
+    Storage::disk('public')->put('media/split.png', ob_get_clean());
+
+    $media = makeMedia(['name' => 'split', 'directory' => 'media', 'path' => 'media/split.png', 'ext' => 'png', 'type' => 'image/png', 'width' => 200, 'height' => 100]);
+
+    return Livewire::test(CuratorCuration::class, [
+        'media' => $media,
+        'modalId' => 'curation',
+        'statePath' => 'data.image',
+        'presets' => [],
+        'formats' => config('curator.curation_formats'),
+    ]);
+}
+
+function savedPixel(string $path, int $x, int $y): string
+{
+    $image = imagecreatefromstring(Storage::disk('public')->get($path));
+    ['red' => $red, 'blue' => $blue] = imagecolorsforindex($image, imagecolorat($image, $x, $y));
+
+    return $red > $blue ? 'red' : 'blue';
+}
+
+function splitPayload(array $overrides = []): array
+{
+    return curationPayload(array_replace([
+        'key' => 'custom-crop',
+        'format' => 'png',
+        'width' => 200,
+        'height' => 100,
+        'canvasData' => ['width' => 500, 'height' => 250, 'naturalWidth' => 200, 'naturalHeight' => 100],
+    ], $overrides));
+}
+
+test('a positive rotation turns the image clockwise, as the cropper shows it', function () {
+    splitImageComponent()->call('saveCuration', splitPayload(['rotate' => 90, 'width' => 100, 'height' => 200]));
+
+    // Turned clockwise, the red left half ends up on top.
+    expect(savedPixel('media/split/custom-crop.png', 50, 20))->toBe('red')
+        ->and(savedPixel('media/split/custom-crop.png', 50, 180))->toBe('blue');
+});
+
+test('flipping horizontally mirrors left and right', function () {
+    splitImageComponent()->call('saveCuration', splitPayload(['scaleX' => -1]));
+
+    expect(savedPixel('media/split/custom-crop.png', 20, 50))->toBe('blue')
+        ->and(savedPixel('media/split/custom-crop.png', 180, 50))->toBe('red');
+});
+
+test('flipping vertically leaves left and right in place', function () {
+    splitImageComponent()->call('saveCuration', splitPayload(['scaleY' => -1.0]));
+
+    expect(savedPixel('media/split/custom-crop.png', 20, 50))->toBe('red');
+});
+
+test('a custom curation keeps the crop size of the original image, whatever the cropper size on screen', function () {
+    splitImageComponent()->call('saveCuration', splitPayload(['width' => 120, 'height' => 80]));
+
+    [$width, $height] = getimagesizefromstring(Storage::disk('public')->get('media/split/custom-crop.png'));
+
+    expect([$width, $height])->toBe([120, 80]);
+});
+
+test('a registered preset is saved at the preset size', function () {
+    Awcodes\Curator\Facades\Curation::presets([
+        Awcodes\Curator\Curations\CurationPreset::make('Banner')->width(160)->height(40)->format('png'),
+    ]);
+
+    splitImageComponent()->call('saveCuration', splitPayload(['key' => 'banner', 'width' => 200, 'height' => 50]));
+
+    [$width, $height] = getimagesizefromstring(Storage::disk('public')->get('media/split/banner.png'));
+
+    expect([$width, $height])->toBe([160, 40]);
+});
+
+test('the default curation formats are ones a curation can be saved in', function () {
+    expect(config('curator.curation_formats'))
+        ->toBe(Awcodes\Curator\Enums\CurationFormats::toArray());
+});
+
+test('the editor drops formats a curation cannot be saved in', function () {
+    config(['curator.curation_formats' => ['jpg', 'gif', 'svg', 'webp', 'bmp']]);
+
+    expect(Awcodes\Curator\Components\Forms\CuratorEditor::make('curation')->getFormats())->toBe(['jpg', 'webp']);
+});

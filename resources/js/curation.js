@@ -44,6 +44,7 @@ export default function curation({statePath, fileName, fileType, presets = {}}) 
             this.$watch('preset', ($value) => {
                 if ($value === 'custom') {
                     this.cropper.reset()
+                    this.cropper.setAspectRatio(NaN);
                     this.key = null;
                     this.format = 'jpg';
                     this.quality = 60;
@@ -55,6 +56,8 @@ export default function curation({statePath, fileName, fileType, presets = {}}) 
                     let height = preset.height;
                     let left = Math.round((containerData.width - width) / 2);
                     let top = Math.round((containerData.height - height) / 2);
+                    // Keep the crop at the preset's shape, since the server renders it at the preset's size.
+                    this.cropper.setAspectRatio(width / height);
                     this.cropper.setCropBoxData({...cropBoxData, left, top, width, height});
                     this.key = preset.key;
                     this.format = preset.format;
@@ -96,11 +99,11 @@ export default function curation({statePath, fileName, fileType, presets = {}}) 
             this.cropper.setCropBoxData({...currentCropBox, height: parseInt($event.target.value)})
         },
         flipHorizontally() {
-            this.cropper.scaleY(this.flippedHorizontally ? 1 : -1);
+            this.cropper.scaleX(this.flippedHorizontally ? 1 : -1);
             this.flippedHorizontally = !this.flippedHorizontally
         },
         flipVertically() {
-            this.cropper.scaleX(this.flippedVertically ? 1 : -1);
+            this.cropper.scaleY(this.flippedVertically ? 1 : -1);
             this.flippedVertically = !this.flippedVertically
         },
         saveCuration() {

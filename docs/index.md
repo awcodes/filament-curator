@@ -15,7 +15,7 @@ Curator is a media picker and manager for Filament. It stores uploaded files in 
 - **A picker field** — `CuratorPicker` opens a modal to select existing media or upload new files, with single and multiple relationship support.
 - **A media manager** — a Filament resource for browsing, editing and organising everything that has been uploaded.
 - **Image transformation** — the `<x-curator-glider>` Blade component builds signed Glide URLs, so sizing, cropping and format conversion happen on request.
-- **Curations** — per-image crops and focal points saved against a named preset, for when a single automatic crop is not good enough.
+- **Curations** — per-image crops saved against a named preset, for when a single automatic crop is not good enough.
 
 ![The Curator media library in its grid layout, showing eight landscape images, each with its title, file size, and Edit and Delete actions](assets/media-library-light.png#gh-light-mode-only)
 ![The Curator media library in its grid layout, showing eight landscape images, each with its title, file size, and Edit and Delete actions](assets/media-library-dark.png#gh-dark-mode-only)

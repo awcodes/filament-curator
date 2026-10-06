@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Awcodes\Curator\Components\Modals;
 
+use Awcodes\Curator\Curations\CurationPreset;
 use Awcodes\Curator\Enums\CurationFormats;
+use Awcodes\Curator\Facades\Curation;
 use Awcodes\Curator\Facades\Glide;
 use Awcodes\Curator\Models\Media;
 use Illuminate\Contracts\View\View;
@@ -36,29 +38,19 @@ class CuratorCuration extends Component
         $image = $manager->read($storage->get($this->media->path));
         $extension = $data['format'] ?? $this->media->ext;
 
-        $aspectWidth = floor(($data['canvasData']['width'] / $data['canvasData']['naturalWidth']) * $data['width']);
-        $aspectHeight = floor(($data['canvasData']['height'] / $data['canvasData']['naturalHeight']) * $data['height']);
+        [$aspectWidth, $aspectHeight] = $this->getOutputSize($data);
 
+        // The decoder has already applied the EXIF orientation, so the crop data describes the upright image.
         $image->orient();
 
-        if ($image->exif('Orientation') > 1) {
-            $rotateCorrection = match ($image->exif('Orientation')) {
-                3, 4 => 180,
-                5, 6 => 90,
-                7, 8 => 270,
-                default => 0
-            };
+        // cropperjs rotates clockwise for a positive angle; Intervention rotates counter-clockwise.
+        $image->rotate(-$data['rotate']);
 
-            $image->rotate($rotateCorrection - $data['rotate']);
-        } else {
-            $image->rotate($data['rotate']);
-        }
-
-        if ($data['scaleX'] === -1) {
+        if ($data['scaleX'] < 0) {
             $image->flop();
         }
 
-        if ($data['scaleY'] === -1) {
+        if ($data['scaleY'] < 0) {
             $image->flip();
         }
 
@@ -97,6 +89,23 @@ class CuratorCuration extends Component
     public function render(): View
     {
         return view('curator::components.modals.curator-curation');
+    }
+
+    /**
+     * A registered preset is rendered at its own size. Anything else keeps the crop's size in the original image's
+     * pixels, so the result doesn't depend on how large the cropper was on screen.
+     *
+     * @return array{0: int, 1: int}
+     */
+    protected function getOutputSize(array $data): array
+    {
+        $preset = collect(Curation::getPresets())->first(fn (CurationPreset $preset): bool => $preset->getKey() === $data['key']);
+
+        if ($preset instanceof CurationPreset) {
+            return [$preset->getWidth(), $preset->getHeight()];
+        }
+
+        return [max(1, (int) round($data['width'])), max(1, (int) round($data['height']))];
     }
 
     /**
