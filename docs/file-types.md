@@ -19,7 +19,7 @@ Uploaded files are served from your application's own origin. An HTML or XML doc
 
 ## Opting back in
 
-You can allow these types, globally or per field, if your application genuinely needs to host them:
+You can allow these types, globally or per field, if your application genuinely needs to host them. A field's own setting takes precedence over the global one:
 
 ```php
 use Awcodes\Curator\Enums\MimeType;
