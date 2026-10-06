@@ -23,12 +23,13 @@ description: Render media through Glide with the x-curator-glider Blade componen
 | Attribute | Purpose |
 |---|---|
 | `media` | **Required.** A media id or a `Media` instance. |
-| `loading` | Defaults to `lazy`. |
-| `glide` | A raw Glide query string, if you would rather not use individual attributes. |
-| `srcset` | An array of widths. Requires `sizes` to be set as well. |
+| `srcset` | An array of widths (`640w`) or pixel densities (`2x`). Requires `sizes` to be set as well. |
 | `sizes` | The `sizes` attribute paired with `srcset`. |
 | `fallback` | Name of a registered fallback — see below. |
-| `force` | Forces a signed URL. Useful for cloud disks, with possible performance cost. |
+
+Any other attribute, such as `class` or `loading="lazy"`, is passed through to the `<img>`.
+
+Glide URLs are relative to your site's root, like `/curator/photo.jpg?w=1024&s=…`. That works on your own pages, but HTML read somewhere else, such as an email, a feed or an API response, needs absolute URLs. Build those with Laravel's `url()` helper, for example `url(glide()->getUrl($media->path, ['w' => 1024]))`.
 
 The image's `width` and `height` attributes describe what Glide will serve. Give only one of them and the other is worked out from the media's aspect ratio, so the box reserves the right space and the layout doesn't shift when the image loads.
 
@@ -43,6 +44,17 @@ Responsive images need both `srcset` and `sizes`:
     :media="1"
     :srcset="['1024w', '640w']"
     sizes="(max-width: 1200px) 100vw, 1024px"
+/>
+```
+
+A pixel density keeps the requested size and asks Glide for that device pixel ratio, which suits images shown at a fixed size:
+
+```blade
+<x-curator-glider
+    :media="1"
+    width="400"
+    :srcset="['1x', '2x']"
+    sizes="400px"
 />
 ```
 
@@ -67,6 +79,8 @@ public function register(): void
 ```
 
 Everything but the name is optional and may be null, so a conditional value is fine.
+
+A source that is a path in your `public` directory, like the one above, is linked as a plain asset, without Glide's transformations. A source that is the path of a stored media item goes through Glide like any other media. A full URL is used as-is.
 
 > [!WARNING]
 > A missing fallback is treated as a configuration mistake, not missing media, so the component throws. That covers a name that was never registered and a fallback that ends up without a source.
