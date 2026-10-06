@@ -1,11 +1,11 @@
 ---
 title: Curations
-description: Create custom crops and focal points per image, and render them with the curation component.
+description: Create custom crops per image, and render them with the curation component.
 ---
 
 # Curations
 
-A curation is a crop and focal point saved against one image under a named preset. Where Glide applies the same rule to every image, a curation lets an author decide how one particular image should be cropped.
+A curation is a crop saved against one image under a named preset. Where Glide applies the same rule to every image, a curation lets an author decide how one particular image should be cropped.
 
 ![The Curator curation modal: an image with a 320 by 180 crop box, and an Adjustments sidebar with the Post thumbnail preset selected, its key, format, quality, position and size, aspect ratio, zoom, flip and crop controls](../assets/curation-light.png#gh-light-mode-only)
 ![The Curator curation modal: an image with a 320 by 180 crop box, and an Adjustments sidebar with the Post thumbnail preset selected, its key, format, quality, position and size, aspect ratio, zoom, flip and crop controls](../assets/curation-dark.png#gh-dark-mode-only)
@@ -35,6 +35,8 @@ The name you pass to `make()` is the label. Its **key** is that label slugged wi
 > [!NOTE]
 > Registering nothing does not mean no presets. Curator falls back to a single built-in `Thumbnail` preset, 200×200 webp at quality 60.
 
+Choosing a preset in the modal locks the crop to the preset's shape, and the curation is saved at the preset's width and height. A custom curation, with a key of your own, is saved at the size of the crop in the original image.
+
 ## Rendering a curation
 
 ```blade
@@ -45,7 +47,7 @@ The name you pass to `make()` is the label. Its **key** is that label slugged wi
 
 ## Falling back to Glider
 
-A curation only exists for images an author has actually curated, so check before rendering one and fall back to [the glider component](glider.md) otherwise. This keeps you from having to curate every image — only the ones whose focal point matters.
+A curation only exists for images an author has actually curated, so check before rendering one and fall back to [the glider component](glider.md) otherwise. This keeps you from having to curate every image — only the ones whose crop matters.
 
 ```blade
 @if ($media->hasCuration('thumbnail'))
