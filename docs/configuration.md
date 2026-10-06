@@ -81,6 +81,21 @@ There is no need to set `$table` — the parent already points at `curator`. Onl
 
 The installer writes this model for you if you chose UUID or tenancy support, adding the `HasUuids` trait and the tenant relationship as needed.
 
+## Global upload defaults
+
+The `Curator` facade sets defaults for every upload: `disk()`, `directory()`, `visibility()`, `acceptedFileTypes()`, `minSize()`, `maxSize()` and the `image*()` resizing options. A field such as `CuratorPicker` uses its own setting first, then the facade's, then the config file:
+
+```php
+use Awcodes\Curator\Facades\Curator;
+
+public function boot(): void
+{
+    Curator::disk('s3')->maxSize(10_000);
+}
+```
+
+Configure the facade, and the `Glide` and `Curation` facades, from a service provider. What you set there lasts for the life of the process, including queue workers and Octane, so set it once rather than changing it during a request.
+
 ## Customising delete actions
 
 Media can be deleted from three places: the resource table (row and bulk actions), the edit page, and the picker panel. `Curator::configureDeleteActionsUsing()` hooks all of them at once, so you can add a warning, a confirmation step, or a guard without touching Filament's global `DeleteAction::configureUsing()`. Call it from a service provider's `boot()` method:

@@ -30,7 +30,6 @@ public function register(): void
 {
     Glide::serverConfig([
         'driver' => 'imagick',
-        'response' => new LaravelResponseFactory(app('request')),
         'source' => Storage::disk('public')->getDriver(),
         'cache' => storage_path('app'),
         'cache_path_prefix' => '.cache',
@@ -50,7 +49,6 @@ use Awcodes\Curator\Facades\Glide;
 use Illuminate\Support\Facades\Storage;
 
 Glide::serverConfig([
-    'response' => new LaravelResponseFactory(app('request')),
     'source' => Storage::disk('s3')->getDriver(),
     'cache' => Storage::disk('local')->getDriver(),
     'cache_path_prefix' => '.cache',
@@ -61,4 +59,4 @@ Glide::serverConfig([
 - **Point `source` at the disk your media lives on, with no `source_path_prefix`.** Curator stores each file's `path` relative to its disk. Media on any other disk will fail to render.
 - **Keep `cache` on a fast local disk.** Transformed images are cached there, so only the first request per variant reads from the cloud.
 
-Rendering from a cloud disk may also need `force` on the glider component to get a signed URL — see [Glider component](../rendering/glider.md).
+Curator adds the response factory itself, for the current request, so the config doesn't need a `response` entry.

@@ -6,6 +6,7 @@ namespace Awcodes\Curator\Components\Forms;
 
 use Awcodes\Curator\Concerns\CanGeneratePaths;
 use Awcodes\Curator\Concerns\CanUploadFiles;
+use Awcodes\Curator\Config\CuratorManager;
 use Awcodes\Curator\Resources\Media\MediaResource;
 use Closure;
 use Exception;
@@ -586,5 +587,10 @@ class CuratorPicker extends Field
     public function getTypeValue(): ?string
     {
         return $this->evaluate($this->typeValue) ?? null;
+    }
+
+    protected function getUploadDefaults(): ?CuratorManager
+    {
+        return app(CuratorManager::class);
     }
 }

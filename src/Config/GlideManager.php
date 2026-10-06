@@ -50,7 +50,15 @@ class GlideManager
      */
     public function getServer(?string $disk = null): Server
     {
-        return ServerFactory::create($this->serverConfig ?? $this->getDefaultServerConfig($disk));
+        if (! isset($this->serverConfig)) {
+            return ServerFactory::create($this->getDefaultServerConfig($disk));
+        }
+
+        // The response factory needs the current request, so a config set once at boot gets a fresh one per call.
+        return ServerFactory::create([
+            'response' => new SymfonyResponseFactory(app('request')),
+            ...$this->serverConfig,
+        ]);
     }
 
     public function getBasePath(): string
