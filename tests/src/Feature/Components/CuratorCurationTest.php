@@ -211,3 +211,11 @@ test('the editor drops formats a curation cannot be saved in', function () {
 
     expect(Awcodes\Curator\Components\Forms\CuratorEditor::make('curation')->getFormats())->toBe(['jpg', 'webp']);
 });
+
+test('a flip combined with a quarter turn matches the cropper preview', function () {
+    // The cropper mirrors the image first and then turns it: red moves to the right, then down.
+    splitImageComponent()->call('saveCuration', splitPayload(['rotate' => 90, 'scaleX' => -1, 'width' => 100, 'height' => 200]));
+
+    expect(savedPixel('media/split/custom-crop.png', 50, 180))->toBe('red')
+        ->and(savedPixel('media/split/custom-crop.png', 50, 20))->toBe('blue');
+});

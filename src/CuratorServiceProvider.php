@@ -31,6 +31,24 @@ use Spatie\LaravelPackageTools\PackageServiceProvider;
 
 class CuratorServiceProvider extends PackageServiceProvider
 {
+    /**
+     * The managers behind the `Curator`, `Glide` and `Curation` facades.
+     *
+     * @var array<class-string>
+     */
+    protected const MANAGERS = [
+        CuratorManager::class,
+        GlideManager::class,
+        CurationManager::class,
+    ];
+
+    /**
+     * The managers as the application's service providers configured them.
+     *
+     * @var array<class-string, object>
+     */
+    protected array $configuredManagers = [];
+
     public function configurePackage(Package $package): void
     {
         $package->name(name: 'curator')
@@ -45,22 +63,30 @@ class CuratorServiceProvider extends PackageServiceProvider
             ]);
     }
 
+    /**
+     * Queue workers and Octane forget scoped instances between jobs and requests. Each new instance starts from a
+     * copy of the managers as they were once the app booted, so configuration made in a service provider lasts,
+     * while anything changed during one request or job is reset for the next.
+     *
+     * @internal
+     */
+    public function rememberConfiguredManagers(): void
+    {
+        foreach (self::MANAGERS as $manager) {
+            $this->configuredManagers[$manager] = clone $this->app->make($manager);
+        }
+    }
+
     public function packageRegistered(): void
     {
-        $this->app->singleton(
-            abstract: CuratorManager::class,
-            concrete: fn (): CuratorManager => new CuratorManager(),
-        );
-
-        $this->app->singleton(
-            abstract: GlideManager::class,
-            concrete: fn (): GlideManager => new GlideManager(),
-        );
-
-        $this->app->singleton(
-            abstract: CurationManager::class,
-            concrete: fn (): CurationManager => new CurationManager(),
-        );
+        foreach (self::MANAGERS as $manager) {
+            $this->app->scoped(
+                abstract: $manager,
+                concrete: fn (): object => isset($this->configuredManagers[$manager])
+                    ? clone $this->configuredManagers[$manager]
+                    : new $manager(),
+            );
+        }
 
         $this->app->bind(
             abstract: Media::class,
@@ -100,6 +126,8 @@ class CuratorServiceProvider extends PackageServiceProvider
 
     public function packageBooted(): void
     {
+        $this->app->booted(fn () => $this->rememberConfiguredManagers());
+
         Livewire::component(name: 'curator-panel', class: CuratorPanel::class);
         Livewire::component(name: 'curator-curation', class: CuratorCuration::class);
 

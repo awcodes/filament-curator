@@ -31,7 +31,7 @@ test('uploads succeed when the panel is mounted without a minimum size', functio
 
 test('only the per-file rules of the picker reach the uploader', function () {
     $panel = Livewire::test(CuratorPanel::class, ['settings' => uploadPanelSettings([
-        'rules' => ['required', 'array', 'max:3', 'min:1', 'dimensions:min_width=500', 'mimes:jpg'],
+        'rules' => ['required', 'array', 'max:3', 'min:1', 'exists:curator,id', 'in:a,b', 'dimensions:min_width=500', 'mimes:jpg'],
     ])]);
 
     expect($panel->get('validationRules'))->toBe(['dimensions:min_width=500', 'mimes:jpg']);

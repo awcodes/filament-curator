@@ -56,8 +56,16 @@ class CuratorColumn extends ImageColumn
             return $item->thumbnail_url;
         }
 
-        $height = (int) $this->getImageHeight() * $resolution;
-        $width = (int) ($this->getImageWidth() ?? ($this->isRounded() ? $this->getImageHeight() : null)) * $resolution;
+        $height = $this->getImageHeight();
+        $width = $this->getImageWidth() ?? ($this->isRounded() ? $height : null);
+
+        // Only pixel sizes can be scaled; a size in another unit, such as rem, keeps the thumbnail.
+        if (($height !== null && $this->toPixels($height) === null) || ($width !== null && $this->toPixels($width) === null)) {
+            return $item->thumbnail_url;
+        }
+
+        $height = ($this->toPixels($height) ?? 0) * $resolution;
+        $width = ($this->toPixels($width) ?? 0) * $resolution;
 
         if (! $width && ! $height) {
             return $item->thumbnail_url;
@@ -107,5 +115,18 @@ class CuratorColumn extends ImageColumn
         }
 
         return $query->with([$relationshipName]);
+    }
+
+    protected function toPixels(mixed $size): ?int
+    {
+        if (is_int($size)) {
+            return $size;
+        }
+
+        if (is_string($size) && preg_match('/^(\d+)(px)?$/', trim($size), $matches)) {
+            return (int) $matches[1];
+        }
+
+        return null;
     }
 }

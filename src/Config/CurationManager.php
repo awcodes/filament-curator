@@ -10,6 +10,16 @@ class CurationManager
 {
     protected ?array $presets = null;
 
+    /**
+     * Each request starts from a copy of the booted manager, so it gets its own presets to change.
+     */
+    public function __clone(): void
+    {
+        if ($this->presets !== null) {
+            $this->presets = array_map(fn (mixed $preset): mixed => is_object($preset) ? clone $preset : $preset, $this->presets);
+        }
+    }
+
     public static function configure(): static
     {
         return app(static::class);

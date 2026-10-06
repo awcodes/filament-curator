@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Awcodes\Curator\Config;
 
 use Awcodes\Curator\Config\Concerns\HasGliderFallbacks;
+use Awcodes\Curator\Glide\GliderFallback;
 use Awcodes\Curator\Glide\SymfonyResponseFactory;
 use Exception;
 use Filament\Support\Concerns\EvaluatesClosures;
@@ -24,6 +25,14 @@ class GlideManager
     protected string $token;
 
     protected ?string $basePath = null;
+
+    /**
+     * Each request starts from a copy of the booted manager, so it gets its own fallbacks to change.
+     */
+    public function __clone(): void
+    {
+        $this->gliderFallbacks = array_map(fn (GliderFallback $fallback): GliderFallback => clone $fallback, $this->gliderFallbacks);
+    }
 
     public static function configure(): static
     {

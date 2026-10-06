@@ -43,9 +43,8 @@ class CuratorCuration extends Component
         // The decoder has already applied the EXIF orientation, so the crop data describes the upright image.
         $image->orient();
 
-        // cropperjs rotates clockwise for a positive angle; Intervention rotates counter-clockwise.
-        $image->rotate(-$data['rotate']);
-
+        // cropperjs mirrors the image in its own frame and then rotates it, clockwise for a positive angle.
+        // Intervention rotates counter-clockwise, so the angle is negated.
         if ($data['scaleX'] < 0) {
             $image->flop();
         }
@@ -53,6 +52,8 @@ class CuratorCuration extends Component
         if ($data['scaleY'] < 0) {
             $image->flip();
         }
+
+        $image->rotate(-$data['rotate']);
 
         $encodedImage = $image
             ->crop($data['width'], $data['height'], $data['x'], $data['y'])
