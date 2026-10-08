@@ -39,11 +39,9 @@ class RepairExtensionsCommand extends Command
 
         $this->info($prefix . "Checking {$total} media file(s)...");
 
-        $repaired = 0;
-        $mismatched = 0;
-        $skipped = 0;
+        $counts = ['renamed' => 0, 'mismatched' => 0, 'review' => 0, 'skipped' => 0];
 
-        $model::query()->chunkById(100, function ($records) use (&$repaired, &$mismatched, &$skipped, $dryRun): void {
+        $model::query()->chunkById(100, function ($records) use (&$counts, $dryRun): void {
             foreach ($records as $media) {
                 try {
                     $result = $this->inspect($media, $dryRun);
@@ -52,61 +50,112 @@ class RepairExtensionsCommand extends Command
                     $result = 'skipped';
                 }
 
-                match ($result) {
-                    'repaired' => $repaired++,
-                    'mismatched' => $mismatched++,
-                    'skipped' => $skipped++,
-                    default => null,
-                };
+                if (isset($counts[$result])) {
+                    $counts[$result]++;
+                }
             }
         });
 
         $this->newLine();
         $this->info(sprintf(
-            '%sDone. %d %s, %d harmless mismatch(es) left as they are, %d skipped.',
+            '%sDone. %d %s, %d to review, %d harmless mismatch(es) left as they are, %d skipped.',
             $prefix,
-            $repaired,
+            $counts['renamed'],
             $dryRun ? 'would be renamed' : 'renamed',
-            $mismatched,
-            $skipped,
+            $counts['review'],
+            $counts['mismatched'],
+            $counts['skipped'],
         ));
 
         return self::SUCCESS;
     }
 
     /**
-     * @return 'ok'|'repaired'|'mismatched'|'skipped'
+     * @return 'ok'|'renamed'|'mismatched'|'review'|'skipped'
      */
     protected function inspect(Media $media, bool $dryRun): string
     {
         $disk = Storage::disk($media->disk);
+        $path = (string) $media->path;
 
-        if (blank($media->path) || ! $disk->exists($media->path)) {
-            $this->warn("  skipped (missing file): [{$media->id}] {$media->path}");
+        if ($path === '' || ! $disk->exists($path)) {
+            $this->warn("  skipped (missing file): [{$media->id}] {$path}");
 
             return 'skipped';
         }
 
-        $storedExtension = pathinfo($media->path, PATHINFO_EXTENSION);
-        $detectedType = $this->detectType($disk, $media->path);
+        // Extensions were stored as sent before 4.1.1, so `.JPG` is common and
+        // harmless. Case alone never makes an extension unsafe.
+        $storedExtension = mb_strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        $columnExtension = mb_strtolower((string) $media->ext);
+        $detectedType = MimeType::refineDetectedType(
+            $this->detectType($disk, $path),
+            $storedExtension,
+            fn (): string => (string) $disk->get($path),
+        );
+
+        if ($this->isUnsafeContent($detectedType)) {
+            return $this->neutralise($media, $disk, $detectedType, $storedExtension, $dryRun);
+        }
+
         $expectedExtension = MimeType::resolveExtension($detectedType, $storedExtension);
 
-        if ($storedExtension === $expectedExtension && $media->ext === $expectedExtension) {
+        if ($storedExtension === $expectedExtension && $columnExtension === $expectedExtension) {
+            if (pathinfo($path, PATHINFO_EXTENSION) !== $expectedExtension || $media->ext !== $expectedExtension) {
+                $this->line("  mismatch (case only), left as is: [{$media->id}] {$path}");
+
+                return 'mismatched';
+            }
+
             return 'ok';
         }
 
-        if (! $this->isUnsafe($storedExtension) && ! $this->isUnsafe((string) $media->ext)) {
-            $this->line("  mismatch, left as is: [{$media->id}] {$media->path} is {$detectedType}");
+        if (! $this->isUnsafeExtension($storedExtension) && ! $this->isUnsafeExtension($columnExtension)) {
+            $this->line("  mismatch, left as is: [{$media->id}] {$path} is {$detectedType}");
 
             return 'mismatched';
         }
 
-        $directory = dirname(ltrim($media->path, '/'));
-        $name = filled($media->name) ? $media->name : pathinfo($media->path, PATHINFO_FILENAME);
-        $newPath = ($directory === '.' ? '' : $directory . '/') . $name . '.' . $expectedExtension;
+        return $this->rename($media, $disk, $expectedExtension, $detectedType, $dryRun);
+    }
 
-        if ($newPath !== $media->path && $disk->exists($newPath)) {
-            $this->warn("  skipped (target exists): [{$media->id}] {$media->path} -> {$newPath}");
+    /**
+     * Content that renders as a document or runs as code, such as HTML stored
+     * while 5.0.0 to 5.1.4 accepted it by default. It is renamed to `.txt`, so
+     * that it is served as plain text while the bytes are kept for review.
+     * Applications that accept the type on purpose keep it and are warned.
+     */
+    protected function neutralise(Media $media, Filesystem $disk, string $detectedType, string $storedExtension, bool $dryRun): string
+    {
+        if ($storedExtension === MimeType::TextPlain->getExt()) {
+            return 'ok';
+        }
+
+        if (in_array($detectedType, Curator::getAcceptedFileTypes(), true)) {
+            $this->warn("  review (holds {$detectedType}, which this app accepts): [{$media->id}] {$media->path}");
+
+            return 'review';
+        }
+
+        return $this->rename($media, $disk, MimeType::TextPlain->getExt(), MimeType::TextPlain->value, $dryRun);
+    }
+
+    /**
+     * @return 'renamed'|'skipped'
+     */
+    protected function rename(Media $media, Filesystem $disk, string $extension, string $type, bool $dryRun): string
+    {
+        $oldPath = (string) $media->path;
+
+        // Renamed in place, beside the file it replaces. The stored name is not
+        // used because it was never validated as a path segment.
+        $directory = dirname(ltrim($oldPath, '/'));
+        $filename = pathinfo($oldPath, PATHINFO_FILENAME);
+        $filename = $filename === '' ? 'media-' . $media->getKey() : $filename;
+        $newPath = ($directory === '.' ? '' : $directory . '/') . $filename . '.' . $extension;
+
+        if ($disk->exists($newPath)) {
+            $this->warn("  skipped (target exists): [{$media->id}] {$oldPath} -> {$newPath}");
 
             return 'skipped';
         }
@@ -115,27 +164,22 @@ class RepairExtensionsCommand extends Command
 
         // Giving markup an .svg extension makes it render inline, so it has to be
         // sanitized on the way.
-        if (Curator::isSvgMimeType($detectedType)) {
-            $original = $disk->get($media->path);
-            $content = Curator::sanitizeSvg((string) $original);
+        if (Curator::isSvgMimeType($type)) {
+            $original = (string) $disk->get($oldPath);
+            $content = Curator::sanitizeSvg($original);
 
             if ($content === '' && $original !== '') {
-                $this->warn("  skipped (could not sanitize): [{$media->id}] {$media->path}");
+                $this->warn("  skipped (could not sanitize): [{$media->id}] {$oldPath}");
 
                 return 'skipped';
             }
         }
 
         if (! $dryRun) {
-            $oldPath = $media->path;
-
             if ($content !== null) {
                 $disk->put($newPath, $content, $media->visibility ?? 'public');
-
-                if ($newPath !== $oldPath) {
-                    $disk->delete($oldPath);
-                }
-            } elseif ($newPath !== $oldPath && ! $disk->move($oldPath, $newPath)) {
+                $disk->delete($oldPath);
+            } elseif (! $disk->move($oldPath, $newPath)) {
                 $this->error("  error: [{$media->id}] could not move {$oldPath} to {$newPath}");
 
                 return 'skipped';
@@ -143,17 +187,17 @@ class RepairExtensionsCommand extends Command
 
             $media->forceFill([
                 'path' => $newPath,
-                'ext' => $expectedExtension,
-                'type' => $detectedType,
+                'ext' => $extension,
+                'type' => $type,
                 'size' => $disk->size($newPath),
             ])->saveQuietly();
 
             Glide::getServer()->deleteCache($oldPath);
         }
 
-        $this->line(($dryRun ? '  would rename: ' : '  renamed: ') . "[{$media->id}] {$media->path} -> {$newPath} ({$detectedType})");
+        $this->line(($dryRun ? '  would rename: ' : '  renamed: ') . "[{$media->id}] {$oldPath} -> {$newPath} ({$type})");
 
-        return 'repaired';
+        return 'renamed';
     }
 
     /**
@@ -177,10 +221,22 @@ class RepairExtensionsCommand extends Command
     }
 
     /**
-     * Whether a web server could serve a file with this extension as a
-     * document, script or server-side code.
+     * Whether the content itself would run script or code if served under its
+     * own type. libmagic reports XML as text/xml as well as application/xml.
+     * SVG is left to curator:sanitize-svgs, and octet-stream is only libmagic
+     * giving up.
      */
-    protected function isUnsafe(string $extension): bool
+    protected function isUnsafeContent(string $type): bool
+    {
+        return $type === 'text/xml'
+            || ($type !== MimeType::ApplicationOctetStream->value && in_array($type, MimeType::restricted(), true));
+    }
+
+    /**
+     * Whether a web server could serve a file with this (lowercased) extension
+     * as a document, script or server-side code.
+     */
+    protected function isUnsafeExtension(string $extension): bool
     {
         if (preg_match('/^[a-z0-9]+$/', $extension) !== 1) {
             return true;

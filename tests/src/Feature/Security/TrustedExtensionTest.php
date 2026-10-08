@@ -185,3 +185,93 @@ test('imported files keep an extension that matches their content', function () 
     expect($data['ext'])->toBe('pdf')
         ->and($data['type'])->toBe('application/pdf');
 });
+
+function trustedExtensionZippedDocx(): string
+{
+    // An archive whose first entry is not [Content_Types].xml, which libmagic
+    // then reports as application/zip.
+    $path = tempnam(sys_get_temp_dir(), 'curator-docx');
+    $zip = new ZipArchive;
+    $zip->open($path, ZipArchive::OVERWRITE);
+    $zip->addFromString('docProps/app.xml', '<Properties/>');
+    $zip->addFromString('[Content_Types].xml', '<Types/>');
+    $zip->addFromString('word/document.xml', '<w:document/>');
+    $zip->close();
+
+    $content = (string) file_get_contents($path);
+    @unlink($path);
+
+    return $content;
+}
+
+test('svg that does not start with its root element is stored as a sanitized svg', function (string $content) {
+    Storage::fake('public');
+
+    Livewire::test(CreateMedia::class)
+        ->set('data.file', trustedExtensionUpload('icon.svg', $content, 'text/plain'))
+        ->call('create')
+        ->assertHasNoFormErrors();
+
+    $media = Media::query()->sole();
+
+    expect($media->ext)->toBe('svg')
+        ->and($media->type)->toBe('image/svg+xml')
+        ->and(Storage::disk('public')->get($media->path))->not->toContain('<script')->toContain('rect');
+})->with([
+    'leading whitespace' => "\n  <svg xmlns=\"http://www.w3.org/2000/svg\"><script>alert(1)</script><rect width=\"1\" height=\"1\"/></svg>",
+    'leading comment' => "<!-- icon -->\n<svg xmlns=\"http://www.w3.org/2000/svg\"><script>alert(1)</script><rect width=\"1\" height=\"1\"/></svg>",
+]);
+
+test('text that only mentions svg is not treated as svg', function () {
+    Storage::fake('public');
+
+    Livewire::test(CreateMedia::class)
+        ->set('data.file', trustedExtensionUpload('notes.svg', 'see <svg> in the docs', 'text/plain'))
+        ->call('create')
+        ->assertHasNoFormErrors();
+
+    expect(Media::query()->sole()->ext)->toBe('txt');
+});
+
+test('an office document detected as a zip archive keeps its extension', function () {
+    Storage::fake('public');
+
+    Livewire::test(CreateMedia::class)
+        ->set('data.file', trustedExtensionUpload('report.docx', trustedExtensionZippedDocx(), 'application/zip'))
+        ->call('create')
+        ->assertHasNoFormErrors();
+
+    $media = Media::query()->sole();
+
+    expect($media->ext)->toBe('docx')
+        ->and($media->type)->toBe('application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+});
+
+test('a plain zip archive is still stored as zip', function () {
+    Storage::fake('public');
+
+    Livewire::test(CreateMedia::class)
+        ->set('data.file', trustedExtensionUpload('archive.html', trustedExtensionZippedDocx(), 'application/zip'))
+        ->call('create')
+        ->assertHasNoFormErrors();
+
+    expect(Media::query()->sole()->ext)->toBe('zip');
+});
+
+test('imported svg with a leading comment is stored as a sanitized svg', function () {
+    Storage::fake('public');
+
+    $data = CuratorUtils::importMedia(trustedExtensionSourceFile('icon.svg', "<!-- icon -->\n<svg xmlns=\"http://www.w3.org/2000/svg\" onload=\"alert(1)\"><rect/></svg>"), disk: 'public');
+
+    expect($data['ext'])->toBe('svg')
+        ->and($data['type'])->toBe('image/svg+xml')
+        ->and(Storage::disk('public')->get($data['path']))->not->toContain('onload')->toContain('rect');
+});
+
+test('an imported office document detected as a zip archive keeps its extension', function () {
+    Storage::fake('public');
+
+    $data = CuratorUtils::importMedia(trustedExtensionSourceFile('report.docx', trustedExtensionZippedDocx()), disk: 'public');
+
+    expect($data['ext'])->toBe('docx');
+});

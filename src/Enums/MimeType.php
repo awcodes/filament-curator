@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Awcodes\Curator\Enums;
 
+use Closure;
+use DOMDocument;
 use Symfony\Component\Mime\MimeTypes;
 
 enum MimeType: string
@@ -92,6 +94,16 @@ enum MimeType: string
     private const EXECUTABLE_EXTENSIONS = [
         'asp', 'aspx', 'cgi', 'htaccess', 'jsp', 'phar', 'php', 'php3', 'php4', 'php5', 'php7', 'php8',
         'phps', 'pht', 'phtml', 'pl', 'py', 'shtm', 'shtml', 'stm', 'svgz',
+    ];
+
+    /**
+     * Document formats stored as zip archives. libmagic reports them as
+     * application/zip unless the archive happens to start with the entry it
+     * recognises them by.
+     */
+    private const ZIP_BASED_EXTENSIONS = [
+        'docm', 'docx', 'dotm', 'dotx', 'epub', 'odg', 'odp', 'ods', 'odt',
+        'potx', 'ppsx', 'pptm', 'pptx', 'vsdx', 'xlsm', 'xlsx', 'xltm', 'xltx',
     ];
 
     private const PLAIN_TEXT_TYPES = [
@@ -189,6 +201,43 @@ enum MimeType: string
         }
 
         return null;
+    }
+
+    /**
+     * Correct the detected type where libmagic is known to under-report a
+     * format the client's extension claims, after checking the content really
+     * is that format:
+     *
+     * - SVG that starts with whitespace or a comment is reported as text/plain
+     *   (or as XML), so it would otherwise lose its extension, and with it the
+     *   sanitizing every SVG goes through.
+     * - Office and OpenDocument files are zip archives, and are reported as
+     *   application/zip unless the archive's first entry identifies them.
+     *
+     * @param  Closure(): string  $contents  read only when a correction applies
+     */
+    public static function refineDetectedType(?string $type, ?string $clientExtension, Closure $contents): string
+    {
+        $type = self::normalizeType($type);
+        $extension = mb_strtolower(trim((string) $clientExtension));
+
+        if (
+            $extension === self::ImageSvgXml->getExt()
+            && in_array($type, [self::TextPlain->value, 'text/xml', self::ApplicationXml->value], true)
+            && self::isSvgDocument($contents())
+        ) {
+            return self::ImageSvgXml->value;
+        }
+
+        if (
+            in_array($extension, self::ZIP_BASED_EXTENSIONS, true)
+            && in_array($type, [self::ApplicationZip->value, self::ApplicationOctetStream->value], true)
+            && str_starts_with($contents(), "PK\x03\x04")
+        ) {
+            return MimeTypes::getDefault()->getMimeTypes($extension)[0] ?? $type;
+        }
+
+        return $type;
     }
 
     /**
@@ -417,6 +466,25 @@ enum MimeType: string
             self::VideoWebm => 'WEBM video',
             self::VideoXMsvideo => 'AVI: Audio Video Interleave',
         };
+    }
+
+    private static function isSvgDocument(string $contents): bool
+    {
+        if (! str_contains($contents, '<svg')) {
+            return false;
+        }
+
+        $previous = libxml_use_internal_errors(true);
+
+        try {
+            $document = new DOMDocument;
+
+            return $document->loadXML($contents, LIBXML_NONET)
+                && $document->documentElement?->localName === 'svg';
+        } finally {
+            libxml_clear_errors();
+            libxml_use_internal_errors($previous);
+        }
     }
 
     private static function normalizeType(?string $type): string
