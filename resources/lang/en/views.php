@@ -28,6 +28,7 @@ return [
         'download' => 'Download',
         'remove' => 'Remove',
         'clear' => 'Remove All',
+        'unavailable' => 'The selected media is not available for this field.',
     ],
     'panel' => [
         'button' => 'Add media',

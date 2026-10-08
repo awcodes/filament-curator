@@ -27,6 +27,8 @@ class PostResource extends Resource
     {
         return $schema->components([
             TextInput::make('title')->required(),
+            CuratorPicker::make('featured_image_id')
+                ->relationship('featuredImage', 'id'),
             CuratorPicker::make('gallery')
                 ->relationship('gallery', 'name')
                 ->multiple()

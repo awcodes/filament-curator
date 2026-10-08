@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Awcodes\Curator\Components\Modals\Concerns;
 
+use Awcodes\Curator\Support\MediaScope;
 use Livewire\Attributes\Locked;
 
 trait HasBreadcrumbs
@@ -11,8 +12,24 @@ trait HasBreadcrumbs
     #[Locked]
     public ?array $breadcrumbs = null;
 
+    abstract public function getMediaScope(): MediaScope;
+
     public function getBreadcrumbs(): void
     {
+        $scope = $this->getMediaScope();
+
+        $crumbs = array_values(array_filter(
+            $this->generateBreadcrumbs($this->directory, $this->directories ?? []),
+            fn (array $crumb): bool => $scope->allowsDirectory($crumb['path'] ?? null),
+        ));
+
+        // A panel limited to a directory starts there: the disk and the folders above it aren't offered.
+        if ($scope->isLimitedToDirectory()) {
+            $this->breadcrumbs = $crumbs;
+
+            return;
+        }
+
         $this->breadcrumbs = [
             [
                 'label' => trans('curator::views.details.disk'),
@@ -20,7 +37,7 @@ trait HasBreadcrumbs
                 'path' => $this->diskName,
                 'parent_path' => null,
             ],
-            ...$this->generateBreadcrumbs($this->directory, $this->directories) ?? [],
+            ...$crumbs,
         ];
     }
 

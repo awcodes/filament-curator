@@ -317,6 +317,18 @@ enum MimeType: string
     }
 
     /**
+     * The types isAccepted() never matches through a wildcard, for matching
+     * stored types in a query: the restricted types and the scriptable types
+     * named here. Any other `+xml` type apart from SVG is scriptable as well.
+     *
+     * @return array<int, string>
+     */
+    public static function scriptableTypes(): array
+    {
+        return array_values(array_unique([...self::restricted(), ...self::SCRIPTABLE_TYPES]));
+    }
+
+    /**
      * Whether content of this type renders as a document or runs as script
      * when served inline: HTML, JavaScript, and XML of any kind but SVG.
      */
