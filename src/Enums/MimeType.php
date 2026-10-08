@@ -78,7 +78,10 @@ enum MimeType: string
     case TextCsv = 'text/csv';
     case TextHtml = 'text/html';
     case TextJavascript = 'text/javascript';
+    case TextMarkdown = 'text/markdown';
     case TextPlain = 'text/plain';
+    case TextTabSeparatedValues = 'text/tab-separated-values';
+    case TextVtt = 'text/vtt';
     case Video3gpp = 'video/3gpp';
     case Video3gpp2 = 'video/3gpp2';
     case VideoMp2t = 'video/mp2t';
@@ -121,6 +124,20 @@ enum MimeType: string
         'ppt' => 'application/vnd.ms-powerpoint',
         'xls' => 'application/vnd.ms-excel',
         'xlt' => 'application/vnd.ms-excel',
+    ];
+
+    /**
+     * Plain-data text formats that libmagic may report only as text/plain, and
+     * does on some platforms but not others. None of them renders as a
+     * document or runs as script.
+     */
+    private const PLAIN_DATA_EXTENSIONS = [
+        'csv' => 'text/csv',
+        'ics' => 'text/calendar',
+        'markdown' => 'text/markdown',
+        'md' => 'text/markdown',
+        'tsv' => 'text/tab-separated-values',
+        'vtt' => 'text/vtt',
     ];
 
     private const OLE_CONTAINER_TYPES = ['application/cdfv2', 'application/x-ole-storage'];
@@ -330,6 +347,9 @@ enum MimeType: string
      *   application/zip unless the archive's first entry identifies them.
      * - Legacy Office files are OLE compound files, and are reported as the
      *   container when only the start of a large file is sniffed.
+     * - Plain-data text such as CSV is reported as text/plain by some libmagic
+     *   builds and by its own type by others, so text/plain content named as
+     *   one of those formats gets the format's type on every platform.
      *
      * @param  Closure(?int=): string  $contents  returns the content, or its first
      *                                            given number of bytes; called only
@@ -354,6 +374,10 @@ enum MimeType: string
             && $contents(4) === "PK\x03\x04"
         ) {
             return MimeTypes::getDefault()->getMimeTypes($extension)[0] ?? $type;
+        }
+
+        if ($type === self::TextPlain->value && array_key_exists($extension, self::PLAIN_DATA_EXTENSIONS)) {
+            return self::PLAIN_DATA_EXTENSIONS[$extension];
         }
 
         if (
@@ -504,7 +528,10 @@ enum MimeType: string
             self::TextCsv => 'csv',
             self::TextHtml => 'html',
             self::TextJavascript => 'js',
+            self::TextMarkdown => 'md',
             self::TextPlain => 'txt',
+            self::TextTabSeparatedValues => 'tsv',
+            self::TextVtt => 'vtt',
             self::VideoMp2t => 'ts',
             self::VideoMp4 => 'mp4',
             self::VideoMpeg => 'mpeg',
@@ -582,7 +609,10 @@ enum MimeType: string
             self::TextCsv => 'Comma-separated values (CSV)',
             self::TextHtml => 'HyperText Markup Language (HTML)',
             self::TextJavascript => 'JavaScript',
+            self::TextMarkdown => 'Markdown',
             self::TextPlain => 'Text (generally ASCII or ISO 8859-n)',
+            self::TextTabSeparatedValues => 'Tab-separated values (TSV)',
+            self::TextVtt => 'Web Video Text Tracks (WebVTT)',
             self::Video3gpp => '3GPP video container',
             self::Video3gpp2 => '3GPP2 video container',
             self::VideoMp2t => 'MPEG transport stream',

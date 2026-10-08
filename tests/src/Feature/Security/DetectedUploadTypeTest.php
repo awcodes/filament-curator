@@ -170,3 +170,48 @@ test('signature checks read only the first bytes', function (string $type, strin
     'zip' => ['application/zip', 'docx', "PK\x03\x04rest", 4],
     'ole' => ['application/x-ole-storage', 'doc', "\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1rest", 8],
 ]);
+
+test('plain-data text detected only as text/plain gets its format type', function (string $name, string $type, string $ext) {
+    // libmagic reports this content as text/plain on every platform, as some
+    // builds do for any CSV.
+    Livewire::test(CreateMedia::class)
+        ->set('data.file', UploadedFile::fake()->createWithContent($name, "hello world\n")->mimeType('text/plain'))
+        ->call('create')
+        ->assertHasNoFormErrors();
+
+    $media = Media::query()->sole();
+
+    expect($media->type)->toBe($type)
+        ->and($media->ext)->toBe($ext);
+})->with([
+    'csv' => ['data.csv', 'text/csv', 'csv'],
+    'tsv' => ['data.tsv', 'text/tab-separated-values', 'tsv'],
+    'md' => ['notes.md', 'text/markdown', 'md'],
+    'markdown' => ['notes.markdown', 'text/markdown', 'markdown'],
+    'ics' => ['event.ics', 'text/calendar', 'ics'],
+    'vtt' => ['captions.vtt', 'text/vtt', 'vtt'],
+    'other text' => ['notes.txt', 'text/plain', 'txt'],
+]);
+
+test('a field accepting only csv accepts a csv detected as text/plain', function () {
+    Curator::acceptedFileTypes(['text/csv']);
+
+    Livewire::test(CreateMedia::class)
+        ->set('data.file', UploadedFile::fake()->createWithContent('data.csv', "hello world\n")->mimeType('text/csv'))
+        ->call('create')
+        ->assertHasNoFormErrors();
+
+    expect(Media::query()->sole()->type)->toBe('text/csv');
+});
+
+test('only text/plain content is refined, and only for plain-data extensions', function (string $type, string $extension, string $expected) {
+    expect(MimeType::refineDetectedType($type, $extension, fn (?int $length = null): string => 'hello'))->toBe($expected);
+})->with([
+    ['text/plain', 'CSV', 'text/csv'],
+    ['text/plain', 'html', 'text/plain'],
+    ['text/plain', 'js', 'text/plain'],
+    ['text/plain', 'xml', 'text/plain'],
+    ['text/plain', 'svg', 'text/plain'],
+    ['text/html', 'csv', 'text/html'],
+    ['application/octet-stream', 'csv', 'application/octet-stream'],
+]);
