@@ -35,6 +35,8 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use ReflectionMethod;
+use ReflectionProperty;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class CuratorPicker extends Field
@@ -751,6 +753,10 @@ class CuratorPicker extends Field
         $schema = $this->getContainer();
 
         while (true) {
+            if (! $this->isUnconditionallyVisible($schema)) {
+                return null;
+            }
+
             if ($schema->getRecord(withParentComponentRecord: false) !== null) {
                 return $this->persistedPatternFor($schema->getRecord(withParentComponentRecord: false), $schema, $pattern);
             }
@@ -772,13 +778,19 @@ class CuratorPicker extends Field
                     return null;
                 }
 
+                // A builder saves the items of a block hidden from the current user as they were sent, unchecked,
+                // so a picker in a block that isn't always visible can't trust what its column holds.
+                if (! $this->isUnconditionallyVisible($component) || ! $this->isUnconditionallyVisible($blocks)) {
+                    return null;
+                }
+
                 array_unshift($pattern, ['block' => $component->getName()], 'data');
                 $component = $builder;
             } elseif (filled($schemaPath)) {
                 return null;
             }
 
-            if (! $component instanceof Component) {
+            if (! $component instanceof Component || ! $this->isUnconditionallyVisible($component)) {
                 return null;
             }
 
@@ -800,6 +812,25 @@ class CuratorPicker extends Field
 
             $schema = $component->getContainer();
         }
+    }
+
+    /**
+     * Whether a schema or component is visible whoever opens the form and whatever its state: no `hidden()` or
+     * `visible()` condition, which includes `hiddenOn()`, `visibleOn()`, `whenTruthy()` and the like, and no
+     * `isHidden()` of its own. Read without evaluating anything.
+     */
+    protected function isUnconditionallyVisible(Schema | Component $node): bool
+    {
+        $hidden = property_exists($node, 'isHidden') ? (new ReflectionProperty($node, 'isHidden'))->getValue($node) : false;
+        $visible = property_exists($node, 'isVisible') ? (new ReflectionProperty($node, 'isVisible'))->getValue($node) : true;
+
+        if ($hidden !== false || $visible !== true) {
+            return false;
+        }
+
+        $declaringClass = (new ReflectionMethod($node, 'isHidden'))->getDeclaringClass()->getName();
+
+        return in_array($declaringClass, [Component::class, Schema::class], true);
     }
 
     /**
