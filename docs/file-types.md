@@ -38,6 +38,8 @@ CuratorPicker::make('attachment')
     ->acceptedFileTypes([...MimeType::defaults(), 'text/html']);
 ```
 
+List these types exactly. A wildcard such as `text/*` or `application/*` never matches a type that can run script in the browser or code on a server: HTML, XHTML, XML (including other `+xml` document types), JavaScript, PHP, shell scripts and `application/octet-stream`. SVG is the one exception, so `image/*` does accept SVG, because Curator sanitizes every SVG before storing it and rejects an SVG it cannot sanitize.
+
 > [!WARNING]
 > Curator only sanitizes SVG uploads. Any other type you opt into is stored and served verbatim. Media served through Curator's route is sent with `X-Content-Type-Options: nosniff`, and restricted types are forced to `Content-Disposition: attachment`, but files on the `public` disk are also reachable directly through the `storage` symlink, where those headers do not apply. If you allow executable types, serve them from a private disk.
 
@@ -49,6 +51,7 @@ Curator decides whether to accept a file from its detected type, the type read f
 - Text content is often detected only as `text/plain`, so it may keep a plain-data extension such as `.csv`, `.md`, `.json`, `.yaml` or `.css`. Other text files are stored as `.txt`, including ones with uncommon extensions such as `.srt`.
 - An `.svg` file that starts with whitespace or a comment is detected as plain text, XML or, when it contains a script, HTML. It is still stored as `.svg`, and sanitized, if its content parses as XML whose root element is `<svg>` in the SVG namespace. Anything else, such as an HTML page named `.svg`, keeps its detected type.
 - Office and OpenDocument files (`.docx`, `.xlsx`, `.pptx`, `.odt`, `.epub` and similar) are zip archives and are sometimes detected as `application/zip`. They keep their extension when the content is a zip archive.
+- Legacy Office files (`.doc`, `.xls`, `.ppt` and their templates) are OLE compound files, and a large one can be detected only as a generic OLE container. They keep their extension and type when the content starts with the OLE signature.
 - Otherwise the extension is replaced with the detected type's usual one. A JPEG uploaded as `photo.png` is stored as `.jpg`, and a file named `notes.html` whose contents are plain text is stored as `.txt`.
 - When the detected type has no known extension, the file is stored as `.bin`, and Curator's route serves it as a download. This includes every `application/octet-stream` upload, if you have allowed that type.
 - Extensions a server may run as code (`.php`, `.phtml`, `.phar`, `.shtml`, `.cgi` and similar) are never kept.
@@ -58,6 +61,12 @@ The same rule applies to `CuratorUtils::importMedia()`, which detects the type f
 `preserveFilenames()` affects only the base name. The extension still follows the detected type.
 
 Only fresh uploads become media. Any other value in an upload field's state is rejected by validation.
+
+An SVG upload is sanitized before it is written to the disk. If the sanitizer can't process it, for example because the markup isn't a single SVG document, the upload fails validation and nothing is stored. `CuratorUtils::importMedia()` throws an exception in the same case.
+
+## Testing uploads in your application
+
+Because Curator detects the type from a file's contents, fake uploads in your own tests need real file bytes. `UploadedFile::fake()->create('report.pdf', 100)` fills the file with zero bytes, which is detected as `application/octet-stream` and rejected, whatever the file name or a declared MIME type says. Use `UploadedFile::fake()->image()` for images, or `UploadedFile::fake()->createWithContent()` with real content, such as `"%PDF-1.4\n"` for a PDF.
 
 ## Repairing media stored by earlier versions
 
