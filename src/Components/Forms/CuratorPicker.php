@@ -5,6 +5,7 @@ namespace Awcodes\Curator\Components\Forms;
 use Awcodes\Curator\Concerns\CanGeneratePaths;
 use Awcodes\Curator\Concerns\CanUploadFiles;
 use Awcodes\Curator\CuratorPlugin;
+use Awcodes\Curator\Models\Media;
 use Awcodes\Curator\Resources\MediaResource;
 use Closure;
 use Exception;
@@ -21,6 +22,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -260,11 +262,49 @@ class CuratorPicker extends Field
             ->visible(function () {
                 return CuratorPlugin::get()->authorize('download');
             })
-            ->action(function (array $arguments, CuratorPicker $component): StreamedResponse {
-                $item = $component->getState()[$arguments['uuid']];
+            ->action(function (array $arguments, CuratorPicker $component): ?StreamedResponse {
+                $record = $component->resolveAuthorizedMedia($arguments['uuid'] ?? null, 'view');
 
-                return Storage::disk($item['disk'])->download($item['path']);
+                if (! $record) {
+                    return null;
+                }
+
+                return Storage::disk($record->disk)->download($record->path);
             });
+    }
+
+    /**
+     * The field state, including each item's disk and path, comes from the
+     * browser, so only the item's id is used. The record is loaded again with
+     * the same tenant scoping as the media panel and checked against the Media
+     * policy when one is registered.
+     */
+    protected function resolveAuthorizedMedia(mixed $uuid, string $ability): ?Media
+    {
+        if (! is_string($uuid) && ! is_int($uuid)) {
+            return null;
+        }
+
+        $state = $this->getState();
+
+        $id = is_array($state) && is_array($state[$uuid] ?? null) ? ($state[$uuid]['id'] ?? null) : null;
+
+        if (blank($id) || ! is_scalar($id)) {
+            return null;
+        }
+
+        $record = App::make(Media::class)->query()
+            ->when(filament()->hasTenancy() && $this->isTenantAware(), function ($query) {
+                return $query->where($this->tenantOwnershipRelationshipName() . '_id', filament()->getTenant()->id);
+            })
+            ->whereKey($id)
+            ->first();
+
+        if (! $record instanceof Media) {
+            return null;
+        }
+
+        return (is_null(Gate::getPolicyFor($record)) || Gate::allows($ability, $record)) ? $record : null;
     }
 
     public function getEditAction(): Action
