@@ -106,10 +106,20 @@ test('settings that are not a valid payload change nothing', function (Closure $
     'other encrypted value' => fn () => fn () => Crypt::encryptString(json_encode(['settings' => forgedSettings()])),
 ]);
 
+test('a settings payload is accepted within ten minutes', function () {
+    $payload = CuratorPanel::encryptSettings(panelSettings());
+
+    $this->travel(9)->minutes();
+
+    Livewire::test(CuratorPanel::class)
+        ->call('openModal', 'curator-panel', $payload)
+        ->assertSet('directory', 'pictures');
+});
+
 test('an expired settings payload changes nothing', function () {
     $payload = CuratorPanel::encryptSettings(forgedSettings());
 
-    $this->travel(2)->hours();
+    $this->travel(11)->minutes();
 
     expectDefaultPanelSettings(
         Livewire::test(CuratorPanel::class)->call('openModal', 'curator-panel', $payload)

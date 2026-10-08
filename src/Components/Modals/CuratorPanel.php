@@ -150,7 +150,7 @@ class CuratorPanel extends Component implements HasActions, HasForms
     /**
      * How long an encrypted settings payload can be used to open the panel.
      */
-    protected const SETTINGS_TTL_SECONDS = 3600;
+    protected const SETTINGS_TTL_SECONDS = 600;
 
     protected const SETTINGS_PURPOSE = 'curator-panel-settings';
 
