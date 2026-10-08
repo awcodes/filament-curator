@@ -1347,3 +1347,103 @@ describe('values stored elsewhere in a json column', function () {
         expect(contentImageIds($post))->toBe([(string) $media['pdf']->getKey()]);
     });
 });
+
+describe('pickers in conditionally visible blocks', function () {
+    beforeEach(function () {
+        PickerForm::$fieldName = 'image_id';
+        PickerForm::$configurePicker = fn (CuratorPicker $picker): CuratorPicker => scopedPicker('curator')($picker)->multiple(false);
+    });
+
+    /**
+     * A builder with an image block that only shows when $isVisible says so, and an always visible text block.
+     */
+    function conditionalImageBuilder(Closure $isVisible): Closure
+    {
+        return fn (CuratorPicker $picker): array => [FormBuilder::make('content')->blocks([
+            Block::make('image')->schema([$picker])->visible($isVisible),
+            Block::make('text')->schema([TextInput::make('body')]),
+        ])];
+    }
+
+    /**
+     * Saves the form with a new image item holding $media added to the content, as a user who can't see the image
+     * block could send it.
+     */
+    function plantImageItem(JsonPost $post, Media $media, array $set = []): void
+    {
+        $form = Livewire::test(PickerForm::class, ['record' => $post]);
+
+        foreach ($set as $path => $value) {
+            $form->set($path, $value);
+        }
+
+        $form->set('data.content.' . Str::uuid(), ['type' => 'image', 'data' => ['image_id' => $media->getKey()]])
+            ->call('save')
+            ->assertHasNoErrors();
+    }
+
+    test('an item planted in a block hidden from the user does not count as saved for one who sees it', function () {
+        [$tenant, $other] = scopingTenancy('curator');
+        $media = seedScopedMedia($tenant, $other);
+
+        $admin = auth()->user();
+        $editor = User::factory()->create();
+
+        PickerForm::$wrapPicker = conditionalImageBuilder(fn (): bool => auth()->id() === $admin->getKey());
+
+        $post = JsonPost::query()->create(['title' => 'Post', 'content' => [['type' => 'text', 'data' => ['body' => 'hello']]]]);
+
+        $this->actingAs($editor);
+        plantImageItem($post, $media['pdf']);
+
+        expect(contentImageIds($post))->toBe([(string) $media['pdf']->getKey()]);
+
+        $this->actingAs($admin);
+        $form = Livewire::test(PickerForm::class, ['record' => $post]);
+        $path = collect(nestedPickerPaths($form, 'image_id'))->first(fn (string $path): bool => str_ends_with($path, '.data.image_id'));
+
+        expect($form->get($path))->toBe([]);
+
+        $form->set($path, [(string) Str::uuid() => $media['pdf']->toArray()])
+            ->call('save')
+            ->assertHasErrors([$path]);
+    });
+
+    test('an item planted while the form state hid its block does not count as saved', function () {
+        [$tenant, $other] = scopingTenancy('curator');
+        $media = seedScopedMedia($tenant, $other);
+
+        PickerForm::$wrapPicker = conditionalImageBuilder(fn (PickerForm $livewire): bool => ($livewire->data['hide_images'] ?? false) !== true);
+
+        $post = JsonPost::query()->create(['title' => 'Post', 'content' => [['type' => 'text', 'data' => ['body' => 'hello']]]]);
+
+        plantImageItem($post, $media['otherDisk'], ['data.hide_images' => true]);
+
+        expect(contentImageIds($post))->toBe([(string) $media['otherDisk']->getKey()]);
+
+        $form = Livewire::test(PickerForm::class, ['record' => $post]);
+        $path = collect(nestedPickerPaths($form, 'image_id'))->first(fn (string $path): bool => str_ends_with($path, '.data.image_id'));
+
+        expect($form->get($path))->toBe([]);
+
+        $form->set($path, [(string) Str::uuid() => $media['otherDisk']->toArray()])
+            ->call('save')
+            ->assertHasErrors([$path]);
+    });
+
+    test('a picker in an always visible block keeps its saved media', function () {
+        [$tenant, $other] = scopingTenancy('curator');
+        $media = seedScopedMedia($tenant, $other);
+
+        PickerForm::$wrapPicker = fn (CuratorPicker $picker): array => [FormBuilder::make('content')->blocks([
+            Block::make('image')->schema([$picker]),
+            Block::make('text')->schema([TextInput::make('body')])->visible(fn (): bool => false),
+        ])];
+
+        $post = JsonPost::query()->create(['title' => 'Post', 'content' => [['type' => 'image', 'data' => ['image_id' => $media['pdf']->getKey()]]]]);
+
+        Livewire::test(PickerForm::class, ['record' => $post])->call('save')->assertHasNoErrors();
+
+        expect(contentImageIds($post))->toBe([(string) $media['pdf']->getKey()]);
+    });
+});
