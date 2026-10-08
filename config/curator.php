@@ -28,6 +28,7 @@ return [
         'png',
         'avif',
     ],
+    'curation_max_dimension' => 4096,
     'curation_presets' => [
         ThumbnailPreset::class,
     ],
