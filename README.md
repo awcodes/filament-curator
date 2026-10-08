@@ -391,6 +391,18 @@ You can also change which formats are available for curations by changing the `c
 ],
 ```
 
+#### Curation Size and Permissions
+
+A curation is saved at the size its crop box was shown at in the cropper.
+
+- A crop box that reaches past the image is trimmed to the image. For a preset, the part of the box past the image is padded instead, so the curation keeps the preset's shape. A crop box that doesn't overlap the image at all is rejected.
+- Curations are scaled down to fit `curation_max_dimension` (4096 pixels on the longest side by default). Set it to `0` to turn the limit off.
+- When a policy is registered for the `Media` model, saving a curation needs its `update` ability for that media.
+
+```php
+'curation_max_dimension' => 4096,
+```
+
 If you wish to disable the "Curation" tab in the Media Editor you can do so by setting `tabs.display_curation`
 to `false` in the config file. The default is `true`.
 
