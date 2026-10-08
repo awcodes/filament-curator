@@ -44,5 +44,6 @@ return [
             'table' => Awcodes\Curator\Resources\Media\Tables\MediaTable::class,
         ],
     ],
+    'temporary_url_expiration' => 5,
     'url_provider' => Awcodes\Curator\Providers\GlideUrlProvider::class,
 ];

@@ -8,7 +8,7 @@
     <div class="flex justify-center border border-gray-300 rounded dark:border-gray-700 h-48 flex-shrink-0 relative">
         <x-curator::display
             :item="$file"
-            :src="glide()->getUrl($file['path'], ['h' => 192, 'fit' => 'contain', 'fm' => 'webp'])"
+            :src="glide()->getMediaUrl($file, ['h' => 192, 'fit' => 'contain', 'fm' => 'webp'])"
             icon-classes="size-24"
             :controls="true"
             :player="true"

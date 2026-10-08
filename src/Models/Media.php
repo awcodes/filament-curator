@@ -9,6 +9,7 @@ use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Facades\Glide;
 use Awcodes\Curator\Observers\MediaObserver;
 use Carbon\CarbonInterface;
+use Closure;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
@@ -108,13 +109,38 @@ class Media extends Model
 
         if ($visibility === 'private') {
             try {
-                return $storage->temporaryUrl($path, now()->addMinutes(5));
+                return $storage->temporaryUrl($path, Glide::getTemporaryUrlExpiration());
             } catch (Throwable) {
                 // Driver doesn't support temporary URLs, fall back to regular URL
             }
         }
 
         return $storage->url($path);
+    }
+
+    /**
+     * A blank visibility falls back to the configured default, as resolveUrl() does.
+     */
+    public static function isPublicVisibility(?string $visibility): bool
+    {
+        if (blank($visibility)) {
+            $visibility = config('curator.default_visibility', 'public');
+        }
+
+        return $visibility === 'public';
+    }
+
+    public function isPublic(): bool
+    {
+        return static::isPublicVisibility($this->visibility);
+    }
+
+    /**
+     * A Glide URL for this media, temporary when it isn't public.
+     */
+    public function getGlideUrl(array $params = []): string
+    {
+        return Glide::getMediaUrl($this, $params);
     }
 
     public function url(): Attribute
@@ -134,21 +160,21 @@ class Media extends Model
     public function thumbnailUrl(): Attribute
     {
         return Attribute::make(
-            get: fn (): string => Curator::getUrlProvider()::getThumbnailUrl($this->path),
+            get: fn (): string => $this->resolveSizeUrl(fn (): string => Curator::getUrlProvider()::getThumbnailUrl($this->path)),
         );
     }
 
     public function mediumUrl(): Attribute
     {
         return Attribute::make(
-            get: fn (): string => Curator::getUrlProvider()::getMediumUrl($this->path),
+            get: fn (): string => $this->resolveSizeUrl(fn (): string => Curator::getUrlProvider()::getMediumUrl($this->path)),
         );
     }
 
     public function largeUrl(): Attribute
     {
         return Attribute::make(
-            get: fn (): string => Curator::getUrlProvider()::getLargeUrl($this->path),
+            get: fn (): string => $this->resolveSizeUrl(fn (): string => Curator::getUrlProvider()::getLargeUrl($this->path)),
         );
     }
 
@@ -196,5 +222,21 @@ class Media extends Model
     public function hasCuration(string $key): bool
     {
         return filled($this->getCuration($key));
+    }
+
+    /**
+     * Size URLs reach JSON, Livewire state and rendered tables, so for media
+     * that isn't public they expire, and the media route only serves that
+     * media through an unexpired URL.
+     *
+     * @param  Closure(): string  $resolve
+     */
+    protected function resolveSizeUrl(Closure $resolve): string
+    {
+        if ($this->isPublic()) {
+            return $resolve();
+        }
+
+        return Glide::withTemporaryUrls($this->disk, $resolve);
     }
 }
