@@ -19,8 +19,10 @@ use Awcodes\Curator\Tests\Fixtures\Resources\Posts\Pages\EditPost;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Builder as FormBuilder;
 use Filament\Forms\Components\Builder\Block;
+use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Schema as FilamentSchema;
 use Illuminate\Database\Eloquent\Builder;
@@ -1048,6 +1050,57 @@ describe('media saved inside a json column', function () {
         expect(contentImageIds($post))->toBe([(string) $media['pdf']->getKey()]);
     })->with('nested layouts');
 
+    test('media planted elsewhere in the json column does not count as saved', function (string $layout) {
+        [$tenant, $other] = scopingTenancy('curator');
+        $media = seedScopedMedia($tenant, $other);
+        [$wrap] = nestedPicker($layout);
+
+        PickerForm::$wrapPicker = $wrap;
+        PickerForm::$configurePicker = fn (CuratorPicker $picker): CuratorPicker => scopedPicker('curator')($picker)->multiple(false);
+
+        // Keys a client could plant in an item, beside or below the picker's own key, or an item of another block type.
+        $planted = ['image_id' => $media['pdf']->getKey()];
+
+        $content = match ($layout) {
+            'repeater' => [['image_id' => null, 'extra' => $planted], ['nested' => [$planted]]],
+            'builder' => [
+                ['type' => 'image', 'data' => ['image_id' => null, 'extra' => $planted]],
+                ['type' => 'other', 'data' => $planted],
+                ['type' => 'image', 'image_id' => $media['pdf']->getKey()],
+            ],
+            'group' => ['image_id' => null, 'extra' => $planted, 'items' => [$planted]],
+        };
+
+        $post = JsonPost::query()->create(['title' => 'Post', 'content' => $content]);
+
+        $form = Livewire::test(PickerForm::class, ['record' => $post]);
+        $path = nestedPickerPath($form, 'image_id');
+
+        expect($form->get($path))->toBe([]);
+
+        $form->set($path, [(string) Str::uuid() => $media['pdf']->toArray()])
+            ->call('save')
+            ->assertHasErrors([$path]);
+    })->with('nested layouts');
+
+    test('saved media at the exact path of a repeater inside a builder block still loads', function () {
+        [$tenant, $other] = scopingTenancy('curator');
+        $media = seedScopedMedia($tenant, $other);
+
+        PickerForm::$wrapPicker = fn (CuratorPicker $picker): array => [
+            FormBuilder::make('content')->blocks([Block::make('gallery')->schema([Repeater::make('items')->schema([$picker])])]),
+        ];
+        PickerForm::$configurePicker = fn (CuratorPicker $picker): CuratorPicker => scopedPicker('curator')($picker)->multiple(false);
+
+        $post = JsonPost::query()->create(['title' => 'Post', 'content' => [
+            ['type' => 'gallery', 'data' => ['items' => [['image_id' => $media['pdf']->getKey()]]]],
+        ]]);
+
+        $form = Livewire::test(PickerForm::class, ['record' => $post]);
+
+        expect(collect($form->get(nestedPickerPath($form, 'image_id')))->pluck('id')->map(strval(...))->all())->toBe([(string) $media['pdf']->getKey()]);
+    });
+
     test('a column of the same name on the record does not count as saved for a nested picker', function (string $layout) {
         [$tenant, $other] = scopingTenancy('curator');
         $media = seedScopedMedia($tenant, $other);
@@ -1184,5 +1237,164 @@ describe('the limited directory', function () {
             ->set('data.media', [(string) Str::uuid() => $own->toArray()])
             ->call('save')
             ->assertHasErrors(['data.media']);
+    });
+});
+
+/**
+ * Every state path of a picker named $field in the form's content, outermost first.
+ *
+ * @return array<int, string>
+ */
+function nestedPickerPaths(Testable $form, string $field): array
+{
+    $paths = [];
+
+    $walk = function (mixed $state, string $path) use (&$walk, &$paths, $field): void {
+        if (! is_array($state)) {
+            return;
+        }
+
+        foreach ($state as $key => $value) {
+            if ((string) $key === $field) {
+                $paths[] = "{$path}.{$key}";
+            }
+        }
+
+        foreach ($state as $key => $value) {
+            if ((string) $key !== $field) {
+                $walk($value, "{$path}.{$key}");
+            }
+        }
+    };
+
+    $walk($form->get('data.content'), 'data.content');
+
+    return $paths;
+}
+
+function refusesNestedSelection(JsonPost $post, Media $media, string $suffix = '.image_id'): void
+{
+    $form = Livewire::test(PickerForm::class, ['record' => $post]);
+    $path = collect(nestedPickerPaths($form, 'image_id'))->first(fn (string $path): bool => str_ends_with($path, $suffix) && is_array($form->get($path)) && filled($form->get($path)));
+
+    $form->set($path, [(string) Str::uuid() => $media->toArray()])
+        ->call('save')
+        ->assertHasErrors([$path]);
+}
+
+describe('values stored elsewhere in a json column', function () {
+    beforeEach(function () {
+        PickerForm::$fieldName = 'image_id';
+        PickerForm::$configurePicker = fn (CuratorPicker $picker): CuratorPicker => scopedPicker('curator')($picker)->multiple(false);
+    });
+
+    test('an unknown key in a repeater item does not count as saved', function () {
+        [$tenant, $other] = scopingTenancy('curator');
+        $media = seedScopedMedia($tenant, $other);
+
+        PickerForm::$wrapPicker = fn (CuratorPicker $picker): array => [Repeater::make('content')->schema([$picker, TextInput::make('caption')])];
+
+        $post = JsonPost::query()->create(['title' => 'Post', 'content' => [
+            ['image_id' => $media['own']->getKey(), 'caption' => 'x', 'junk' => ['image_id' => $media['otherDisk']->getKey()]],
+        ]]);
+
+        refusesNestedSelection($post, $media['otherDisk']);
+    });
+
+    test('an unknown key in a builder item does not count as saved', function (string $where) {
+        [$tenant, $other] = scopingTenancy('curator');
+        $media = seedScopedMedia($tenant, $other);
+
+        PickerForm::$wrapPicker = fn (CuratorPicker $picker): array => [FormBuilder::make('content')->blocks([Block::make('image')->schema([$picker])])];
+
+        $item = ['type' => 'image', 'data' => ['image_id' => $media['own']->getKey()]];
+
+        if ($where === 'item') {
+            $item['image_id'] = $media['pdf']->getKey();
+        } else {
+            $item['data']['junk'] = ['image_id' => $media['pdf']->getKey()];
+        }
+
+        $post = JsonPost::query()->create(['title' => 'Post', 'content' => [$item]]);
+
+        refusesNestedSelection($post, $media['pdf'], '.data.image_id');
+    })->with(['item', 'data']);
+
+    test('a field of another block does not count as saved', function () {
+        [$tenant, $other] = scopingTenancy('curator');
+        $media = seedScopedMedia($tenant, $other);
+
+        PickerForm::$wrapPicker = fn (CuratorPicker $picker): array => [FormBuilder::make('content')->blocks([
+            Block::make('image')->schema([$picker]),
+            Block::make('link')->schema([TextInput::make('image_id')]),
+            Block::make('meta')->schema([KeyValue::make('values')]),
+        ])];
+
+        $post = JsonPost::query()->create(['title' => 'Post', 'content' => [
+            ['type' => 'image', 'data' => ['image_id' => $media['own']->getKey()]],
+            ['type' => 'link', 'data' => ['image_id' => (string) $media['pdf']->getKey()]],
+            ['type' => 'meta', 'data' => ['values' => ['image_id' => (string) $media['otherDisk']->getKey()]]],
+        ]]);
+
+        refusesNestedSelection($post, $media['pdf'], '.data.image_id');
+        refusesNestedSelection($post, $media['otherDisk'], '.data.image_id');
+    });
+
+    test('a picker of the same name nested inside does not lend its saved media to the outer one', function () {
+        [$tenant, $other] = scopingTenancy('curator');
+        $media = seedScopedMedia($tenant, $other);
+
+        PickerForm::$wrapPicker = fn (CuratorPicker $picker): array => [Repeater::make('content')->schema([
+            $picker,
+            Repeater::make('items')->schema([scopedPicker('curator')(CuratorPicker::make('image_id'))->multiple(false)]),
+        ])];
+
+        $post = JsonPost::query()->create(['title' => 'Post', 'content' => [
+            ['image_id' => $media['own']->getKey(), 'items' => [['image_id' => $media['pdf']->getKey()]]],
+        ]]);
+
+        $form = Livewire::test(PickerForm::class, ['record' => $post]);
+        [$outer, $inner] = nestedPickerPaths($form, 'image_id');
+
+        expect(collect($form->get($inner))->pluck('id')->all())->toBe([$media['pdf']->getKey()]);
+
+        $form->set($outer, [(string) Str::uuid() => $media['pdf']->toArray()])
+            ->call('save')
+            ->assertHasErrors([$outer]);
+    });
+
+    test('a top-level picker with a dotted name only reads its own key', function () {
+        [$tenant, $other] = scopingTenancy('curator');
+        $media = seedScopedMedia($tenant, $other);
+
+        PickerForm::$fieldName = 'content.image_id';
+        PickerForm::$wrapPicker = null;
+
+        $post = JsonPost::query()->create(['title' => 'Post', 'content' => [
+            'image_id' => $media['own']->getKey(),
+            'other' => ['image_id' => $media['pdf']->getKey()],
+        ]]);
+
+        $form = Livewire::test(PickerForm::class, ['record' => $post]);
+
+        expect(collect($form->get('data.content.image_id'))->pluck('id')->all())->toBe([$media['own']->getKey()]);
+
+        $form->set('data.content.image_id', [(string) Str::uuid() => $media['pdf']->toArray()])
+            ->call('save')
+            ->assertHasErrors(['data.content.image_id']);
+    });
+
+    test('a top-level picker with a dotted name keeps its own saved media', function () {
+        [$tenant, $other] = scopingTenancy('curator');
+        $media = seedScopedMedia($tenant, $other);
+
+        PickerForm::$fieldName = 'content.image_id';
+        PickerForm::$wrapPicker = null;
+
+        $post = JsonPost::query()->create(['title' => 'Post', 'content' => ['image_id' => $media['pdf']->getKey()]]);
+
+        Livewire::test(PickerForm::class, ['record' => $post])->call('save')->assertHasNoErrors();
+
+        expect(contentImageIds($post))->toBe([(string) $media['pdf']->getKey()]);
     });
 });

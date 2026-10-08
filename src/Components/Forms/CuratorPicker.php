@@ -14,7 +14,10 @@ use Exception;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\CanBeOutlined;
 use Filament\Actions\Concerns\HasSize;
+use Filament\Forms\Components\Builder;
+use Filament\Forms\Components\Builder\Block;
 use Filament\Forms\Components\Field;
+use Filament\Forms\Components\Repeater;
 use Filament\Schemas\Components\Component;
 use Filament\Schemas\Schema;
 use Filament\Support\Components\Attributes\ExposedLivewireMethod;
@@ -195,7 +198,7 @@ class CuratorPicker extends Field
      */
     public function getPersistedMediaIds(): array
     {
-        $owner = $this->findRecordOwner();
+        $owner = $this->hasRelationship() ? $this->findRecordOwner() : $this->findPersistedPattern();
 
         if ($owner === null) {
             return [];
@@ -203,7 +206,7 @@ class CuratorPicker extends Field
 
         [$record, $path] = $owner;
 
-        $key = $record::class . ':' . $record->getKey() . ':' . $path;
+        $key = $record::class . ':' . $record->getKey() . ':' . json_encode($path);
 
         return $this->persistedMediaIds[$key] ??= $this->hasRelationship()
             ? MediaScope::extractIds($this->readPersistedRelationshipIds())
@@ -734,20 +737,108 @@ class CuratorPicker extends Field
     }
 
     /**
-     * The ids saved under the field's key in the record attribute its state lives in: the column itself for a
-     * top-level field, or anywhere inside a JSON column for a field in a repeater, builder or group, whose items are
-     * keyed by generated ids. Never a column of the same name elsewhere on the record.
+     * Where the field's value is stored on the record its form edits, as a path from the record's attribute down:
+     * a fixed key, `*` for any item of a repeater, or `['block' => name]` for any item of a builder whose type is
+     * that block. It's derived from the components around the field, so only values the field itself saved are
+     * read, never one stored elsewhere in the same column. Null when the path can't be told for certain, such as
+     * for a simple repeater or an unknown component with a state path of its own; nothing then counts as saved.
      *
+     * @return array{0: Model, 1: array<int, string|array{block: string}>}|null
+     */
+    protected function findPersistedPattern(): ?array
+    {
+        $pattern = $this->splitStatePath($this->getStatePath(isAbsolute: false));
+        $schema = $this->getContainer();
+
+        while (true) {
+            if ($schema->getRecord(withParentComponentRecord: false) !== null) {
+                return $this->persistedPatternFor($schema->getRecord(withParentComponentRecord: false), $schema, $pattern);
+            }
+
+            $component = $schema->getParentComponent();
+            $schemaPath = $schema->getStatePath(isAbsolute: false);
+
+            if ($component instanceof Repeater) {
+                if ($component->isSimple() || blank($schemaPath) || str_contains($schemaPath, '.')) {
+                    return null;
+                }
+
+                array_unshift($pattern, '*');
+            } elseif ($component instanceof Block) {
+                $blocks = $component->getContainer();
+                $builder = $blocks->getParentComponent();
+
+                if (! $builder instanceof Builder || blank($schemaPath) || ! str_ends_with($schemaPath, '.data') || filled($blocks->getStatePath(isAbsolute: false))) {
+                    return null;
+                }
+
+                array_unshift($pattern, ['block' => $component->getName()], 'data');
+                $component = $builder;
+            } elseif (filled($schemaPath)) {
+                return null;
+            }
+
+            if (! $component instanceof Component) {
+                return null;
+            }
+
+            $record = $component->getRecord(withContainerRecord: false);
+
+            if ($record !== null) {
+                return $this->persistedPatternFor($record, $component->getContainer(), $pattern);
+            }
+
+            $componentPath = $component->getStatePath(isAbsolute: false);
+
+            if (filled($componentPath)) {
+                if ($component instanceof Field && ! $component instanceof Repeater && ! $component instanceof Builder) {
+                    return null;
+                }
+
+                array_unshift($pattern, ...$this->splitStatePath($componentPath));
+            }
+
+            $schema = $component->getContainer();
+        }
+    }
+
+    /**
+     * @param  array<int, string|array{block: string}>  $pattern
+     * @return array{0: Model, 1: array<int, string|array{block: string}>}|null
+     */
+    protected function persistedPatternFor(mixed $record, Schema $schema, array $pattern): ?array
+    {
+        if (! $record instanceof Model || ! $record->exists || ! $this->isFilledFromRecord($schema)) {
+            return null;
+        }
+
+        if ($pattern === [] || ! is_string($pattern[0])) {
+            return null;
+        }
+
+        return [$record, $pattern];
+    }
+
+    /**
      * @return array<int, string>
      */
-    protected function readPersistedAttributeIds(Model $record, string $path): array
+    protected function splitStatePath(?string $path): array
     {
-        $segments = explode('.', $path);
-        $attribute = array_shift($segments);
+        return array_values(array_filter(explode('.', (string) $path), fn (string $segment): bool => $segment !== ''));
+    }
 
+    /**
+     * The ids saved at exactly the field's path in the record attribute its state lives in.
+     *
+     * @param  array<int, string|array{block: string}>  $pattern
+     * @return array<int, string>
+     */
+    protected function readPersistedAttributeIds(Model $record, array $pattern): array
+    {
+        $attribute = (string) array_shift($pattern);
         $value = $record->getOriginal($attribute);
 
-        if ($segments === []) {
+        if ($pattern === []) {
             return MediaScope::extractIds($value);
         }
 
@@ -757,29 +848,38 @@ class CuratorPicker extends Field
 
         return array_values(array_unique(array_merge([], ...array_map(
             MediaScope::extractIds(...),
-            $this->findValuesUnderKey($value, end($segments)),
+            $this->findValuesAt($value, $pattern),
         ))));
     }
 
     /**
+     * @param  array<int, string|array{block: string}>  $pattern
      * @return array<int, mixed>
      */
-    protected function findValuesUnderKey(mixed $value, string $key): array
+    protected function findValuesAt(mixed $value, array $pattern): array
     {
+        if ($pattern === []) {
+            return [$value];
+        }
+
         if (! is_array($value)) {
             return [];
         }
 
+        $segment = array_shift($pattern);
+
+        if (is_string($segment) && $segment !== '*') {
+            return array_key_exists($segment, $value) ? $this->findValuesAt($value[$segment], $pattern) : [];
+        }
+
         $found = [];
 
-        foreach ($value as $itemKey => $item) {
-            if ((string) $itemKey === $key) {
-                $found[] = $item;
-
+        foreach ($value as $item) {
+            if (is_array($segment) && (! is_array($item) || ($item['type'] ?? null) !== $segment['block'])) {
                 continue;
             }
 
-            array_push($found, ...$this->findValuesUnderKey($item, $key));
+            array_push($found, ...$this->findValuesAt($item, $pattern));
         }
 
         return $found;
@@ -794,7 +894,7 @@ class CuratorPicker extends Field
             $relationship instanceof BelongsTo => $record?->getRawOriginal($relationship->getForeignKeyName()),
             $relationship instanceof BelongsToMany => $relationship->allRelatedIds()->all(),
             $relationship instanceof MorphMany => $relationship
-                ->where($this->getTypeColumn(), $this->getTypeValue())
+                ->when($this->getTypeColumn() && $this->getTypeValue(), fn ($query) => $query->where($this->getTypeColumn(), $this->getTypeValue()))
                 ->pluck('media_id')
                 ->all(),
             default => null,
