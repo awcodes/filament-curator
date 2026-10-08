@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Awcodes\Curator\Components\Modals\Concerns;
 
+use Livewire\Attributes\Locked;
+
 trait HasBreadcrumbs
 {
+    #[Locked]
     public ?array $breadcrumbs = null;
 
     public function getBreadcrumbs(): void

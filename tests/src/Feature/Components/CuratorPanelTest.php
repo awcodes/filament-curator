@@ -378,3 +378,27 @@ test('search does not leak records outside the directory via non-name fields', f
 
     expect($component->get('files'))->toBeEmpty();
 });
+
+test('the selection controls quote a UUID key', function () {
+    $media = makeMedia(['name' => 'keyed', 'width' => 800, 'height' => 600])->toArray();
+    $media['id'] = '9b2c3f10-1a2b-4c3d-8e9f-0a1b2c3d4e5f';
+
+    // The listed files are locked, so a panel that lists the UUID keyed record stands in for one on a UUID model.
+    $panel = new class extends CuratorPanel
+    {
+        public static array $listed = [];
+
+        public function getFiles(int $page = 0, bool $excludeSelected = false): array
+        {
+            parent::getFiles($page, $excludeSelected);
+
+            return self::$listed;
+        }
+    };
+
+    $panel::$listed = [$media];
+
+    Livewire::test($panel::class)
+        ->assertSeeHtml("removeFromSelection('9b2c3f10-1a2b-4c3d-8e9f-0a1b2c3d4e5f')")
+        ->assertSeeHtml("isSelected('9b2c3f10-1a2b-4c3d-8e9f-0a1b2c3d4e5f')");
+});

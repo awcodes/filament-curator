@@ -42,9 +42,18 @@ class GlideManager
         return $this;
     }
 
+    /**
+     * A server config registered through serverConfig() is used as given,
+     * except for base_url: the controller passes the media's own path, and
+     * Glide would strip a leading base_url from it and serve a different file
+     * for media stored in a directory of that name.
+     */
     public function getServer(): Server
     {
-        return ServerFactory::create($this->serverConfig ?? $this->getDefaultServerConfig());
+        return ServerFactory::create([
+            ...($this->serverConfig ?? $this->getDefaultServerConfig()),
+            'base_url' => '',
+        ]);
     }
 
     public function getBasePath(): string
@@ -73,7 +82,6 @@ class GlideManager
             'cache' => storage_path('app'),
             'cache_path_prefix' => '.cache',
             'max_image_size' => 2000 * 2000,
-            'base_url' => $this->getBasePath(),
         ];
     }
 }
