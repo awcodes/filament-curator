@@ -58,5 +58,6 @@ Glide::serverConfig([
 
 - **Point `source` at the disk your media lives on, with no `source_path_prefix`.** Curator stores each file's `path` relative to its disk. Media on any other disk will fail to render.
 - **Keep `cache` on a fast local disk.** Transformed images are cached there, so only the first request per variant reads from the cloud.
+- **Don't rely on `base_url`.** Curator always passes Glide the media's own path, so a `base_url` in your config is ignored.
 
 Curator adds the response factory itself, for the current request, so the config doesn't need a `response` entry.

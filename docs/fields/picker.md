@@ -74,5 +74,7 @@ CuratorPicker::make('featured_image_id')
 
 A picker that holds one item accepts one upload at a time, and uploading replaces the current selection.
 
+The media panel takes these settings from the picker when it opens, and they can't be changed from the browser while it's open. Uploads go to the picker's `directory()`, or to an existing folder the user has browsed into. If you render the `curator-panel` Livewire component yourself, pass its configuration through the `settings` array when you mount it; setting its properties from the browser afterwards is rejected. When media is inserted, the panel sends the picker the stored records for the selected ids.
+
 > [!NOTE]
 > `acceptedFileTypes()` defaults to Curator's own safe list rather than allowing everything — see [Accepted file types](../file-types.md).
