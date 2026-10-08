@@ -67,6 +67,7 @@ return [
         'crop_mode' => 'Crop Mode',
         'reset' => 'Reset',
         'save_curation' => 'Save Curation',
+        'crop_out_of_bounds' => 'The crop must overlap the image.',
         'height' => 'Height',
         'width' => 'Width',
         'format' => 'Format',

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 return [
     'curation_formats' => Awcodes\Curator\Enums\PreviewableExtensions::toArray(),
+    'curation_max_dimension' => 8192,
     'default_disk' => env('CURATOR_DEFAULT_DISK', env('FILESYSTEM_DISK', 'public')),
     'default_directory' => null,
     'default_visibility' => 'public',
