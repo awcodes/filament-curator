@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Awcodes\Curator;
 
+use Awcodes\Curator\Enums\MimeType;
 use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Facades\Glide;
 use Exception;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use League\MimeTypeDetection\FinfoMimeTypeDetector;
 
 class CuratorUtils
 {
@@ -40,10 +42,27 @@ class CuratorUtils
             $fileContents = file_get_contents($path);
         }
 
-        $ext = (string) Str::of($path)->afterLast('.')->lower();
+        if (! is_string($fileContents)) {
+            throw new Exception("Could not read file from {$path}");
+        }
+
+        $sourcePath = str_starts_with($path, 'http')
+            ? (string) (parse_url($path, PHP_URL_PATH) ?: $path)
+            : $path;
+
+        // The source name is not authoritative about the content, and the disk
+        // serves the stored file by its extension, so the extension follows the
+        // type detected from the bytes, as it does for uploads.
+        $sourceExtension = pathinfo($sourcePath, PATHINFO_EXTENSION);
+        $detectedType = MimeType::refineDetectedType(
+            (new FinfoMimeTypeDetector)->detectMimeTypeFromBuffer($fileContents) ?: MimeType::ApplicationOctetStream->value,
+            $sourceExtension,
+            fn (): string => $fileContents,
+        );
+        $ext = MimeType::resolveExtension($detectedType, $sourceExtension);
 
         $filename = Curator::shouldPreserveFilenames()
-            ? (string) Str::of(pathinfo($path, PATHINFO_FILENAME))->slug()
+            ? (string) Str::of(pathinfo($sourcePath, PATHINFO_FILENAME))->slug()
             : (string) Str::uuid();
 
         $filepath = (string) Str::of($directory . '/' . $filename . '.' . $ext)->trim('/');
@@ -57,11 +76,10 @@ class CuratorUtils
             $fileContents = $storage->get($filepath);
         }
 
-        $type = $storage->mimeType($filepath) ?: null;
+        $type = $detectedType;
 
         // Imported files never pass through the uploader, so they get the same
-        // treatment here: sanitize on the detected type as well as the
-        // extension, since the source path is not authoritative about either.
+        // treatment here: sanitize on the detected type as well as the extension.
         if (Curator::isSvg($ext) || Curator::isSvgMimeType($type)) {
             $storage->put($filepath, Curator::sanitizeSvg($storage->get($filepath)), $visibility);
         }

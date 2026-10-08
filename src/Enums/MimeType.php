@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Awcodes\Curator\Enums;
 
+use Closure;
+use DOMDocument;
+use Symfony\Component\Mime\MimeTypes;
+
 enum MimeType: string
 {
     case ApplicationEpubZip = 'application/epub+zip';
@@ -83,6 +87,42 @@ enum MimeType: string
     case VideoWebm = 'video/webm';
     case VideoXMsvideo = 'video/x-msvideo';
 
+    /**
+     * Aliases a server may run as code or serve in a way the detected type
+     * does not imply (server-side includes, PHP handlers, compressed SVG).
+     */
+    private const EXECUTABLE_EXTENSIONS = [
+        'asp', 'aspx', 'cgi', 'htaccess', 'jsp', 'phar', 'php', 'php3', 'php4', 'php5', 'php7', 'php8',
+        'phps', 'pht', 'phtml', 'pl', 'py', 'shtm', 'shtml', 'stm', 'svgz',
+    ];
+
+    /**
+     * Document formats stored as zip archives. libmagic reports them as
+     * application/zip unless the archive happens to start with the entry it
+     * recognises them by.
+     */
+    private const ZIP_BASED_EXTENSIONS = [
+        'docm', 'docx', 'dotm', 'dotx', 'epub', 'odg', 'odp', 'ods', 'odt',
+        'potx', 'ppsx', 'pptm', 'pptx', 'vsdx', 'xlsm', 'xlsx', 'xltm', 'xltx',
+    ];
+
+    private const PLAIN_TEXT_TYPES = [
+        'application/ics',
+        'application/json',
+        'application/ld+json',
+        'application/x-yaml',
+        'application/yaml',
+        'text/calendar',
+        'text/css',
+        'text/csv',
+        'text/markdown',
+        'text/plain',
+        'text/tab-separated-values',
+        'text/vtt',
+        'text/x-markdown',
+        'text/yaml',
+    ];
+
     public static function toArray(): array
     {
         return array_column(self::cases(), 'value');
@@ -161,6 +201,113 @@ enum MimeType: string
         }
 
         return null;
+    }
+
+    /**
+     * Correct the detected type where libmagic is known to under-report a
+     * format the client's extension claims, after checking the content really
+     * is that format:
+     *
+     * - SVG that starts with whitespace or a comment is reported as text/plain
+     *   (or as XML), so it would otherwise lose its extension, and with it the
+     *   sanitizing every SVG goes through.
+     * - Office and OpenDocument files are zip archives, and are reported as
+     *   application/zip unless the archive's first entry identifies them.
+     *
+     * @param  Closure(): string  $contents  read only when a correction applies
+     */
+    public static function refineDetectedType(?string $type, ?string $clientExtension, Closure $contents): string
+    {
+        $type = self::normalizeType($type);
+        $extension = mb_strtolower(trim((string) $clientExtension));
+
+        if (
+            $extension === self::ImageSvgXml->getExt()
+            && in_array($type, [self::TextPlain->value, 'text/xml', self::ApplicationXml->value], true)
+            && self::isSvgDocument($contents())
+        ) {
+            return self::ImageSvgXml->value;
+        }
+
+        if (
+            in_array($extension, self::ZIP_BASED_EXTENSIONS, true)
+            && in_array($type, [self::ApplicationZip->value, self::ApplicationOctetStream->value], true)
+            && str_starts_with($contents(), "PK\x03\x04")
+        ) {
+            return MimeTypes::getDefault()->getMimeTypes($extension)[0] ?? $type;
+        }
+
+        return $type;
+    }
+
+    /**
+     * Decide the extension a file is stored under from its detected type.
+     *
+     * The client's filename is only a hint: web servers pick the content type
+     * of a stored file from its extension, so trusting it would let bytes that
+     * sniff as an accepted image be served as HTML. The client's extension is
+     * kept only when it is a known alias of the detected type (`.jpeg` for
+     * image/jpeg, say). Content that libmagic can only call text/plain may keep
+     * a plain-data text extension such as `.csv` or `.md`. Anything else is
+     * replaced with the type's canonical extension, or `bin` when the type has
+     * none, which Curator always serves as a download.
+     */
+    public static function resolveExtension(?string $type, ?string $clientExtension = null): string
+    {
+        $type = self::normalizeType($type);
+        $clientExtension = mb_strtolower(trim((string) $clientExtension));
+
+        if (! preg_match('/^[a-z0-9]{1,16}$/', $clientExtension) || in_array($clientExtension, self::EXECUTABLE_EXTENSIONS, true)) {
+            $clientExtension = null;
+        }
+
+        $aliases = self::extensionsFor($type);
+
+        if ($clientExtension !== null && in_array($clientExtension, $aliases, true)) {
+            return $clientExtension;
+        }
+
+        if ($clientExtension !== null && $type === self::TextPlain->value && self::isPlainTextExtension($clientExtension)) {
+            return $clientExtension;
+        }
+
+        return $aliases[0] ?? self::ApplicationOctetStream->getExt();
+    }
+
+    /**
+     * Every extension a type may be stored under, canonical first. Extensions
+     * a web server may execute or treat specially are never included.
+     *
+     * @return array<int, string>
+     */
+    public static function extensionsFor(?string $type): array
+    {
+        $type = self::normalizeType($type);
+
+        if ($type === '') {
+            return [];
+        }
+
+        $extensions = [
+            self::tryFrom($type)?->getExt(),
+            ...MimeTypes::getDefault()->getExtensions($type),
+        ];
+
+        return array_values(array_unique(array_filter(
+            $extensions,
+            fn (?string $extension): bool => is_string($extension)
+                && preg_match('/^[a-z0-9]{1,16}$/', $extension) === 1
+                && ! in_array($extension, self::EXECUTABLE_EXTENSIONS, true),
+        )));
+    }
+
+    /**
+     * Whether a web server may run a file with this extension as code, or
+     * treat it in a way its content type does not imply.
+     */
+    public static function isExecutableExtension(?string $extension): bool
+    {
+        return in_array(mb_strtolower((string) $extension), self::EXECUTABLE_EXTENSIONS, true);
     }
 
     public function getExt(): string
@@ -319,5 +466,42 @@ enum MimeType: string
             self::VideoWebm => 'WEBM video',
             self::VideoXMsvideo => 'AVI: Audio Video Interleave',
         };
+    }
+
+    private static function isSvgDocument(string $contents): bool
+    {
+        if (! str_contains($contents, '<svg')) {
+            return false;
+        }
+
+        $previous = libxml_use_internal_errors(true);
+
+        try {
+            $document = new DOMDocument;
+
+            return $document->loadXML($contents, LIBXML_NONET)
+                && $document->documentElement?->localName === 'svg';
+        } finally {
+            libxml_clear_errors();
+            libxml_use_internal_errors($previous);
+        }
+    }
+
+    private static function normalizeType(?string $type): string
+    {
+        return mb_strtolower(trim(explode(';', (string) $type)[0]));
+    }
+
+    /**
+     * Text content gives libmagic little to go on, so a CSV or Markdown file is
+     * often detected as text/plain. Its extension can be kept as long as the
+     * type a server would serve it as is plain data that never renders as a
+     * document.
+     */
+    private static function isPlainTextExtension(string $extension): bool
+    {
+        $declared = MimeTypes::getDefault()->getMimeTypes($extension)[0] ?? null;
+
+        return in_array($declared, self::PLAIN_TEXT_TYPES, true);
     }
 }

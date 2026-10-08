@@ -7,6 +7,8 @@ namespace Awcodes\Curator\Observers;
 use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Facades\Glide;
 use Awcodes\Curator\Models\Media;
+use Filament\Facades\Filament;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 use stdClass;
@@ -29,6 +31,8 @@ class MediaObserver
                 }
             }
         }
+
+        $this->assignTenant($media);
 
         $media->__unset('file');
     }
@@ -203,6 +207,26 @@ class MediaObserver
             if ($folder !== '.' && $folder !== rtrim((string) $media->directory, '/')) {
                 $this->deleteFolderIfEmpty($media->disk, $folder);
             }
+        }
+    }
+
+    /**
+     * Media created through the picker's panel or the multi upload action is
+     * mass assigned, and the tenant key is not fillable, so it is set here.
+     * When the media resource is registered on the tenant panel, Filament has
+     * already associated the tenant and this leaves it alone.
+     */
+    protected function assignTenant(Media $media): void
+    {
+        if (! Curator::isTenantAware() || ! Filament::hasTenancy() || ! ($tenant = Filament::getTenant()) instanceof Model) {
+            return;
+        }
+
+        $relationship = Curator::getTenantName() ?? Filament::getTenantOwnershipRelationshipName();
+        $foreignKey = $relationship . '_id';
+
+        if (blank($media->getAttribute($foreignKey))) {
+            $media->setAttribute($foreignKey, $tenant->getKey());
         }
     }
 

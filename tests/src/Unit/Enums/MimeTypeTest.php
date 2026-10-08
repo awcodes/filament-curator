@@ -103,3 +103,40 @@ test('tryFromExtension returns null for extensions outside the enum', function (
         ->and(MimeType::tryFromExtension(''))->toBeNull()
         ->and(MimeType::tryFromExtension(null))->toBeNull();
 });
+
+test('resolveExtension keeps an extension that matches the detected type', function (string $type, string $client, string $expected) {
+    expect(MimeType::resolveExtension($type, $client))->toBe($expected);
+})->with([
+    ['image/jpeg', 'jpg', 'jpg'],
+    ['image/jpeg', 'jpeg', 'jpeg'],
+    ['image/jpeg', 'JPG', 'jpg'],
+    ['image/png', 'png', 'png'],
+    ['application/pdf', 'pdf', 'pdf'],
+    ['image/svg+xml', 'svg', 'svg'],
+    ['text/plain', 'csv', 'csv'],
+    ['text/plain', 'md', 'md'],
+    ['image/png; charset=binary', 'png', 'png'],
+]);
+
+test('resolveExtension replaces an extension that does not match the detected type', function (?string $type, ?string $client, string $expected) {
+    expect(MimeType::resolveExtension($type, $client))->toBe($expected);
+})->with([
+    ['image/jpeg', 'html', 'jpg'],
+    ['image/png', "png');alert(1);('", 'png'],
+    ['image/svg+xml', 'svgz', 'svg'],
+    ['image/svg+xml', 'txt', 'svg'],
+    ['text/plain', 'html', 'txt'],
+    ['text/plain', 'svg', 'txt'],
+    ['text/plain', 'js', 'txt'],
+    ['text/plain', 'phtml', 'txt'],
+    ['text/html', 'shtml', 'html'],
+    ['image/jpeg', null, 'jpg'],
+    ['application/x-unknown', 'html', 'bin'],
+    [null, 'jpg', 'bin'],
+]);
+
+test('extensionsFor never offers an executable alias', function () {
+    expect(MimeType::extensionsFor('text/html'))->not->toContain('shtml')
+        ->and(MimeType::extensionsFor('application/x-httpd-php'))->toBe([])
+        ->and(MimeType::extensionsFor('image/jpeg')[0])->toBe('jpg');
+});

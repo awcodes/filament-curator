@@ -6,17 +6,16 @@ namespace Awcodes\Curator\Components\Forms;
 
 use Awcodes\Curator\Concerns\CanGeneratePaths;
 use Awcodes\Curator\Concerns\CanNormalizePaths;
+use Awcodes\Curator\Enums\MimeType;
 use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Facades\Glide;
 use Awcodes\Curator\PathGenerators\Contracts\PathGenerator;
 use Closure;
-use Filament\Facades\Filament;
 use Filament\Forms\Components\BaseFileUpload;
 use Filament\Forms\Components\FileUpload;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use League\Flysystem\UnableToCheckFileExistence;
@@ -45,7 +44,11 @@ class Uploader extends FileUpload
                 ? Str::of(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME))->slug()
                 : (string) Str::uuid();
 
-            $extension = mb_strtolower($file->getClientOriginalExtension());
+            // Validation accepts the file on its detected type, and web servers
+            // serve it by its extension, so the extension has to follow the
+            // detected type rather than the name the client sent.
+            $type = MimeType::refineDetectedType($file->getMimeType(), $file->getClientOriginalExtension(), fn (): string => (string) $file->get());
+            $extension = MimeType::resolveExtension($type, $file->getClientOriginalExtension());
 
             $storeMethod = $component->getVisibility() === 'public' ? 'storePubliclyAs' : 'storeAs';
 
@@ -68,7 +71,6 @@ class Uploader extends FileUpload
             }
 
             $size = $file->getSize();
-            $type = $file->getMimeType();
 
             $path = $file->{$storeMethod}(
                 $component->getDirectory(),
@@ -78,17 +80,13 @@ class Uploader extends FileUpload
 
             // SVGs are served as raw markup (they are not routed through Glide),
             // so strip any embedded scripts before they can execute inline.
-            //
-            // The extension comes from the client and acceptance is decided on
-            // the detected type, so markup uploaded as `payload.txt` would skip
-            // sanitizing entirely if this only looked at the filename.
             if (Curator::isSvg($extension) || Curator::isSvgMimeType($type)) {
                 $disk = Storage::disk($component->getDiskName());
                 $disk->put($path, Curator::sanitizeSvg($disk->get($path)), $component->getVisibility());
                 $size = $disk->size($path);
             }
 
-            $data = [
+            return [
                 'disk' => $component->getDiskName(),
                 'directory' => $component->getDirectory(),
                 'visibility' => $component->getVisibility(),
@@ -98,15 +96,9 @@ class Uploader extends FileUpload
                 'width' => $width ?? null,
                 'height' => $height ?? null,
                 'size' => $size ?? null,
-                'type' => $type ?? null,
+                'type' => $type,
                 'ext' => $extension,
             ];
-
-            if (Config::get('curator.is_tenant_aware') && Filament::hasTenancy()) {
-                $data[Config::get('curator.tenant_ownership_relationship_name') . '_id'] = Filament::getTenant()->id;
-            }
-
-            return $data;
         });
 
         $this->dehydrateStateUsing(fn ($component) => $component->getState());
@@ -131,6 +123,27 @@ class Uploader extends FileUpload
         return $this->normalizePath($path);
     }
 
+    /**
+     * Rejects state that is not a fresh upload before Filament's own rules,
+     * which expect only uploads or file paths, see it.
+     */
+    public function getValidationRules(): array
+    {
+        return [
+            'bail',
+            function (string $attribute, mixed $value, Closure $fail): void {
+                foreach (Arr::wrap($value) as $file) {
+                    if (! $file instanceof TemporaryUploadedFile) {
+                        $fail(__('filament-forms::validation.tampered_file_path', ['attribute' => $this->getValidationAttribute()]));
+
+                        return;
+                    }
+                }
+            },
+            ...parent::getValidationRules(),
+        ];
+    }
+
     public function saveUploadedFiles(): void
     {
         if (blank($this->getRawState())) {
@@ -143,9 +156,11 @@ class Uploader extends FileUpload
             $this->rawState([$this->getRawState()]);
         }
 
-        $rawState = array_filter(array_map(function (TemporaryUploadedFile | array $file) {
+        // The uploader never loads existing files into its state, so anything
+        // other than a fresh upload came from the client and is dropped.
+        $rawState = array_filter(array_map(function (mixed $file): TemporaryUploadedFile | array | null {
             if (! $file instanceof TemporaryUploadedFile) {
-                return $file;
+                return null;
             }
 
             $callback = $this->saveUploadedFileUsing;
