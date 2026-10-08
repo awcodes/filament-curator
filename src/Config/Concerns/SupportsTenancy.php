@@ -27,7 +27,7 @@ trait SupportsTenancy
 
     public function getTenantName(): ?string
     {
-        if (! $this->isTenantAware) {
+        if (! $this->isTenantAware()) {
             return null;
         }
 

@@ -53,9 +53,13 @@ class CuratorUtils
         // The source name is not authoritative about the content, and the disk
         // serves the stored file by its extension, so the extension follows the
         // type detected from the bytes, as it does for uploads.
-        $detectedType = (new FinfoMimeTypeDetector)->detectMimeTypeFromBuffer($fileContents)
-            ?: MimeType::ApplicationOctetStream->value;
-        $ext = MimeType::resolveExtension($detectedType, pathinfo($sourcePath, PATHINFO_EXTENSION));
+        $sourceExtension = pathinfo($sourcePath, PATHINFO_EXTENSION);
+        $detectedType = MimeType::refineDetectedType(
+            (new FinfoMimeTypeDetector)->detectMimeTypeFromBuffer($fileContents) ?: MimeType::ApplicationOctetStream->value,
+            $sourceExtension,
+            fn (): string => $fileContents,
+        );
+        $ext = MimeType::resolveExtension($detectedType, $sourceExtension);
 
         $filename = Curator::shouldPreserveFilenames()
             ? (string) Str::of(pathinfo($sourcePath, PATHINFO_FILENAME))->slug()
@@ -72,11 +76,11 @@ class CuratorUtils
             $fileContents = $storage->get($filepath);
         }
 
-        $type = $storage->mimeType($filepath) ?: null;
+        $type = $detectedType;
 
         // Imported files never pass through the uploader, so they get the same
         // treatment here: sanitize on the detected type as well as the extension.
-        if (Curator::isSvg($ext) || Curator::isSvgMimeType($type) || Curator::isSvgMimeType($detectedType)) {
+        if (Curator::isSvg($ext) || Curator::isSvgMimeType($type)) {
             $storage->put($filepath, Curator::sanitizeSvg($storage->get($filepath)), $visibility);
         }
 
