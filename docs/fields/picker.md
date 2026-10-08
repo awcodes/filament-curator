@@ -48,7 +48,7 @@ The trigger opens Curator's library in a full-screen modal, where an author pick
 | `relationship()` | Bind to a relationship — see [Relationships](relationships.md). |
 | `orderColumn()` | Rename the order column used by multiple relationships. Defaults to `order`. |
 | `pathGenerator()` | Where uploads are written — see [Path generation](../storage/paths.md). |
-| `limitToDirectory()` | Restrict the picker to its own directory. Requires the `directory_restriction` feature. |
+| `limitToDirectory()` | Restrict the picker to its `directory()` and the folders below it — see [What a picker lists](#what-a-picker-lists). Without it, the `features.directory_restriction` config value decides, which is off by default. |
 | `tenantAware()` | Scope to the current tenant. Without it, the `features.tenancy.enabled` config value decides, which is off by default. |
 
 Uploads also accept the familiar Filament methods — `preserveFilenames()`, `minSize()`, `maxSize()`, `rules()`, `acceptedFileTypes()`, `disk()`, `visibility()`, `directory()`, `imageCropAspectRatio()`, `imageResizeMode()`, `imageResizeTargetWidth()` and `imageResizeTargetHeight()`. See Filament's [file upload documentation](https://filamentphp.com/docs/5.x/forms/file-upload) for what each does.
@@ -78,3 +78,20 @@ The media panel takes these settings from the picker when it opens, and they can
 
 > [!NOTE]
 > `acceptedFileTypes()` defaults to Curator's own safe list rather than allowing everything — see [Accepted file types](../file-types.md).
+
+## What a picker lists
+
+A picker only works with the media its own settings allow:
+
+- **Its disk.** Media stored on another disk isn't listed, even when it has the same directory.
+- **The types it accepts.** `acceptedFileTypes()` applies to the library as well as to uploads, and in the same way: `image/*` matches any image, SVG included, but a wildcard never matches a type that can run script, such as `text/html` under `text/*`. List a type exactly to include it.
+- **The current tenant**, when tenancy applies. With `tenantAware()` (or the `features.tenancy.enabled` config value), the picker filters on the tenant itself. When Curator's media resource is registered on the tenant panel, Filament's own tenant scope applies as well.
+- **Its directory**, with `limitToDirectory()`. The panel opens in the picker's `directory()` and can't leave it: the disk and the folders above aren't offered, and search, the folder list and uploads stay within it and the folders below it. Without `limitToDirectory()`, `directory()` is only where the panel opens and where uploads go.
+
+The library listing, search, folder list, insert and download in the panel all use these settings, and so does the picker itself:
+
+- A saved value is loaded again within them, so an id the picker wouldn't list, such as another tenant's media or one on another disk, doesn't load. It's left out of the field, and saving the form removes it.
+- Media the panel sends back to the picker is looked up again, so the picker holds the stored records.
+- Saving a selection that holds media outside these settings, or media that no longer exists, fails validation on the field.
+
+If a picker needs existing media that its settings now leave out, for example after changing its `disk()`, widen the settings or move the media; it isn't shown otherwise.
