@@ -16,6 +16,7 @@ use Filament\Actions\Concerns\CanBeOutlined;
 use Filament\Actions\Concerns\HasSize;
 use Filament\Forms\Components\Field;
 use Filament\Schemas\Components\Component;
+use Filament\Schemas\Schema;
 use Filament\Support\Components\Attributes\ExposedLivewireMethod;
 use Filament\Support\Concerns\HasColor;
 use Filament\Support\Enums\Size;
@@ -177,30 +178,36 @@ class CuratorPicker extends Field
         return new MediaScope(
             disk: $this->getDiskName(),
             acceptedFileTypes: $this->getAcceptedFileTypes(),
-            directory: $this->isLimitedToDirectory() ? $this->getDirectory() : null,
+            directory: $this->getDirectory(),
+            isLimitedToDirectory: $this->isLimitedToDirectory(),
             isTenantAware: $this->isTenantAware(),
             tenantOwnershipRelationshipName: $this->getTenantOwnershipRelationshipName(),
         );
     }
 
     /**
-     * The media ids saved on the record this form edits, read from the database rather than from the field's
-     * state, which the browser holds. A form without a saved record has none. They're read once per record and
-     * request, before anything is saved, so ids being saved now never count as already saved.
+     * The media ids saved for this field on the record its form edits, read from the database rather than from the
+     * field's state, which the browser holds. A form without a saved record has none, and so does an action modal
+     * other than an edit action's, whose record isn't what its fields are filled from. They're read once per record
+     * and request, before anything is saved, so ids being saved now never count as already saved.
      *
      * @return array<int, string>
      */
     public function getPersistedMediaIds(): array
     {
-        $record = $this->getRecord();
+        $owner = $this->findRecordOwner();
 
-        if (! $record instanceof Model || ! $record->exists) {
+        if ($owner === null) {
             return [];
         }
 
-        $key = $record::class . ':' . $record->getKey();
+        [$record, $path] = $owner;
 
-        return $this->persistedMediaIds[$key] ??= MediaScope::extractIds($this->readPersistedMediaIds($record));
+        $key = $record::class . ':' . $record->getKey() . ':' . $path;
+
+        return $this->persistedMediaIds[$key] ??= $this->hasRelationship()
+            ? MediaScope::extractIds($this->readPersistedRelationshipIds())
+            : $this->readPersistedAttributeIds($record, $path);
     }
 
     public function buttonLabel(string | Htmlable | Closure $label): static
@@ -662,16 +669,129 @@ class CuratorPicker extends Field
         return $resource::can($ability, $record) ? $record : null;
     }
 
-    protected function readPersistedMediaIds(Model $record): mixed
+    /**
+     * The saved record the field's value belongs to, and the field's state path within it: the nearest schema or
+     * component up the tree that holds a record of its own, such as the form, a relationship repeater's item or a
+     * relationship group.
+     *
+     * @return array{0: Model, 1: string}|null
+     */
+    protected function findRecordOwner(): ?array
     {
-        if (! $this->hasRelationship()) {
-            return data_get($record->getOriginal(), $this->getName());
+        $schema = $this->getContainer();
+
+        while ($schema instanceof Schema) {
+            $record = $schema->getRecord(withParentComponentRecord: false);
+            $basePath = $schema->getStatePath();
+
+            if ($record === null) {
+                $component = $schema->getParentComponent();
+                $record = $component?->getRecord(withContainerRecord: false);
+                $basePath = $component?->getStatePath();
+            }
+
+            if ($record !== null) {
+                if (! $record instanceof Model || ! $record->exists || ! $this->isFilledFromRecord($schema)) {
+                    return null;
+                }
+
+                $path = (string) $this->getStatePath();
+
+                if (filled($basePath)) {
+                    if (! str_starts_with($path, $basePath . '.')) {
+                        return null;
+                    }
+
+                    $path = substr($path, strlen($basePath) + 1);
+                }
+
+                return [$record, $path];
+            }
+
+            $schema = $schema->getParentComponent()?->getContainer();
         }
 
+        return null;
+    }
+
+    /**
+     * An action modal's schema is given the table row or page record, but only an edit action fills its fields
+     * from it.
+     */
+    protected function isFilledFromRecord(Schema $schema): bool
+    {
+        $root = $schema;
+
+        while (($parent = $root->getParentComponent()?->getContainer()) instanceof Schema) {
+            $root = $parent;
+        }
+
+        if (! str_starts_with((string) $root->getStatePath(), 'mountedActions.')) {
+            return true;
+        }
+
+        return Str::afterLast($root->getOperation(), '.') === 'edit';
+    }
+
+    /**
+     * The ids saved under the field's key in the record attribute its state lives in: the column itself for a
+     * top-level field, or anywhere inside a JSON column for a field in a repeater, builder or group, whose items are
+     * keyed by generated ids. Never a column of the same name elsewhere on the record.
+     *
+     * @return array<int, string>
+     */
+    protected function readPersistedAttributeIds(Model $record, string $path): array
+    {
+        $segments = explode('.', $path);
+        $attribute = array_shift($segments);
+
+        $value = $record->getOriginal($attribute);
+
+        if ($segments === []) {
+            return MediaScope::extractIds($value);
+        }
+
+        if (is_string($value)) {
+            $value = json_decode($value, true);
+        }
+
+        return array_values(array_unique(array_merge([], ...array_map(
+            MediaScope::extractIds(...),
+            $this->findValuesUnderKey($value, end($segments)),
+        ))));
+    }
+
+    /**
+     * @return array<int, mixed>
+     */
+    protected function findValuesUnderKey(mixed $value, string $key): array
+    {
+        if (! is_array($value)) {
+            return [];
+        }
+
+        $found = [];
+
+        foreach ($value as $itemKey => $item) {
+            if ((string) $itemKey === $key) {
+                $found[] = $item;
+
+                continue;
+            }
+
+            array_push($found, ...$this->findValuesUnderKey($item, $key));
+        }
+
+        return $found;
+    }
+
+    protected function readPersistedRelationshipIds(): mixed
+    {
         $relationship = $this->getRelationship();
+        $record = $this->getModelInstance();
 
         return match (true) {
-            $relationship instanceof BelongsTo => $record->getRawOriginal($relationship->getForeignKeyName()),
+            $relationship instanceof BelongsTo => $record?->getRawOriginal($relationship->getForeignKeyName()),
             $relationship instanceof BelongsToMany => $relationship->allRelatedIds()->all(),
             $relationship instanceof MorphMany => $relationship
                 ->where($this->getTypeColumn(), $this->getTypeValue())

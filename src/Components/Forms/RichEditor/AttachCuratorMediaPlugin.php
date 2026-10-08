@@ -70,7 +70,7 @@ class AttachCuratorMediaPlugin implements RichContentPlugin
                         'acceptedFileTypes' => $component->getFileAttachmentsAcceptedFileTypes() ?? Curator::getAcceptedFileTypes(),
                         'defaultSort' => 'desc',
                         'directory' => $component->getFileAttachmentsDirectory() ?? Curator::getDirectory(),
-                        'diskName' => $component->getFileAttachmentsDiskName() ?? Curator::getDiskName(),
+                        'diskName' => $this->getExplicitAttachmentSetting($component, 'fileAttachmentsDiskName', 'getDefaultFileAttachmentsDiskName') ?? Curator::getDiskName(),
                         'imageCropAspectRatio' => Curator::getImageCropAspectRatio(),
                         'imageResizeTargetWidth' => Curator::getImageResizeTargetWidth(),
                         'imageResizeTargetHeight' => Curator::getImageResizeTargetHeight(),
@@ -88,10 +88,21 @@ class AttachCuratorMediaPlugin implements RichContentPlugin
                         'shouldPreserveFilenames' => Curator::shouldPreserveFilenames(),
                         'statePath' => $component->getStatePath(),
                         'context' => 'richEditor',
-                        'visibility' => $component->getFileAttachmentsVisibility() ?? Curator::getVisibility(),
+                        'visibility' => $this->getExplicitAttachmentSetting($component, 'fileAttachmentsVisibility', 'getDefaultFileAttachmentsVisibility') ?? Curator::getVisibility(),
                     ],
                 ]))
                 ->action(fn (): null => null),
         ];
+    }
+
+    /**
+     * An attachment setting the app set on the editor, or on the model's rich content attribute, or null. Filament's
+     * own getters fall back to its default disk and visibility instead, which would override Curator's.
+     */
+    protected function getExplicitAttachmentSetting(RichEditor $component, string $property, string $defaultMethod): ?string
+    {
+        $value = (fn (): mixed => $this->evaluate($this->{$property}) ?? $this->{$defaultMethod}())->call($component);
+
+        return is_string($value) && filled($value) ? $value : null;
     }
 }

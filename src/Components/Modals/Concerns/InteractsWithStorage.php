@@ -85,6 +85,10 @@ trait InteractsWithStorage
 
         $limit = $scope->getDirectory();
 
+        if ($limit === null) {
+            return;
+        }
+
         $this->directories[$limit] ??= [
             'label' => Str::of($limit)->afterLast('/')->replace('-', ' ')->title()->toString(),
             'name' => Str::of($limit)->afterLast('/')->toString(),
@@ -106,10 +110,10 @@ trait InteractsWithStorage
         // the configured directory and directories that already hold media the panel lists, never name a new one,
         // and never leave the directory the panel is limited to.
         $isKnownDirectory = $directory === $this->diskName
-            || $directory === ($this->settings['directory'] ?? null)
+            || MediaScope::normalizeDirectory($directory) === MediaScope::normalizeDirectory($this->settings['directory'] ?? null)
             || array_key_exists($directory, $this->directories ?? []);
 
-        $target = $directory === $this->diskName ? null : $directory;
+        $target = $directory === $this->diskName ? null : MediaScope::normalizeDirectory($directory);
 
         if (! $isKnownDirectory || ! $this->getMediaScope()->allowsDirectory($target)) {
             return;
