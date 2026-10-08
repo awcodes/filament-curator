@@ -40,6 +40,13 @@ Glide::getTemporaryUrl($media->path, ['w' => 800], now()->addHour(), $media->dis
 
 `glide()->getUrl()` and `GlideBuilder::toUrl()` still build permanent URLs, so they only work for public media. A custom URL provider that builds its URLs with either of them gets temporary URLs for private media automatically.
 
+An app that supplies its own server with `Glide::serverConfig()` reads every disk through that config's single `source` and `cache`, so it doesn't get the per-disk source or cache folders described under [Cloud disks](#cloud-disks). Temporary URLs and their expiry still apply.
+
+### After upgrading
+
+- **Purge Glide's cache** (`storage/app/.cache` by default) and any CDN in front of the media route. Images transformed before the upgrade for disks other than the default sit in the shared cache folder, and copies of earlier permanent URLs for private media can stay in CDN and browser caches for up to a year.
+- **Rotate `CURATOR_GLIDE_TOKEN`** (`php artisan curator:token`) if earlier URLs for private media may have been shared. This invalidates every URL issued before, public ones included, so pages and content that stored Glide URLs need them rebuilt.
+
 ## Supplying your own server
 
 Pass a Glide server configuration to the facade to take over how media is served:

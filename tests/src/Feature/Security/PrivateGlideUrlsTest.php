@@ -9,6 +9,7 @@ use Awcodes\Curator\Facades\Glide;
 use Awcodes\Curator\Glide\GlideBuilder;
 use Awcodes\Curator\Models\Media;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
@@ -289,4 +290,40 @@ test('deleting media clears the glide cache kept for its disk', function () {
     $media->delete();
 
     expect(File::isDirectory($cacheFolder))->toBeFalse();
+});
+
+/**
+ * Moves the given signed parameters out of the URL's query string and into a JSON body.
+ *
+ * @return array{0: string, 1: array<string, mixed>}
+ */
+function moveToBody(string $url, array $keys): array
+{
+    $params = queryParams($url);
+
+    return [
+        Str::before($url, '?') . '?' . http_build_query(Arr::except($params, $keys)),
+        Arr::only($params, $keys),
+    ];
+}
+
+test('a signed disk moved into a request body is not accepted', function () {
+    storeImage('local', 'shared/photo.png', 30, 30);
+    storeImage('public', 'shared/photo.png', 40, 20);
+
+    $local = imageMedia(['disk' => 'local', 'visibility' => 'private', 'path' => 'shared/photo.png']);
+    imageMedia(['disk' => 'public', 'visibility' => 'private', 'path' => 'shared/photo.png']);
+
+    [$url, $body] = moveToBody($local->thumbnail_url, ['disk']);
+
+    $this->json('GET', $url, $body)->assertForbidden();
+});
+
+test('signed size parameters moved into a request body are not accepted', function () {
+    storeImage('local', 'photo.png', 40, 20);
+    $media = imageMedia(['disk' => 'local', 'visibility' => 'private']);
+
+    [$url, $body] = moveToBody($media->thumbnail_url, ['w', 'h', 'fit']);
+
+    $this->json('GET', $url, $body)->assertForbidden();
 });

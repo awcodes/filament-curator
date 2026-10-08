@@ -30,11 +30,14 @@ class MediaController extends Controller
      */
     public function show(Request $request, string $path, GlideManager $glide)
     {
+        // Only the query string is signed, and only the query string is read
+        // below. A request body would otherwise count towards the signature
+        // without reaching the code that applies those parameters.
         try {
             SignatureFactory::create($glide->getToken())
                 ->validateRequest(
                     path: $glide->getBasePath() . '/' . $path,
-                    params: $request->all()
+                    params: $request->query()
                 );
         } catch (SignatureException) {
             abort(403);
