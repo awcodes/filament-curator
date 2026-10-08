@@ -164,7 +164,7 @@ $livewire->dispatch('open-modal', id: 'curator-panel', settings: CuratorPanel::e
 ]));
 ```
 
-An encrypted payload can be used for an hour. The panel loads the selected media again by id, within the current tenant when tenancy is enabled.
+An encrypted payload can be used for ten minutes, so create it when the panel is opened. The panel loads the selected media again by id, within the current tenant when tenancy is enabled.
 
 ### Relationships
 
