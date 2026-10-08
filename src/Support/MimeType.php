@@ -138,10 +138,6 @@ class MimeType
     private const PLAIN_DATA_EXTENSION_TYPES = [
         'csv' => 'text/csv',
         'ics' => 'text/calendar',
-        'markdown' => 'text/markdown',
-        'md' => 'text/markdown',
-        'tsv' => 'text/tab-separated-values',
-        'vtt' => 'text/vtt',
     ];
 
     private const PLAIN_TEXT_TYPES = [
@@ -203,9 +199,9 @@ class MimeType
      *   goes through.
      * - Office and OpenDocument files are zip archives, and are reported as
      *   application/zip unless the archive's first entry identifies them.
-     * - CSV, TSV, Markdown, calendar and WebVTT text is reported as text/plain
-     *   by some libmagic versions, so it takes the type its extension declares.
-     *   These are plain data that never render as a document.
+     * - CSV and calendar text is reported as text/plain by some libmagic
+     *   versions, so it takes the type its extension declares. Other text,
+     *   such as Markdown, stays text/plain, which fields already accept it as.
      * - Legacy Office files are OLE containers, reported as such when the entry
      *   that identifies them lies beyond the bytes that were sampled.
      *

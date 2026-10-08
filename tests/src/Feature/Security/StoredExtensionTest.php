@@ -95,17 +95,17 @@ test('plain-data text detected as text/plain takes the type of its extension', f
 })->with([
     ['csv', 'text/csv'],
     ['CSV', 'text/csv'],
-    ['tsv', 'text/tab-separated-values'],
-    ['md', 'text/markdown'],
-    ['markdown', 'text/markdown'],
     ['ics', 'text/calendar'],
-    ['vtt', 'text/vtt'],
 ]);
 
 test('other extensions on text/plain content are not retyped', function (string $extension) {
     expect(MimeType::refineDetectedType('text/plain', $extension, fn (): string => '', fn (int $length): string => ''))
         ->toBe('text/plain');
-})->with(['html', 'js', 'xml', 'svg', 'php', 'txt']);
+})->with(['html', 'js', 'xml', 'svg', 'php', 'txt', 'md', 'markdown', 'tsv', 'vtt']);
+
+test('text/plain content keeps a plain-data extension it is not retyped for', function (string $extension) {
+    expect(MimeType::resolveExtension('text/plain', $extension))->toBe($extension);
+})->with(['md', 'tsv', 'vtt']);
 
 test('an svg that starts with a comment keeps its extension and is sanitized', function () {
     $svg = "<!-- logo -->\n<svg xmlns=\"http://www.w3.org/2000/svg\" onload=\"void(0)\"><rect width=\"1\" height=\"1\"/></svg>";
