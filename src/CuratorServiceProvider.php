@@ -29,6 +29,7 @@ class CuratorServiceProvider extends PackageServiceProvider
             ->hasCommands([
                 Commands\UpgradeCommand::class,
                 Commands\SanitizeSvgsCommand::class,
+                Commands\RepairExtensionsCommand::class,
             ])
             ->hasInstallCommand(function (InstallCommand $command) {
                 $command

@@ -6,9 +6,9 @@
 
     <div
         x-data="{
-            state: $wire.entangle('{{ $statePath }}'),
+            state: $wire.entangle(@js($statePath)),
             insertPreview(event) {
-                if (event.detail.statePath !== '{{ $statePath }}') return;
+                if (event.detail.statePath !== @js($statePath)) return;
                 this.state = event.detail.curation;
             }
         }"

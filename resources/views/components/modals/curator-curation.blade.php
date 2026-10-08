@@ -6,13 +6,13 @@
         x-load="visible"
         x-load-src="{{ \Filament\Support\Facades\FilamentAsset::getAlpineComponentSrc('curation', 'awcodes/curator') }}"
         x-data="curation({
-            statePath: '{{ $statePath }}',
-            fileName: '{{ $media->name }}',
-            fileType: '{{ $media->type }}',
+            statePath: @js($statePath),
+            fileName: @js($media->name),
+            fileType: @js($media->type),
             presets: @js($presets),
             checkCrossOrigin: @js(config('curator.cropper.check_cross_origin'))
         })"
-        x-on:add-curation.window="$dispatch('close-modal', { id: '{{ $modalId }}' })"
+        x-on:add-curation.window="$dispatch('close-modal', { id: @js($modalId) })"
     >
 
         <div class="flex-1 w-full lg:h-full overflow-auto p-4">
@@ -255,7 +255,7 @@
                             type="button"
                             size="sm"
                             color="gray"
-                            wire:click="$dispatch('close-modal', { id: '{{ $modalId }}' })"
+                            wire:click="$dispatch('close-modal', { id: {{ \Illuminate\Support\Js::from($modalId) }} })"
                         >
                             {{ trans('curator::views.curation.cancel') }}
                         </x-filament::button>

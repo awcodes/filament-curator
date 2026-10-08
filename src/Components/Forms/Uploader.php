@@ -5,9 +5,12 @@ namespace Awcodes\Curator\Components\Forms;
 use Awcodes\Curator\Concerns\CanGeneratePaths;
 use Awcodes\Curator\Concerns\CanNormalizePaths;
 use Awcodes\Curator\PathGenerators\Contracts\PathGenerator;
+use Awcodes\Curator\Support\MimeType;
+use Closure;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\BaseFileUpload;
 use Filament\Forms\Components\FileUpload;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -54,9 +57,11 @@ class Uploader extends FileUpload
             $this->state([$this->getState()]);
         }
 
-        $state = array_map(function (TemporaryUploadedFile | array $file) {
+        // The uploader never loads existing files into its state, so anything
+        // other than a fresh upload came from the browser and is dropped.
+        $state = array_filter(array_map(function (mixed $file): ?array {
             if (! $file instanceof TemporaryUploadedFile) {
-                return $file;
+                return null;
             }
 
             $callback = $this->saveUploadedFileUsing;
@@ -64,21 +69,75 @@ class Uploader extends FileUpload
             if (! $callback) {
                 $file->delete();
 
-                return $file;
+                return null;
             }
 
             $storedFile = $this->evaluate($callback, [
                 'file' => $file,
             ]);
 
+            if (! is_array($storedFile)) {
+                return null;
+            }
+
             $this->storeFileName($storedFile['path'], $file->getClientOriginalName());
 
             $file->delete();
 
             return $storedFile;
-        }, $this->getState());
+        }, $this->getState()));
 
         $this->state($state);
+    }
+
+    /**
+     * Rejects state that is not a fresh upload, and uploads whose content is
+     * a document or script type the field does not accept, before Filament's
+     * own rules see them.
+     */
+    public function getValidationRules(): array
+    {
+        return [
+            'bail',
+            function (string $attribute, mixed $value, Closure $fail): void {
+                foreach (Arr::wrap($value) as $file) {
+                    if (! $file instanceof TemporaryUploadedFile) {
+                        $fail(__('validation.uploaded', ['attribute' => $this->getValidationAttribute()]));
+
+                        return;
+                    }
+
+                    $type = $this->detectFileType($file);
+                    $acceptedTypes = $this->getAcceptedFileTypes() ?? [];
+
+                    if (
+                        (MimeType::isRestricted($type) || is_media_svg($type))
+                        && filled($acceptedTypes)
+                        && ! MimeType::isAccepted($type, $acceptedTypes)
+                    ) {
+                        $fail(__('validation.mimetypes', [
+                            'attribute' => $this->getValidationAttribute(),
+                            'values' => implode(', ', $acceptedTypes),
+                        ]));
+
+                        return;
+                    }
+                }
+            },
+            ...parent::getValidationRules(),
+        ];
+    }
+
+    /**
+     * The type of an upload, detected from its bytes. The type Livewire reports
+     * can come from the client, for example the content type of a direct
+     * upload to S3, so it is only used when the bytes give nothing to go on.
+     */
+    public function detectFileType(TemporaryUploadedFile $file): string
+    {
+        $type = MimeType::detect($file->readStream()) ?? $file->getMimeType() ?: MimeType::OCTET_STREAM;
+
+        return MimeType::refineDetectedType($type, $file->getClientOriginalExtension(), fn (): string => (string) $file->get());
     }
 
     public function getSuggestedFileName(TemporaryUploadedFile $file): string
@@ -107,11 +166,15 @@ class Uploader extends FileUpload
 
             $filename = $component->getUploadedFileNameForStorage($file);
 
-            $extension = $file->getClientOriginalExtension();
+            // Validation accepts the file on its type, and web servers serve it
+            // by its extension, so the extension follows the type detected
+            // from the file's bytes rather than the name the client sent.
+            $type = $component->detectFileType($file);
+            $extension = MimeType::resolveExtension($type, $file->getClientOriginalExtension());
 
             $storeMethod = $component->getVisibility() === 'public' ? 'storePubliclyAs' : 'storeAs';
 
-            if (is_media_resizable($file->getMimeType())) {
+            if (is_media_resizable($type)) {
                 if (in_array(config('livewire.temporary_file_upload.disk'), config('curator.cloud_disks')) && config('livewire.temporary_file_upload.directory') !== null) {
                     $content = $file->get();
                 } else {
@@ -139,7 +202,7 @@ class Uploader extends FileUpload
 
             // SVGs are served as raw markup (they are not routed through Glide),
             // so strip any embedded scripts before they can execute inline.
-            if (is_media_svg($file->getMimeType())) {
+            if (is_media_svg($type)) {
                 $disk = Storage::disk($component->getDiskName());
                 $disk->put($path, sanitize_svg($disk->get($path)), $component->getVisibility());
                 $size = $disk->size($path);
@@ -155,7 +218,7 @@ class Uploader extends FileUpload
                 'width' => $width ?? null,
                 'height' => $height ?? null,
                 'size' => $size,
-                'type' => $file->getMimeType(),
+                'type' => $type,
                 'ext' => $extension,
             ];
 

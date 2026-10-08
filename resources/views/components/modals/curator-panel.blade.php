@@ -94,13 +94,13 @@
                     <li
                         wire:key="media-{{ $file['id'] }}" class="relative aspect-square"
                         x-bind:class="{
-                            'opacity-40': $wire.selected.length > 0 && !isSelected('{{ $file['id'] }}')
+                            'opacity-40': $wire.selected.length > 0 && !isSelected(@js((string) $file['id']))
                         }"
                     >
 
                         <button
                             type="button"
-                            x-on:click="handleItemClick('{{ $file['id'] }}', $event)"
+                            x-on:click="handleItemClick(@js((string) $file['id']), $event)"
                             class="block w-full h-full overflow-hidden bg-gray-700 rounded-sm"
                         >
                             @if (str_contains($file['type'], 'image'))
@@ -139,8 +139,8 @@
 
                         <button
                             type="button"
-                            x-on:click="handleItemClick('{{ $file['id'] }}', $event)"
-                            x-show="isSelected('{{ $file['id'] }}')"
+                            x-on:click="handleItemClick(@js((string) $file['id']), $event)"
+                            x-show="isSelected(@js((string) $file['id']))"
                             x-cloak
                             class="absolute inset-0 flex items-center justify-center w-full h-full rounded shadow text-primary-600 bg-primary-500/20 ring-2 ring-primary-500"
                         >
