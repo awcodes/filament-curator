@@ -815,5 +815,4 @@ class CuratorPicker extends Field
 
         return $items;
     }
-
 }

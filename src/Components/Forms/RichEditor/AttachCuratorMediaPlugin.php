@@ -101,7 +101,9 @@ class AttachCuratorMediaPlugin implements RichContentPlugin
      */
     protected function getExplicitAttachmentSetting(RichEditor $component, string $property, string $defaultMethod): ?string
     {
-        $value = (fn (): mixed => $this->evaluate($this->{$property}) ?? $this->{$defaultMethod}())->call($component);
+        // Older Filament 4 releases may not have the model-level default, so each part is looked up before use.
+        $value = (fn (): mixed => (property_exists($this, $property) ? $this->evaluate($this->{$property}) : null)
+            ?? (method_exists($this, $defaultMethod) ? $this->{$defaultMethod}() : null))->call($component);
 
         return is_string($value) && filled($value) ? $value : null;
     }

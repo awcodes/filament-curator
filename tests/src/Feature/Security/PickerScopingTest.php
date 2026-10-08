@@ -11,7 +11,11 @@ use Awcodes\Curator\Models\Media;
 use Awcodes\Curator\Support\MediaScope;
 use Awcodes\Curator\Tests\Fixtures\Livewire\PickerForm;
 use Awcodes\Curator\Tests\Fixtures\Models\JsonPost;
+use Awcodes\Curator\Tests\Fixtures\Models\Mediable;
+use Awcodes\Curator\Tests\Fixtures\Models\Post;
+use Awcodes\Curator\Tests\Fixtures\Models\User;
 use Awcodes\Curator\Tests\Fixtures\Models\UuidMedia;
+use Awcodes\Curator\Tests\Fixtures\Resources\Posts\Pages\EditPost;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Builder as FormBuilder;
 use Filament\Forms\Components\Builder\Block;
@@ -28,10 +32,6 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
-use Workbench\App\Filament\Resources\Posts\Pages\EditPost;
-use Workbench\App\Models\Mediable;
-use Workbench\App\Models\Post;
-use Workbench\App\Models\User;
 
 /*
  * Tenancy is covered both ways an app can set it up: Curator's own tenant filter (`tenantAware()`, without the media
@@ -1119,7 +1119,7 @@ describe('the limited directory', function () {
         $nested = makeMedia(['name' => 'nested', 'directory' => 'uploads/2024', 'path' => 'uploads/2024/nested.jpg']);
         makeMedia(['name' => 'elsewhere', 'directory' => 'secret', 'path' => 'secret/elsewhere.jpg']);
 
-        $panel = Livewire::test(CuratorPanel::class, ['settings' => ['acceptedFileTypes' => ['image/*'], 'directory' => '/uploads/', 'isLimitedToDirectory' => true, 'isMultiple' => true]])
+        $panel = Livewire::test(CuratorPanel::class, ['settings' => ['acceptedFileTypes' => ['image/*'], 'directory' => '/uploads/', 'isLimitedToDirectory' => true, 'isMultiple' => true, 'minSize' => 0, 'maxSize' => 5000]])
             ->assertSet('directory', 'uploads');
 
         expect(listedIds($panel))->toBe(sortedIds([$own, $nested]));
