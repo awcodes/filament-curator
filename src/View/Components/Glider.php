@@ -23,6 +23,8 @@ class Glider extends Component
 
     public ?MediaDTO $mediaItem = null;
 
+    protected ?Media $record = null;
+
     /**
      * @throws Exception
      */
@@ -148,6 +150,7 @@ class Glider extends Component
         );
 
         $this->mediaItem = $dto;
+        $this->record = $media;
     }
 
     public function buildGlideSource(array $overrides = []): string
@@ -186,6 +189,10 @@ class Glider extends Component
 
         if (str_starts_with($this->mediaItem->getPath(), 'http')) {
             return $this->mediaItem->getPath();
+        }
+
+        if ($this->record instanceof Media) {
+            return app(GlideManager::class)->getMediaUrl($this->record, $params);
         }
 
         return app(GlideManager::class)->getUrl($this->mediaItem->getPath(), $params);
