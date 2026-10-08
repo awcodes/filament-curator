@@ -29,7 +29,9 @@ description: Render media through Glide with the x-curator-glider Blade componen
 
 Any other attribute, such as `class` or `loading="lazy"`, is passed through to the `<img>`.
 
-Glide URLs are relative to your site's root, like `/curator/photo.jpg?w=1024&s=…`. That works on your own pages, but HTML read somewhere else, such as an email, a feed or an API response, needs absolute URLs. Build those with Laravel's `url()` helper, for example `url(glide()->getUrl($media->path, ['w' => 1024]))`.
+Glide URLs are relative to your site's root, like `/curator/photo.jpg?w=1024&s=…`. That works on your own pages, but HTML read somewhere else, such as an email, a feed or an API response, needs absolute URLs. Build those with Laravel's `url()` helper, for example `url($media->getGlideUrl(['w' => 1024]))`.
+
+For media that isn't public, the component builds [temporary URLs](../storage/glide.md#private-media) that expire after a few minutes. Pass private media as a `Media` instance or an id: a path given on its own builds a permanent URL, which the route only serves for public media.
 
 The image's `width` and `height` attributes describe what Glide will serve. Give only one of them and the other is worked out from the media's aspect ratio, so the box reserves the right space and the layout doesn't shift when the image loads.
 

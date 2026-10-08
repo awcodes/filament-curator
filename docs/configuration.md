@@ -17,7 +17,7 @@ php artisan vendor:publish --tag="curator-config"
 |---|---|
 | `default_disk` | Disk uploads are written to. Falls back to `CURATOR_DEFAULT_DISK`, then `FILESYSTEM_DISK`, then `public`. |
 | `default_directory` | Directory within the disk. Uploads land here, and the picker and rich editor panels open here unless given their own `directory()`. |
-| `default_visibility` | Visibility applied to uploads, `public` by default. |
+| `default_visibility` | Visibility applied to uploads, `public` by default. Media that isn't public is only served through [temporary URLs](storage/glide.md#private-media). |
 | `curation_formats` | Formats offered when creating a curation: any of `jpg`, `jpeg`, `webp`, `png` and `avif`. Others are left out. |
 | `features.curations` | Whether curations are available. |
 | `features.file_swap` | Whether an existing file can be swapped for a new one. |
@@ -27,6 +27,7 @@ php artisan vendor:publish --tag="curator-config"
 | `glide_token` | Reads `CURATOR_GLIDE_TOKEN`. See [Glide token](storage/token.md). |
 | `model` | The media model. See below. |
 | `path_generator` | Default path generator. See [Path generation](storage/paths.md). |
+| `temporary_url_expiration` | Minutes a temporary URL for media that isn't public stays valid, 5 by default. See [Private media](storage/glide.md#private-media). |
 | `url_provider` | Class that builds media URLs, `GlideUrlProvider` by default. |
 | `resource` | Labels, navigation, and the resource, page, schema and table classes Curator registers. |
 
