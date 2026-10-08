@@ -166,6 +166,17 @@ $livewire->dispatch('open-modal', id: 'curator-panel', settings: CuratorPanel::e
 
 An encrypted payload can be used for ten minutes, so create it when the panel is opened. The panel loads the selected media again by id, within the current tenant when tenancy is enabled.
 
+#### What a picker lists
+
+A picker's media panel lists, searches and inserts only media that matches the field's settings:
+
+- media on the field's `disk()`;
+- of a type in its `acceptedFileTypes()`. A wildcard such as `image/*` matches that group of types, but never HTML, XML, JavaScript or another XML type apart from SVG; list those exactly if a field should accept them;
+- in its `directory()` when it uses `limitToDirectory()`;
+- belonging to the current tenant when `tenantAware()` applies.
+
+The field loads, validates and saves its value through the same rules, so media outside them can't be selected from the browser either; a selection that includes it fails validation. Media already saved on the record being edited keeps loading and saving even if the field's settings have changed since, as long as it still exists and belongs to the current tenant. For a picker inside a repeater or builder that stores its items in a JSON column, only media saved at the picker's own place in that column counts. A picker inside a simple repeater, or inside a block or other component whose visibility depends on a condition (`visible()`, `hidden()`, `visibleOn()` and the like), doesn't count anything as already saved, because Filament's builder stores a hidden block's items as they were sent, without its fields' checks.
+
 ### Relationships
 
 #### Single

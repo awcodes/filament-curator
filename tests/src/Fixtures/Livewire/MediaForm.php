@@ -26,7 +26,7 @@ class MediaForm extends Component implements HasForms
         return $form
             ->schema([
                 CuratorPicker::make('media')
-                    ->acceptedFileTypes(['image/png'])
+                    ->acceptedFileTypes(['image/png', 'image/jpeg'])
                     ->directory('pictures')
                     ->multiple(),
                 TiptapEditor::make('content')

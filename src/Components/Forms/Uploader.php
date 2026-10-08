@@ -112,7 +112,7 @@ class Uploader extends FileUpload
                     $acceptedTypes = $this->getAcceptedFileTypes() ?? [];
 
                     if (
-                        (MimeType::isRestricted($type) || is_media_svg($type))
+                        (MimeType::isScriptable($type) || is_media_svg($type))
                         && filled($acceptedTypes)
                         && ! MimeType::isAccepted($type, $acceptedTypes)
                     ) {

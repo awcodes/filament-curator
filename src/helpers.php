@@ -3,6 +3,7 @@
 namespace Awcodes\Curator;
 
 use Awcodes\Curator\Models\Media;
+use Awcodes\Curator\Support\MediaScope;
 use enshrined\svgSanitize\Sanitizer;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Request;
@@ -73,8 +74,21 @@ if (! function_exists('sanitize_svg')) {
 }
 
 if (! function_exists('get_media_items')) {
-    function get_media_items(array | Media | int $ids): Collection | array
+    /**
+     * Load media for some ids, in their order. With a scope, the ids are always
+     * looked up again within it, even when full records or their arrays are
+     * passed, so an id the scope doesn't allow never loads.
+     */
+    function get_media_items(array | Media | int | string $ids, ?MediaScope $scope = null): Collection | array
     {
+        if ($scope instanceof MediaScope) {
+            return $scope->resolve($ids);
+        }
+
+        if (! is_array($ids) && ! $ids instanceof Media) {
+            $ids = [$ids];
+        }
+
         if ($ids instanceof Media) {
             return [$ids];
         }

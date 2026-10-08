@@ -8,13 +8,18 @@ use Awcodes\Curator\Concerns\CanUploadFiles;
 use Awcodes\Curator\CuratorPlugin;
 use Awcodes\Curator\Models\Media;
 use Awcodes\Curator\Resources\MediaResource;
+use Awcodes\Curator\Support\MediaScope;
 use Closure;
 use Exception;
 use Filament\Actions\Concerns\CanBeOutlined;
 use Filament\Actions\Concerns\HasSize;
+use Filament\Forms\ComponentContainer;
 use Filament\Forms\Components\Actions\Action;
+use Filament\Forms\Components\Builder;
+use Filament\Forms\Components\Builder\Block;
 use Filament\Forms\Components\Component;
 use Filament\Forms\Components\Field;
+use Filament\Forms\Components\Repeater;
 use Filament\Support\Concerns\HasColor;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Model;
@@ -27,8 +32,6 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-
-use function Awcodes\Curator\get_media_items;
 
 class CuratorPicker extends Field
 {
@@ -70,6 +73,9 @@ class CuratorPicker extends Field
 
     protected string | Closure | null $defaultPanelSort = null;
 
+    /** @var array<string, array<int, string>> */
+    protected array $persistedMediaIds = [];
+
     /**
      * @throws Exception
      */
@@ -83,62 +89,52 @@ class CuratorPicker extends Field
             ->color('primary')
             ->outlined();
 
-        $this->afterStateHydrated(static function (CuratorPicker $component, array | int | string | null $state): void {
-
+        $this->afterStateHydrated(static function (CuratorPicker $component, mixed $state): void {
             if (blank($state)) {
                 $component->state([]);
 
                 return;
             }
 
-            $items = [];
-
-            $state = is_array($state) ? array_values($state) : $state;
-
-            if (is_array($state) && isset($state[0]['id'])) {
-                $media = $state;
-            } elseif (isset($state['id'])) {
-                $media = [$state];
-            } else {
-                $state = Arr::wrap($state);
-                $media = get_media_items($state)->toArray();
-            }
-
-            foreach ($media as $itemData) {
-                $items[(string) Str::uuid()] = $itemData;
-            }
-
-            $component->state($items);
+            // The value is loaded again within the field's scope, so an id it wouldn't list never loads. Media already
+            // saved on the record keeps loading as long as it exists and belongs to the current tenant.
+            $component->state($component->toStateItems(
+                $component->getMediaScope()->resolve($state, $component->getPersistedMediaIds()),
+            ));
         });
 
-        $this->afterStateUpdated(function (CuratorPicker $component, array | int | null $state): void {
-            if (! filled($state)) {
-                $component->state([]);
-            }
+        // The panel inserts its selection from the browser, so the items are loaded again by id.
+        $this->afterStateUpdated(function (CuratorPicker $component, mixed $state): void {
+            $media = filled($state)
+                ? $component->getMediaScope()->resolve($state, $component->getPersistedMediaIds())
+                : [];
 
-            $items = [];
-
-            $state = array_values($state);
-
-            foreach ($state as $itemData) {
-                $items[(string) Str::uuid()] = $itemData;
-            }
-
-            $component->state($items);
+            $component->state($component->toStateItems($media));
         });
 
-        $this->dehydrateStateUsing(function (CuratorPicker $component, $state) {
-            if (! filled($state)) {
+        $this->dehydrateStateUsing(function (CuratorPicker $component, mixed $state): int | string | array | null {
+            $ids = filled($state)
+                ? $component->getMediaScope()->resolve($state, $component->getPersistedMediaIds())
+                    ->map(fn (Media $media): int | string => $media->getKey())
+                    ->all()
+                : [];
+
+            if ($ids === []) {
                 return null;
             }
 
-            $state = collect($state)->pluck('id')->toArray();
-
-            if (count($state) === 1 && is_array($state) && ! $component->isMultiple()) {
-                $state = $state[0];
+            if (count($ids) === 1 && ! $component->isMultiple()) {
+                return $ids[0];
             }
 
-            return $state;
+            return $ids;
+        });
+
+        // The field's state is held in the browser, so a selection is checked again before it is saved.
+        $this->rule(static fn (CuratorPicker $component): Closure => static function (string $attribute, mixed $value, Closure $fail) use ($component): void {
+            if (! $component->getMediaScope()->contains($value, $component->getPersistedMediaIds())) {
+                $fail(trans('curator::views.picker.unavailable'));
+            }
         });
 
         $this->registerActions([
@@ -294,18 +290,54 @@ class CuratorPicker extends Field
             return null;
         }
 
-        $record = App::make(Media::class)->query()
-            ->when(filament()->hasTenancy() && $this->isTenantAware(), function ($query) {
-                return $query->where($this->tenantOwnershipRelationshipName() . '_id', filament()->getTenant()->id);
-            })
-            ->whereKey($id)
-            ->first();
+        $record = $this->getMediaScope()->resolve([$id], $this->getPersistedMediaIds())->first();
 
         if (! $record instanceof Media) {
             return null;
         }
 
         return (is_null(Gate::getPolicyFor($record)) || Gate::allows($ability, $record)) ? $record : null;
+    }
+
+    /**
+     * The media this field may list, select and keep: its disk, accepted types and tenant, and its directory when
+     * it's limited to one.
+     */
+    public function getMediaScope(): MediaScope
+    {
+        return new MediaScope(
+            disk: $this->getDiskName(),
+            acceptedFileTypes: $this->getAcceptedFileTypes(),
+            directory: $this->getDirectory(),
+            isLimitedToDirectory: $this->isLimitedToDirectory(),
+            isTenantAware: $this->isTenantAware(),
+            tenantOwnershipRelationshipName: $this->tenantOwnershipRelationshipName(),
+        );
+    }
+
+    /**
+     * The media ids saved for this field on the record its form edits, read from the database rather than from the
+     * field's state, which the browser holds. A form without a saved record has none, and so does an action modal
+     * other than an edit action's, whose record isn't what its fields are filled from. They're read once per record
+     * and request, before anything is saved, so ids being saved now never count as already saved.
+     *
+     * @return array<int, string>
+     */
+    public function getPersistedMediaIds(): array
+    {
+        $owner = $this->hasRelationship() ? $this->findRecordOwner() : $this->findPersistedPattern();
+
+        if ($owner === null) {
+            return [];
+        }
+
+        [$record, $path] = $owner;
+
+        $key = $record::class . ':' . $record->getKey() . ':' . json_encode($path);
+
+        return $this->persistedMediaIds[$key] ??= $this->hasRelationship()
+            ? MediaScope::extractIds($this->readPersistedRelationshipIds())
+            : $this->readPersistedAttributeIds($record, $path);
     }
 
     public function getEditAction(): Action
@@ -350,8 +382,13 @@ class CuratorPicker extends Field
                     'maxWidth' => $component->getMaxWidth(),
                     'minSize' => $component->getMinSize(),
                     'pathGenerator' => $component->getPathGenerator(),
-                    'rules' => $component->getValidationRules(),
-                    'selected' => (array) $component->getState(),
+                    // Only string rules survive being encoded for the panel; rule objects and closures don't.
+                    'rules' => array_values(array_filter($component->getValidationRules(), 'is_string')),
+                    'selected' => $heldIds = $component->getMediaScope()
+                        ->resolve($component->getState(), $component->getPersistedMediaIds())
+                        ->map(fn (Media $media): int | string => $media->getKey())
+                        ->all(),
+                    'heldIds' => $heldIds,
                     'shouldPreserveFilenames' => $component->shouldPreserveFilenames(),
                     'statePath' => $component->getStatePath(),
                     'types' => $component->getAcceptedFileTypes(),
@@ -506,17 +543,14 @@ class CuratorPicker extends Field
                     $typeColumn = $component->getTypeColumn();
                     $typeValue = $component->getTypeValue();
 
-                    $query = $relationship->with('media');
+                    $query = $relationship->getQuery();
                     if ($typeColumn && $typeValue) {
                         $query->where($typeColumn, $typeValue);
                     }
-                    $relatedMediaItems = $query->get();
 
-                    $relatedMedia = $relatedMediaItems->map(function ($item) {
-                        return $item->media->toArray();
-                    })->toArray();
-
-                    $component->state($relatedMedia);
+                    // Only the ids: the records are loaded when the state is hydrated, within the field's scope,
+                    // which leaves out media that was deleted or belongs to another tenant.
+                    $component->state($query->pluck('media_id')->all());
 
                     return;
                 }
@@ -542,6 +576,9 @@ class CuratorPicker extends Field
         });
 
         $this->saveRelationshipsUsing(static function (CuratorPicker $component, Model $record, $state) {
+            $state = filled($state)
+                ? $component->toStateItems($component->getMediaScope()->resolve($state, $component->getPersistedMediaIds()))
+                : [];
 
             $relationship = $component->getRelationship();
 
@@ -641,5 +678,284 @@ class CuratorPicker extends Field
     public function shouldDisplayAsList(): bool
     {
         return $this->evaluate($this->shouldDisplayAsList) ?? false;
+    }
+
+    /**
+     * The saved record the field's value belongs to, and the field's state path within it: the record of the
+     * nearest container up the tree that has one of its own, such as the form or a relationship repeater's item.
+     *
+     * @return array{0: Model, 1: string}|null
+     */
+    protected function findRecordOwner(): ?array
+    {
+        $record = $this->getRecord();
+
+        if (! $record instanceof Model || ! $record->exists) {
+            return null;
+        }
+
+        $container = $this->getContainer();
+
+        // Containers inherit their parent's record, so the record's own container is the highest one still holding
+        // the same record.
+        while (($parent = $container->getParentComponent()) !== null && $parent->getRecord() === $record) {
+            $container = $parent->getContainer();
+        }
+
+        if (! $this->isFilledFromRecord($container)) {
+            return null;
+        }
+
+        $path = $this->getStatePath();
+        $basePath = $container->getStatePath();
+
+        if (filled($basePath)) {
+            if (! str_starts_with($path, $basePath . '.')) {
+                return null;
+            }
+
+            $path = substr($path, strlen($basePath) + 1);
+        }
+
+        return [$record, $path];
+    }
+
+    /**
+     * An action modal's form is given the table row or page record, but only an edit action fills its fields from
+     * it.
+     */
+    protected function isFilledFromRecord(ComponentContainer $container): bool
+    {
+        $root = $container;
+
+        while (($parent = $root->getParentComponent()) !== null) {
+            $root = $parent->getContainer();
+        }
+
+        if (! str_starts_with($root->getStatePath(), 'mounted')) {
+            return true;
+        }
+
+        return Str::afterLast($root->getOperation(), '.') === 'edit';
+    }
+
+    /**
+     * Where the field's value is stored on the record its form edits, as a path from the record's attribute down:
+     * a fixed key, `*` for any item of a repeater, or `['type' => name]` for any item of a builder whose type is the
+     * field's block. It's derived from the components around the field, so only values the field itself saved are
+     * read, never one stored elsewhere in the same column. Null when the path can't be told for certain, such as for
+     * a simple repeater or an unknown component with a state path of its own; nothing then counts as saved.
+     *
+     * @return array{0: Model, 1: array<int, string|array{type: string}>}|null
+     */
+    protected function findPersistedPattern(): ?array
+    {
+        $pattern = $this->splitStatePath($this->getStatePath(isAbsolute: false));
+        $container = $this->getContainer();
+
+        while (true) {
+            $component = $container->getParentComponent();
+            $record = $container->getRecord();
+
+            // Containers inherit their parent's record, so one has a record of its own when it differs from its
+            // parent component's.
+            if ($record !== null && ($component === null || $component->getRecord() !== $record)) {
+                return $this->persistedPatternFor($record, $container, $pattern);
+            }
+
+            if ($component === null) {
+                return null;
+            }
+
+            // A builder saves the items of a block hidden from the current user as they were sent, without its
+            // fields' validation, so a value under a conditionally shown component may not have come from a picker.
+            if ($this->hasVisibilityCondition($component)) {
+                return null;
+            }
+
+            $containerPath = $container->getStatePath(isAbsolute: false);
+
+            if ($component instanceof Repeater) {
+                if ($component->isSimple() || blank($containerPath) || str_contains($containerPath, '.')) {
+                    return null;
+                }
+
+                array_unshift($pattern, '*');
+            } elseif ($component instanceof Block) {
+                $blocks = $component->getContainer();
+                $builder = $blocks->getParentComponent();
+
+                if (
+                    ! $builder instanceof Builder
+                    || substr_count($containerPath, '.') !== 1
+                    || ! str_ends_with($containerPath, '.data')
+                    || filled($blocks->getStatePath(isAbsolute: false))
+                ) {
+                    return null;
+                }
+
+                array_unshift($pattern, ['type' => $component->getName()], 'data');
+                $component = $builder;
+
+                if ($this->hasVisibilityCondition($component)) {
+                    return null;
+                }
+            } elseif (filled($containerPath)) {
+                return null;
+            }
+
+            $componentRecord = $component->getRecord();
+
+            if ($componentRecord !== null && $componentRecord !== $component->getContainer()->getRecord()) {
+                return $this->persistedPatternFor($componentRecord, $component->getContainer(), $pattern);
+            }
+
+            $componentPath = $component->getStatePath(isAbsolute: false);
+
+            if (filled($componentPath)) {
+                if ($component instanceof Field && ! $component instanceof Repeater && ! $component instanceof Builder) {
+                    return null;
+                }
+
+                array_unshift($pattern, ...$this->splitStatePath($componentPath));
+            }
+
+            $container = $component->getContainer();
+        }
+    }
+
+    /**
+     * Whether a component's visibility can change, read without evaluating it: anything other than the default
+     * of always shown, including `visibleOn()`, `hiddenOn()` and conditions on other fields' state.
+     */
+    protected function hasVisibilityCondition(Component $component): bool
+    {
+        return $component->isHidden !== false || $component->isVisible !== true;
+    }
+
+    /**
+     * @param  array<int, string|array{type: string}>  $pattern
+     * @return array{0: Model, 1: array<int, string|array{type: string}>}|null
+     */
+    protected function persistedPatternFor(Model $record, ComponentContainer $container, array $pattern): ?array
+    {
+        if (! $record->exists || ! $this->isFilledFromRecord($container)) {
+            return null;
+        }
+
+        if ($pattern === [] || ! is_string($pattern[0]) || $pattern[0] === '*') {
+            return null;
+        }
+
+        return [$record, $pattern];
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    protected function splitStatePath(?string $path): array
+    {
+        return array_values(array_filter(explode('.', (string) $path), fn (string $segment): bool => $segment !== ''));
+    }
+
+    /**
+     * The ids saved at exactly the field's path in the record attribute its state lives in.
+     *
+     * @param  array<int, string|array{type: string}>  $pattern
+     * @return array<int, string>
+     */
+    protected function readPersistedAttributeIds(Model $record, array $pattern): array
+    {
+        $attribute = (string) array_shift($pattern);
+        $value = $record->getOriginal($attribute);
+
+        if ($pattern === []) {
+            return MediaScope::extractIds($value);
+        }
+
+        if (is_string($value)) {
+            $value = json_decode($value, true);
+        }
+
+        $ids = [];
+
+        foreach ($this->findValuesAtPattern($value, $pattern) as $found) {
+            array_push($ids, ...MediaScope::extractIds($found));
+        }
+
+        return array_values(array_unique($ids));
+    }
+
+    /**
+     * @param  array<int, string|array{type: string}>  $pattern
+     * @return array<int, mixed>
+     */
+    protected function findValuesAtPattern(mixed $value, array $pattern): array
+    {
+        if ($pattern === []) {
+            return [$value];
+        }
+
+        if (! is_array($value)) {
+            return [];
+        }
+
+        $segment = array_shift($pattern);
+
+        if (is_string($segment) && $segment !== '*') {
+            return array_key_exists($segment, $value) ? $this->findValuesAtPattern($value[$segment], $pattern) : [];
+        }
+
+        $found = [];
+
+        foreach ($value as $item) {
+            if (is_array($segment) && (! is_array($item) || ($item['type'] ?? null) !== $segment['type'])) {
+                continue;
+            }
+
+            array_push($found, ...$this->findValuesAtPattern($item, $pattern));
+        }
+
+        return $found;
+    }
+
+    protected function readPersistedRelationshipIds(): mixed
+    {
+        $relationship = $this->getRelationship();
+
+        if ($relationship instanceof BelongsTo) {
+            return $this->getModelInstance()?->getRawOriginal($relationship->getForeignKeyName());
+        }
+
+        if ($relationship instanceof BelongsToMany) {
+            return $relationship->allRelatedIds()->all();
+        }
+
+        if ($relationship instanceof MorphMany) {
+            $query = $relationship->getQuery();
+
+            if ($this->getTypeColumn() && $this->getTypeValue()) {
+                $query->where($this->getTypeColumn(), $this->getTypeValue());
+            }
+
+            return $query->pluck('media_id')->all();
+        }
+
+        return null;
+    }
+
+    /**
+     * @param  iterable<Media>  $media
+     * @return array<string, array<string, mixed>>
+     */
+    public function toStateItems(iterable $media): array
+    {
+        $items = [];
+
+        foreach ($media as $item) {
+            $items[(string) Str::uuid()] = $item->toArray();
+        }
+
+        return $items;
     }
 }
