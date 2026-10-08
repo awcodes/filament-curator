@@ -480,6 +480,35 @@ Then you can reference your fallback in the blade component.
 <x-curator-glider :media="1" fallback="thumbnail"/>
 ```
 
+### Private Media
+
+Glide URLs for public media are permanent. They never change for a given file and are served with a year-long public `Cache-Control`, so front-end pages and CDNs can cache them.
+
+Media whose visibility isn't `public` gets temporary URLs instead, wherever Curator builds one: the model's `thumbnail_url`, `medium_url` and `large_url`, the Glider component and the Curator column. A temporary URL carries a signed expiry and the media's disk. Once it expires, or if either value is changed, the route refuses it with a 403. While it is valid, the response is sent with `Cache-Control: private` and a `max-age` that runs out with the URL, so shared caches don't keep it. A URL without an expiry only ever serves public media.
+
+This also covers files Glide can't transform, such as PDFs, video and SVGs. Their size URLs stream the original file from the media's disk, so for private media they expire in the same way.
+
+The lifetime is set in minutes by `temporary_url_expiration` in the config file, 5 by default. If you published the config before this option existed, add it there to change it. It also applies to the temporary disk URL the model's `url` returns for private media. Expiry times are rounded up to the minute, so pages that re-render keep the same URLs for a while.
+
+Temporary URLs come out of a request for a page, so they don't belong anywhere they will be kept, such as cached HTML, a rich editor's content or an email. Build one in your own code with the model or the facade:
+
+```php
+use Awcodes\Curator\Facades\Glide;
+
+$media->getGlideUrl(['w' => 800]); // temporary when the media isn't public
+
+Glide::getTemporaryUrl($media->path, ['w' => 800], now()->addHour(), $media->disk);
+```
+
+`glide()->getUrl()` and `GlideBuilder::toUrl()` still build permanent URLs, so they only work for public media. A custom URL provider that builds its URLs with either of them gets temporary URLs for private media automatically. Pass private media to the Glider component as a `Media` instance or an id: a path given on its own builds a permanent URL.
+
+The route checks the signature against the query string only, so parameters sent in a request body are never applied.
+
+After upgrading:
+
+- **Purge any CDN or proxy cache** in front of the media route. Copies of earlier permanent URLs for private media can stay in CDN and browser caches for up to a year.
+- **Rotate `CURATOR_GLIDE_TOKEN`** (`php artisan curator:token`) if earlier URLs for private media may have been shared. This invalidates every URL issued before, public ones included, so pages and content that stored Glide URLs need them rebuilt.
+
 ### Custom Glide Route
 
 By default, Curator will use the route `curator` when serving images through Glide. If you want to change this you can update the `basePath` in a service provider.
