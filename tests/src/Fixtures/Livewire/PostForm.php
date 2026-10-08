@@ -5,6 +5,7 @@ namespace Awcodes\Curator\Tests\Fixtures\Livewire;
 use Awcodes\Curator\Components\Forms\CuratorPicker;
 use Awcodes\Curator\Tests\Fixtures\Models\Post;
 use Filament\Forms\Components\Builder;
+use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -48,6 +49,10 @@ class PostForm extends Component implements HasForms
                             TextInput::make('body'),
                         ]),
                     ]),
+                Group::make([
+                    CuratorPicker::make('cover')->acceptedFileTypes(['image/*']),
+                ])->statePath('meta'),
+                CuratorPicker::make('settings.logo')->acceptedFileTypes(['image/*']),
             ])
             ->model($this->post)
             ->statePath('data');

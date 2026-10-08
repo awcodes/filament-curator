@@ -199,6 +199,28 @@ test('ids saved in another block type do not count', function () {
         ->assertSet("data.content.{$key}.data.image", []);
 });
 
+test('a picker in a group with its own state path keeps media saved in its place', function () {
+    $post = Post::create(['meta' => ['cover' => $this->pdf->id, 'planted' => ['cover' => $this->image->id]]]);
+
+    $component = Livewire::test(PostForm::class, ['post' => $post]);
+
+    expect(collect($component->get('data.meta.cover'))->pluck('id')->all())->toBe([$this->pdf->id]);
+});
+
+test('a picker with a dotted name keeps media saved in its place only', function () {
+    $post = Post::create(['settings' => ['logo' => $this->pdf->id]]);
+
+    $component = Livewire::test(PostForm::class, ['post' => $post]);
+
+    expect(collect($component->get('data.settings.logo'))->pluck('id')->all())->toBe([$this->pdf->id]);
+
+    $other = Post::create(['settings' => ['nested' => ['logo' => $this->pdf->id]]]);
+
+    Livewire::test(PostForm::class, ['post' => $other])
+        ->set('data.settings.logo', pickerItem($this->pdf))
+        ->assertSet('data.settings.logo', []);
+});
+
 test('scope resolution keeps the order of the ids and skips unknown ones', function () {
     $second = Media::factory()->create();
     $scope = new MediaScope(disk: 'public', acceptedFileTypes: ['image/*']);

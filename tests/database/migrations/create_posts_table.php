@@ -14,6 +14,8 @@ return new class extends Migration
             $table->unsignedBigInteger('image_id')->nullable();
             $table->json('gallery')->nullable();
             $table->json('content')->nullable();
+            $table->json('meta')->nullable();
+            $table->json('settings')->nullable();
             $table->timestamps();
         });
     }

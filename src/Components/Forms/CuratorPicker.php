@@ -325,19 +325,19 @@ class CuratorPicker extends Field
      */
     public function getPersistedMediaIds(): array
     {
-        $owner = $this->findRecordOwner();
+        $owner = $this->hasRelationship() ? $this->findRecordOwner() : $this->findPersistedPattern();
 
         if ($owner === null) {
             return [];
         }
 
-        [$record, $path, $container, $basePath] = $owner;
+        [$record, $path] = $owner;
 
-        $key = $record::class . ':' . $record->getKey() . ':' . $path;
+        $key = $record::class . ':' . $record->getKey() . ':' . json_encode($path);
 
         return $this->persistedMediaIds[$key] ??= $this->hasRelationship()
             ? MediaScope::extractIds($this->readPersistedRelationshipIds())
-            : $this->readPersistedAttributeIds($record, $path, $container, $basePath);
+            : $this->readPersistedAttributeIds($record, $path);
     }
 
     public function getEditAction(): Action
@@ -684,7 +684,7 @@ class CuratorPicker extends Field
      * The saved record the field's value belongs to, and the field's state path within it: the record of the
      * nearest container up the tree that has one of its own, such as the form or a relationship repeater's item.
      *
-     * @return array{0: Model, 1: string, 2: ComponentContainer, 3: string}|null
+     * @return array{0: Model, 1: string}|null
      */
     protected function findRecordOwner(): ?array
     {
@@ -717,7 +717,7 @@ class CuratorPicker extends Field
             $path = substr($path, strlen($basePath) + 1);
         }
 
-        return [$record, $path, $container, $basePath];
+        return [$record, $path];
     }
 
     /**
@@ -740,22 +740,114 @@ class CuratorPicker extends Field
     }
 
     /**
-     * The ids saved for this field in the record attribute its state lives in: the column itself for a top-level
-     * field, or the field's exact place inside a JSON column for a field in a repeater, builder or group. Repeater
-     * items match any item, and builder items only the field's own block type, so ids under other keys, which a
-     * form keeps when it saves, never count. When the place can't be worked out, no ids are read.
+     * Where the field's value is stored on the record its form edits, as a path from the record's attribute down:
+     * a fixed key, `*` for any item of a repeater, or `['type' => name]` for any item of a builder whose type is the
+     * field's block. It's derived from the components around the field, so only values the field itself saved are
+     * read, never one stored elsewhere in the same column. Null when the path can't be told for certain, such as for
+     * a simple repeater or an unknown component with a state path of its own; nothing then counts as saved.
      *
-     * @return array<int, string>
+     * @return array{0: Model, 1: array<int, string|array{type: string}>}|null
      */
-    protected function readPersistedAttributeIds(Model $record, string $path, ComponentContainer $owner, string $basePath): array
+    protected function findPersistedPattern(): ?array
     {
-        $pattern = $this->getPersistedPathPattern($path, $owner, $basePath);
+        $pattern = $this->splitStatePath($this->getStatePath(isAbsolute: false));
+        $container = $this->getContainer();
 
-        if ($pattern === null) {
-            return [];
+        while (true) {
+            $component = $container->getParentComponent();
+            $record = $container->getRecord();
+
+            // Containers inherit their parent's record, so one has a record of its own when it differs from its
+            // parent component's.
+            if ($record !== null && ($component === null || $component->getRecord() !== $record)) {
+                return $this->persistedPatternFor($record, $container, $pattern);
+            }
+
+            if ($component === null) {
+                return null;
+            }
+
+            $containerPath = $container->getStatePath(isAbsolute: false);
+
+            if ($component instanceof Repeater) {
+                if ($component->isSimple() || blank($containerPath) || str_contains($containerPath, '.')) {
+                    return null;
+                }
+
+                array_unshift($pattern, '*');
+            } elseif ($component instanceof Block) {
+                $blocks = $component->getContainer();
+                $builder = $blocks->getParentComponent();
+
+                if (
+                    ! $builder instanceof Builder
+                    || substr_count($containerPath, '.') !== 1
+                    || ! str_ends_with($containerPath, '.data')
+                    || filled($blocks->getStatePath(isAbsolute: false))
+                ) {
+                    return null;
+                }
+
+                array_unshift($pattern, ['type' => $component->getName()], 'data');
+                $component = $builder;
+            } elseif (filled($containerPath)) {
+                return null;
+            }
+
+            $componentRecord = $component->getRecord();
+
+            if ($componentRecord !== null && $componentRecord !== $component->getContainer()->getRecord()) {
+                return $this->persistedPatternFor($componentRecord, $component->getContainer(), $pattern);
+            }
+
+            $componentPath = $component->getStatePath(isAbsolute: false);
+
+            if (filled($componentPath)) {
+                if ($component instanceof Field && ! $component instanceof Repeater && ! $component instanceof Builder) {
+                    return null;
+                }
+
+                array_unshift($pattern, ...$this->splitStatePath($componentPath));
+            }
+
+            $container = $component->getContainer();
+        }
+    }
+
+    /**
+     * @param  array<int, string|array{type: string}>  $pattern
+     * @return array{0: Model, 1: array<int, string|array{type: string}>}|null
+     */
+    protected function persistedPatternFor(Model $record, ComponentContainer $container, array $pattern): ?array
+    {
+        if (! $record->exists || ! $this->isFilledFromRecord($container)) {
+            return null;
         }
 
-        $attribute = array_shift($pattern);
+        if ($pattern === [] || ! is_string($pattern[0]) || $pattern[0] === '*') {
+            return null;
+        }
+
+        return [$record, $pattern];
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    protected function splitStatePath(?string $path): array
+    {
+        return array_values(array_filter(explode('.', (string) $path), fn (string $segment): bool => $segment !== ''));
+    }
+
+    /**
+     * The ids saved at exactly the field's path in the record attribute its state lives in.
+     *
+     * @param  array<int, string|array{type: string}>  $pattern
+     * @return array<int, string>
+     */
+    protected function readPersistedAttributeIds(Model $record, array $pattern): array
+    {
+        $attribute = (string) array_shift($pattern);
         $value = $record->getOriginal($attribute);
 
         if ($pattern === []) {
@@ -776,77 +868,7 @@ class CuratorPicker extends Field
     }
 
     /**
-     * The field's path within its record, one entry per segment: a key, or, for a repeater or builder item, an array
-     * holding the block type the item must have (null for a repeater). Null when a container between the field and
-     * the record isn't one whose keys can be told apart from the browser's.
-     *
-     * @return array<int, string|array{type: string|null}>|null
-     */
-    protected function getPersistedPathPattern(string $path, ComponentContainer $owner, string $basePath): ?array
-    {
-        $pattern = explode('.', $path);
-        $container = $this->getContainer();
-
-        while ($container !== $owner) {
-            $parent = $container->getParentComponent();
-
-            if ($parent === null) {
-                return null;
-            }
-
-            if ($parent instanceof Block) {
-                $builder = $parent->getContainer()->getParentComponent();
-
-                if (! $builder instanceof Builder) {
-                    return null;
-                }
-
-                $index = $this->countRelativeSegments($builder->getStatePath(), $basePath);
-
-                if ($index === null || ($pattern[$index + 1] ?? null) !== 'data') {
-                    return null;
-                }
-
-                $pattern[$index] = ['type' => $parent->getName()];
-                $container = $builder->getContainer();
-
-                continue;
-            }
-
-            if ($parent instanceof Repeater) {
-                $index = $this->countRelativeSegments($parent->getStatePath(), $basePath);
-
-                if ($index === null) {
-                    return null;
-                }
-
-                $pattern[$index] = ['type' => null];
-            }
-
-            $container = $parent->getContainer();
-        }
-
-        return count($pattern) > 0 && is_string($pattern[0]) ? $pattern : null;
-    }
-
-    /**
-     * How many segments a state path has below the record's container, or null when it isn't below it.
-     */
-    protected function countRelativeSegments(string $statePath, string $basePath): ?int
-    {
-        if (filled($basePath)) {
-            if (! str_starts_with($statePath, $basePath . '.')) {
-                return null;
-            }
-
-            $statePath = substr($statePath, strlen($basePath) + 1);
-        }
-
-        return $statePath === '' ? null : count(explode('.', $statePath));
-    }
-
-    /**
-     * @param  array<int, string|array{type: string|null}>  $pattern
+     * @param  array<int, string|array{type: string}>  $pattern
      * @return array<int, mixed>
      */
     protected function findValuesAtPattern(mixed $value, array $pattern): array
@@ -861,14 +883,14 @@ class CuratorPicker extends Field
 
         $segment = array_shift($pattern);
 
-        if (is_string($segment)) {
+        if (is_string($segment) && $segment !== '*') {
             return array_key_exists($segment, $value) ? $this->findValuesAtPattern($value[$segment], $pattern) : [];
         }
 
         $found = [];
 
         foreach ($value as $item) {
-            if ($segment['type'] !== null && (! is_array($item) || ($item['type'] ?? null) !== $segment['type'])) {
+            if (is_array($segment) && (! is_array($item) || ($item['type'] ?? null) !== $segment['type'])) {
                 continue;
             }
 

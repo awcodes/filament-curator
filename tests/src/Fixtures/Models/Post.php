@@ -11,5 +11,7 @@ class Post extends Model
     protected $casts = [
         'gallery' => 'array',
         'content' => 'array',
+        'meta' => 'array',
+        'settings' => 'array',
     ];
 }
