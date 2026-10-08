@@ -111,6 +111,20 @@ class MimeType
     ];
 
     /**
+     * Further types a browser or server may run as script or code. Any other
+     * `+xml` type apart from SVG counts as well.
+     */
+    private const SCRIPTABLE_TYPES = [
+        'application/x-perl',
+        'application/x-php',
+        'application/x-shellscript',
+        'text/x-perl',
+        'text/x-php',
+        'text/x-python',
+        'text/x-shellscript',
+    ];
+
+    /**
      * Document formats stored as zip archives. libmagic reports them as
      * application/zip unless the archive happens to start with the entry it
      * recognises them by.
@@ -338,6 +352,35 @@ class MimeType
     }
 
     /**
+     * Whether a browser may run script in content of this type, or a server
+     * may run it as code: every restricted type, and any XML type apart from
+     * SVG, which is sanitized.
+     */
+    public static function isScriptable(?string $type): bool
+    {
+        $type = self::normalizeType($type);
+
+        if ($type === self::SVG) {
+            return false;
+        }
+
+        return in_array($type, self::RESTRICTED_TYPES, true)
+            || in_array($type, self::SCRIPTABLE_TYPES, true)
+            || str_ends_with($type, '+xml');
+    }
+
+    /**
+     * The types isScriptable() names explicitly, for matching stored types in
+     * a query.
+     *
+     * @return array<int, string>
+     */
+    public static function scriptableTypes(): array
+    {
+        return array_values(array_unique([...self::RESTRICTED_TYPES, ...self::SCRIPTABLE_TYPES]));
+    }
+
+    /**
      * Whether a web server could serve a file with this extension as a
      * document, script or server-side code.
      */
@@ -377,7 +420,7 @@ class MimeType
                 return true;
             }
 
-            if (str_ends_with($accepted, '/*') && ! self::isRestricted($type) && str_starts_with($type, substr($accepted, 0, -1))) {
+            if (str_ends_with($accepted, '/*') && ! self::isScriptable($type) && str_starts_with($type, substr($accepted, 0, -1))) {
                 return true;
             }
         }

@@ -155,6 +155,7 @@ test('the selection an opener sends is loaded again from the database', function
 
     $component = Livewire::test(CuratorPanel::class)
         ->call('openModal', 'curator-panel', CuratorPanel::encryptSettings(panelSettings([
+            'types' => ['image/*'],
             'selected' => [
                 ['id' => $media->id, 'disk' => 'local', 'path' => '.env'],
                 ['id' => 999999, 'disk' => 'local', 'path' => '.env'],
@@ -202,7 +203,7 @@ test('the picker opens the panel with an encrypted payload the panel accepts', f
 
     Livewire::test(CuratorPanel::class)
         ->call('openModal', 'curator-panel', $settings)
-        ->assertSet('acceptedFileTypes', ['image/png'])
+        ->assertSet('acceptedFileTypes', ['image/png', 'image/jpeg'])
         ->assertSet('directory', 'pictures')
         ->assertSet('statePath', 'data.media');
 });

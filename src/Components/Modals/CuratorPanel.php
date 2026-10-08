@@ -7,6 +7,7 @@ use Awcodes\Curator\CuratorPlugin;
 use Awcodes\Curator\Models\Media;
 use Awcodes\Curator\PathGenerators\Contracts\PathGenerator;
 use Awcodes\Curator\Resources\MediaResource;
+use Awcodes\Curator\Support\MediaScope;
 use Closure;
 use Exception;
 use Filament\Actions\Action;
@@ -20,7 +21,6 @@ use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Contracts\View\View;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Crypt;
@@ -101,6 +101,14 @@ class CuratorPanel extends Component implements HasActions, HasForms
     public string $search = '';
 
     public array $selected = [];
+
+    /**
+     * The ids the picker held when it opened the panel, from its encrypted
+     * settings. They may be outside the panel's scope, such as media saved on
+     * the record before the field's settings changed, and stay selectable.
+     */
+    #[Locked]
+    public array $heldIds = [];
 
     #[Locked]
     public int $defaultLimit = 25;
@@ -200,11 +208,13 @@ class CuratorPanel extends Component implements HasActions, HasForms
         $this->maxWidth = $settings['maxWidth'] ?? 0;
         $this->minSize = $settings['minSize'] ?? null;
         $this->pathGenerator = $settings['pathGenerator'] ?? null;
-        $this->validationRules = $settings['rules'] ?? [];
+        $this->validationRules = array_values(array_filter((array) ($settings['rules'] ?? []), 'is_string'));
         $this->shouldPreserveFilenames = (bool) ($settings['shouldPreserveFilenames'] ?? false);
         $this->statePath = $settings['statePath'] ?? null;
         $this->types = $settings['types'] ?? [];
         $this->visibility = $settings['visibility'] ?? 'public';
+
+        $this->heldIds = MediaScope::extractIds($settings['heldIds'] ?? []);
 
         // The opener's selection comes from the field's state, which the browser
         // can change, so only its ids are used and the records are loaded again.
@@ -246,48 +256,34 @@ class CuratorPanel extends Component implements HasActions, HasForms
 
     /**
      * Load media by the ids in a selection, in the selection's order, within the
-     * panel's tenant scope. Anything else the selection carries is ignored.
+     * panel's scope, or held by the picker when it opened the panel. Anything
+     * else the selection carries is ignored.
      *
      * @return array<int, array<string, mixed>>
      */
     protected function resolveSelection(array $selection): array
     {
-        $ids = collect($selection)
-            ->map(function (mixed $item): mixed {
-                if ($item instanceof Media) {
-                    return $item->getKey();
-                }
-
-                return is_array($item) ? ($item['id'] ?? null) : $item;
-            })
-            ->filter(fn (mixed $id): bool => is_int($id) || (is_string($id) && $id !== ''))
-            ->map(fn (int | string $id): string => (string) $id)
-            ->unique()
-            ->values();
-
-        if ($ids->isEmpty()) {
-            return [];
-        }
-
-        $records = $this->scopedMediaQuery()
-            ->whereKey($ids->all())
-            ->get()
-            ->keyBy(fn (Media $media): string => (string) $media->getKey());
-
-        return $ids
-            ->map(fn (string $id): ?Media => $records->get($id))
-            ->filter()
+        return $this->getMediaScope()
+            ->resolve($selection, $this->heldIds)
             ->map(fn (Media $media): array => $media->toArray())
             ->values()
             ->all();
     }
 
-    protected function scopedMediaQuery(): Builder
+    /**
+     * The media this panel may list and select: its disk, the types it
+     * accepts, its directory when it's limited to one, and the current tenant.
+     */
+    public function getMediaScope(): MediaScope
     {
-        return $this->mediaClass->query()
-            ->when(filament()->hasTenancy() && $this->isTenantAware, function ($query) {
-                return $query->where($this->tenantOwnershipRelationshipName . '_id', filament()->getTenant()->id);
-            });
+        return new MediaScope(
+            disk: $this->diskName,
+            acceptedFileTypes: $this->types,
+            directory: $this->directory,
+            isLimitedToDirectory: $this->isLimitedToDirectory,
+            isTenantAware: (bool) $this->isTenantAware,
+            tenantOwnershipRelationshipName: $this->tenantOwnershipRelationshipName,
+        );
     }
 
     public function form(Form $form): Form
@@ -353,25 +349,9 @@ class CuratorPanel extends Component implements HasActions, HasForms
 
     public function getFiles(int $page = 0, bool $excludeSelected = false): array
     {
-        $files = $this->mediaClass->query()
-            ->when(filament()->hasTenancy() && $this->isTenantAware, function ($query) {
-                return $query->where($this->tenantOwnershipRelationshipName . '_id', filament()->getTenant()->id);
-            })
+        $files = $this->getMediaScope()->query()
             ->when($this->selected, function ($query, $selected) {
-                $selected = collect($selected)->pluck('id')->toArray();
-
-                return $query->whereNotIn('id', $selected);
-            })
-            ->when($this->isLimitedToDirectory, function ($query) {
-                return $query->where('directory', $this->directory);
-            })
-            ->when($this->types, function ($query) {
-                return $query->where(function ($query) {
-                    $types = $this->types;
-                    $query = $query->whereIn('type', $types);
-                    $wildcardTypes = collect($types)->filter(fn ($type) => str_contains($type, '*'));
-                    $wildcardTypes?->map(fn ($type) => $query->orWhere('type', 'LIKE', str_replace('*', '%', $type)));
-                });
+                return $query->whereKeyNot(MediaScope::extractIds($selected));
             })
             ->orderBy('created_at', $this->defaultSort);
 
@@ -384,14 +364,7 @@ class CuratorPanel extends Component implements HasActions, HasForms
         $items = $paginator->items();
 
         if (! $excludeSelected && $this->selected) {
-            $selected = collect($this->selected)->pluck('id')->toArray();
-
-            $selectedItems = $this->scopedMediaQuery()
-                ->whereIn('id', $selected)
-                ->get()
-                ->sortBy(function ($model) use ($selected) {
-                    return array_search($model->id, $selected);
-                });
+            $selectedItems = $this->getMediaScope()->resolve($this->selected, $this->heldIds);
 
             array_unshift($items, ...$selectedItems);
 
@@ -454,14 +427,7 @@ class CuratorPanel extends Component implements HasActions, HasForms
 
     public function updatedSearch(): void
     {
-        $this->files = $this->mediaClass
-            ->query()
-            ->when(filament()->hasTenancy() && $this->isTenantAware, function ($query) {
-                return $query->where($this->tenantOwnershipRelationshipName . '_id', filament()->getTenant()->id);
-            })
-            ->when($this->isLimitedToDirectory, function ($query) {
-                return $query->where('directory', $this->directory);
-            })
+        $this->files = $this->getMediaScope()->query()
             ->where(function ($query) {
                 $query->where('name', 'like', '%' . $this->search . '%')
                     ->orWhere('title', 'like', '%' . $this->search . '%')
@@ -477,7 +443,7 @@ class CuratorPanel extends Component implements HasActions, HasForms
     protected function setMediaForm(): void
     {
         if (count($this->selected) === 1) {
-            $item = $this->scopedMediaQuery()->find(Arr::first($this->selected)['id'] ?? null);
+            $item = $this->getMediaScope()->resolve([Arr::first($this->selected)['id'] ?? null], $this->heldIds)->first();
             if ($item) {
                 $this->form->fill($item->toArray());
             }
@@ -551,16 +517,16 @@ class CuratorPanel extends Component implements HasActions, HasForms
     }
 
     /**
-     * Resolve the Media record targeted by a per-item action, enforcing both tenant
-     * scoping and the model's authorization policy for the given ability.
+     * Resolve the Media record targeted by a per-item action, enforcing both the
+     * panel's scope and the model's authorization policy for the given ability.
      *
      * The record id arrives from client-supplied state (Livewire action arguments
      * or the `selected` property), so it must never be trusted directly. This
-     * mirrors the tenant scoping applied to the panel's list/search queries, and the
+     * uses the same scope as the panel's list and search queries, and the
      * null-policy fallback keeps the existing "allow when no policy is registered"
      * behaviour while honouring a policy when one exists.
      *
-     * Returns null when the id is missing, the record is out of tenant scope, or the
+     * Returns null when the id is missing, the record is out of the panel's scope, or the
      * ability is denied; callers treat null as "do nothing".
      */
     protected function resolveAuthorizedMedia(string | int | null $id, string $ability): ?Media
@@ -569,10 +535,7 @@ class CuratorPanel extends Component implements HasActions, HasForms
             return null;
         }
 
-        $record = $this->mediaClass->query()
-            ->when(filament()->hasTenancy() && $this->isTenantAware, function ($query) {
-                return $query->where($this->tenantOwnershipRelationshipName . '_id', filament()->getTenant()->id);
-            })
+        $record = $this->getMediaScope()->query()
             ->whereKey($id)
             ->first();
 
