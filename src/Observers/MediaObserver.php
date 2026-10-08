@@ -74,7 +74,7 @@ class MediaObserver
                 $this->moveCurations($media, $originalName, $media->name);
             }
 
-            Glide::getServer()->deleteCache($originalPath);
+            Glide::getServer($media->disk)->deleteCache($originalPath);
         }
 
         $media->__unset('file');
@@ -98,8 +98,7 @@ class MediaObserver
         }
 
         // Delete glide-cache for delete image
-        $server = Glide::getServer();
-        $server->deleteCache($media->path);
+        Glide::getServer($media->disk)->deleteCache($media->path);
     }
 
     /**
@@ -131,9 +130,8 @@ class MediaObserver
         $media->name = $originalName;
         $media->path = $replacedPath;
 
-        $server = Glide::getServer();
-        $server->deleteCache($originalPath);
-        $server->deleteCache($replacedPath);
+        Glide::getServer($originalDisk)->deleteCache($originalPath);
+        Glide::getServer($media->disk)->deleteCache($replacedPath);
     }
 
     /**

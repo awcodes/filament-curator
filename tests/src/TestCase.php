@@ -18,6 +18,7 @@ use Filament\Support\SupportServiceProvider;
 use Filament\Tables\TablesServiceProvider;
 use Filament\Widgets\WidgetsServiceProvider;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
+use Livewire\Livewire;
 use Livewire\LivewireServiceProvider;
 use Orchestra\Testbench\Concerns\WithWorkbench;
 use Orchestra\Testbench\TestCase as Orchestra;
@@ -32,6 +33,13 @@ class TestCase extends Orchestra
     protected function setUp(): void
     {
         parent::setUp();
+
+        // Livewire keeps some state in statics that outlive the application,
+        // and a test that ends inside a component update (an expected
+        // exception, say) never reaches the flush Livewire's own test helpers
+        // run. Left over, it adds no-store cache headers to the next test's
+        // first response, so start every test from a clean slate.
+        Livewire::flushState();
 
         $this->actingAs(User::factory()->create());
     }

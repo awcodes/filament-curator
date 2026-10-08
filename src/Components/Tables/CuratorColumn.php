@@ -81,7 +81,7 @@ class CuratorColumn extends ImageColumn
             $glide->height($height);
         }
 
-        return $glide->toUrl($item->path);
+        return $item->getGlideUrl($glide->toArray());
     }
 
     public function getResolution(): ?int

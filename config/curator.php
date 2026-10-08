@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 return [
     'curation_formats' => Awcodes\Curator\Enums\CurationFormats::toArray(),
+    'curation_max_dimension' => 8192,
     'default_disk' => env('CURATOR_DEFAULT_DISK', env('FILESYSTEM_DISK', 'public')),
     'default_directory' => null,
     'default_visibility' => 'public',
@@ -44,5 +45,6 @@ return [
             'table' => Awcodes\Curator\Resources\Media\Tables\MediaTable::class,
         ],
     ],
+    'temporary_url_expiration' => 5,
     'url_provider' => Awcodes\Curator\Providers\GlideUrlProvider::class,
 ];
