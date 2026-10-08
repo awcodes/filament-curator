@@ -14,9 +14,9 @@ use Illuminate\Support\Js;
 use Livewire\Livewire;
 
 /**
- * Livewire detects an upload's type from its bytes in production, but fakes
- * report the type declared on them, so each upload declares what the bytes
- * would be detected as.
+ * Curator detects an upload's type from its bytes. Each upload here also
+ * declares the type its bytes are detected as, the way current Livewire
+ * releases report it, so nothing depends on a declared type.
  */
 beforeEach(function () {
     config(['curator.default_disk' => 'public']);
@@ -32,9 +32,9 @@ function trustedExtensionJpeg(): string
     return (string) ob_get_clean();
 }
 
-function trustedExtensionUpload(string $name, string $content, string $type): UploadedFile
+function trustedExtensionUpload(string $name, string $content): UploadedFile
 {
-    return UploadedFile::fake()->createWithContent($name, $content)->mimeType($type);
+    return UploadedFile::fake()->createWithContent($name, $content)->mimeType((string) (new finfo(FILEINFO_MIME_TYPE))->buffer($content));
 }
 
 function trustedExtensionSourceFile(string $name, string $content): string
@@ -50,7 +50,7 @@ test('image content uploaded under an html name is stored and served as an image
     Storage::fake('public');
 
     Livewire::test(CreateMedia::class)
-        ->set('data.file', trustedExtensionUpload('poly.html', trustedExtensionJpeg() . '<script>alert(1)</script>', 'image/jpeg'))
+        ->set('data.file', trustedExtensionUpload('poly.html', trustedExtensionJpeg() . '<script>alert(1)</script>'))
         ->call('create')
         ->assertHasNoFormErrors();
 
@@ -72,14 +72,14 @@ test('a filename with script in its extension is stored with a safe extension', 
     Storage::fake('public');
 
     Livewire::test(CreateMedia::class)
-        ->set('data.file', trustedExtensionUpload("photo.png');alert(1);('", trustedExtensionJpeg(), 'image/png'))
+        ->set('data.file', trustedExtensionUpload("photo.png');alert(1);('", trustedExtensionJpeg()))
         ->call('create')
         ->assertHasNoFormErrors();
 
     $media = Media::query()->sole();
 
-    expect($media->ext)->toBe('png')
-        ->and($media->path)->toMatch('/^[a-z0-9\/-]+\.png$/');
+    expect($media->ext)->toBe('jpg')
+        ->and($media->path)->toMatch('/^[a-z0-9\/-]+\.jpg$/');
 });
 
 test('the extension is replaced even when filenames are preserved', function () {
@@ -87,7 +87,7 @@ test('the extension is replaced even when filenames are preserved', function () 
     app(CuratorManager::class)->preserveFilenames(true);
 
     Livewire::test(CreateMedia::class)
-        ->set('data.file', trustedExtensionUpload('Holiday Photo.html', trustedExtensionJpeg(), 'image/jpeg'))
+        ->set('data.file', trustedExtensionUpload('Holiday Photo.html', trustedExtensionJpeg()))
         ->call('create')
         ->assertHasNoFormErrors();
 
@@ -98,7 +98,7 @@ test('ordinary uploads keep their extension', function (string $name, string $co
     Storage::fake('public');
 
     Livewire::test(CreateMedia::class)
-        ->set('data.file', trustedExtensionUpload($name, $content, $type))
+        ->set('data.file', trustedExtensionUpload($name, $content))
         ->call('create')
         ->assertHasNoFormErrors();
 
@@ -112,7 +112,8 @@ test('ordinary uploads keep their extension', function (string $name, string $co
     'jpeg alias' => fn (): array => ['photo.jpeg', trustedExtensionJpeg(), 'image/jpeg', 'jpeg'],
     'uppercase' => fn (): array => ['PHOTO.JPG', trustedExtensionJpeg(), 'image/jpeg', 'jpg'],
     'pdf' => ['report.pdf', "%PDF-1.4\n", 'application/pdf', 'pdf'],
-    'csv detected as plain text' => ['data.csv', "a,b\n1,2\n", 'text/plain', 'csv'],
+    'csv' => ['data.csv', "a,b\n1,2\n", 'text/csv', 'csv'],
+    'markdown detected as plain text' => ['notes.md', "# Notes\n\nSome text.\n", 'text/plain', 'md'],
 ]);
 
 test('a png upload keeps working', function () {
@@ -133,7 +134,7 @@ test('svg markup uploaded under an html name is stored as a sanitized svg', func
     Storage::fake('public');
 
     Livewire::test(CreateMedia::class)
-        ->set('data.file', trustedExtensionUpload('logo.html', '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script><rect width="1" height="1"/></svg>', 'image/svg+xml'))
+        ->set('data.file', trustedExtensionUpload('logo.html', '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script><rect width="1" height="1"/></svg>'))
         ->call('create')
         ->assertHasNoFormErrors();
 
@@ -208,7 +209,7 @@ test('svg that does not start with its root element is stored as a sanitized svg
     Storage::fake('public');
 
     Livewire::test(CreateMedia::class)
-        ->set('data.file', trustedExtensionUpload('icon.svg', $content, 'text/plain'))
+        ->set('data.file', trustedExtensionUpload('icon.svg', $content))
         ->call('create')
         ->assertHasNoFormErrors();
 
@@ -216,17 +217,38 @@ test('svg that does not start with its root element is stored as a sanitized svg
 
     expect($media->ext)->toBe('svg')
         ->and($media->type)->toBe('image/svg+xml')
-        ->and(Storage::disk('public')->get($media->path))->not->toContain('<script')->toContain('rect');
+        ->and(Storage::disk('public')->get($media->path))->not->toContain('<script')->not->toContain('onload')->toContain('rect');
 })->with([
-    'leading whitespace' => "\n  <svg xmlns=\"http://www.w3.org/2000/svg\"><script>alert(1)</script><rect width=\"1\" height=\"1\"/></svg>",
-    'leading comment' => "<!-- icon -->\n<svg xmlns=\"http://www.w3.org/2000/svg\"><script>alert(1)</script><rect width=\"1\" height=\"1\"/></svg>",
+    'leading whitespace, detected as plain text' => "\n  <svg xmlns=\"http://www.w3.org/2000/svg\"><rect width=\"1\" height=\"1\" onload=\"alert(1)\"/></svg>",
+    'leading comment, detected as plain text' => "<!-- icon -->\n<svg xmlns=\"http://www.w3.org/2000/svg\"><rect width=\"1\" height=\"1\" onload=\"alert(1)\"/></svg>",
+    'leading whitespace, detected as html' => "\n  <svg xmlns=\"http://www.w3.org/2000/svg\"><script>alert(1)</script><rect width=\"1\" height=\"1\"/></svg>",
+    'leading comment, detected as html' => "<!-- icon -->\n<svg xmlns=\"http://www.w3.org/2000/svg\"><script>alert(1)</script><rect width=\"1\" height=\"1\"/></svg>",
+]);
+
+test('html named svg is not refined to svg', function (string $content) {
+    Storage::fake('public');
+
+    expect((new finfo(FILEINFO_MIME_TYPE))->buffer($content))->toBe('text/html');
+
+    Livewire::test(CreateMedia::class)
+        ->set('data.file', trustedExtensionUpload('icon.svg', $content))
+        ->call('create')
+        ->assertHasFormErrors(['file']);
+
+    expect(Media::query()->count())->toBe(0)
+        ->and(Storage::disk('public')->allFiles())->toBe([]);
+})->with([
+    'html document' => "<!-- icon -->\n<html><body><script>alert(1)</script></body></html>",
+    'svg inside an html root' => "<!-- icon -->\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><body><svg xmlns=\"http://www.w3.org/2000/svg\"><rect/></svg><script>alert(1)</script></body></html>",
+    'svg root outside the svg namespace' => "<!-- icon -->\n<svg xmlns=\"http://www.w3.org/1999/xhtml\"><script>alert(1)</script></svg>",
+    'svg root that is not well-formed xml' => "<!-- icon -->\n<svg xmlns=\"http://www.w3.org/2000/svg\"><script>alert(1)</script><rect></svg>",
 ]);
 
 test('text that only mentions svg is not treated as svg', function () {
     Storage::fake('public');
 
     Livewire::test(CreateMedia::class)
-        ->set('data.file', trustedExtensionUpload('notes.svg', 'see <svg> in the docs', 'text/plain'))
+        ->set('data.file', trustedExtensionUpload('notes.svg', 'see <svg> in the docs'))
         ->call('create')
         ->assertHasNoFormErrors();
 
@@ -237,7 +259,7 @@ test('an office document detected as a zip archive keeps its extension', functio
     Storage::fake('public');
 
     Livewire::test(CreateMedia::class)
-        ->set('data.file', trustedExtensionUpload('report.docx', trustedExtensionZippedDocx(), 'application/zip'))
+        ->set('data.file', trustedExtensionUpload('report.docx', trustedExtensionZippedDocx()))
         ->call('create')
         ->assertHasNoFormErrors();
 
@@ -251,12 +273,28 @@ test('a plain zip archive is still stored as zip', function () {
     Storage::fake('public');
 
     Livewire::test(CreateMedia::class)
-        ->set('data.file', trustedExtensionUpload('archive.html', trustedExtensionZippedDocx(), 'application/zip'))
+        ->set('data.file', trustedExtensionUpload('archive.html', trustedExtensionPlainZip()))
         ->call('create')
         ->assertHasNoFormErrors();
 
     expect(Media::query()->sole()->ext)->toBe('zip');
 });
+
+function trustedExtensionPlainZip(): string
+{
+    // Newer libmagic recognises Office documents even when [Content_Types].xml
+    // isn't the first entry, so a plain archive must hold no Office parts.
+    $path = tempnam(sys_get_temp_dir(), 'curator-zip');
+    $zip = new ZipArchive;
+    $zip->open($path, ZipArchive::OVERWRITE);
+    $zip->addFromString('readme.txt', 'hello');
+    $zip->close();
+
+    $content = (string) file_get_contents($path);
+    @unlink($path);
+
+    return $content;
+}
 
 test('imported svg with a leading comment is stored as a sanitized svg', function () {
     Storage::fake('public');

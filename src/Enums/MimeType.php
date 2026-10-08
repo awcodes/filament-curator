@@ -6,6 +6,7 @@ namespace Awcodes\Curator\Enums;
 
 use Closure;
 use DOMDocument;
+use League\MimeTypeDetection\FinfoMimeTypeDetector;
 use Symfony\Component\Mime\MimeTypes;
 
 enum MimeType: string
@@ -106,6 +107,68 @@ enum MimeType: string
         'potx', 'ppsx', 'pptm', 'pptx', 'vsdx', 'xlsm', 'xlsx', 'xltm', 'xltx',
     ];
 
+    /**
+     * Legacy Office formats stored as OLE compound files, with the type each
+     * extension stands for.
+     */
+    private const OLE_BASED_EXTENSIONS = [
+        'doc' => 'application/msword',
+        'dot' => 'application/msword',
+        'msg' => 'application/vnd.ms-outlook',
+        'pot' => 'application/vnd.ms-powerpoint',
+        'pps' => 'application/vnd.ms-powerpoint',
+        'ppt' => 'application/vnd.ms-powerpoint',
+        'vsd' => 'application/vnd.visio',
+        'xls' => 'application/vnd.ms-excel',
+        'xlt' => 'application/vnd.ms-excel',
+    ];
+
+    /**
+     * What libmagic reports for an OLE compound file it cannot attribute to
+     * an application. The name depends on the libmagic version.
+     */
+    private const OLE_CONTAINER_TYPES = [
+        'application/cdfv2',
+        'application/octet-stream',
+        'application/vnd.ms-office',
+        'application/x-ole-storage',
+    ];
+
+    /**
+     * Plain-data text formats libmagic may report only as text/plain, with
+     * the type each extension stands for. Limited to types in the default
+     * accepted list, so refining never turns an accepted upload into a
+     * rejected one, and to formats a browser never runs as script.
+     */
+    private const PLAIN_TEXT_EXTENSIONS = [
+        'csv' => 'text/csv',
+        'ics' => 'text/calendar',
+    ];
+
+    /**
+     * Types outside the restricted list that still render as a scriptable
+     * document or run as code, accepted only when listed exactly.
+     */
+    private const SCRIPTABLE_TYPES = [
+        'application/ecmascript',
+        'application/javascript',
+        'application/x-javascript',
+        'application/x-perl',
+        'application/x-php',
+        'application/x-shellscript',
+        'text/ecmascript',
+        'text/x-perl',
+        'text/x-php',
+        'text/x-python',
+        'text/x-shellscript',
+        'text/xml',
+        'text/xsl',
+    ];
+
+    private const DETECTION_SAMPLE_BYTES = 64 * 1024;
+
+    private const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
+
     private const PLAIN_TEXT_TYPES = [
         'application/ics',
         'application/json',
@@ -204,37 +267,155 @@ enum MimeType: string
     }
 
     /**
+     * Detect a type from the first 64 KiB of a stream's bytes, and close it.
+     *
+     * Livewire 3.8.6 and 4.4.2 detect an upload's type this way. Earlier
+     * releases return the temporary file's storage metadata instead, which on
+     * an S3 temporary disk is the Content-Type the browser declared, so
+     * uploads are detected here rather than through getMimeType().
+     *
+     * @param  resource|null  $stream
+     */
+    public static function detectFromStream(mixed $stream): string
+    {
+        return self::detectFromContents(self::readSample($stream));
+    }
+
+    /**
+     * Detect a type from the first 64 KiB of some bytes, as detectFromStream()
+     * does.
+     */
+    public static function detectFromContents(string $contents): string
+    {
+        if ($contents === '') {
+            return self::ApplicationOctetStream->value;
+        }
+
+        return (new FinfoMimeTypeDetector)->detectMimeTypeFromBuffer(substr($contents, 0, self::DETECTION_SAMPLE_BYTES))
+            ?: self::ApplicationOctetStream->value;
+    }
+
+    /**
+     * The first 64 KiB of a stream, the sample a type is detected from. The
+     * stream is closed.
+     *
+     * @param  resource|null  $stream
+     */
+    public static function readSample(mixed $stream): string
+    {
+        if (! is_resource($stream)) {
+            return '';
+        }
+
+        try {
+            $sample = stream_get_contents($stream, self::DETECTION_SAMPLE_BYTES);
+        } finally {
+            fclose($stream);
+        }
+
+        return is_string($sample) ? $sample : '';
+    }
+
+    /**
+     * Whether a type is in a list of accepted types, which may hold wildcards
+     * such as `image/*`, matched the way Laravel's `mimetypes` rule matches.
+     *
+     * Types that run script when a browser renders them, or code on a server,
+     * are accepted only when listed exactly. A wildcard such as `text/*` or
+     * `application/*` reads as "documents" or "data" and would otherwise let
+     * HTML, XHTML and XML through. SVG is the exception: `image/*` does match
+     * it, because every SVG is sanitized before it is stored, and an SVG that
+     * cannot be sanitized is rejected.
+     *
+     * @param  array<int, string>  $acceptedTypes
+     */
+    public static function isAccepted(string $type, array $acceptedTypes): bool
+    {
+        $type = self::normalizeType($type);
+
+        if (in_array($type, $acceptedTypes, true)) {
+            return true;
+        }
+
+        return ! self::isScriptable($type)
+            && in_array(explode('/', $type)[0] . '/*', $acceptedTypes, true);
+    }
+
+    /**
+     * Whether a browser may run script in content of this type, or a server
+     * may run it as code. Includes every restricted type and any other XML
+     * document type, apart from SVG, which Curator sanitizes.
+     */
+    public static function isScriptable(?string $type): bool
+    {
+        $type = self::normalizeType($type);
+
+        if ($type === self::ImageSvgXml->value) {
+            return false;
+        }
+
+        return in_array($type, self::restricted(), true)
+            || in_array($type, self::SCRIPTABLE_TYPES, true)
+            || str_ends_with($type, '+xml');
+    }
+
+    /**
      * Correct the detected type where libmagic is known to under-report a
      * format the client's extension claims, after checking the content really
      * is that format:
      *
      * - SVG that starts with whitespace or a comment is reported as text/plain
-     *   (or as XML), so it would otherwise lose its extension, and with it the
-     *   sanitizing every SVG goes through.
+     *   or XML, or as text/html when it contains a script element, so it would
+     *   otherwise lose its extension, and with it the sanitizing every SVG goes
+     *   through. It is refined only when it parses as XML whose root element
+     *   is an SVG namespace `<svg>`, so an HTML document never qualifies.
      * - Office and OpenDocument files are zip archives, and are reported as
      *   application/zip unless the archive's first entry identifies them.
+     * - CSV and iCalendar files are plain text, and whether libmagic names
+     *   the format or reports text/plain depends on its version and on the
+     *   content. A text/plain file with one of those extensions takes that
+     *   format's type, so a field that accepts only `text/csv` accepts CSV
+     *   files on every platform.
+     * - Legacy Office files (.doc, .xls, .ppt and their templates) are OLE
+     *   compound files. libmagic names the application only when the part of
+     *   the file that identifies it falls within the sample, and otherwise
+     *   reports a generic OLE container.
      *
-     * @param  Closure(): string  $contents  read only when a correction applies
+     * @param  Closure(): string  $contents  the whole file, read only when an SVG correction applies
+     * @param  (Closure(): string)|null  $sample  the start of the file, enough for a signature check; defaults to $contents
      */
-    public static function refineDetectedType(?string $type, ?string $clientExtension, Closure $contents): string
+    public static function refineDetectedType(?string $type, ?string $clientExtension, Closure $contents, ?Closure $sample = null): string
     {
         $type = self::normalizeType($type);
         $extension = mb_strtolower(trim((string) $clientExtension));
+        $sample ??= $contents;
 
         if (
             $extension === self::ImageSvgXml->getExt()
-            && in_array($type, [self::TextPlain->value, 'text/xml', self::ApplicationXml->value], true)
+            && in_array($type, [self::TextPlain->value, self::TextHtml->value, 'text/xml', self::ApplicationXml->value], true)
             && self::isSvgDocument($contents())
         ) {
             return self::ImageSvgXml->value;
         }
 
+        if ($type === self::TextPlain->value && array_key_exists($extension, self::PLAIN_TEXT_EXTENSIONS)) {
+            return self::PLAIN_TEXT_EXTENSIONS[$extension];
+        }
+
         if (
             in_array($extension, self::ZIP_BASED_EXTENSIONS, true)
             && in_array($type, [self::ApplicationZip->value, self::ApplicationOctetStream->value], true)
-            && str_starts_with($contents(), "PK\x03\x04")
+            && str_starts_with($sample(), "PK\x03\x04")
         ) {
             return MimeTypes::getDefault()->getMimeTypes($extension)[0] ?? $type;
+        }
+
+        if (
+            array_key_exists($extension, self::OLE_BASED_EXTENSIONS)
+            && in_array($type, self::OLE_CONTAINER_TYPES, true)
+            && str_starts_with($sample(), "\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1")
+        ) {
+            return self::OLE_BASED_EXTENSIONS[$extension];
         }
 
         return $type;
@@ -480,7 +661,8 @@ enum MimeType: string
             $document = new DOMDocument;
 
             return $document->loadXML($contents, LIBXML_NONET)
-                && $document->documentElement?->localName === 'svg';
+                && $document->documentElement?->localName === 'svg'
+                && $document->documentElement->namespaceURI === self::SVG_NAMESPACE;
         } finally {
             libxml_clear_errors();
             libxml_use_internal_errors($previous);

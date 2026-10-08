@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Awcodes\Curator\Config\Concerns;
 
 use enshrined\svgSanitize\Sanitizer;
+use Throwable;
 
 trait HasSanitizers
 {
@@ -22,16 +23,23 @@ trait HasSanitizers
     /**
      * Strip scripts, event handlers and remote references from SVG markup so it
      * cannot execute JavaScript when served inline as a top-level document.
+     *
+     * Returns an empty string when the markup cannot be sanitized, which
+     * callers treat as a failure rather than store the untrusted original.
      */
     public function sanitizeSvg(string $svg): string
     {
         $sanitizer = new Sanitizer;
         $sanitizer->removeRemoteReferences(true);
 
-        $clean = $sanitizer->sanitize($svg);
+        // The sanitizer returns false when the markup cannot be parsed, and
+        // throws when it is not a single SVG document.
+        try {
+            $clean = $sanitizer->sanitize($svg);
+        } catch (Throwable) {
+            return '';
+        }
 
-        // The sanitizer returns false when the markup cannot be parsed. Fail
-        // closed by storing an empty file rather than the untrusted original.
         return $clean === false ? '' : $clean;
     }
 }
