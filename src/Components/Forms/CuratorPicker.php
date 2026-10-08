@@ -7,6 +7,7 @@ namespace Awcodes\Curator\Components\Forms;
 use Awcodes\Curator\Concerns\CanGeneratePaths;
 use Awcodes\Curator\Concerns\CanUploadFiles;
 use Awcodes\Curator\Config\CuratorManager;
+use Awcodes\Curator\Models\Media;
 use Awcodes\Curator\Resources\Media\MediaResource;
 use Closure;
 use Exception;
@@ -22,6 +23,7 @@ use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -256,10 +258,14 @@ class CuratorPicker extends Field
             ->label(trans('curator::views.picker.download'))
             ->icon(Heroicon::ArrowDownTray)
             ->color('gray')
-            ->action(function (array $arguments, CuratorPicker $component): StreamedResponse {
-                $item = $component->getState()[$arguments['uuid']];
+            ->action(function (array $arguments, CuratorPicker $component): ?StreamedResponse {
+                $record = $component->resolveAuthorizedMedia($arguments['uuid'] ?? null, 'view');
 
-                return Storage::disk($item['disk'])->download($item['path']);
+                if (! $record instanceof Media) {
+                    return null;
+                }
+
+                return Storage::disk($record->disk)->download($record->path);
             });
     }
 
@@ -587,6 +593,39 @@ class CuratorPicker extends Field
     public function getTypeValue(): ?string
     {
         return $this->evaluate($this->typeValue) ?? null;
+    }
+
+    /**
+     * The field state, including each item's disk and path, comes from the client,
+     * so only the item's id is used. The record is reloaded with the same tenant
+     * scoping as the panel's queries and checked against the Media policy.
+     */
+    protected function resolveAuthorizedMedia(mixed $uuid, string $ability): ?Media
+    {
+        if (! is_string($uuid) && ! is_int($uuid)) {
+            return null;
+        }
+
+        $state = $this->getState();
+
+        $id = is_array($state) ? ($state[$uuid]['id'] ?? null) : null;
+
+        if (blank($id) || ! is_scalar($id)) {
+            return null;
+        }
+
+        $record = App::make(Media::class)::query()
+            ->when(filament()->hasTenancy() && $this->isTenantAware(), fn (Builder $query) => $query->where($this->getTenantOwnershipRelationshipName() . '_id', filament()->getTenant()->getKey()))
+            ->whereKey($id)
+            ->first();
+
+        if (! $record instanceof Media) {
+            return null;
+        }
+
+        $resource = App::make(MediaResource::class);
+
+        return $resource::can($ability, $record) ? $record : null;
     }
 
     protected function getUploadDefaults(): ?CuratorManager
