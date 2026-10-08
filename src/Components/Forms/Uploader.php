@@ -19,14 +19,29 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use League\Flysystem\UnableToCheckFileExistence;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use ReflectionClass;
+use WeakMap;
 
 class Uploader extends FileUpload
 {
     use CanGeneratePaths;
     use CanNormalizePaths;
+
+    /**
+     * Detected types and sanitized SVG markup per upload, so that validation
+     * and saving read an upload once.
+     *
+     * @var WeakMap<TemporaryUploadedFile, string>|null
+     */
+    protected ?WeakMap $detectedTypes = null;
+
+    /**
+     * @var WeakMap<TemporaryUploadedFile, string>|null
+     */
+    protected ?WeakMap $sanitizedSvgs = null;
 
     protected function setUp(): void
     {
@@ -51,7 +66,18 @@ class Uploader extends FileUpload
             $type = $this->detectFileType($file);
             $extension = MimeType::resolveExtension($type, $file->getClientOriginalExtension());
 
-            $storeMethod = $component->getVisibility() === 'public' ? 'storePubliclyAs' : 'storeAs';
+            // SVGs are served as raw markup (they are not routed through Glide),
+            // so they are sanitized before anything reaches the disk, and an SVG
+            // that cannot be sanitized is never stored.
+            $svg = Curator::isSvg($extension) || Curator::isSvgMimeType($type)
+                ? $this->sanitizedSvg($file)
+                : null;
+
+            if ($svg === '') {
+                throw ValidationException::withMessages([
+                    $component->getStatePath() => $this->getUnsanitizableMessage(),
+                ]);
+            }
 
             if (Curator::isResizable($extension)) {
                 if (Curator::isUsingCloudDisk()) {
@@ -71,20 +97,23 @@ class Uploader extends FileUpload
                 $filename = $filename . '-' . time();
             }
 
-            $size = $file->getSize();
+            if ($svg !== null) {
+                $path = trim($component->getDirectory() . '/' . $filename . '.' . $extension, '/');
 
-            $path = $file->{$storeMethod}(
-                $component->getDirectory(),
-                $filename . '.' . $extension,
-                $component->getDiskName()
-            );
+                if (! Storage::disk($component->getDiskName())->put($path, $svg, $component->getVisibility())) {
+                    return null;
+                }
 
-            // SVGs are served as raw markup (they are not routed through Glide),
-            // so strip any embedded scripts before they can execute inline.
-            if (Curator::isSvg($extension) || Curator::isSvgMimeType($type)) {
-                $disk = Storage::disk($component->getDiskName());
-                $disk->put($path, Curator::sanitizeSvg($disk->get($path)), $component->getVisibility());
-                $size = $disk->size($path);
+                $size = strlen($svg);
+            } else {
+                $storeMethod = $component->getVisibility() === 'public' ? 'storePubliclyAs' : 'storeAs';
+                $size = $file->getSize();
+
+                $path = $file->{$storeMethod}(
+                    $component->getDirectory(),
+                    $filename . '.' . $extension,
+                    $component->getDiskName()
+                );
             }
 
             return [
@@ -145,16 +174,22 @@ class Uploader extends FileUpload
             function (string $attribute, mixed $value, Closure $fail): void {
                 $acceptedTypes = $this->getAcceptedFileTypes();
 
-                if ($acceptedTypes === null) {
-                    return;
-                }
-
                 foreach (Arr::wrap($value) as $file) {
-                    if ($file instanceof TemporaryUploadedFile && ! $this->isAcceptedFile($file, $acceptedTypes)) {
-                        $fail(__('validation.mimetypes', [
+                    if (! $file instanceof TemporaryUploadedFile) {
+                        continue;
+                    }
+
+                    if ($acceptedTypes !== null && ! $this->isAcceptedFile($file, $acceptedTypes)) {
+                        $fail($this->getValidationMessages()['mimetypes'] ?? 'validation.mimetypes')->translate([
                             'attribute' => $this->getValidationAttribute(),
                             'values' => implode(', ', $acceptedTypes),
-                        ]));
+                        ]);
+
+                        return;
+                    }
+
+                    if (Curator::isSvgMimeType($this->detectFileType($file)) && $this->sanitizedSvg($file) === '') {
+                        $fail($this->getUnsanitizableMessage());
 
                         return;
                     }
@@ -184,11 +219,20 @@ class Uploader extends FileUpload
      */
     public function detectFileType(TemporaryUploadedFile $file): string
     {
-        return MimeType::refineDetectedType(
-            MimeType::detectFromStream($file->readStream()),
-            $file->getClientOriginalExtension(),
-            fn (): string => (string) $file->get(),
-        );
+        $this->detectedTypes ??= new WeakMap;
+
+        if (! isset($this->detectedTypes[$file])) {
+            $sample = MimeType::readSample($file->readStream());
+
+            $this->detectedTypes[$file] = MimeType::refineDetectedType(
+                MimeType::detectFromContents($sample),
+                $file->getClientOriginalExtension(),
+                fn (): string => (string) $file->get(),
+                fn (): string => $sample,
+            );
+        }
+
+        return $this->detectedTypes[$file];
     }
 
     public function saveUploadedFiles(): void
@@ -253,5 +297,23 @@ class Uploader extends FileUpload
         }
 
         return MimeType::isAccepted($this->detectFileType($file), $acceptedTypes);
+    }
+
+    /**
+     * The upload's markup after sanitizing, or an empty string when it cannot
+     * be sanitized.
+     */
+    protected function sanitizedSvg(TemporaryUploadedFile $file): string
+    {
+        $this->sanitizedSvgs ??= new WeakMap;
+
+        return $this->sanitizedSvgs[$file] ??= Curator::sanitizeSvg((string) $file->get());
+    }
+
+    protected function getUnsanitizableMessage(): string
+    {
+        return __($this->getValidationMessages()['uploaded'] ?? 'validation.uploaded', [
+            'attribute' => $this->getValidationAttribute(),
+        ]);
     }
 }

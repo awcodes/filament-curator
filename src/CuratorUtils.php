@@ -70,17 +70,21 @@ class CuratorUtils
             $filepath = (string) Str::of($directory . '/' . $filename . '-' . time() . '.' . $ext)->trim('/');
         }
 
-        if (! $storage->exists($filepath)) {
-            $storage->put($filepath, $fileContents, $visibility);
-            $fileContents = $storage->get($filepath);
-        }
-
         $type = $detectedType;
 
         // Imported files never pass through the uploader, so they get the same
-        // treatment here: sanitize on the detected type as well as the extension.
+        // treatment here: an SVG, by detected type or extension, is sanitized
+        // before it is written, and one that cannot be sanitized is not stored.
         if (Curator::isSvg($ext) || Curator::isSvgMimeType($type)) {
-            $storage->put($filepath, Curator::sanitizeSvg($storage->get($filepath)), $visibility);
+            $fileContents = Curator::sanitizeSvg($fileContents);
+
+            if ($fileContents === '') {
+                throw new Exception("Could not sanitize the SVG from {$path}");
+            }
+        }
+
+        if (! $storage->exists($filepath)) {
+            $storage->put($filepath, $fileContents, $visibility);
         }
 
         if (Curator::isResizable($ext)) {

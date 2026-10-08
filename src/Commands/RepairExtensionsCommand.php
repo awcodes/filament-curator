@@ -87,10 +87,12 @@ class RepairExtensionsCommand extends Command
         // harmless. Case alone never makes an extension unsafe.
         $storedExtension = mb_strtolower(pathinfo($path, PATHINFO_EXTENSION));
         $columnExtension = mb_strtolower((string) $media->ext);
+        $sample = MimeType::readSample($disk->readStream($path));
         $detectedType = MimeType::refineDetectedType(
-            $this->detectType($disk, $path),
+            MimeType::detectFromContents($sample),
             $storedExtension,
             fn (): string => (string) $disk->get($path),
+            fn (): string => $sample,
         );
 
         if ($this->isUnsafeContent($detectedType)) {
@@ -176,7 +178,15 @@ class RepairExtensionsCommand extends Command
 
         if (! $dryRun) {
             if ($content !== null) {
-                $disk->put($newPath, $content, $media->visibility ?? 'public');
+                // A disk configured not to throw reports a failed write by
+                // returning false, and the original is the only copy, so it is
+                // deleted only once the new file reads back as written.
+                if (! $disk->put($newPath, $content, $media->visibility ?? 'public') || $disk->get($newPath) !== $content) {
+                    $this->error("  error: [{$media->id}] could not write {$newPath}");
+
+                    return 'skipped';
+                }
+
                 $disk->delete($oldPath);
             } elseif (! $disk->move($oldPath, $newPath)) {
                 $this->error("  error: [{$media->id}] could not move {$oldPath} to {$newPath}");
@@ -197,14 +207,6 @@ class RepairExtensionsCommand extends Command
         $this->line(($dryRun ? '  would rename: ' : '  renamed: ') . "[{$media->id}] {$oldPath} -> {$newPath} ({$type})");
 
         return 'renamed';
-    }
-
-    /**
-     * Detect the type from the stored bytes, the same way uploads are detected.
-     */
-    protected function detectType(Filesystem $disk, string $path): string
-    {
-        return MimeType::detectFromStream($disk->readStream($path));
     }
 
     /**
