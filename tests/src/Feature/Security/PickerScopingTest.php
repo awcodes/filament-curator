@@ -1132,6 +1132,16 @@ describe('the limited directory', function () {
         expect(Media::query()->latest('id')->first()->directory)->toBe('uploads');
     });
 
+    test('a directory stored with a trailing slash is one folder with the same directory without it', function () {
+        makeMedia(['name' => 'own', 'directory' => 'uploads', 'path' => 'uploads/own.jpg']);
+        makeMedia(['name' => 'slashed', 'directory' => 'uploads/', 'path' => 'uploads/slashed.jpg']);
+        makeMedia(['name' => 'nested', 'directory' => 'uploads/2024/', 'path' => 'uploads/2024/nested.jpg']);
+
+        $panel = Livewire::test(CuratorPanel::class, ['settings' => ['directory' => null]]);
+
+        expect(collect($panel->get('directories'))->keys()->sort()->values()->all())->toBe(['uploads', 'uploads/2024']);
+    });
+
     test('the directory limit is case sensitive', function () {
         $own = makeMedia(['name' => 'own', 'directory' => 'uploads', 'path' => 'uploads/own.jpg']);
         $upper = makeMedia(['name' => 'upper', 'directory' => 'UPLOADS/sub', 'path' => 'UPLOADS/sub/upper.jpg']);
