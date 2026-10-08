@@ -602,6 +602,36 @@ class CustomMedia extends Media
 'model' => \App\Models\Cms\Media::class,
 ```
 
+### Stored File Extensions
+
+Curator reads each upload's type from the file's contents and stores the file under an extension for that type, not the name the browser sent. Web servers pick a file's content type from its extension, so the two have to agree. The type Livewire reports is only used when the contents give nothing to go on, because for direct uploads to S3 it is the content type the browser sent.
+
+- The original extension is kept, lowercased, when it is a known extension for the detected type. `photo.jpeg` stays `.jpeg` and `PHOTO.JPG` becomes `.jpg`.
+- Text content is often detected only as `text/plain`, so it may keep a plain-data extension such as `.csv`, `.md`, `.json`, `.yaml` or `.css`. Other text files are stored as `.txt`.
+- An `.svg` file that starts with whitespace or a comment is still stored as `.svg`, and sanitized, if its content parses as an SVG document.
+- Office and OpenDocument files (`.docx`, `.xlsx`, `.pptx`, `.odt`, `.epub` and similar) keep their extension when the content is a zip archive.
+- Otherwise the extension is replaced with the detected type's usual one. A JPEG uploaded as `photo.png` is stored as `.jpg`. When the type has no known extension, the file is stored as `.bin`.
+- Extensions a server may run as code (`.php`, `.phtml`, `.phar`, `.shtml`, `.cgi` and similar) are never kept.
+
+An upload whose contents are HTML, XML, JavaScript or SVG is rejected unless the field accepts that type, even when the browser reported an accepted type. Only fresh uploads become media; any other value in an upload field's state is rejected by validation. `preserveFilenames()` affects only the base name.
+
+#### Repairing media stored by earlier versions
+
+Earlier versions kept the browser's extension, so a database can hold media whose extension doesn't match its contents, including some that a web server would serve as HTML. After upgrading, check for these with a dry run, then apply the changes:
+
+```bash
+php artisan curator:repair-extensions --dry-run
+php artisan curator:repair-extensions
+```
+
+For every media row, the command detects the stored file's type from its contents, then:
+
+- **Renames files with an unsafe extension.** When the extension could be served as a document, script or server-side code (such as `.html`, `.svg`, `.xml`, `.js` or `.php`) but the content is something else, or the extension contains characters other than letters and digits, the file gets the extension for its detected type. Content detected as SVG is sanitized as it is renamed.
+- **Neutralises HTML, XML and script content.** When the content itself is HTML, XHTML, XML or JavaScript, the file is renamed to `.txt`, so it is served as plain text. If `accepted_file_types` in the Curator config includes that type, the file is left in place and listed for review instead.
+- **Reports harmless mismatches** and leaves them as they are, such as a JPEG stored as `.png`, or an extension that differs only in case, such as `.JPG`.
+
+When a file is renamed, the row's `path`, `ext` and `type` are updated and the file stays in its directory. Its contents are kept (only SVG content is sanitized) and no media is deleted. Each rename is printed as `old path -> new path`, so keep the output if you may need to undo a change. A row is skipped, with a warning, when its file is missing, when the new name is already taken, or when SVG content can't be sanitized. The media's URL changes with its path, so links to a renamed file copied elsewhere, for example into rich editor content, will no longer resolve. SVG files that already have an `.svg` extension are not touched; run `php artisan curator:sanitize-svgs` for those.
+
 ### Policies
 
 To customize access control for filament-curator, you can register a policy for the `Media` model in your application.
