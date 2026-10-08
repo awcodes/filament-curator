@@ -201,7 +201,7 @@ class RepairExtensionsCommand extends Command
                 'size' => $disk->size($newPath),
             ])->saveQuietly();
 
-            Glide::getServer()->deleteCache($oldPath);
+            Glide::getServer($media->disk)->deleteCache($oldPath);
         }
 
         $this->line(($dryRun ? '  would rename: ' : '  renamed: ') . "[{$media->id}] {$oldPath} -> {$newPath} ({$type})");
