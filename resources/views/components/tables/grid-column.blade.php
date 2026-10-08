@@ -13,7 +13,7 @@
             :src="$record->mediumUrl"
             :lazy="true"
             icon-classes="size-24"
-            x-on:click="toggleSelectedRecord('{{ $record->id }}')"
+            x-on:click="toggleSelectedRecord({{ \Illuminate\Support\Js::from((string) $record->id) }})"
             @class([
                 'h-full',
                 'w-auto mx-auto p-2' => $isSvg,

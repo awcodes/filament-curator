@@ -17,7 +17,6 @@
             "import_constants": true,
             "import_functions": true
         },
-        "mb_str_functions": true,
         "method_argument_space": true,
         "modernize_types_casting": true,
         "new_with_parentheses": false,

@@ -101,8 +101,57 @@ CuratorPicker::make('attachment')
     ->acceptedFileTypes([...MimeType::defaults(), 'text/html']);
 ```
 
+Wildcards such as `text/*` or `application/*` never match HTML, JavaScript, XML (other than SVG) or the types above. To accept one of them, list it exactly.
+
 > [!WARNING]
 > Curator only sanitizes SVG uploads. Any other type you opt into is stored and served verbatim. Media served through Curator's route is sent with `X-Content-Type-Options: nosniff`, and restricted types are forced to `Content-Disposition: attachment`, but files on the `public` disk are also reachable directly through the `storage` symlink where those headers do not apply. If you allow executable types, serve them from a private disk.
+
+#### How the stored extension is chosen
+
+Curator detects an upload's type from the file's own contents, and decides whether to accept it from that type. The stored extension follows the same type, not the name the browser sent. Web servers pick a file's content type from its extension, so the two have to agree.
+
+- The original extension is kept, lowercased, when it is a known extension for the detected type. `photo.jpeg` stays `.jpeg` and `PHOTO.JPG` becomes `.jpg`.
+- Text content is often detected only as `text/plain`, so it may keep a plain-data extension such as `.csv`, `.md`, `.json`, `.yaml` or `.css`. Other text files are stored as `.txt`, including ones with uncommon extensions such as `.srt`. Text detected only as `text/plain` but named `.csv` or `.ics` gets the `text/csv` or `text/calendar` type, so it's typed the same whichever `libmagic` build PHP uses.
+- An `.svg` file that starts with whitespace or a comment can be detected as plain text or XML. It is still stored as `.svg`, and sanitized, if its content parses as an SVG document.
+- Office and OpenDocument files (`.docx`, `.xlsx`, `.pptx`, `.odt`, `.epub` and similar) are zip archives and are sometimes detected as `application/zip`. They keep their extension when the content is a zip archive. Legacy Office files (`.doc`, `.xls`, `.ppt` and their templates) are detected as an OLE container when they are large, and keep their extension when the content starts with the OLE signature.
+- Otherwise the extension is replaced with the detected type's usual one. A JPEG uploaded as `photo.png` is stored as `.jpg`, and a file named `notes.html` whose contents are plain text is stored as `.txt`.
+- When the detected type has no known extension, the file is stored as `.bin`, and Curator's route serves it as a download. This includes every `application/octet-stream` upload, if you have allowed that type.
+- Extensions a server may run as code (`.php`, `.phtml`, `.phar`, `.shtml`, `.cgi` and similar) are never kept.
+
+The type is read from the uploaded bytes by Curator itself. It doesn't rely on the type Livewire reports, because Livewire releases before 3.8.6 report the type the browser declared when the temporary upload disk is S3.
+
+The same rule applies to `CuratorUtils::importMedia()`, which detects the type from the imported file's contents. `preserveFilenames()` affects only the base name; the extension still follows the detected type.
+
+SVG markup is sanitized before it is stored. An upload detected as SVG that the sanitizer can't process, such as an XHTML document containing an `<svg>` element, is rejected and nothing is stored.
+
+Only fresh uploads become media. Any other value in an upload field's state is rejected by validation.
+
+#### Repairing media stored by earlier versions
+
+Earlier versions kept the browser's extension. As a result, a database can hold media whose file extension doesn't match its contents, including some that a web server would serve as HTML. Versions 4.0.0 to 4.1.4 also accepted HTML files by default. After upgrading, check for these with a dry run:
+
+```bash
+php artisan curator:repair-extensions --dry-run
+```
+
+Then apply the changes:
+
+```bash
+php artisan curator:repair-extensions
+```
+
+For every media row, the command detects the stored file's type from its contents, then:
+
+- **Renames files with an unsafe extension.** When the extension could be served as a document, script or server-side code (such as `.html`, `.svg`, `.xml`, `.js` or `.php`) but the content is something else, or the extension contains characters other than letters and digits, the file gets the extension for its detected type. Content detected as SVG is sanitized as it is renamed.
+- **Neutralises HTML, XML and script content.** When the content itself is HTML, XHTML, XML or JavaScript, the file is renamed to `.txt`, so it is served as plain text. The bytes are kept for you to review or delete. If your global `acceptedFileTypes()` deliberately includes that type, the file is left in place and listed as `review` instead.
+- **Reports harmless mismatches** and leaves them as they are, such as a JPEG stored as `.png`, or an extension that differs only in case, such as `.JPG`. Renaming them would only break existing links.
+
+When a file is renamed, the row's `path`, `ext` and `type` are updated and the file stays in its directory.
+
+- The file's contents are kept. Only SVG content is changed, by sanitizing. Each rename is printed as `old path -> new path`, so keep the output if you may need to undo a change.
+- A row is skipped, with a warning, when its file is missing, when the new name is already taken, or when SVG content can't be sanitized.
+- The media's URL changes with its path. Links to a renamed file that were copied elsewhere, for example into rich editor content, will no longer resolve.
+- The command doesn't sanitize SVG files that already have an `.svg` extension. Run `php artisan curator:sanitize-svgs` for those.
 
 ### With Filament Panels
 
