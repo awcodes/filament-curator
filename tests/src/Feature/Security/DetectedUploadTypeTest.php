@@ -171,7 +171,7 @@ test('signature checks read only the first bytes', function (string $type, strin
     'ole' => ['application/x-ole-storage', 'doc', "\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1rest", 8],
 ]);
 
-test('plain-data text detected only as text/plain gets its format type', function (string $name, string $type, string $ext) {
+test('csv and ics detected only as text/plain get their format type', function (string $name, string $type, string $ext) {
     // libmagic reports this content as text/plain on every platform, as some
     // builds do for any CSV.
     Livewire::test(CreateMedia::class)
@@ -185,11 +185,11 @@ test('plain-data text detected only as text/plain gets its format type', functio
         ->and($media->ext)->toBe($ext);
 })->with([
     'csv' => ['data.csv', 'text/csv', 'csv'],
-    'tsv' => ['data.tsv', 'text/tab-separated-values', 'tsv'],
-    'md' => ['notes.md', 'text/markdown', 'md'],
-    'markdown' => ['notes.markdown', 'text/markdown', 'markdown'],
     'ics' => ['event.ics', 'text/calendar', 'ics'],
-    'vtt' => ['captions.vtt', 'text/vtt', 'vtt'],
+    'tsv stays plain text' => ['data.tsv', 'text/plain', 'tsv'],
+    'md stays plain text' => ['notes.md', 'text/plain', 'md'],
+    'markdown stays plain text' => ['notes.markdown', 'text/plain', 'markdown'],
+    'vtt stays plain text' => ['captions.vtt', 'text/plain', 'vtt'],
     'other text' => ['notes.txt', 'text/plain', 'txt'],
 ]);
 
@@ -204,10 +204,14 @@ test('a field accepting only csv accepts a csv detected as text/plain', function
     expect(Media::query()->sole()->type)->toBe('text/csv');
 });
 
-test('only text/plain content is refined, and only for plain-data extensions', function (string $type, string $extension, string $expected) {
+test('only text/plain content is refined, and only for csv and ics', function (string $type, string $extension, string $expected) {
     expect(MimeType::refineDetectedType($type, $extension, fn (?int $length = null): string => 'hello'))->toBe($expected);
 })->with([
     ['text/plain', 'CSV', 'text/csv'],
+    ['text/plain', 'ics', 'text/calendar'],
+    ['text/plain', 'md', 'text/plain'],
+    ['text/plain', 'tsv', 'text/plain'],
+    ['text/plain', 'vtt', 'text/plain'],
     ['text/plain', 'html', 'text/plain'],
     ['text/plain', 'js', 'text/plain'],
     ['text/plain', 'xml', 'text/plain'],

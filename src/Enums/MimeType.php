@@ -78,10 +78,7 @@ enum MimeType: string
     case TextCsv = 'text/csv';
     case TextHtml = 'text/html';
     case TextJavascript = 'text/javascript';
-    case TextMarkdown = 'text/markdown';
     case TextPlain = 'text/plain';
-    case TextTabSeparatedValues = 'text/tab-separated-values';
-    case TextVtt = 'text/vtt';
     case Video3gpp = 'video/3gpp';
     case Video3gpp2 = 'video/3gpp2';
     case VideoMp2t = 'video/mp2t';
@@ -134,10 +131,6 @@ enum MimeType: string
     private const PLAIN_DATA_EXTENSIONS = [
         'csv' => 'text/csv',
         'ics' => 'text/calendar',
-        'markdown' => 'text/markdown',
-        'md' => 'text/markdown',
-        'tsv' => 'text/tab-separated-values',
-        'vtt' => 'text/vtt',
     ];
 
     private const OLE_CONTAINER_TYPES = ['application/cdfv2', 'application/x-ole-storage'];
@@ -528,10 +521,7 @@ enum MimeType: string
             self::TextCsv => 'csv',
             self::TextHtml => 'html',
             self::TextJavascript => 'js',
-            self::TextMarkdown => 'md',
             self::TextPlain => 'txt',
-            self::TextTabSeparatedValues => 'tsv',
-            self::TextVtt => 'vtt',
             self::VideoMp2t => 'ts',
             self::VideoMp4 => 'mp4',
             self::VideoMpeg => 'mpeg',
@@ -609,10 +599,7 @@ enum MimeType: string
             self::TextCsv => 'Comma-separated values (CSV)',
             self::TextHtml => 'HyperText Markup Language (HTML)',
             self::TextJavascript => 'JavaScript',
-            self::TextMarkdown => 'Markdown',
             self::TextPlain => 'Text (generally ASCII or ISO 8859-n)',
-            self::TextTabSeparatedValues => 'Tab-separated values (TSV)',
-            self::TextVtt => 'Web Video Text Tracks (WebVTT)',
             self::Video3gpp => '3GPP video container',
             self::Video3gpp2 => '3GPP2 video container',
             self::VideoMp2t => 'MPEG transport stream',
