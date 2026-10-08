@@ -31,6 +31,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithPagination;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -245,21 +246,6 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
 
         $items = $paginator->items();
 
-        //        if (! $excludeSelected && $this->selected) {
-        //            $selected = collect($this->selected)->pluck('id')->toArray();
-        //
-        //            $selectedItems = Media::query()
-        //                ->whereIn('id', $selected)
-        //                ->get()
-        //                ->sortBy(function ($model) use ($selected) {
-        //                    return array_search($model->id, $selected);
-        //                });
-        //
-        //            array_unshift($items, ...$selectedItems);
-        //
-        //            $this->setMediaForm();
-        //        }
-
         $this->getSubDirectories();
         $this->getBreadCrumbs();
 
@@ -319,18 +305,6 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
         // Search results arrive in one set, so there is nothing more to load until the search is cleared, which
         // fetches the first page again.
         $this->currentPage = $this->lastPage;
-    }
-
-    public function setMediaForm(): void
-    {
-        if (count($this->selected) === 1) {
-            $item = App::make(Media::class)->find(Arr::first($this->selected));
-            if ($item) {
-                $this->form->fill($item->toArray());
-            }
-        } else {
-            $this->form->fill();
-        }
     }
 
     public function addFilesAction(bool $insertAfter = false): Action
@@ -643,10 +617,21 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
 
     protected function createMediaFiles(): array
     {
+        // The upload field's state is client-writable, and the uploader passes anything that isn't a new upload
+        // through as already stored file data, so only this request's uploads may reach it.
+        $this->panelData['files_to_add'] = array_filter(
+            Arr::wrap($this->panelData['files_to_add'] ?? []),
+            fn (mixed $file): bool => $file instanceof TemporaryUploadedFile,
+        );
+
         $media = [];
         $formData = $this->form->getState();
 
         foreach ($formData['files_to_add'] as $item) {
+            if (! is_array($item) || ($item['disk'] ?? null) !== $this->diskName || ($item['visibility'] ?? null) !== $this->visibility) {
+                continue;
+            }
+
             $item['exif'] = empty($item['exif']) ? null : Curator::sanitizeExif($item['exif']);
             $item['title'] = pathinfo((string) ($formData['originalFilenames'][$item['path']] ?? null), PATHINFO_FILENAME);
 

@@ -8,6 +8,7 @@ use Awcodes\Curator\Facades\Glide;
 use Awcodes\Curator\Models\Media;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Livewire\Exceptions\MethodNotFoundException;
 use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
@@ -288,4 +289,59 @@ test('a custom glide server config cannot reintroduce the prefix stripping', fun
     ]);
 
     expect(servedImageSize(app(GlideManager::class)->getUrl('curator/x/y.jpg', ['fm' => 'jpg'])))->toBe([40, 20]);
+});
+
+function forgedUploadEntry(): array
+{
+    return [
+        'disk' => 'local',
+        'directory' => 'private',
+        'visibility' => 'public',
+        'name' => 'forged',
+        'path' => 'private/forged.jpg',
+        'size' => 100,
+        'type' => 'image/jpeg',
+        'ext' => 'jpg',
+    ];
+}
+
+test('the browser cannot load a record into the panel form', function () {
+    Storage::fake('public');
+
+    $media = makeMedia(['name' => 'other']);
+
+    $panel = Livewire::test(CuratorPanel::class, ['settings' => tamperPanelSettings()])
+        ->set('selected', [$media->id]);
+
+    expect(fn () => $panel->call('setMediaForm'))->toThrow(MethodNotFoundException::class)
+        ->and($panel->get('panelData'))->not->toHaveKey('full_path');
+});
+
+test('a forged file entry in the upload field creates no media', function (mixed $entry) {
+    Storage::fake('public');
+    Storage::fake('local');
+
+    Livewire::test(CuratorPanel::class, ['settings' => tamperPanelSettings()])
+        ->set('panelData.files_to_add', ['forged' => $entry])
+        ->callAction('addFiles');
+
+    expect(Media::query()->count())->toBe(0);
+})->with([
+    'stored file data' => [fn (): array => forgedUploadEntry()],
+    'a stored path' => ['private/forged.jpg'],
+]);
+
+test('a forged file entry next to a real upload is dropped', function () {
+    Storage::fake('public');
+    Storage::fake('local');
+
+    Livewire::test(CuratorPanel::class, ['settings' => tamperPanelSettings()])
+        ->set('panelData.files_to_add', [UploadedFile::fake()->image('photo.jpg', 20, 20)])
+        ->set('panelData.files_to_add.forged', forgedUploadEntry())
+        ->callAction('addFiles');
+
+    $media = Media::query()->sole();
+
+    expect($media->disk)->toBe('public')
+        ->and($media->path)->not->toBe('private/forged.jpg');
 });
