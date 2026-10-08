@@ -37,9 +37,13 @@ class PickerForm extends Component implements HasActions, HasSchemas
 
     public mixed $saved = null;
 
-    public function mount(?Model $record = null, mixed $initial = null): void
+    /**
+     * The record isn't typed: Laravel 12's container resolves a class-typed mount parameter that isn't passed rather
+     * than using its default, and a Model can't be built.
+     */
+    public function mount(mixed $record = null, mixed $initial = null): void
     {
-        $this->record = $record;
+        $this->record = $record instanceof Model ? $record : null;
 
         $this->form->fill($record instanceof Model ? $record->attributesToArray() : [static::$fieldName => $initial]);
     }
