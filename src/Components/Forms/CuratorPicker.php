@@ -74,6 +74,9 @@ class CuratorPicker extends Field
 
     protected string | Closure | null $typeValue = null;
 
+    /** @var array<string, array<int, string>> */
+    protected array $persistedMediaIds = [];
+
     /** @throws Exception */
     protected function setUp(): void
     {
@@ -92,9 +95,9 @@ class CuratorPicker extends Field
                 return;
             }
 
-            // Saved values are loaded again within the field's scope, so an id it wouldn't list, such as another
-            // tenant's media, never loads, whichever way it was stored.
-            $component->state($component->toStateItems(get_media_items(is_array($state) ? $state : [$state], $component->getMediaScope())));
+            // The value is loaded again within the field's scope, so an id it wouldn't list never loads. Media already
+            // saved on the record keeps loading as long as it exists and belongs to the current tenant.
+            $component->state($component->toStateItems($component->getMediaScope()->resolve($state, $component->getPersistedMediaIds())));
         });
 
         $this->afterStateUpdated(function (CuratorPicker $component, array | int | null $state): void {
@@ -114,7 +117,7 @@ class CuratorPicker extends Field
         });
 
         $this->dehydrateStateUsing(function (CuratorPicker $component, mixed $state): int | string | array | null {
-            $ids = $component->getMediaScope()->resolve($state)
+            $ids = $component->getMediaScope()->resolve($state, $component->getPersistedMediaIds())
                 ->map(fn (Media $media): int | string => $media->getKey())
                 ->all();
 
@@ -131,7 +134,7 @@ class CuratorPicker extends Field
 
         // The field's state is held in the browser, so a selection is checked again before it is saved.
         $this->rule(static fn (CuratorPicker $component): Closure => static function (string $attribute, mixed $value, Closure $fail) use ($component): void {
-            if (! $component->getMediaScope()->contains($value)) {
+            if (! $component->getMediaScope()->contains($value, $component->getPersistedMediaIds())) {
                 $fail(trans('curator::views.picker.unavailable'));
             }
         });
@@ -154,7 +157,10 @@ class CuratorPicker extends Field
             return;
         }
 
-        $media = $this->getMediaScope()->resolve(array_filter(Arr::wrap($arguments['media'] ?? []), is_array(...)));
+        $media = $this->getMediaScope()->resolve(
+            array_filter(Arr::wrap($arguments['media'] ?? []), is_array(...)),
+            $this->getPersistedMediaIds(),
+        );
 
         if (! $this->isMultiple()) {
             $media = $media->take(1);
@@ -176,6 +182,26 @@ class CuratorPicker extends Field
             isTenantAware: $this->isTenantAware(),
             tenantOwnershipRelationshipName: $this->getTenantOwnershipRelationshipName(),
         );
+    }
+
+    /**
+     * The media ids saved on the record this form edits, read from the database rather than from the field's
+     * state, which the browser holds. A form without a saved record has none. They're read once per record and
+     * request, before anything is saved, so ids being saved now never count as already saved.
+     *
+     * @return array<int, string>
+     */
+    public function getPersistedMediaIds(): array
+    {
+        $record = $this->getRecord();
+
+        if (! $record instanceof Model || ! $record->exists) {
+            return [];
+        }
+
+        $key = $record::class . ':' . $record->getKey();
+
+        return $this->persistedMediaIds[$key] ??= MediaScope::extractIds($this->readPersistedMediaIds($record));
     }
 
     public function buttonLabel(string | Htmlable | Closure $label): static
@@ -465,15 +491,13 @@ class CuratorPicker extends Field
 
             if ($component->isMultiple()) {
                 if ($relationship instanceof MorphMany) {
-                    $relatedMediaItems = $relationship
-                        ->with('media')
+                    // Only the ids, in order: the records are loaded when the state is hydrated, within the field's
+                    // scope, which leaves out media that was deleted or belongs to another tenant.
+                    $component->state($relationship
                         ->where($component->getTypeColumn(), $component->getTypeValue())
                         ->orderBy($component->getOrderColumn())
-                        ->get();
-
-                    $relatedMedia = $relatedMediaItems->map(fn ($item) => $item->media->toArray())->toArray();
-
-                    $component->state($relatedMedia);
+                        ->pluck('media_id')
+                        ->all());
 
                     return;
                 }
@@ -501,7 +525,7 @@ class CuratorPicker extends Field
         $this->saveRelationshipsUsing(static function (CuratorPicker $component, Model $record, $state): void {
             $relationship = $component->getRelationship();
 
-            $state = filled($state) ? $component->toStateItems($component->getMediaScope()->resolve($state)) : [];
+            $state = filled($state) ? $component->toStateItems($component->getMediaScope()->resolve($state, $component->getPersistedMediaIds())) : [];
 
             if (blank($state) && ! $relationship->exists()) {
                 return;
@@ -623,9 +647,7 @@ class CuratorPicker extends Field
             return null;
         }
 
-        $record = $this->getMediaScope()->query()
-            ->whereKey($id)
-            ->first();
+        $record = $this->getMediaScope()->resolve([$id], $this->getPersistedMediaIds())->first();
 
         if (! $record instanceof Media) {
             return null;
@@ -634,6 +656,25 @@ class CuratorPicker extends Field
         $resource = App::make(MediaResource::class);
 
         return $resource::can($ability, $record) ? $record : null;
+    }
+
+    protected function readPersistedMediaIds(Model $record): mixed
+    {
+        if (! $this->hasRelationship()) {
+            return data_get($record->getOriginal(), $this->getName());
+        }
+
+        $relationship = $this->getRelationship();
+
+        return match (true) {
+            $relationship instanceof BelongsTo => $record->getRawOriginal($relationship->getForeignKeyName()),
+            $relationship instanceof BelongsToMany => $relationship->allRelatedIds()->all(),
+            $relationship instanceof MorphMany => $relationship
+                ->where($this->getTypeColumn(), $this->getTypeValue())
+                ->pluck('media_id')
+                ->all(),
+            default => null,
+        };
     }
 
     /**

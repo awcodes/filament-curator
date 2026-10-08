@@ -505,18 +505,27 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
      * The selection is entangled with the browser, so only its ids are used: each item is loaded again, within the
      * panel's scope, so the picker receives the stored disk and path rather than whatever the client sent, and
      * nothing the panel wouldn't list.
+     *
+     * Items the picker already held when the panel opened may be outside the scope, such as media saved on the
+     * record before the field's settings changed. Those are passed back by id alone, keeping their place, and the
+     * picker decides whether to keep them.
      */
     protected function dispatchInsertMedia(): void
     {
-        $selected = array_filter($this->selected, is_array(...));
+        $ids = MediaScope::extractIds(array_filter($this->selected, is_array(...)));
+        $held = MediaScope::extractIds($this->settings['selected'] ?? []);
 
-        $media = $this->getMediaScope()->resolve($selected)
+        $records = $this->getMediaScope()->resolve($ids)
+            ->keyBy(fn (Media $media): string => (string) $media->getKey());
+
+        $media = collect($ids)
+            ->map(fn (string $id): ?array => $records->get($id)?->toArray() ?? (in_array($id, $held, true) ? ['id' => $id] : null))
+            ->filter()
             ->when(! $this->isMultiple, fn ($items) => $items->take(1))
-            ->map(fn (Media $media): array => $media->toArray())
             ->values()
             ->all();
 
-        $this->selected = $media;
+        $this->selected = array_values(array_filter($media, fn (array $item): bool => count($item) > 1));
 
         $this->dispatch('insert-media', ['statePath' => $this->statePath, 'media' => $media, 'context' => $this->context]);
     }

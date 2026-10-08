@@ -88,10 +88,10 @@ A picker only works with the media its own settings allow:
 - **The current tenant**, when tenancy applies. With `tenantAware()` (or the `features.tenancy.enabled` config value), the picker filters on the tenant itself. When Curator's media resource is registered on the tenant panel, Filament's own tenant scope applies as well.
 - **Its directory**, with `limitToDirectory()`. The panel opens in the picker's `directory()` and can't leave it: the disk and the folders above aren't offered, and search, the folder list and uploads stay within it and the folders below it. Without `limitToDirectory()`, `directory()` is only where the panel opens and where uploads go.
 
-The library listing, search, folder list, insert and download in the panel all use these settings, and so does the picker itself:
+The library listing, search, folder list, insert and download in the panel all use these settings. The picker checks a selection against them too, while keeping what a record already has:
 
-- A saved value is loaded again within them, so an id the picker wouldn't list, such as another tenant's media or one on another disk, doesn't load. It's left out of the field, and saving the form removes it.
-- Media the panel sends back to the picker is looked up again, so the picker holds the stored records.
-- Saving a selection that holds media outside these settings, or media that no longer exists, fails validation on the field.
+- **New selections must match.** Media the panel sends back is looked up again, so the picker holds the stored records, and saving a selection that adds media outside these settings, or media that doesn't exist, fails validation on the field.
+- **Previously saved media is kept.** Media already saved on the record keeps loading, displaying and saving even if the field's settings have changed since, for example a PDF saved before `acceptedFileTypes()` was narrowed, media on a disk the field no longer uses, or a folder outside a later `limitToDirectory()`. Saving the form for another reason doesn't remove it, and the author can still remove it themselves. What counts as saved is read from the record in the database, never from the form's state.
+- **Tenant and existence always apply.** An id that belongs to another tenant, or whose media has been deleted, is never loaded, even if it's saved on the record.
 
-If a picker needs existing media that its settings now leave out, for example after changing its `disk()`, widen the settings or move the media; it isn't shown otherwise.
+A form without a saved record, such as a create form, has nothing saved yet, so everything in it is a new selection.

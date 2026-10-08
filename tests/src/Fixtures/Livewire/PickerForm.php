@@ -15,8 +15,8 @@ use Illuminate\Database\Eloquent\Model;
 use Livewire\Component;
 
 /**
- * A form holding one picker named `media`, configured by the test, optionally bound to a record so relationship
- * pickers can save.
+ * A form holding one picker, named `media` unless the test names it, configured by the test, optionally bound to a
+ * record so it can save to the record and its relationships.
  */
 class PickerForm extends Component implements HasActions, HasSchemas
 {
@@ -25,6 +25,8 @@ class PickerForm extends Component implements HasActions, HasSchemas
 
     /** @var (Closure(CuratorPicker): CuratorPicker)|null */
     public static ?Closure $configurePicker = null;
+
+    public static string $fieldName = 'media';
 
     public ?Model $record = null;
 
@@ -36,12 +38,12 @@ class PickerForm extends Component implements HasActions, HasSchemas
     {
         $this->record = $record;
 
-        $this->form->fill($record instanceof Model ? $record->attributesToArray() : ['media' => $initial]);
+        $this->form->fill($record instanceof Model ? $record->attributesToArray() : [static::$fieldName => $initial]);
     }
 
     public function form(Schema $schema): Schema
     {
-        $picker = CuratorPicker::make('media');
+        $picker = CuratorPicker::make(static::$fieldName);
 
         if (static::$configurePicker instanceof Closure) {
             $picker = (static::$configurePicker)($picker);
@@ -55,17 +57,19 @@ class PickerForm extends Component implements HasActions, HasSchemas
 
     public function save(): void
     {
-        $this->saved = $this->form->getState()['media'] ?? null;
+        $state = $this->form->getState();
+
+        $this->saved = $state[static::$fieldName] ?? null;
 
         if ($this->record instanceof Model) {
-            $this->record->update(collect($this->form->getState())->except('media')->all());
+            $this->record->update($state);
             $this->form->saveRelationships();
         }
     }
 
     public function getPickerKey(): string
     {
-        return $this->form->getFlatFields()['media']->getKey();
+        return $this->form->getFlatFields()[static::$fieldName]->getKey();
     }
 
     public function render(): string

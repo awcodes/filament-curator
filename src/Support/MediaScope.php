@@ -123,9 +123,14 @@ final readonly class MediaScope
      * The records for some ids, in the order the ids were given. Ids outside the scope, or without a record, are
      * left out.
      *
+     * Ids already saved on the record being edited only have to exist and belong to the current tenant: they were
+     * stored by the server, and may predate a change to the field's disk, types or directory, which shouldn't make
+     * them disappear from the record.
+     *
+     * @param  array<int, int|string>  $persistedIds
      * @return Collection<int, Media>
      */
-    public function resolve(mixed $ids): Collection
+    public function resolve(mixed $ids, array $persistedIds = []): Collection
     {
         $ids = self::extractIds($ids);
 
@@ -138,19 +143,50 @@ final readonly class MediaScope
             ->get()
             ->keyBy(fn (Model $media): string => (string) $media->getKey());
 
+        $persisted = array_values(array_diff(
+            array_intersect($ids, self::extractIds($persistedIds)),
+            array_map(strval(...), $records->keys()->all()),
+        ));
+
+        if ($persisted !== []) {
+            $records = $records->union(
+                $this->tenantQuery()
+                    ->whereKey($persisted)
+                    ->get()
+                    ->keyBy(fn (Model $media): string => (string) $media->getKey()),
+            );
+        }
+
         return new Collection(array_values(array_filter(
             array_map(fn (string $id): ?Model => $records->get($id), $ids),
         )));
     }
 
     /**
-     * Whether every id names a record within the scope.
+     * Whether every id names a record within the scope, or, for an id already saved on the record, a record of the
+     * current tenant.
+     *
+     * @param  array<int, int|string>  $persistedIds
      */
-    public function contains(mixed $ids): bool
+    public function contains(mixed $ids, array $persistedIds = []): bool
     {
         $ids = self::extractIds($ids);
 
-        return $this->resolve($ids)->count() === count($ids);
+        return $this->resolve($ids, $persistedIds)->count() === count($ids);
+    }
+
+    /**
+     * Media of the current tenant, whatever its disk, type or directory.
+     *
+     * @return Builder<Media>
+     */
+    public function tenantQuery(): Builder
+    {
+        $query = App::make(Media::class)::query();
+
+        $this->applyTenant($query);
+
+        return $query;
     }
 
     public function getDirectory(): ?string
