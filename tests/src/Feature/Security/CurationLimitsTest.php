@@ -6,8 +6,10 @@ use Awcodes\Curator\Components\Modals\CuratorCuration;
 use Awcodes\Curator\Curations\CurationPreset;
 use Awcodes\Curator\Facades\Curation;
 use Awcodes\Curator\Models\Media;
+use Awcodes\Curator\Tests\Fixtures\Policies\MediaCreateAllowedPolicy;
 use Awcodes\Curator\Tests\Fixtures\Policies\MediaManagementDeniedPolicy;
 use Awcodes\Curator\Tests\Fixtures\Policies\MediaUpdateAllowedPolicy;
+use Filament\Facades\Filament;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
@@ -111,6 +113,63 @@ test('a preset key with an oversized crop is still saved at the preset size', fu
     expect(savedSize('banner'))->toBe([160, 40]);
 });
 
+// A white 100×200 PNG with a black stripe at x 45–54, narrower than any landscape preset's shape.
+function stripeMedia(): Media
+{
+    Storage::fake('public');
+
+    $image = imagecreatetruecolor(100, 200);
+    imagefilledrectangle($image, 0, 0, 99, 199, imagecolorallocate($image, 255, 255, 255));
+    imagefilledrectangle($image, 45, 0, 54, 199, imagecolorallocate($image, 0, 0, 0));
+    ob_start();
+    imagepng($image);
+    Storage::disk('public')->put('media/limits.png', ob_get_clean());
+
+    return makeMedia(['name' => 'limits', 'directory' => 'media', 'path' => 'media/limits.png', 'ext' => 'png', 'type' => 'image/png', 'width' => 100, 'height' => 200]);
+}
+
+/**
+ * @return array{0: int, 1: int} the first dark column on the row and how many dark columns follow it
+ */
+function darkRun(string $key, int $y): array
+{
+    $image = imagecreatefromstring(Storage::disk('public')->get("media/limits/{$key}.png"));
+    $start = null;
+    $length = 0;
+
+    for ($x = 0; $x < imagesx($image); $x++) {
+        ['red' => $red] = imagecolorsforindex($image, imagecolorat($image, $x, $y));
+
+        if ($red < 128) {
+            $start ??= $x;
+            $length++;
+        }
+    }
+
+    return [$start, $length];
+}
+
+test('a preset crop that overhangs the image keeps its shape', function (int $presetWidth, int $presetHeight, array $expectedRun) {
+    Curation::presets([
+        CurationPreset::make('Wide')->width($presetWidth)->height($presetHeight)->format('png'),
+    ]);
+
+    // The cropper centres a 190×100 box over the container, so it reaches 45px past each side of the image.
+    limitsComponent(stripeMedia())
+        ->call('saveCuration', limitsPayload(['key' => 'wide', 'x' => -45, 'y' => 50, 'width' => 190, 'height' => 100]))
+        ->assertHasNoErrors();
+
+    [$start, $length] = darkRun('wide', intdiv($presetHeight, 2));
+
+    // Resampling softens the stripe's edges by a pixel when it's scaled; a stretched stripe would be ~1.9× wider.
+    expect(savedSize('wide'))->toBe([$presetWidth, $presetHeight])
+        ->and($start)->toBeGreaterThanOrEqual($expectedRun[0] - 1)->toBeLessThanOrEqual($expectedRun[0] + 1)
+        ->and($length)->toBeGreaterThanOrEqual($expectedRun[1] - 1)->toBeLessThanOrEqual($expectedRun[1] + 1);
+})->with([
+    'at the box size' => [190, 100, [90, 10]],
+    'scaled down by half' => [95, 50, [45, 5]],
+]);
+
 test('a custom curation is scaled down to the configured maximum dimension', function () {
     config(['curator.curation_max_dimension' => 50]);
 
@@ -145,6 +204,28 @@ test('a user the policy forbids from updating the media cannot save a curation',
         ->assertNotDispatched('add-curation');
 
     expect(Storage::disk('public')->exists('media/limits/custom-crop.png'))->toBeFalse();
+});
+
+test('strict authorization without an update policy method refuses the save', function () {
+    Filament::getCurrentOrDefaultPanel()->strictAuthorization();
+    Gate::policy(Media::class, MediaCreateAllowedPolicy::class);
+    $this->actingAs(User::factory()->create());
+
+    limitsComponent()
+        ->call('saveCuration', limitsPayload())
+        ->assertForbidden();
+
+    expect(Storage::disk('public')->exists('media/limits/custom-crop.png'))->toBeFalse();
+});
+
+test('a policy without an update method allows the save outside strict mode, as Filament does', function () {
+    Gate::policy(Media::class, MediaCreateAllowedPolicy::class);
+    $this->actingAs(User::factory()->create());
+
+    limitsComponent()
+        ->call('saveCuration', limitsPayload())
+        ->assertHasNoErrors()
+        ->assertDispatched('add-curation');
 });
 
 test('a user the policy allows to update the media can save a curation', function () {

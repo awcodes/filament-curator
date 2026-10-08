@@ -39,9 +39,14 @@ Choosing a preset in the modal locks the crop to the preset's shape, and the cur
 
 ### Size limits
 
-Saving a curation needs the `update` ability on the media, the same as editing it. With no policy registered for the media model, anyone who can reach the edit page can save one.
+Saving a curation needs the `update` ability on the media, the same as editing it. With no policy registered for the media model, or a policy without an `update()` method, anyone who can reach the edit page can save one, as elsewhere in Filament. In Filament's strict authorization mode, a missing policy or `update()` method refuses the save instead.
 
-The crop box is trimmed to the image, after any flip and rotation, so the part of a crop that hangs over the image's edge is dropped rather than padded. A crop that misses the image entirely is rejected. Because of that, a custom curation is never larger than its source image.
+A crop box can hang over the image's edge, and the two kinds of curation treat that differently:
+
+- **A preset** keeps its shape. The part of the image inside the box is scaled to the preset and the overhang is padded white, so the curation is always exactly the preset's size and nothing is stretched.
+- **A custom curation** is trimmed to the image, so the overhang is dropped. A custom curation is never larger than its source image.
+
+A crop that misses the image entirely is rejected either way.
 
 A custom curation is also capped by the `curation_max_dimension` config key, `8192` pixels by default. A crop whose longer side is bigger than that is scaled down to fit, keeping its shape. Set the key to `null` or `0` to turn the cap off. It doesn't apply to presets, which are always saved at the width and height they're registered with.
 

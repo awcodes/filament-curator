@@ -19,6 +19,7 @@ use Illuminate\Validation\ValidationException;
 use Intervention\Image\Interfaces\ImageInterface;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
+use LogicException;
 
 class CuratorCuration extends Component
 {
@@ -69,12 +70,19 @@ class CuratorCuration extends Component
 
         $box = $this->clampCropBox($data, $image);
 
-        [$aspectWidth, $aspectHeight] = $this->getOutputSize($data, $box);
+        $preset = $this->findPreset($data['key']);
 
-        $encodedImage = $image
-            ->crop($box['width'], $box['height'], $box['x'], $box['y'])
-            ->resize($aspectWidth, $aspectHeight)
-            ->encodeByExtension(extension: $extension, quality: $data['quality'] ?? 60);
+        [$aspectWidth, $aspectHeight] = $this->getOutputSize($preset, $box);
+
+        $image->crop($box['width'], $box['height'], $box['x'], $box['y']);
+
+        if ($preset instanceof CurationPreset) {
+            $this->fitToPreset($image, $data, $box, $aspectWidth, $aspectHeight);
+        } else {
+            $image->resize($aspectWidth, $aspectHeight);
+        }
+
+        $encodedImage = $image->encodeByExtension(extension: $extension, quality: $data['quality'] ?? 60);
 
         // save image to directory base on media
         $curationPath = $this->media->directory . '/' . $this->media->name . '/' . $data['key'] . '.' . $extension;
@@ -115,7 +123,14 @@ class CuratorCuration extends Component
     {
         $resource = App::make(MediaResource::class);
 
-        abort_unless($resource::can('update', $this->media), 403);
+        try {
+            $allowed = $resource::can('update', $this->media);
+        } catch (LogicException) {
+            // Filament's strict authorization mode throws when no policy defines `update`; treat that as a denial.
+            $allowed = false;
+        }
+
+        abort_unless($allowed, 403);
     }
 
     /**
@@ -144,6 +159,11 @@ class CuratorCuration extends Component
         return ['x' => $left, 'y' => $top, 'width' => $right - $left, 'height' => $bottom - $top];
     }
 
+    protected function findPreset(string $key): ?CurationPreset
+    {
+        return collect(Curation::getPresets())->first(fn (CurationPreset $preset): bool => $preset->getKey() === $key);
+    }
+
     /**
      * A registered preset is rendered at its own size. Anything else keeps the crop's size in the original image's
      * pixels, so the result doesn't depend on how large the cropper was on screen, scaled down to fit
@@ -152,10 +172,8 @@ class CuratorCuration extends Component
      * @param  array{x: int, y: int, width: int, height: int}  $box
      * @return array{0: int, 1: int}
      */
-    protected function getOutputSize(array $data, array $box): array
+    protected function getOutputSize(?CurationPreset $preset, array $box): array
     {
-        $preset = collect(Curation::getPresets())->first(fn (CurationPreset $preset): bool => $preset->getKey() === $data['key']);
-
         if ($preset instanceof CurationPreset) {
             return [$preset->getWidth(), $preset->getHeight()];
         }
@@ -171,6 +189,33 @@ class CuratorCuration extends Component
         }
 
         return [$width, $height];
+    }
+
+    /**
+     * The cropper lets a preset's box overhang a narrow or short image. The box
+     * still maps onto the whole preset, so the trimmed part is scaled by the
+     * box's own factor and set at its offset on a preset-sized canvas, with the
+     * overhang padded white as Intervention pads it. Scaling it to fill the
+     * preset instead would stretch it.
+     *
+     * @param  array{x: int, y: int, width: int, height: int}  $box
+     */
+    protected function fitToPreset(ImageInterface $image, array $data, array $box, int $width, int $height): void
+    {
+        $scaleX = $width / (float) $data['width'];
+        $scaleY = $height / (float) $data['height'];
+
+        $offsetX = min($width - 1, max(0, (int) round(($box['x'] - (float) $data['x']) * $scaleX)));
+        $offsetY = min($height - 1, max(0, (int) round(($box['y'] - (float) $data['y']) * $scaleY)));
+
+        $partWidth = max(1, min($width - $offsetX, (int) round($box['width'] * $scaleX)));
+        $partHeight = max(1, min($height - $offsetY, (int) round($box['height'] * $scaleY)));
+
+        $image->resize($partWidth, $partHeight);
+
+        if ($partWidth !== $width || $partHeight !== $height) {
+            $image->crop($width, $height, -$offsetX, -$offsetY);
+        }
     }
 
     /**
