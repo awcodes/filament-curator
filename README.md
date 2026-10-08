@@ -175,7 +175,7 @@ A picker's media panel lists, searches and inserts only media that matches the f
 - in its `directory()` when it uses `limitToDirectory()`;
 - belonging to the current tenant when `tenantAware()` applies.
 
-The field loads, validates and saves its value through the same rules, so media outside them can't be selected from the browser either; a selection that includes it fails validation. Media already saved on the record being edited keeps loading and saving even if the field's settings have changed since, as long as it still exists and belongs to the current tenant. For a picker inside a repeater or builder that stores its items in a JSON column, only media saved at the picker's own place in that column counts; a picker inside a simple repeater doesn't count anything as already saved.
+The field loads, validates and saves its value through the same rules, so media outside them can't be selected from the browser either; a selection that includes it fails validation. Media already saved on the record being edited keeps loading and saving even if the field's settings have changed since, as long as it still exists and belongs to the current tenant. For a picker inside a repeater or builder that stores its items in a JSON column, only media saved at the picker's own place in that column counts. A picker inside a simple repeater, or inside a block or other component whose visibility depends on a condition (`visible()`, `hidden()`, `visibleOn()` and the like), doesn't count anything as already saved, because Filament's builder stores a hidden block's items as they were sent, without its fields' checks.
 
 ### Relationships
 

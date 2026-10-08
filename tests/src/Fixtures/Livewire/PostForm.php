@@ -11,11 +11,14 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Livewire\Component;
 
 class PostForm extends Component implements HasForms
 {
     use InteractsWithForms;
+
+    public static bool $isAdmin = true;
 
     public Post $post;
 
@@ -48,6 +51,16 @@ class PostForm extends Component implements HasForms
                         Builder\Block::make('text')->schema([
                             TextInput::make('body'),
                         ]),
+                        Builder\Block::make('admin')
+                            ->visible(fn (): bool => static::$isAdmin)
+                            ->schema([
+                                CuratorPicker::make('image')->acceptedFileTypes(['image/*']),
+                            ]),
+                        Builder\Block::make('gated')
+                            ->visible(fn (Get $get): bool => filled($get('../title')))
+                            ->schema([
+                                CuratorPicker::make('image')->acceptedFileTypes(['image/*']),
+                            ]),
                     ]),
                 Group::make([
                     CuratorPicker::make('cover')->acceptedFileTypes(['image/*']),

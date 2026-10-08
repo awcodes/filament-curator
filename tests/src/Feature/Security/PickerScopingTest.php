@@ -37,6 +37,8 @@ function pickerItem(Media $media): array
 }
 
 beforeEach(function () {
+    PostForm::$isAdmin = true;
+
     Storage::fake('public');
     Storage::fake('local');
 
@@ -197,6 +199,40 @@ test('ids saved in another block type do not count', function () {
 
     $component->set("data.content.{$key}.data.image", pickerItem($this->pdf))
         ->assertSet("data.content.{$key}.data.image", []);
+});
+
+test('an item of a block hidden from some users does not count as saved', function () {
+    // Saved while the block was hidden, so the builder stored the item as sent, without the picker's checks.
+    $post = Post::create(['content' => [['type' => 'admin', 'data' => ['image' => $this->pdf->id]]]]);
+
+    PostForm::$isAdmin = true;
+
+    $component = Livewire::test(PostForm::class, ['post' => $post]);
+    $key = array_key_first($component->get('data.content'));
+
+    expect($component->get("data.content.{$key}.data.image"))->toBe([]);
+});
+
+test('an item of a block shown on another field\'s value does not count as saved', function () {
+    $post = Post::create(['title' => 'shown', 'content' => [['type' => 'gated', 'data' => ['image' => $this->pdf->id]]]]);
+
+    $component = Livewire::test(PostForm::class, ['post' => $post]);
+    $key = array_key_first($component->get('data.content'));
+
+    expect($component->get("data.content.{$key}.data.image"))->toBe([]);
+});
+
+test('a block hidden from the current user is saved as sent', function () {
+    // The reason for the rule above: Filament's builder skips a hidden block's fields when it saves.
+    PostForm::$isAdmin = false;
+
+    $post = Post::create();
+
+    Livewire::test(PostForm::class, ['post' => $post])
+        ->set('data.content', ['item' => ['type' => 'admin', 'data' => ['image' => $this->pdf->id]]])
+        ->call('save');
+
+    expect($post->fresh()->content[0]['data']['image'])->toBe($this->pdf->id);
 });
 
 test('a picker in a group with its own state path keeps media saved in its place', function () {

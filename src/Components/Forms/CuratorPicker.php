@@ -767,6 +767,12 @@ class CuratorPicker extends Field
                 return null;
             }
 
+            // A builder saves the items of a block hidden from the current user as they were sent, without its
+            // fields' validation, so a value under a conditionally shown component may not have come from a picker.
+            if ($this->hasVisibilityCondition($component)) {
+                return null;
+            }
+
             $containerPath = $container->getStatePath(isAbsolute: false);
 
             if ($component instanceof Repeater) {
@@ -790,6 +796,10 @@ class CuratorPicker extends Field
 
                 array_unshift($pattern, ['type' => $component->getName()], 'data');
                 $component = $builder;
+
+                if ($this->hasVisibilityCondition($component)) {
+                    return null;
+                }
             } elseif (filled($containerPath)) {
                 return null;
             }
@@ -812,6 +822,15 @@ class CuratorPicker extends Field
 
             $container = $component->getContainer();
         }
+    }
+
+    /**
+     * Whether a component's visibility can change, read without evaluating it: anything other than the default
+     * of always shown, including `visibleOn()`, `hiddenOn()` and conditions on other fields' state.
+     */
+    protected function hasVisibilityCondition(Component $component): bool
+    {
+        return $component->isHidden !== false || $component->isVisible !== true;
     }
 
     /**
