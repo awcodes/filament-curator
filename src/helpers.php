@@ -7,7 +7,9 @@ use Awcodes\Curator\Config\CuratorManager;
 use Awcodes\Curator\Config\GlideManager;
 use Awcodes\Curator\Glide\GlideBuilder;
 use Awcodes\Curator\Models\Media;
+use Awcodes\Curator\Support\MediaScope;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Arr;
 
 if (! function_exists('curator')) {
     function curator(): CuratorManager
@@ -45,13 +47,21 @@ if (! function_exists('is_media_resizable')) {
 }
 
 if (! function_exists('get_media_items')) {
-    function get_media_items(array | Media | int $ids): Collection | array
+    /**
+     * Load media for some ids, in their order. With a scope, the ids are always looked up again within it, even when
+     * full records or their arrays are passed, so an id the scope doesn't allow never loads.
+     */
+    function get_media_items(array | Media | int | string $ids, ?MediaScope $scope = null): Collection | array
     {
+        if ($scope instanceof MediaScope) {
+            return $scope->resolve($ids);
+        }
+
         if ($ids instanceof Media) {
             return [$ids];
         }
 
-        $ids = array_values($ids);
+        $ids = array_values(Arr::wrap($ids));
 
         if (isset($ids[0]['id'])) {
             return $ids;
@@ -60,7 +70,7 @@ if (! function_exists('get_media_items')) {
         if (filled($ids)) {
             return app(Media::class)::whereIn('id', $ids)
                 ->get()
-                ->sortBy(fn ($model): int | string | false => array_search($model->id, $ids));
+                ->sortBy(fn ($model): int | false => array_search($model->id, $ids));
         }
 
         return [];

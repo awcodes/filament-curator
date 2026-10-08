@@ -8,6 +8,7 @@ use Awcodes\Curator\Concerns\CanGeneratePaths;
 use Awcodes\Curator\Concerns\CanUploadFiles;
 use Awcodes\Curator\Models\Media;
 use Awcodes\Curator\Resources\Media\MediaResource;
+use Awcodes\Curator\Support\MediaScope;
 use Closure;
 use Exception;
 use Filament\Actions\Action;
@@ -22,7 +23,6 @@ use Filament\Support\Enums\Width;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Contracts\View\View;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -91,24 +91,9 @@ class CuratorPicker extends Field
                 return;
             }
 
-            $items = [];
-
-            $state = is_array($state) ? array_values($state) : $state;
-
-            if (is_array($state) && isset($state[0]['id'])) {
-                $media = $state;
-            } elseif (isset($state['id'])) {
-                $media = [$state];
-            } else {
-                $state = Arr::wrap($state);
-                $media = get_media_items($state)->toArray();
-            }
-
-            foreach ($media as $itemData) {
-                $items[(string) Str::uuid()] = $itemData;
-            }
-
-            $component->state($items);
+            // Saved values are loaded again within the field's scope, so an id it wouldn't list, such as another
+            // tenant's media, never loads, whichever way it was stored.
+            $component->state($component->toStateItems(get_media_items(is_array($state) ? $state : [$state], $component->getMediaScope())));
         });
 
         $this->afterStateUpdated(function (CuratorPicker $component, array | int | null $state): void {
@@ -127,18 +112,27 @@ class CuratorPicker extends Field
             $component->state($items);
         });
 
-        $this->dehydrateStateUsing(function (CuratorPicker $component, $state) {
-            if (! filled($state)) {
+        $this->dehydrateStateUsing(function (CuratorPicker $component, mixed $state): int | string | array | null {
+            $ids = $component->getMediaScope()->resolve($state)
+                ->map(fn (Media $media): int | string => $media->getKey())
+                ->all();
+
+            if ($ids === []) {
                 return null;
             }
 
-            $state = collect($state)->pluck('id')->toArray();
-
-            if (count($state) === 1 && is_array($state) && ! $component->isMultiple()) {
-                return $state[0];
+            if (count($ids) === 1 && ! $component->isMultiple()) {
+                return $ids[0];
             }
 
-            return $state;
+            return $ids;
+        });
+
+        // The field's state is held in the browser, so a selection is checked again before it is saved.
+        $this->rule(static fn (CuratorPicker $component): Closure => static function (string $attribute, mixed $value, Closure $fail) use ($component): void {
+            if (! $component->getMediaScope()->contains($value)) {
+                $fail(trans('curator::views.picker.unavailable'));
+            }
         });
 
         $this->registerActions([
@@ -155,19 +149,32 @@ class CuratorPicker extends Field
     #[ExposedLivewireMethod]
     public function updateState(array $arguments): void
     {
-        if ($this->getStatePath() !== $arguments['statePath']) {
+        if ($this->getStatePath() !== ($arguments['statePath'] ?? null)) {
             return;
         }
 
-        $items = [];
+        $media = $this->getMediaScope()->resolve(array_filter(Arr::wrap($arguments['media'] ?? []), is_array(...)));
 
-        $state = array_values($arguments['media']);
-
-        foreach ($state as $itemData) {
-            $items[(string) Str::uuid()] = $itemData;
+        if (! $this->isMultiple()) {
+            $media = $media->take(1);
         }
 
-        $this->state($items);
+        $this->state($this->toStateItems($media));
+    }
+
+    /**
+     * The media this field may list, select and keep: its disk, accepted types and tenant, and its directory when
+     * it's limited to one.
+     */
+    public function getMediaScope(): MediaScope
+    {
+        return new MediaScope(
+            disk: $this->getDiskName(),
+            acceptedFileTypes: $this->getAcceptedFileTypes(),
+            directory: $this->isLimitedToDirectory() ? $this->getDirectory() : null,
+            isTenantAware: $this->isTenantAware(),
+            tenantOwnershipRelationshipName: $this->getTenantOwnershipRelationshipName(),
+        );
     }
 
     public function buttonLabel(string | Htmlable | Closure $label): static
@@ -497,6 +504,8 @@ class CuratorPicker extends Field
         $this->saveRelationshipsUsing(static function (CuratorPicker $component, Model $record, $state): void {
             $relationship = $component->getRelationship();
 
+            $state = filled($state) ? $component->toStateItems($component->getMediaScope()->resolve($state)) : [];
+
             if (blank($state) && ! $relationship->exists()) {
                 return;
             }
@@ -602,8 +611,8 @@ class CuratorPicker extends Field
 
     /**
      * The field state, including each item's disk and path, comes from the client,
-     * so only the item's id is used. The record is reloaded with the same tenant
-     * scoping as the panel's queries and checked against the Media policy.
+     * so only the item's id is used. The record is reloaded within the field's
+     * scope, as the panel's queries are, and checked against the Media policy.
      */
     protected function resolveAuthorizedMedia(mixed $uuid, string $ability): ?Media
     {
@@ -619,8 +628,7 @@ class CuratorPicker extends Field
             return null;
         }
 
-        $record = App::make(Media::class)::query()
-            ->when(filament()->hasTenancy() && $this->isTenantAware(), fn (Builder $query) => $query->where($this->getTenantOwnershipRelationshipName() . '_id', filament()->getTenant()->getKey()))
+        $record = $this->getMediaScope()->query()
             ->whereKey($id)
             ->first();
 
@@ -632,4 +640,20 @@ class CuratorPicker extends Field
 
         return $resource::can($ability, $record) ? $record : null;
     }
+
+    /**
+     * @param  iterable<Media>  $media
+     * @return array<string, array<string, mixed>>
+     */
+    protected function toStateItems(iterable $media): array
+    {
+        $items = [];
+
+        foreach ($media as $item) {
+            $items[(string) Str::uuid()] = $item->toArray();
+        }
+
+        return $items;
+    }
+
 }
