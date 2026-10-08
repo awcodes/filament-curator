@@ -48,7 +48,7 @@ The trigger opens Curator's library in a full-screen modal, where an author pick
 | `relationship()` | Bind to a relationship — see [Relationships](relationships.md). |
 | `orderColumn()` | Rename the order column used by multiple relationships. Defaults to `order`. |
 | `pathGenerator()` | Where uploads are written — see [Path generation](../storage/paths.md). |
-| `limitToDirectory()` | Restrict the picker to its own directory. Requires the `directory_restriction` feature. |
+| `limitToDirectory()` | Restrict the picker to its `directory()` and the folders below it — see [What a picker lists](#what-a-picker-lists). Without it, the `features.directory_restriction` config value decides, which is off by default. |
 | `tenantAware()` | Scope to the current tenant. Without it, the `features.tenancy.enabled` config value decides, which is off by default. |
 
 Uploads also accept the familiar Filament methods — `preserveFilenames()`, `minSize()`, `maxSize()`, `rules()`, `acceptedFileTypes()`, `disk()`, `visibility()`, `directory()`, `imageCropAspectRatio()`, `imageResizeMode()`, `imageResizeTargetWidth()` and `imageResizeTargetHeight()`. See Filament's [file upload documentation](https://filamentphp.com/docs/5.x/forms/file-upload) for what each does.
@@ -78,3 +78,22 @@ The media panel takes these settings from the picker when it opens, and they can
 
 > [!NOTE]
 > `acceptedFileTypes()` defaults to Curator's own safe list rather than allowing everything — see [Accepted file types](../file-types.md).
+
+## What a picker lists
+
+A picker only works with the media its own settings allow:
+
+- **Its disk.** Media stored on another disk isn't listed, even when it has the same directory.
+- **The types it accepts.** `acceptedFileTypes()` applies to the library as well as to uploads, and in the same way: `image/*` matches any image, SVG included, but a wildcard never matches a type that can run script, such as `text/html` under `text/*`. List a type exactly to include it.
+- **The current tenant**, when tenancy applies. With `tenantAware()` (or the `features.tenancy.enabled` config value), the picker filters on the tenant itself. When Curator's media resource is registered on the tenant panel, Filament's own tenant scope applies as well.
+- **Its directory**, with `limitToDirectory()`. The panel opens in the picker's `directory()` and can't leave it: the disk and the folders above aren't offered, and search, the folder list and uploads stay within it and the folders below it. Without `limitToDirectory()`, `directory()` is only where the panel opens and where uploads go.
+
+  Slashes around the directory are ignored, so `directory('uploads/')` is `uploads`. Directory names are case-sensitive: a picker limited to `uploads` doesn't list `Uploads` or `UPLOADS/2024`. (On SQL Server, the match follows the column's collation.) A picker limited to its directory whose `directory()` is empty, for example from a closure that returns `null`, lists nothing and takes no uploads, rather than falling back to the whole disk. To let a picker use the whole disk, don't limit it.
+
+The library listing, search, folder list, insert and download in the panel all use these settings. The picker checks a selection against them too, while keeping what a record already has:
+
+- **New selections must match.** Media the panel sends back is looked up again, so the picker holds the stored records, and saving a selection that adds media outside these settings, or media that doesn't exist, fails validation on the field.
+- **Previously saved media is kept.** Media already saved on the record keeps loading, displaying and saving even if the field's settings have changed since, for example a PDF saved before `acceptedFileTypes()` was narrowed, media on a disk the field no longer uses, or a folder outside a later `limitToDirectory()`. Saving the form for another reason doesn't remove it, and the author can still remove it themselves. What counts as saved is read from the record in the database, never from the form's state: the column or relationship the field saves to, or, for a picker inside a repeater, builder or group that stores its state in a JSON column, the values at exactly the picker's place in that column: its key in each repeater item, or in each builder item of the picker's own block. Values stored anywhere else in the column, or in a column of the same name elsewhere on the record, don't count. Where the picker's place can't be told for certain, such as inside a simple repeater or a custom component with its own state path, nothing counts as saved, and previously saved media outside the field's settings is left out. The same applies to a picker inside a block, repeater, group or other component that isn't always visible, one with a `visible()` or `hidden()` condition such as `visibleOn()` or `whenTruthy()`: a builder saves the items of a block hidden from the current user without checking them, so what such a column holds can't be trusted. Pickers that share a state path, such as two pickers of the same name in one repeater item shown under different conditions, share what counts as saved. In an action's modal, only an edit action's fields count as filled from the record.
+- **Tenant and existence always apply.** An id that belongs to another tenant, or whose media has been deleted, is never loaded, even if it's saved on the record.
+
+A form without a saved record, such as a create form, has nothing saved yet, so everything in it is a new selection.

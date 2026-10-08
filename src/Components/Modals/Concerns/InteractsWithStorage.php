@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Awcodes\Curator\Components\Modals\Concerns;
 
-use Awcodes\Curator\Models\Media;
+use Awcodes\Curator\Support\MediaScope;
 use Illuminate\Contracts\Container\BindingResolutionException;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Locked;
 
@@ -18,16 +17,21 @@ trait InteractsWithStorage
     #[Locked]
     public ?array $subDirectories = null;
 
+    abstract public function getMediaScope(): MediaScope;
+
     /**
      * @throws BindingResolutionException
      */
     public function getDirectories(): void
     {
-        $directories = App::make(Media::class)::query()->select('directory')
-            ->whereNotNull('directory')
-            ->distinct()
-            ->get()
-            ->pluck('directory')
+        $scope = $this->getMediaScope();
+
+        $directories = collect($scope->directories())
+            // A directory stored with a trailing slash is the same folder as one without, as navigation treats it.
+            ->map(MediaScope::normalizeDirectory(...))
+            ->filter()
+            ->unique()
+            ->values()
             ->toArray();
 
         $this->directories = collect($directories)
@@ -69,6 +73,30 @@ trait InteractsWithStorage
                 }
             }
         } while ($addedNew);
+
+        if (! $scope->isLimitedToDirectory()) {
+            return;
+        }
+
+        // A limited panel shows nothing above its directory: the folders that only lead to it are dropped, and the
+        // directory itself is the top of the tree, even when it holds no media yet.
+        $this->directories = array_filter(
+            $this->directories,
+            fn (array $directory): bool => $scope->allowsDirectory($directory['path']),
+        );
+
+        $limit = $scope->getDirectory();
+
+        if ($limit === null) {
+            return;
+        }
+
+        $this->directories[$limit] ??= [
+            'label' => Str::of($limit)->afterLast('/')->replace('-', ' ')->title()->toString(),
+            'name' => Str::of($limit)->afterLast('/')->toString(),
+            'path' => $limit,
+            'parent_path' => Str::contains($limit, '/') ? Str::of($limit)->beforeLast('/')->toString() : '',
+        ];
     }
 
     public function getSubDirectories(): void
@@ -81,17 +109,20 @@ trait InteractsWithStorage
     public function handleDirectoryChange(string $directory): void
     {
         // Uploads are stored in the directory being browsed, so the client may only move between the disk root,
-        // the configured directory and directories that already hold media, never name a new one.
+        // the configured directory and directories that already hold media the panel lists, never name a new one,
+        // and never leave the directory the panel is limited to.
         $isKnownDirectory = $directory === $this->diskName
-            || $directory === ($this->settings['directory'] ?? null)
+            || MediaScope::normalizeDirectory($directory) === MediaScope::normalizeDirectory($this->settings['directory'] ?? null)
             || array_key_exists($directory, $this->directories ?? []);
 
-        if (! $isKnownDirectory) {
+        $target = $directory === $this->diskName ? null : MediaScope::normalizeDirectory($directory);
+
+        if (! $isKnownDirectory || ! $this->getMediaScope()->allowsDirectory($target)) {
             return;
         }
 
         $this->breadcrumbs = null;
-        $this->directory = $directory === $this->diskName ? null : $directory;
+        $this->directory = $target;
         $this->files = $this->getFiles();
     }
 }

@@ -342,6 +342,17 @@ enum MimeType: string
     }
 
     /**
+     * The types isScriptable() names explicitly, for matching stored types in
+     * a query. Any other `+xml` type apart from SVG is scriptable as well.
+     *
+     * @return array<int, string>
+     */
+    public static function scriptableTypes(): array
+    {
+        return array_values(array_unique([...self::restricted(), ...self::SCRIPTABLE_TYPES]));
+    }
+
+    /**
      * Whether a browser may run script in content of this type, or a server
      * may run it as code. Includes every restricted type and any other XML
      * document type, apart from SVG, which Curator sanitizes.
