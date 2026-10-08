@@ -314,3 +314,35 @@ test('an upload is read once to detect its type', function () {
     expect(Media::query()->sole()->type)->toBe('application/pdf')
         ->and($temporary->streamsRead)->toBe(2);
 });
+
+test('a csv detected as plain text is accepted by a field that accepts only csv', function () {
+    $content = "name\nalice\n";
+
+    expect((new finfo(FILEINFO_MIME_TYPE))->buffer($content))->toBe('text/plain');
+
+    uploadStorageSafetyDisk('public');
+    Curator::acceptedFileTypes(['text/csv']);
+
+    Livewire::test(CreateMedia::class)
+        ->set('data.file', uploadStorageSafetyUpload('names.csv', $content))
+        ->call('create')
+        ->assertHasNoFormErrors();
+
+    $media = Media::query()->sole();
+
+    expect($media->type)->toBe('text/csv')
+        ->and($media->ext)->toBe('csv');
+});
+
+test('plain text takes the type of a plain-data extension only', function (string $type, string $extension, string $expected) {
+    expect(MimeType::refineDetectedType($type, $extension, fn (): string => throw new LogicException('read the file')))
+        ->toBe($expected);
+})->with([
+    'csv' => ['text/plain', 'csv', 'text/csv'],
+    'uppercase csv' => ['text/plain', 'CSV', 'text/csv'],
+    'ics' => ['text/plain', 'ics', 'text/calendar'],
+    'markdown stays plain text' => ['text/plain', 'md', 'text/plain'],
+    'html stays plain text' => ['text/plain', 'html', 'text/plain'],
+    'js stays plain text' => ['text/plain', 'js', 'text/plain'],
+    'only plain text is refined' => ['text/html', 'csv', 'text/html'],
+]);

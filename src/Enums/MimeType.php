@@ -135,6 +135,17 @@ enum MimeType: string
     ];
 
     /**
+     * Plain-data text formats libmagic may report only as text/plain, with
+     * the type each extension stands for. Limited to types in the default
+     * accepted list, so refining never turns an accepted upload into a
+     * rejected one, and to formats a browser never runs as script.
+     */
+    private const PLAIN_TEXT_EXTENSIONS = [
+        'csv' => 'text/csv',
+        'ics' => 'text/calendar',
+    ];
+
+    /**
      * Types outside the restricted list that still render as a scriptable
      * document or run as code, accepted only when listed exactly.
      */
@@ -360,6 +371,11 @@ enum MimeType: string
      *   is an SVG namespace `<svg>`, so an HTML document never qualifies.
      * - Office and OpenDocument files are zip archives, and are reported as
      *   application/zip unless the archive's first entry identifies them.
+     * - CSV and iCalendar files are plain text, and whether libmagic names
+     *   the format or reports text/plain depends on its version and on the
+     *   content. A text/plain file with one of those extensions takes that
+     *   format's type, so a field that accepts only `text/csv` accepts CSV
+     *   files on every platform.
      * - Legacy Office files (.doc, .xls, .ppt and their templates) are OLE
      *   compound files. libmagic names the application only when the part of
      *   the file that identifies it falls within the sample, and otherwise
@@ -380,6 +396,10 @@ enum MimeType: string
             && self::isSvgDocument($contents())
         ) {
             return self::ImageSvgXml->value;
+        }
+
+        if ($type === self::TextPlain->value && array_key_exists($extension, self::PLAIN_TEXT_EXTENSIONS)) {
+            return self::PLAIN_TEXT_EXTENSIONS[$extension];
         }
 
         if (
