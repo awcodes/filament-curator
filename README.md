@@ -390,6 +390,14 @@ public function register(): void
 }
 ```
 
+#### Curation Limits
+
+Saving a curation needs the `update` ability on the media, the same as editing it. With no policy registered for the media model, or a policy without an `update()` method, anyone who can reach the edit page can save one, as elsewhere in Filament. In Filament's strict authorization mode, a missing policy or `update()` method refuses the save instead.
+
+A curation is saved at the size the crop is shown at in the cropper. A crop box can hang over the image's edge: the part of the image inside the box keeps its place and the overhang is padded, so nothing is stretched. A crop that misses the image entirely is rejected.
+
+The size is capped by the `curation_max_dimension` config key, `8192` pixels by default. A curation whose longer side is bigger than that is scaled down to fit, keeping its shape. Set the key to `null` or `0` to turn the cap off. If you published the config before this option existed, add it there to change it.
+
 ### Glider Blade Component
 
 To make it as easy as possible to output your media, Curator comes with an
