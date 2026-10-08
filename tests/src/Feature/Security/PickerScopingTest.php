@@ -3,17 +3,26 @@
 declare(strict_types=1);
 
 use Awcodes\Curator\Components\Forms\CuratorPicker;
+use Awcodes\Curator\Components\Forms\RichEditor\AttachCuratorMediaPlugin;
 use Awcodes\Curator\Components\Modals\CuratorPanel;
 use Awcodes\Curator\Enums\MimeType;
+use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Models\Media;
 use Awcodes\Curator\Support\MediaScope;
 use Awcodes\Curator\Tests\Fixtures\Livewire\PickerForm;
+use Awcodes\Curator\Tests\Fixtures\Models\JsonPost;
 use Awcodes\Curator\Tests\Fixtures\Models\UuidMedia;
 use Filament\Facades\Filament;
+use Filament\Forms\Components\Builder as FormBuilder;
+use Filament\Forms\Components\Builder\Block;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\RichEditor;
+use Filament\Schemas\Components\Group;
 use Filament\Schemas\Schema as FilamentSchema;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -42,6 +51,7 @@ beforeEach(function () {
 
     PickerForm::$configurePicker = null;
     PickerForm::$fieldName = 'media';
+    PickerForm::$wrapPicker = null;
 });
 
 afterEach(function () {
@@ -900,3 +910,269 @@ function pickerStateIdsAt(Testable $form, string $field): array
 {
     return collect($form->get("data.{$field}"))->pluck('id')->map(fn (mixed $id): string => (string) $id)->values()->all();
 }
+
+/**
+ * Wraps an `image_id` picker the way a JSON column holds it, with the content the column stores for one image.
+ *
+ * @return array{0: Closure, 1: Closure(int|string|null): array}
+ */
+function nestedPicker(string $layout): array
+{
+    return match ($layout) {
+        'repeater' => [
+            fn (CuratorPicker $picker): array => [Repeater::make('content')->schema([$picker])],
+            fn (int | string | null $id): array => [['image_id' => $id]],
+        ],
+        'builder' => [
+            fn (CuratorPicker $picker): array => [FormBuilder::make('content')->blocks([Block::make('image')->schema([$picker])])],
+            fn (int | string | null $id): array => [['type' => 'image', 'data' => ['image_id' => $id]]],
+        ],
+        'group' => [
+            fn (CuratorPicker $picker): array => [Group::make([$picker])->statePath('content')],
+            fn (int | string | null $id): array => ['image_id' => $id],
+        ],
+    };
+}
+
+/**
+ * @return array<int, string>
+ */
+function contentImageIds(JsonPost $post, string $key = 'image_id'): array
+{
+    $ids = [];
+
+    $content = (array) $post->refresh()->content;
+
+    array_walk_recursive($content, function (mixed $value, int | string $itemKey) use (&$ids, $key): void {
+        if ((string) $itemKey === $key && filled($value)) {
+            $ids[] = (string) $value;
+        }
+    });
+
+    return $ids;
+}
+
+/**
+ * The state path of the nested picker named $field in a form's state.
+ */
+function nestedPickerPath(Testable $form, string $field): string
+{
+    $paths = [];
+
+    $walk = function (mixed $state, string $path) use (&$walk, &$paths, $field): void {
+        if (! is_array($state)) {
+            return;
+        }
+
+        foreach ($state as $key => $value) {
+            if ((string) $key === $field) {
+                $paths[] = "{$path}.{$key}";
+
+                continue;
+            }
+
+            $walk($value, "{$path}.{$key}");
+        }
+    };
+
+    $walk($form->get('data.content'), 'data.content');
+
+    return $paths[0];
+}
+
+dataset('nested layouts', ['repeater', 'builder', 'group']);
+
+describe('media saved inside a json column', function () {
+    beforeEach(function () {
+        PickerForm::$fieldName = 'image_id';
+    });
+
+    test('saved media outside the field settings survives loading and an unrelated save', function (string $layout, string $kind) {
+        [$tenant, $other] = scopingTenancy('curator');
+        $media = seedScopedMedia($tenant, $other);
+        [$wrap, $content] = nestedPicker($layout);
+
+        PickerForm::$wrapPicker = $wrap;
+        PickerForm::$configurePicker = fn (CuratorPicker $picker): CuratorPicker => scopedPicker('curator')($picker)->multiple(false);
+
+        $post = JsonPost::query()->create(['title' => 'Post', 'content' => $content($media[$kind]->getKey())]);
+
+        $form = Livewire::test(PickerForm::class, ['record' => $post]);
+
+        expect(collect($form->get(nestedPickerPath($form, 'image_id')))->pluck('id')->map(strval(...))->all())->toBe([(string) $media[$kind]->getKey()]);
+
+        $form->call('save')->assertHasNoErrors();
+
+        expect(contentImageIds($post))->toBe([(string) $media[$kind]->getKey()]);
+    })->with('nested layouts')->with([
+        'a type the field no longer accepts' => 'pdf',
+        'another disk' => 'otherDisk',
+        'outside a later directory limit' => 'otherDirectory',
+    ]);
+
+    test('saved media of another tenant or deleted media does not load', function (string $layout, string $mode) {
+        [$tenant, $other] = scopingTenancy($mode);
+        $media = seedScopedMedia($tenant, $other);
+        [$wrap, $content] = nestedPicker($layout);
+
+        PickerForm::$wrapPicker = $wrap;
+        PickerForm::$configurePicker = fn (CuratorPicker $picker): CuratorPicker => scopedPicker($mode)($picker)->multiple(false);
+
+        foreach ([$media['otherTenant'], scopedMedia('deleted', [], $tenant)] as $item) {
+            $post = JsonPost::query()->create(['title' => 'Post', 'content' => $content($item->getKey())]);
+            $item->is($media['otherTenant']) || $item->deleteQuietly();
+
+            $form = Livewire::test(PickerForm::class, ['record' => $post]);
+
+            expect($form->get(nestedPickerPath($form, 'image_id')))->toBe([]);
+        }
+    })->with('nested layouts')->with('tenancy');
+
+    test('new media outside the field settings is refused', function (string $layout) {
+        [$tenant, $other] = scopingTenancy('curator');
+        $media = seedScopedMedia($tenant, $other);
+        [$wrap, $content] = nestedPicker($layout);
+
+        PickerForm::$wrapPicker = $wrap;
+        PickerForm::$configurePicker = fn (CuratorPicker $picker): CuratorPicker => scopedPicker('curator')($picker)->multiple(false);
+
+        $post = JsonPost::query()->create(['title' => 'Post', 'content' => $content($media['pdf']->getKey())]);
+
+        $form = Livewire::test(PickerForm::class, ['record' => $post]);
+        $path = nestedPickerPath($form, 'image_id');
+
+        $form->set($path, [(string) Str::uuid() => $media['pdfDirectory']->toArray()])
+            ->call('save')
+            ->assertHasErrors([$path]);
+
+        expect(contentImageIds($post))->toBe([(string) $media['pdf']->getKey()]);
+    })->with('nested layouts');
+
+    test('a column of the same name on the record does not count as saved for a nested picker', function (string $layout) {
+        [$tenant, $other] = scopingTenancy('curator');
+        $media = seedScopedMedia($tenant, $other);
+        [$wrap] = nestedPicker($layout);
+
+        PickerForm::$fieldName = 'featured_image_id';
+        PickerForm::$wrapPicker = $wrap;
+        PickerForm::$configurePicker = fn (CuratorPicker $picker): CuratorPicker => scopedPicker('curator')($picker)->multiple(false);
+
+        $content = match ($layout) {
+            'repeater' => [['featured_image_id' => null]],
+            'builder' => [['type' => 'image', 'data' => ['featured_image_id' => null]]],
+            'group' => ['featured_image_id' => null],
+        };
+
+        $post = JsonPost::query()->create(['title' => 'Post', 'featured_image_id' => $media['pdf']->getKey(), 'content' => $content]);
+
+        $form = Livewire::test(PickerForm::class, ['record' => $post]);
+        $path = nestedPickerPath($form, 'featured_image_id');
+
+        $form->set($path, [(string) Str::uuid() => $media['pdf']->toArray()])
+            ->call('save')
+            ->assertHasErrors([$path]);
+    })->with('nested layouts');
+});
+
+describe('the rich editor panel', function () {
+    function richEditorPanelSettings(RichEditor $editor): array
+    {
+        $editor->container(FilamentSchema::make(Livewire::test(PickerForm::class)->instance()));
+
+        $action = collect(AttachCuratorMediaPlugin::make()->getEditorActions())->first();
+        $view = (new ReflectionProperty($action, 'modalContent'))->getValue($action)($editor, []);
+
+        return $view->getData()['settings'];
+    }
+
+    test('lists and uploads to the curator disk unless the editor sets an attachment disk', function () {
+        config()->set('filament.default_filesystem_disk', 'local');
+        Curator::disk('local');
+
+        $settings = richEditorPanelSettings(RichEditor::make('content'));
+
+        expect($settings['diskName'])->toBe('local');
+
+        $listed = makeMedia(['name' => 'listed', 'disk' => 'local']);
+        makeMedia(['name' => 'elsewhere', 'disk' => 'public']);
+
+        $panel = Livewire::test(CuratorPanel::class, ['settings' => $settings]);
+
+        expect(listedIds($panel))->toBe(sortedIds([$listed]));
+
+        $panel->set('panelData.files_to_add', [UploadedFile::fake()->image('photo.jpg', 20, 20)])
+            ->callAction('addFiles');
+
+        expect(Media::query()->latest('id')->first()->disk)->toBe('local');
+    });
+
+    test('uses the attachment disk the editor sets', function () {
+        Curator::disk('local');
+
+        expect(richEditorPanelSettings(RichEditor::make('content')->fileAttachmentsDisk('public'))['diskName'])->toBe('public');
+    });
+});
+
+describe('the limited directory', function () {
+    test('a directory with surrounding slashes is the same directory', function () {
+        $own = makeMedia(['name' => 'own', 'directory' => 'uploads', 'path' => 'uploads/own.jpg']);
+        $nested = makeMedia(['name' => 'nested', 'directory' => 'uploads/2024', 'path' => 'uploads/2024/nested.jpg']);
+        makeMedia(['name' => 'elsewhere', 'directory' => 'secret', 'path' => 'secret/elsewhere.jpg']);
+
+        $panel = Livewire::test(CuratorPanel::class, ['settings' => ['acceptedFileTypes' => ['image/*'], 'directory' => '/uploads/', 'isLimitedToDirectory' => true, 'isMultiple' => true]])
+            ->assertSet('directory', 'uploads');
+
+        expect(listedIds($panel))->toBe(sortedIds([$own, $nested]));
+
+        $panel->call('handleDirectoryChange', 'uploads/2024')->assertSet('directory', 'uploads/2024')
+            ->call('handleDirectoryChange', 'uploads/')->assertSet('directory', 'uploads')
+            ->set('panelData.files_to_add', [UploadedFile::fake()->image('photo.jpg', 20, 20)])
+            ->callAction('addFiles');
+
+        expect(Media::query()->latest('id')->first()->directory)->toBe('uploads');
+    });
+
+    test('the directory limit is case sensitive', function () {
+        $own = makeMedia(['name' => 'own', 'directory' => 'uploads', 'path' => 'uploads/own.jpg']);
+        $upper = makeMedia(['name' => 'upper', 'directory' => 'UPLOADS/sub', 'path' => 'UPLOADS/sub/upper.jpg']);
+        makeMedia(['name' => 'mixed', 'directory' => 'Uploads', 'path' => 'Uploads/mixed.jpg']);
+
+        $panel = Livewire::test(CuratorPanel::class, ['settings' => ['directory' => 'uploads', 'isLimitedToDirectory' => true, 'isMultiple' => true]]);
+
+        expect(listedIds($panel))->toBe(sortedIds([$own]))
+            ->and(collect($panel->get('directories'))->keys()->all())->toBe(['uploads']);
+
+        $panel->set('selected', [$upper->toArray(), $own->toArray()])->callAction('insertMedia');
+
+        expect(insertedIds($panel))->toBe(scopedIds([$own]));
+    });
+
+    test('a picker limited to its directory without naming one lists, inserts and saves nothing', function () {
+        $own = pickableMedia(['name' => 'own']);
+
+        $panel = Livewire::test(CuratorPanel::class, ['settings' => ['acceptedFileTypes' => ['image/*'], 'directory' => null, 'isLimitedToDirectory' => true, 'isMultiple' => true]]);
+
+        expect($panel->get('files'))->toBe([])
+            ->and($panel->get('directories'))->toBe([])
+            ->and(collect($panel->get('breadcrumbs'))->pluck('path')->all())->toBe([]);
+
+        $panel->set('search', 'own');
+
+        expect($panel->get('files'))->toBe([]);
+
+        $panel->set('selected', [$own->toArray()])->callAction('insertMedia');
+
+        expect(insertedIds($panel))->toBe([]);
+
+        $panel->set('panelData.files_to_add', [UploadedFile::fake()->image('photo.jpg', 20, 20)])->callAction('addFiles');
+
+        expect(Media::query()->count())->toBe(1);
+
+        PickerForm::$configurePicker = fn (CuratorPicker $picker): CuratorPicker => $picker->directory(fn (): ?string => null)->limitToDirectory();
+
+        Livewire::test(PickerForm::class)
+            ->set('data.media', [(string) Str::uuid() => $own->toArray()])
+            ->call('save')
+            ->assertHasErrors(['data.media']);
+    });
+});

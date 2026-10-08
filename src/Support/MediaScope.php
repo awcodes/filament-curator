@@ -23,16 +23,18 @@ final readonly class MediaScope
 
     /**
      * @param  array<int, mixed>  $acceptedFileTypes  types as a field accepts them, `image/*` wildcards included; none means any type
-     * @param  string|null  $directory  the directory the field is limited to, which includes its subdirectories; null for the whole disk
+     * @param  string|null  $directory  the directory the field is limited to, which includes its subdirectories
+     * @param  bool  $isLimitedToDirectory  whether the field is limited to its directory; when it is but names none, nothing is in the scope
      */
     public function __construct(
         private string $disk,
         private array $acceptedFileTypes = [],
         ?string $directory = null,
+        private bool $isLimitedToDirectory = false,
         private bool $isTenantAware = false,
         private ?string $tenantOwnershipRelationshipName = null,
     ) {
-        $this->directory = $this->normalizeDirectory($directory);
+        $this->directory = $isLimitedToDirectory ? self::normalizeDirectory($directory) : null;
     }
 
     /**
@@ -78,10 +80,32 @@ final readonly class MediaScope
     public static function whereWithinDirectory(Builder $query, string $directory): Builder
     {
         $column = $query->qualifyColumn('directory');
+        $wrapped = $query->getGrammar()->wrap($column);
+        $prefix = $directory . '/';
 
-        return $query
-            ->where($column, $directory)
-            ->orWhereRaw($query->getGrammar()->wrap($column) . " like ? escape '~'", [self::escapeLike($directory) . '/%']);
+        // LIKE, and `=` under MySQL's usual collations, ignore case, while directories are case-sensitive on disk and
+        // in navigation, so the match is also compared as bytes.
+        return match ($query->getModel()->getConnection()->getDriverName()) {
+            'mysql', 'mariadb' => $query
+                ->whereRaw("binary {$wrapped} = ?", [$directory])
+                ->orWhereRaw("{$wrapped} like ? escape '~' and binary substring({$wrapped}, 1, ?) = ?", [self::escapeLike($directory) . '/%', mb_strlen($prefix), $prefix]),
+            'sqlite', 'pgsql' => $query
+                ->where($column, $directory)
+                ->orWhereRaw("{$wrapped} like ? escape '~' and substr({$wrapped}, 1, ?) = ?", [self::escapeLike($directory) . '/%', mb_strlen($prefix), $prefix]),
+            default => $query
+                ->where($column, $directory)
+                ->orWhereRaw("{$wrapped} like ? escape '~'", [self::escapeLike($directory) . '/%']),
+        };
+    }
+
+    /**
+     * Trim the slashes around a directory, which isn't stored with them; an empty directory is the disk root, null.
+     */
+    public static function normalizeDirectory(?string $directory): ?string
+    {
+        $directory = trim((string) $directory, '/');
+
+        return $directory === '' ? null : $directory;
     }
 
     /**
@@ -112,7 +136,9 @@ final readonly class MediaScope
         $this->applyTenant($query);
         $this->applyTypes($query);
 
-        if ($this->directory !== null) {
+        if ($this->isLimitedToDirectory && $this->directory === null) {
+            $query->whereRaw('1 = 0');
+        } elseif ($this->directory !== null) {
             $query->where(fn (Builder $query): Builder => self::whereWithinDirectory($query, $this->directory));
         }
 
@@ -196,30 +222,27 @@ final readonly class MediaScope
 
     public function isLimitedToDirectory(): bool
     {
-        return $this->directory !== null;
+        return $this->isLimitedToDirectory;
     }
 
     /**
      * Whether a directory may be browsed: any directory when the scope isn't limited to one, otherwise the limited
-     * directory and those below it. Null is the disk root.
+     * directory and those below it, and none when it's limited without naming a directory. Null is the disk root.
      */
     public function allowsDirectory(?string $directory): bool
     {
-        if ($this->directory === null) {
+        if (! $this->isLimitedToDirectory) {
             return true;
         }
 
-        $directory = $this->normalizeDirectory($directory);
+        if ($this->directory === null) {
+            return false;
+        }
+
+        $directory = self::normalizeDirectory($directory);
 
         return $directory !== null
             && ($directory === $this->directory || str_starts_with($directory, $this->directory . '/'));
-    }
-
-    private function normalizeDirectory(?string $directory): ?string
-    {
-        $directory = trim((string) $directory, '/');
-
-        return $directory === '' ? null : $directory;
     }
 
     /**

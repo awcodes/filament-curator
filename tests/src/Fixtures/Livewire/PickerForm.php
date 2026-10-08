@@ -28,6 +28,9 @@ class PickerForm extends Component implements HasActions, HasSchemas
 
     public static string $fieldName = 'media';
 
+    /** @var (Closure(CuratorPicker): array<int, \Filament\Schemas\Components\Component>)|null */
+    public static ?Closure $wrapPicker = null;
+
     public ?Model $record = null;
 
     public ?array $data = [];
@@ -50,7 +53,7 @@ class PickerForm extends Component implements HasActions, HasSchemas
         }
 
         return $schema
-            ->components([$picker])
+            ->components(static::$wrapPicker instanceof Closure ? (static::$wrapPicker)($picker) : [$picker])
             ->model($this->record)
             ->statePath('data');
     }

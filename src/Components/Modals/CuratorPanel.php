@@ -169,6 +169,8 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
             $this->{$key} = $value;
         }
 
+        $this->directory = MediaScope::normalizeDirectory($this->directory);
+
         $this->validationRules = $this->getUploadValidationRules();
 
         $this->getDirectories();
@@ -495,7 +497,8 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
         return new MediaScope(
             disk: $this->diskName,
             acceptedFileTypes: $this->showAll ? [] : $this->acceptedFileTypes,
-            directory: $this->isLimitedToDirectory ? ($this->settings['directory'] ?? null) : null,
+            directory: $this->settings['directory'] ?? null,
+            isLimitedToDirectory: $this->isLimitedToDirectory,
             isTenantAware: (bool) $this->isTenantAware,
             tenantOwnershipRelationshipName: $this->tenantOwnershipRelationshipName,
         );
@@ -611,6 +614,11 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
 
     protected function createMediaFiles(): array
     {
+        // A panel limited to a directory without naming one lists nothing, so it takes no uploads either.
+        if (! $this->getMediaScope()->allowsDirectory($this->directory)) {
+            return [];
+        }
+
         // The upload field's state is client-writable, and the uploader passes anything that isn't a new upload
         // through as already stored file data, so only this request's uploads may reach it.
         $this->panelData['files_to_add'] = array_filter(
