@@ -10,6 +10,7 @@ use Awcodes\Curator\Support\MediaScope;
 use Awcodes\Curator\Tests\Fixtures\Livewire\PickerForm;
 use Awcodes\Curator\Tests\Fixtures\Models\UuidMedia;
 use Filament\Facades\Filament;
+use Filament\Schemas\Schema as FilamentSchema;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Schema\Blueprint;
@@ -40,6 +41,7 @@ beforeEach(function () {
     Storage::fake('local');
 
     PickerForm::$configurePicker = null;
+    PickerForm::$fieldName = 'media';
 });
 
 afterEach(function () {
@@ -460,7 +462,7 @@ describe('the picker', function () {
         $own = pickableMedia(['name' => 'own']);
         $otherDisk = pickableMedia(['name' => 'elsewhere', 'disk' => 'local']);
 
-        $picker = CuratorPicker::make('media')->multiple();
+        $picker = CuratorPicker::make('media')->multiple()->container(FilamentSchema::make());
         $dehydrate = (new ReflectionProperty($picker, 'dehydrateStateUsing'))->getValue($picker);
 
         expect($dehydrate($picker, [Str::uuid()->toString() => $otherDisk->toArray(), Str::uuid()->toString() => $own->toArray()]))
@@ -680,3 +682,221 @@ describe('uuid keys', function () {
             ->assertHasErrors(['data.media']);
     });
 });
+
+/**
+ * A picker bound to the post's featured image or gallery, with the scoped picker's settings.
+ */
+function persistedPicker(string $mode, string $relationship): void
+{
+    PickerForm::$fieldName = $relationship === 'featuredImage' ? 'featured_image_id' : 'gallery';
+
+    PickerForm::$configurePicker = fn (CuratorPicker $picker): CuratorPicker => scopedPicker($mode)($picker)
+        ->multiple($relationship === 'gallery')
+        ->relationship($relationship, 'name')
+        ->orderColumn('order');
+}
+
+function persistedGallery(Post $post, array $media): void
+{
+    foreach (array_values($media) as $index => $item) {
+        Mediable::query()->create([
+            'mediable_type' => Post::class,
+            'mediable_id' => $post->getKey(),
+            'media_id' => $item->getKey(),
+            'order' => $index + 1,
+        ]);
+    }
+}
+
+function galleryIds(Post $post): array
+{
+    return Mediable::query()->where('mediable_id', $post->getKey())->orderBy('order')->pluck('media_id')
+        ->map(fn (mixed $id): string => (string) $id)->all();
+}
+
+describe('media saved on the record', function () {
+    test('a saved featured image outside the field settings keeps loading and survives an unrelated save', function (string $mode, string $kind) {
+        [$tenant, $other] = scopingTenancy($mode);
+        $media = seedScopedMedia($tenant, $other);
+        persistedPicker($mode, 'featuredImage');
+
+        $post = Post::create(['title' => 'Post', 'featured_image_id' => $media[$kind]->getKey()]);
+
+        $form = Livewire::test(PickerForm::class, ['record' => $post]);
+
+        expect(collect($form->get('data.featured_image_id'))->pluck('id')->all())->toBe([$media[$kind]->getKey()]);
+
+        $form->call('save')->assertHasNoErrors();
+
+        expect($post->refresh()->featured_image_id)->toBe($media[$kind]->getKey());
+    })->with('tenancy')->with([
+        'a type the field no longer accepts' => 'pdf',
+        'another disk' => 'otherDisk',
+        'outside a later directory limit' => 'otherDirectory',
+    ]);
+
+    test('a saved gallery outside the field settings keeps loading, in order, and survives an unrelated save', function (string $mode) {
+        [$tenant, $other] = scopingTenancy($mode);
+        $media = seedScopedMedia($tenant, $other);
+        persistedPicker($mode, 'gallery');
+
+        $post = Post::create(['title' => 'Post']);
+        $saved = [$media['pdf'], $media['own'], $media['otherDisk'], $media['otherDirectory']];
+        persistedGallery($post, $saved);
+
+        $form = Livewire::test(PickerForm::class, ['record' => $post]);
+
+        expect(pickerStateIdsAt($form, 'gallery'))->toBe(scopedIds($saved));
+
+        $form->call('save')->assertHasNoErrors();
+
+        expect(galleryIds($post))->toBe(scopedIds($saved));
+    })->with('tenancy');
+
+    test('a saved value of a plain column outside the field settings keeps loading and saving', function () {
+        $pdf = pickableMedia(['name' => 'saved', 'path' => 'saved.pdf', 'type' => 'application/pdf', 'ext' => 'pdf']);
+        $post = Post::create(['title' => 'Post', 'featured_image_id' => $pdf->getKey()]);
+
+        PickerForm::$fieldName = 'featured_image_id';
+        PickerForm::$configurePicker = fn (CuratorPicker $picker): CuratorPicker => $picker->acceptedFileTypes(['image/*']);
+
+        $form = Livewire::test(PickerForm::class, ['record' => $post]);
+
+        expect(collect($form->get('data.featured_image_id'))->pluck('id')->all())->toBe([$pdf->getKey()]);
+
+        $form->call('save')->assertHasNoErrors();
+
+        expect($form->get('saved'))->toBe($pdf->getKey())
+            ->and($post->refresh()->featured_image_id)->toBe($pdf->getKey());
+    });
+
+    test('a saved id of another tenant or of deleted media does not load', function (string $mode) {
+        [$tenant, $other] = scopingTenancy($mode);
+        $media = seedScopedMedia($tenant, $other);
+        persistedPicker($mode, 'gallery');
+
+        $post = Post::create(['title' => 'Post']);
+        $deleted = scopedMedia('deleted', [], $tenant);
+        persistedGallery($post, [$media['otherTenant'], $media['pdf'], $deleted, $media['own']]);
+        $deleted->deleteQuietly();
+
+        $form = Livewire::test(PickerForm::class, ['record' => $post]);
+
+        expect(pickerStateIdsAt($form, 'gallery'))->toBe(scopedIds([$media['pdf'], $media['own']]));
+
+        $featured = Post::create(['title' => 'Featured', 'featured_image_id' => $media['otherTenant']->getKey()]);
+        persistedPicker($mode, 'featuredImage');
+
+        expect(Livewire::test(PickerForm::class, ['record' => $featured])->get('data.featured_image_id'))->toBe([]);
+    })->with('tenancy');
+
+    test('a saved id of another tenant is refused when sent back', function (string $mode) {
+        [$tenant, $other] = scopingTenancy($mode);
+        $media = seedScopedMedia($tenant, $other);
+        persistedPicker($mode, 'gallery');
+
+        $post = Post::create(['title' => 'Post']);
+        persistedGallery($post, [$media['otherTenant'], $media['own']]);
+
+        Livewire::test(PickerForm::class, ['record' => $post])
+            ->set('data.gallery', [
+                (string) Str::uuid() => $media['otherTenant']->toArray(),
+                (string) Str::uuid() => $media['own']->toArray(),
+            ])
+            ->call('save')
+            ->assertHasErrors(['data.gallery']);
+    })->with('tenancy');
+
+    test('new media outside the field settings is still refused next to saved media', function (string $mode, string $kind) {
+        [$tenant, $other] = scopingTenancy($mode);
+        $media = seedScopedMedia($tenant, $other);
+        persistedPicker($mode, 'gallery');
+
+        $post = Post::create(['title' => 'Post']);
+        persistedGallery($post, [$media['pdf'], $media['own']]);
+
+        Livewire::test(PickerForm::class, ['record' => $post])
+            ->set('data.gallery', [
+                (string) Str::uuid() => $media['pdf']->toArray(),
+                (string) Str::uuid() => $media['own']->toArray(),
+                (string) Str::uuid() => $media[$kind]->toArray(),
+            ])
+            ->call('save')
+            ->assertHasErrors(['data.gallery']);
+
+        expect(galleryIds($post))->toBe(scopedIds([$media['pdf'], $media['own']]));
+    })->with('tenancy')->with([
+        'a type the field does not accept' => 'pdfDirectory',
+        'another disk' => 'otherDisk',
+        'outside the limited directory' => 'otherDirectory',
+        'another tenant' => 'otherTenant',
+    ]);
+
+    test('saved media can still be removed', function (string $mode) {
+        [$tenant, $other] = scopingTenancy($mode);
+        $media = seedScopedMedia($tenant, $other);
+        persistedPicker($mode, 'gallery');
+
+        $post = Post::create(['title' => 'Post']);
+        persistedGallery($post, [$media['pdf'], $media['own'], $media['otherDisk']]);
+
+        $form = Livewire::test(PickerForm::class, ['record' => $post]);
+
+        $state = collect($form->get('data.gallery'))->reject(fn (array $item): bool => (string) $item['id'] === (string) $media['pdf']->getKey())->all();
+
+        $form->set('data.gallery', $state)->call('save')->assertHasNoErrors();
+
+        expect(galleryIds($post))->toBe(scopedIds([$media['own'], $media['otherDisk']]));
+    })->with('tenancy');
+
+    test('saved media sent back from the panel keeps its place', function (string $mode) {
+        [$tenant, $other] = scopingTenancy($mode);
+        $media = seedScopedMedia($tenant, $other);
+        persistedPicker($mode, 'gallery');
+
+        $post = Post::create(['title' => 'Post']);
+        persistedGallery($post, [$media['pdf'], $media['own']]);
+
+        $form = Livewire::test(PickerForm::class, ['record' => $post]);
+
+        $form->call('callSchemaComponentMethod', $form->instance()->getPickerKey(), 'updateState', [[
+            'statePath' => 'data.gallery',
+            'media' => [['id' => $media['pdf']->getKey()], $media['nested']->toArray(), $media['pdfDirectory']->toArray(), $media['own']->toArray()],
+        ]]);
+
+        expect(pickerStateIdsAt($form, 'gallery'))->toBe(scopedIds([$media['pdf'], $media['nested'], $media['own']]));
+    })->with('tenancy');
+
+    test('the panel passes back the items the picker held by id, and drops other media it would not list', function (string $mode) {
+        [$tenant, $other] = scopingTenancy($mode);
+        $media = seedScopedMedia($tenant, $other);
+
+        $panel = Livewire::test(CuratorPanel::class, ['settings' => scopedPanelSettings($mode, [
+            'selected' => [(string) Str::uuid() => $media['pdf']->toArray(), (string) Str::uuid() => $media['own']->toArray()],
+        ])])
+            ->set('selected', [$media['pdf']->toArray(), $media['pdfDirectory']->toArray(), $media['own']->toArray(), $media['nested']->toArray()])
+            ->callAction('insertMedia');
+
+        $dispatch = collect(data_get($panel->effects, 'dispatches'))->firstWhere('name', 'insert-media');
+        $sent = $dispatch['params'][0]['media'];
+
+        expect(insertedIds($panel))->toBe(scopedIds([$media['pdf'], $media['own'], $media['nested']]))
+            ->and($sent[0])->toBe(['id' => (string) $media['pdf']->getKey()])
+            ->and($sent[1]['path'])->toBe('uploads/own.jpg');
+    })->with('tenancy');
+
+    test('the panel sends nothing about media the picker did not hold', function () {
+        $pdf = pickableMedia(['name' => 'saved', 'path' => 'saved.pdf', 'type' => 'application/pdf', 'ext' => 'pdf']);
+
+        $panel = Livewire::test(CuratorPanel::class, ['settings' => ['acceptedFileTypes' => ['image/*'], 'directory' => null, 'isMultiple' => true]])
+            ->set('selected', [$pdf->toArray()])
+            ->callAction('insertMedia');
+
+        expect(insertedIds($panel))->toBe([]);
+    });
+});
+
+function pickerStateIdsAt(Testable $form, string $field): array
+{
+    return collect($form->get("data.{$field}"))->pluck('id')->map(fn (mixed $id): string => (string) $id)->values()->all();
+}
