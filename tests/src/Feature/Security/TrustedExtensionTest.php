@@ -273,12 +273,28 @@ test('a plain zip archive is still stored as zip', function () {
     Storage::fake('public');
 
     Livewire::test(CreateMedia::class)
-        ->set('data.file', trustedExtensionUpload('archive.html', trustedExtensionZippedDocx()))
+        ->set('data.file', trustedExtensionUpload('archive.html', trustedExtensionPlainZip()))
         ->call('create')
         ->assertHasNoFormErrors();
 
     expect(Media::query()->sole()->ext)->toBe('zip');
 });
+
+function trustedExtensionPlainZip(): string
+{
+    // Newer libmagic recognises Office documents even when [Content_Types].xml
+    // isn't the first entry, so a plain archive must hold no Office parts.
+    $path = tempnam(sys_get_temp_dir(), 'curator-zip');
+    $zip = new ZipArchive;
+    $zip->open($path, ZipArchive::OVERWRITE);
+    $zip->addFromString('readme.txt', 'hello');
+    $zip->close();
+
+    $content = (string) file_get_contents($path);
+    @unlink($path);
+
+    return $content;
+}
 
 test('imported svg with a leading comment is stored as a sanitized svg', function () {
     Storage::fake('public');
