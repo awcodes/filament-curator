@@ -29,7 +29,9 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithPagination;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -46,78 +48,117 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
      */
     protected const SEARCH_COLUMNS = ['name', 'title', 'alt', 'caption', 'description'];
 
+    /*
+     * The panel is configured once, from the settings the picker passes when it renders it. Everything that decides
+     * what may be uploaded, where it is stored and which records are listed is locked, so the browser can't change
+     * it; only the search, the upload form and the selection accept client input.
+     */
+    #[Locked]
     public ?array $settings = [];
 
+    #[Locked]
     public array $acceptedFileTypes = [];
 
     public ?array $panelData = [];
 
+    #[Locked]
     public ?string $directory = null;
 
+    #[Locked]
     public string $diskName = 'public';
 
+    #[Locked]
     public ?array $files = [];
 
+    #[Locked]
     public ?string $imageCropAspectRatio = null;
 
+    #[Locked]
     public ?string $imageResizeMode = null;
 
+    #[Locked]
     public ?string $imageResizeTargetWidth = null;
 
+    #[Locked]
     public ?string $imageResizeTargetHeight = null;
 
+    #[Locked]
     public bool $isLimitedToDirectory = false;
 
+    #[Locked]
     public bool | Closure $isTenantAware = true;
 
+    #[Locked]
     public ?string $tenantOwnershipRelationshipName = null;
 
+    #[Locked]
     public bool $isMultiple = false;
 
+    #[Locked]
     public ?int $maxItems = null;
 
+    #[Locked]
     public ?int $maxSize = null;
 
+    #[Locked]
     public ?int $minSize = null;
 
+    #[Locked]
     public int | string | null $mediaId = null;
 
+    #[Locked]
     public PathGenerator | string | null $pathGenerator = null;
 
     public string $search = '';
 
     public array $selected = [];
 
+    #[Locked]
     public int $defaultLimit = 25;
 
+    #[Locked]
     public ?string $modalId = null;
 
+    #[Locked]
     public ?string $statePath = null;
 
+    #[Locked]
     public ?string $context = null;
 
+    #[Locked]
     public bool $shouldPreserveFilenames = false;
 
+    #[Locked]
     public array $types = [];
 
+    #[Locked]
     public array $validationRules = [];
 
+    #[Locked]
     public string $visibility = 'public';
 
+    #[Locked]
     public array $originalFilenames = [];
 
+    #[Locked]
     public int $currentPage = 0;
 
+    #[Locked]
     public int $mediaCount = 0;
 
+    #[Locked]
     public int $lastPage = 0;
 
+    #[Locked]
     public string $defaultSort = 'desc';
 
+    #[Locked]
     public bool $shouldPrefetchFiles = false;
 
+    #[Locked]
     public bool $showAll = false;
 
+    #[Locked]
     public ?array $rules = null;
 
     public function mount(): void
@@ -205,21 +246,6 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
 
         $items = $paginator->items();
 
-        //        if (! $excludeSelected && $this->selected) {
-        //            $selected = collect($this->selected)->pluck('id')->toArray();
-        //
-        //            $selectedItems = Media::query()
-        //                ->whereIn('id', $selected)
-        //                ->get()
-        //                ->sortBy(function ($model) use ($selected) {
-        //                    return array_search($model->id, $selected);
-        //                });
-        //
-        //            array_unshift($items, ...$selectedItems);
-        //
-        //            $this->setMediaForm();
-        //        }
-
         $this->getSubDirectories();
         $this->getBreadCrumbs();
 
@@ -281,18 +307,6 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
         $this->currentPage = $this->lastPage;
     }
 
-    public function setMediaForm(): void
-    {
-        if (count($this->selected) === 1) {
-            $item = App::make(Media::class)->find(Arr::first($this->selected));
-            if ($item) {
-                $this->form->fill($item->toArray());
-            }
-        } else {
-            $this->form->fill();
-        }
-    }
-
     public function addFilesAction(bool $insertAfter = false): Action
     {
         return Action::make('addFiles')
@@ -318,7 +332,7 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
                     : array_slice($media, 0, 1);
 
                 if ($insertAfter) {
-                    $this->dispatch('insert-media', ['statePath' => $this->statePath, 'media' => $this->selected, 'context' => $this->context]);
+                    $this->dispatchInsertMedia();
                 }
             });
     }
@@ -465,7 +479,7 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
             ->color('success')
             ->label(trans('curator::views.panel.use_selected_image'))
             ->action(function (): void {
-                $this->dispatch('insert-media', ['statePath' => $this->statePath, 'media' => $this->selected, 'context' => $this->context]);
+                $this->dispatchInsertMedia();
             });
     }
 
@@ -487,6 +501,38 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
     public function render(): View
     {
         return view('curator::livewire.curator-panel');
+    }
+
+    /**
+     * The selection is entangled with the browser, so only its ids are used: each item is loaded again, within the
+     * panel's tenant scope, so the picker receives the stored disk and path rather than whatever the client sent.
+     */
+    protected function dispatchInsertMedia(): void
+    {
+        $ids = collect($this->selected)
+            ->map(fn (mixed $item): mixed => is_array($item) ? ($item['id'] ?? null) : null)
+            ->filter(fn (mixed $id): bool => is_int($id) || (is_string($id) && filled($id)))
+            ->map(fn (int | string $id): string => (string) $id)
+            ->unique()
+            ->values();
+
+        $records = $ids->isEmpty() ? collect() : App::make(Media::class)::query()
+            ->when(filament()->hasTenancy() && $this->isTenantAware, fn ($query) => $query->where($this->tenantOwnershipRelationshipName . '_id', filament()->getTenant()->getKey()))
+            ->whereKey($ids->all())
+            ->get()
+            ->keyBy(fn (Media $media): string => (string) $media->getKey());
+
+        $media = $ids
+            ->map(fn (string $id): ?Media => $records->get($id))
+            ->filter()
+            ->when(! $this->isMultiple, fn ($items) => $items->take(1))
+            ->map(fn (Media $media): array => $media->toArray())
+            ->values()
+            ->all();
+
+        $this->selected = $media;
+
+        $this->dispatch('insert-media', ['statePath' => $this->statePath, 'media' => $media, 'context' => $this->context]);
     }
 
     /**
@@ -571,10 +617,21 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
 
     protected function createMediaFiles(): array
     {
+        // The upload field's state is client-writable, and the uploader passes anything that isn't a new upload
+        // through as already stored file data, so only this request's uploads may reach it.
+        $this->panelData['files_to_add'] = array_filter(
+            Arr::wrap($this->panelData['files_to_add'] ?? []),
+            fn (mixed $file): bool => $file instanceof TemporaryUploadedFile,
+        );
+
         $media = [];
         $formData = $this->form->getState();
 
         foreach ($formData['files_to_add'] as $item) {
+            if (! is_array($item) || ($item['disk'] ?? null) !== $this->diskName || ($item['visibility'] ?? null) !== $this->visibility) {
+                continue;
+            }
+
             $item['exif'] = empty($item['exif']) ? null : Curator::sanitizeExif($item['exif']);
             $item['title'] = pathinfo((string) ($formData['originalFilenames'][$item['path']] ?? null), PATHINFO_FILENAME);
 

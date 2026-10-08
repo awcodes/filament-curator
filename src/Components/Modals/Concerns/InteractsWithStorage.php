@@ -8,11 +8,14 @@ use Awcodes\Curator\Models\Media;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Str;
+use Livewire\Attributes\Locked;
 
 trait InteractsWithStorage
 {
+    #[Locked]
     public ?array $directories = null;
 
+    #[Locked]
     public ?array $subDirectories = null;
 
     /**
@@ -77,6 +80,16 @@ trait InteractsWithStorage
 
     public function handleDirectoryChange(string $directory): void
     {
+        // Uploads are stored in the directory being browsed, so the client may only move between the disk root,
+        // the configured directory and directories that already hold media, never name a new one.
+        $isKnownDirectory = $directory === $this->diskName
+            || $directory === ($this->settings['directory'] ?? null)
+            || array_key_exists($directory, $this->directories ?? []);
+
+        if (! $isKnownDirectory) {
+            return;
+        }
+
         $this->breadcrumbs = null;
         $this->directory = $directory === $this->diskName ? null : $directory;
         $this->files = $this->getFiles();

@@ -55,7 +55,10 @@ class GlideManager
 
     /**
      * Glide has to read from the disk the media was stored on. A server config
-     * registered through serverConfig() is used as given.
+     * registered through serverConfig() is used as given, except for base_url:
+     * the controller passes a path relative to the disk, and Glide would strip
+     * a leading base_url from it and serve a different file for media stored
+     * in a directory of that name.
      */
     public function getServer(?string $disk = null): Server
     {
@@ -67,6 +70,7 @@ class GlideManager
         return ServerFactory::create([
             'response' => new SymfonyResponseFactory(app('request')),
             ...$this->serverConfig,
+            'base_url' => '',
         ]);
     }
 
@@ -110,7 +114,6 @@ class GlideManager
             'cache' => storage_path('app'),
             'cache_path_prefix' => '.cache',
             'max_image_size' => 2000 * 2000,
-            'base_url' => $this->getBasePath(),
         ];
     }
 }
