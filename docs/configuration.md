@@ -19,6 +19,7 @@ php artisan vendor:publish --tag="curator-config"
 | `default_directory` | Directory within the disk. Uploads land here, and the picker and rich editor panels open here unless given their own `directory()`. |
 | `default_visibility` | Visibility applied to uploads, `public` by default. Media that isn't public is only served through [temporary URLs](storage/glide.md#private-media). |
 | `curation_formats` | Formats offered when creating a curation: any of `jpg`, `jpeg`, `webp`, `png` and `avif`. Others are left out. |
+| `curation_max_dimension` | Longest side, in pixels, a custom curation is saved at, `8192` by default. Larger crops are scaled down to fit. `null` or `0` turns the limit off. Presets are always saved at their own size. See [Curations](rendering/curations.md#size-limits). |
 | `features.curations` | Whether curations are available. |
 | `features.file_swap` | Whether an existing file can be swapped for a new one. |
 | `features.directory_restriction` | Whether pickers can be limited to their own directory. |

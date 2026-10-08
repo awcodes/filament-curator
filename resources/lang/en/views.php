@@ -74,6 +74,7 @@ return [
         'rotate' => 'Rotate',
         'rotate_deg' => 'deg',
         'preset' => 'Preset',
+        'crop_out_of_bounds' => 'The crop must overlap the image.',
     ],
     'attach_curator_media' => [
         'modal' => [
