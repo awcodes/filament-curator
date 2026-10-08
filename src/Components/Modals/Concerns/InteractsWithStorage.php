@@ -26,10 +26,12 @@ trait InteractsWithStorage
     {
         $scope = $this->getMediaScope();
 
-        $directories = $scope->query()
-            ->whereNotNull('directory')
-            ->distinct()
-            ->pluck('directory')
+        $directories = collect($scope->directories())
+            // A directory stored with a trailing slash is the same folder as one without, as navigation treats it.
+            ->map(MediaScope::normalizeDirectory(...))
+            ->filter()
+            ->unique()
+            ->values()
             ->toArray();
 
         $this->directories = collect($directories)

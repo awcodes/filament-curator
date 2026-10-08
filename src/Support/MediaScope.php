@@ -84,11 +84,12 @@ final readonly class MediaScope
         $prefix = $directory . '/';
 
         // LIKE, and `=` under MySQL's usual collations, ignore case, while directories are case-sensitive on disk and
-        // in navigation, so the match is also compared as bytes.
+        // in navigation, so the match is also compared as bytes. CAST(... AS BINARY) rather than the BINARY operator,
+        // which MySQL 8.0.27 deprecates; MariaDB reads both the same way.
         return match ($query->getModel()->getConnection()->getDriverName()) {
             'mysql', 'mariadb' => $query
-                ->whereRaw("binary {$wrapped} = ?", [$directory])
-                ->orWhereRaw("{$wrapped} like ? escape '~' and binary substring({$wrapped}, 1, ?) = ?", [self::escapeLike($directory) . '/%', mb_strlen($prefix), $prefix]),
+                ->whereRaw("cast({$wrapped} as binary) = cast(? as binary)", [$directory])
+                ->orWhereRaw("{$wrapped} like ? escape '~' and cast(substring({$wrapped}, 1, ?) as binary) = cast(? as binary)", [self::escapeLike($directory) . '/%', mb_strlen($prefix), $prefix]),
             'sqlite', 'pgsql' => $query
                 ->where($column, $directory)
                 ->orWhereRaw("{$wrapped} like ? escape '~' and substr({$wrapped}, 1, ?) = ?", [self::escapeLike($directory) . '/%', mb_strlen($prefix), $prefix]),
@@ -199,6 +200,25 @@ final readonly class MediaScope
         $ids = self::extractIds($ids);
 
         return $this->resolve($ids, $persistedIds)->count() === count($ids);
+    }
+
+    /**
+     * The distinct directories that hold media within the scope, told apart by case as navigation does, which a
+     * plain DISTINCT under MySQL's usual collations wouldn't.
+     *
+     * @return array<int, string>
+     */
+    public function directories(): array
+    {
+        $query = $this->query()->whereNotNull('directory')->distinct();
+
+        if (in_array($query->getModel()->getConnection()->getDriverName(), ['mysql', 'mariadb'], true)) {
+            $wrapped = $query->getGrammar()->wrap($query->qualifyColumn('directory'));
+
+            return $query->toBase()->selectRaw("cast({$wrapped} as binary) as directory")->pluck('directory')->map(strval(...))->all();
+        }
+
+        return $query->pluck('directory')->map(strval(...))->all();
     }
 
     /**
