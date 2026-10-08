@@ -14,6 +14,7 @@ use Closure;
 use Filament\Forms\Components\BaseFileUpload;
 use Filament\Forms\Components\FileUpload;
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Storage;
@@ -47,7 +48,7 @@ class Uploader extends FileUpload
             // Validation accepts the file on its detected type, and web servers
             // serve it by its extension, so the extension has to follow the
             // detected type rather than the name the client sent.
-            $type = MimeType::refineDetectedType($file->getMimeType(), $file->getClientOriginalExtension(), fn (): string => (string) $file->get());
+            $type = $this->detectFileType($file);
             $extension = MimeType::resolveExtension($type, $file->getClientOriginalExtension());
 
             $storeMethod = $component->getVisibility() === 'public' ? 'storePubliclyAs' : 'storeAs';
@@ -141,7 +142,53 @@ class Uploader extends FileUpload
                 }
             },
             ...parent::getValidationRules(),
+            function (string $attribute, mixed $value, Closure $fail): void {
+                $acceptedTypes = $this->getAcceptedFileTypes();
+
+                if ($acceptedTypes === null) {
+                    return;
+                }
+
+                foreach (Arr::wrap($value) as $file) {
+                    if ($file instanceof TemporaryUploadedFile && ! $this->isAcceptedFile($file, $acceptedTypes)) {
+                        $fail(__('validation.mimetypes', [
+                            'attribute' => $this->getValidationAttribute(),
+                            'values' => implode(', ', $acceptedTypes),
+                        ]));
+
+                        return;
+                    }
+                }
+            },
         ];
+    }
+
+    /**
+     * Filament checks accepted types against the upload's getMimeType(), which
+     * some Livewire 3 and 4 releases take from the type the browser declared.
+     * The uploader checks the type detected from the file's bytes instead, in
+     * getValidationRules().
+     *
+     * @param  array<string> | Arrayable | Closure  $types
+     */
+    public function acceptedFileTypes(array | Arrayable | Closure $types): static
+    {
+        $this->acceptedFileTypes = $types;
+
+        return $this;
+    }
+
+    /**
+     * The type of an upload, detected from its own bytes rather than through
+     * getMimeType(), and refined where libmagic under-reports a format.
+     */
+    public function detectFileType(TemporaryUploadedFile $file): string
+    {
+        return MimeType::refineDetectedType(
+            MimeType::detectFromStream($file->readStream()),
+            $file->getClientOriginalExtension(),
+            fn (): string => (string) $file->get(),
+        );
     }
 
     public function saveUploadedFiles(): void
@@ -188,5 +235,23 @@ class Uploader extends FileUpload
 
         $this->rawState($rawState);
         $this->callAfterStateUpdated();
+    }
+
+    /**
+     * Matches the way Laravel's `mimetypes` rule accepts a file, including
+     * refusing a PHP extension unless `php` is listed, but on the detected
+     * type.
+     *
+     * @param  array<int, string>  $acceptedTypes
+     */
+    protected function isAcceptedFile(TemporaryUploadedFile $file, array $acceptedTypes): bool
+    {
+        $phpExtensions = ['php', 'php3', 'php4', 'php5', 'php7', 'php8', 'phtml', 'phar'];
+
+        if (! in_array('php', $acceptedTypes, true) && in_array(mb_strtolower(trim($file->getClientOriginalExtension())), $phpExtensions, true)) {
+            return false;
+        }
+
+        return MimeType::isAccepted($this->detectFileType($file), $acceptedTypes);
     }
 }

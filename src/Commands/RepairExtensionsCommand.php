@@ -12,7 +12,6 @@ use Illuminate\Console\Command;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Storage;
-use League\MimeTypeDetection\FinfoMimeTypeDetector;
 use Symfony\Component\Mime\MimeTypes;
 use Throwable;
 
@@ -205,19 +204,7 @@ class RepairExtensionsCommand extends Command
      */
     protected function detectType(Filesystem $disk, string $path): string
     {
-        $stream = $disk->readStream($path);
-        $sample = is_resource($stream) ? stream_get_contents($stream, 64 * 1024) : false;
-
-        if (is_resource($stream)) {
-            fclose($stream);
-        }
-
-        if (! is_string($sample) || $sample === '') {
-            return MimeType::ApplicationOctetStream->value;
-        }
-
-        return (new FinfoMimeTypeDetector)->detectMimeTypeFromBuffer($sample)
-            ?: MimeType::ApplicationOctetStream->value;
+        return MimeType::detectFromStream($disk->readStream($path));
     }
 
     /**

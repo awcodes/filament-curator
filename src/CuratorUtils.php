@@ -10,7 +10,6 @@ use Awcodes\Curator\Facades\Glide;
 use Exception;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use League\MimeTypeDetection\FinfoMimeTypeDetector;
 
 class CuratorUtils
 {
@@ -55,7 +54,7 @@ class CuratorUtils
         // type detected from the bytes, as it does for uploads.
         $sourceExtension = pathinfo($sourcePath, PATHINFO_EXTENSION);
         $detectedType = MimeType::refineDetectedType(
-            (new FinfoMimeTypeDetector)->detectMimeTypeFromBuffer($fileContents) ?: MimeType::ApplicationOctetStream->value,
+            MimeType::detectFromContents($fileContents),
             $sourceExtension,
             fn (): string => $fileContents,
         );

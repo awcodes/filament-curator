@@ -6,6 +6,7 @@ namespace Awcodes\Curator\Enums;
 
 use Closure;
 use DOMDocument;
+use League\MimeTypeDetection\FinfoMimeTypeDetector;
 use Symfony\Component\Mime\MimeTypes;
 
 enum MimeType: string
@@ -106,6 +107,10 @@ enum MimeType: string
         'potx', 'ppsx', 'pptm', 'pptx', 'vsdx', 'xlsm', 'xlsx', 'xltm', 'xltx',
     ];
 
+    private const DETECTION_SAMPLE_BYTES = 64 * 1024;
+
+    private const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
+
     private const PLAIN_TEXT_TYPES = [
         'application/ics',
         'application/json',
@@ -204,13 +209,66 @@ enum MimeType: string
     }
 
     /**
+     * Detect a type from the first 64 KiB of a stream's bytes, and close it.
+     *
+     * Livewire 3.8.6 and 4.4.2 detect an upload's type this way. Earlier
+     * releases return the temporary file's storage metadata instead, which on
+     * an S3 temporary disk is the Content-Type the browser declared, so
+     * uploads are detected here rather than through getMimeType().
+     *
+     * @param  resource|null  $stream
+     */
+    public static function detectFromStream(mixed $stream): string
+    {
+        if (! is_resource($stream)) {
+            return self::ApplicationOctetStream->value;
+        }
+
+        try {
+            $sample = stream_get_contents($stream, self::DETECTION_SAMPLE_BYTES);
+        } finally {
+            fclose($stream);
+        }
+
+        return self::detectFromContents(is_string($sample) ? $sample : '');
+    }
+
+    /**
+     * Detect a type from the first 64 KiB of some bytes, as detectFromStream()
+     * does.
+     */
+    public static function detectFromContents(string $contents): string
+    {
+        if ($contents === '') {
+            return self::ApplicationOctetStream->value;
+        }
+
+        return (new FinfoMimeTypeDetector)->detectMimeTypeFromBuffer(substr($contents, 0, self::DETECTION_SAMPLE_BYTES))
+            ?: self::ApplicationOctetStream->value;
+    }
+
+    /**
+     * Whether a type is in a list of accepted types, which may hold wildcards
+     * such as `image/*`, matched the way Laravel's `mimetypes` rule matches.
+     *
+     * @param  array<int, string>  $acceptedTypes
+     */
+    public static function isAccepted(string $type, array $acceptedTypes): bool
+    {
+        return in_array($type, $acceptedTypes, true)
+            || in_array(explode('/', $type)[0] . '/*', $acceptedTypes, true);
+    }
+
+    /**
      * Correct the detected type where libmagic is known to under-report a
      * format the client's extension claims, after checking the content really
      * is that format:
      *
      * - SVG that starts with whitespace or a comment is reported as text/plain
-     *   (or as XML), so it would otherwise lose its extension, and with it the
-     *   sanitizing every SVG goes through.
+     *   or XML, or as text/html when it contains a script element, so it would
+     *   otherwise lose its extension, and with it the sanitizing every SVG goes
+     *   through. It is refined only when it parses as XML whose root element
+     *   is an SVG namespace `<svg>`, so an HTML document never qualifies.
      * - Office and OpenDocument files are zip archives, and are reported as
      *   application/zip unless the archive's first entry identifies them.
      *
@@ -223,7 +281,7 @@ enum MimeType: string
 
         if (
             $extension === self::ImageSvgXml->getExt()
-            && in_array($type, [self::TextPlain->value, 'text/xml', self::ApplicationXml->value], true)
+            && in_array($type, [self::TextPlain->value, self::TextHtml->value, 'text/xml', self::ApplicationXml->value], true)
             && self::isSvgDocument($contents())
         ) {
             return self::ImageSvgXml->value;
@@ -480,7 +538,8 @@ enum MimeType: string
             $document = new DOMDocument;
 
             return $document->loadXML($contents, LIBXML_NONET)
-                && $document->documentElement?->localName === 'svg';
+                && $document->documentElement?->localName === 'svg'
+                && $document->documentElement->namespaceURI === self::SVG_NAMESPACE;
         } finally {
             libxml_clear_errors();
             libxml_use_internal_errors($previous);
