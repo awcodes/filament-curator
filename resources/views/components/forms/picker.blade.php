@@ -12,7 +12,7 @@
     <div
         x-data="{
             insertMedia: function (event) {
-                if (event.detail.statePath !== '{{ $statePath }}') return;
+                if (event.detail.statePath !== @js($statePath)) return;
                 $wire.$set(event.detail.statePath, event.detail.media);
             },
         }"
@@ -27,7 +27,7 @@
                 'overflow-hidden bg-white border border-gray-300 rounded-lg shadow-sm divide-y divide-gray-300 dark:border-gray-700 dark:text-white dark:divide-gray-700 dark:bg-white/5' => $itemsCount > 0 && $shouldDisplayAsList,
             ])
             x-sortable
-            wire:end.stop="mountFormComponentAction('{{ $statePath }}', 'reorder', { items: $event.target.sortable.toArray() })"
+            wire:end.stop="mountFormComponentAction(@js($statePath), 'reorder', { items: $event.target.sortable.toArray() })"
             style="{{ $itemsCount === 1 ? '--grid-column-count: 1' : '' }}"
         >
             @foreach ($items as $uuid => $item)

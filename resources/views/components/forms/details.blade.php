@@ -81,7 +81,7 @@
                                         navigator.clipboard.writeText(subject)
                                     }
                                 }"
-                                x-on:click="handleCopy('{{ $record->url }}'); toggleMessage();"
+                                x-on:click="handleCopy(@js($record->url)); toggleMessage();"
                         >
                             <span x-show="! showMessage" class="filament-link">
                                 <x-filament::icon
