@@ -43,11 +43,11 @@ CuratorPicker::make('attachment')
 
 ## How the stored extension is chosen
 
-Curator decides whether to accept a file from its detected type, the type read from the file's contents. The stored extension follows that same type, not the name the browser sent. Web servers pick a file's content type from its extension, so the two have to agree.
+Curator decides whether to accept a file from its detected type, the type read from the file's contents. Curator detects the type from the file's contents itself, so neither the name nor the type the browser declared plays a part, whichever Livewire version or temporary upload disk you use. The stored extension follows that same type, not the name the browser sent. Web servers pick a file's content type from its extension, so the two have to agree.
 
 - The original extension is kept, lowercased, when it is a known extension for the detected type. `photo.jpeg` stays `.jpeg` and `PHOTO.JPG` becomes `.jpg`.
 - Text content is often detected only as `text/plain`, so it may keep a plain-data extension such as `.csv`, `.md`, `.json`, `.yaml` or `.css`. Other text files are stored as `.txt`, including ones with uncommon extensions such as `.srt`.
-- An `.svg` file that starts with whitespace or a comment is detected as plain text or XML. It is still stored as `.svg`, and sanitized, if its content parses as an SVG document.
+- An `.svg` file that starts with whitespace or a comment is detected as plain text, XML or, when it contains a script, HTML. It is still stored as `.svg`, and sanitized, if its content parses as XML whose root element is `<svg>` in the SVG namespace. Anything else, such as an HTML page named `.svg`, keeps its detected type.
 - Office and OpenDocument files (`.docx`, `.xlsx`, `.pptx`, `.odt`, `.epub` and similar) are zip archives and are sometimes detected as `application/zip`. They keep their extension when the content is a zip archive.
 - Otherwise the extension is replaced with the detected type's usual one. A JPEG uploaded as `photo.png` is stored as `.jpg`, and a file named `notes.html` whose contents are plain text is stored as `.txt`.
 - When the detected type has no known extension, the file is stored as `.bin`, and Curator's route serves it as a download. This includes every `application/octet-stream` upload, if you have allowed that type.
