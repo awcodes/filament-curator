@@ -642,6 +642,11 @@ class MediaPolicy
         return true;
     }
 
+    public function view(User $user, Media $media): bool
+    {
+        return true;
+    }
+
     public function create(User $user): bool
     {
         return true;
@@ -670,6 +675,8 @@ class MediaPolicy
 ```
 
 By default, the above policy grants access to all actions. You can modify each method to implement your custom authorization logic as needed.
+
+The `download` ability decides whether the download actions are shown. Downloading a particular file from the media panel or the picker field also needs the `view` ability for that record, and the file is always read from the record's own disk and path.
 
 <!-- docs_end -->
 
