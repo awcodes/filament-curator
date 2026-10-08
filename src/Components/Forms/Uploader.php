@@ -14,6 +14,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Intervention\Image\Facades\Image;
 use League\Flysystem\UnableToCheckFileExistence;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
@@ -122,6 +123,12 @@ class Uploader extends FileUpload
 
                         return;
                     }
+
+                    if (is_media_svg($type) && $this->sanitizeSvgUpload($file) === null) {
+                        $fail(__('validation.uploaded', ['attribute' => $this->getValidationAttribute()]));
+
+                        return;
+                    }
                 }
             },
             ...parent::getValidationRules(),
@@ -137,7 +144,24 @@ class Uploader extends FileUpload
     {
         $type = MimeType::detect($file->readStream()) ?? $file->getMimeType() ?: MimeType::OCTET_STREAM;
 
-        return MimeType::refineDetectedType($type, $file->getClientOriginalExtension(), fn (): string => (string) $file->get());
+        return MimeType::refineDetectedType(
+            $type,
+            $file->getClientOriginalExtension(),
+            fn (): string => (string) $file->get(),
+            fn (int $length): string => MimeType::readHead($file->readStream(), $length),
+        );
+    }
+
+    /**
+     * The sanitized markup of an SVG upload, or null when it can't be
+     * sanitized, in which case the upload is rejected.
+     */
+    protected function sanitizeSvgUpload(TemporaryUploadedFile $file): ?string
+    {
+        $original = (string) $file->get();
+        $clean = sanitize_svg($original);
+
+        return ($clean === '' && $original !== '') ? null : $clean;
     }
 
     public function getSuggestedFileName(TemporaryUploadedFile $file): string
@@ -192,20 +216,29 @@ class Uploader extends FileUpload
                 $filename = $filename . '-' . time();
             }
 
-            $path = $file->{$storeMethod}(
-                $component->getDirectory(),
-                $filename . '.' . $extension,
-                $component->getDiskName()
-            );
-
-            $size = $file->getSize();
-
             // SVGs are served as raw markup (they are not routed through Glide),
-            // so strip any embedded scripts before they can execute inline.
+            // so scripts are stripped before the file reaches the disk. Markup
+            // that can't be sanitized is never written.
             if (is_media_svg($type)) {
+                $clean = $component->sanitizeSvgUpload($file);
                 $disk = Storage::disk($component->getDiskName());
-                $disk->put($path, sanitize_svg($disk->get($path)), $component->getVisibility());
+                $path = ltrim($component->getDirectory() . '/' . $filename . '.' . $extension, '/');
+
+                if ($clean === null || ! $disk->put($path, $clean, $component->getVisibility())) {
+                    throw ValidationException::withMessages([
+                        $component->getStatePath() => __('validation.uploaded', ['attribute' => $component->getValidationAttribute()]),
+                    ]);
+                }
+
                 $size = $disk->size($path);
+            } else {
+                $path = $file->{$storeMethod}(
+                    $component->getDirectory(),
+                    $filename . '.' . $extension,
+                    $component->getDiskName()
+                );
+
+                $size = $file->getSize();
             }
 
             $data = [

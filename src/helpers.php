@@ -58,7 +58,13 @@ if (! function_exists('sanitize_svg')) {
         $sanitizer = new Sanitizer;
         $sanitizer->removeRemoteReferences(true);
 
-        $clean = $sanitizer->sanitize($svg);
+        // The sanitizer throws, rather than returning false, for some markup it
+        // rejects, such as an XHTML document wrapping an <svg> element.
+        try {
+            $clean = $sanitizer->sanitize($svg);
+        } catch (\Throwable) {
+            return '';
+        }
 
         // The sanitizer returns false when the markup cannot be parsed. Fail
         // closed by returning an empty string rather than the untrusted original.

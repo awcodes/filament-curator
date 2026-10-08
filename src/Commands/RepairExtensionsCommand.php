@@ -88,6 +88,7 @@ class RepairExtensionsCommand extends Command
             MimeType::detect($disk->readStream($path)) ?? MimeType::OCTET_STREAM,
             $storedExtension,
             fn (): string => (string) $disk->get($path),
+            fn (int $length): string => MimeType::readHead($disk->readStream($path), $length),
         );
 
         if (MimeType::isRestricted($detectedType)) {
@@ -173,7 +174,13 @@ class RepairExtensionsCommand extends Command
 
         if (! $dryRun) {
             if ($content !== null) {
-                $disk->put($newPath, $content, $media->visibility ?? 'public');
+                // The original is only removed once its sanitized copy is stored.
+                if (! $disk->put($newPath, $content, $media->visibility ?? 'public')) {
+                    $this->warn("  skipped (could not write): [{$media->id}] {$oldPath} -> {$newPath}");
+
+                    return 'skipped';
+                }
+
                 $disk->delete($oldPath);
             } elseif (! $disk->move($oldPath, $newPath)) {
                 $this->error("  error: [{$media->id}] could not move {$oldPath} to {$newPath}");

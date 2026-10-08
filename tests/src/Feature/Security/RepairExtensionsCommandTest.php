@@ -106,3 +106,25 @@ test('a matching extension is left alone', function () {
 
     expect($media->fresh()->path)->toBe('media/photo.jpg');
 });
+
+test('the original is kept when the sanitized copy cannot be written', function () {
+    $markup = '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1"/></svg>';
+    $media = storedMedia('media/logo.html', $markup, 'text/html');
+
+    $fake = Storage::disk('public');
+
+    Storage::set('public', new class($fake->getDriver(), $fake->getAdapter(), $fake->getConfig()) extends Illuminate\Filesystem\FilesystemAdapter
+    {
+        public function put($path, $contents, $options = [])
+        {
+            return false;
+        }
+    });
+
+    $this->artisan('curator:repair-extensions')
+        ->expectsOutputToContain('skipped (could not write)')
+        ->assertSuccessful();
+
+    expect(Storage::disk('public')->get('media/logo.html'))->toBe($markup)
+        ->and($media->fresh()->path)->toBe('media/logo.html');
+});

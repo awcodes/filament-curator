@@ -101,6 +101,10 @@ class MimeType
         'application/x-shockwave-flash',
         'application/xhtml+xml',
         'application/xml',
+        'application/ecmascript',
+        'application/javascript',
+        'application/x-javascript',
+        'text/ecmascript',
         'text/html',
         'text/javascript',
         'text/xml',
@@ -115,6 +119,17 @@ class MimeType
         'docm', 'docx', 'dotm', 'dotx', 'epub', 'odg', 'odp', 'ods', 'odt',
         'potx', 'ppsx', 'pptm', 'pptx', 'vsdx', 'xlsm', 'xlsx', 'xltm', 'xltx',
     ];
+
+    /**
+     * Legacy Office formats are OLE compound files. libmagic only names the
+     * application when the entry it recognises them by falls within the bytes
+     * it is given, so a large file's first 64KB often reads as a bare container.
+     */
+    private const OLE_BASED_EXTENSIONS = ['doc', 'dot', 'msg', 'ppt', 'pps', 'xls', 'xlt'];
+
+    private const OLE_CONTAINER_TYPES = ['application/cdfv2', 'application/x-ole-storage', 'application/octet-stream'];
+
+    private const OLE_SIGNATURE = "\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1";
 
     private const PLAIN_TEXT_TYPES = [
         'application/ics',
@@ -174,10 +189,13 @@ class MimeType
      *   sanitizing every SVG goes through.
      * - Office and OpenDocument files are zip archives, and are reported as
      *   application/zip unless the archive's first entry identifies them.
+     * - Legacy Office files are OLE containers, reported as such when the entry
+     *   that identifies them lies beyond the bytes that were sampled.
      *
-     * @param  Closure(): string  $contents  read only when a correction applies
+     * @param  Closure(): string  $contents  the whole file, read only to check an SVG document
+     * @param  Closure(int): string  $head  the file's first bytes, read only to check a signature
      */
-    public static function refineDetectedType(?string $type, ?string $clientExtension, Closure $contents): string
+    public static function refineDetectedType(?string $type, ?string $clientExtension, Closure $contents, Closure $head): string
     {
         $type = self::normalizeType($type);
         $extension = mb_strtolower(trim((string) $clientExtension));
@@ -193,12 +211,37 @@ class MimeType
         if (
             in_array($extension, self::ZIP_BASED_EXTENSIONS, true)
             && in_array($type, ['application/zip', self::OCTET_STREAM], true)
-            && str_starts_with($contents(), "PK\x03\x04")
+            && str_starts_with($head(4), "PK\x03\x04")
+        ) {
+            return MimeTypes::getDefault()->getMimeTypes($extension)[0] ?? $type;
+        }
+
+        if (
+            in_array($extension, self::OLE_BASED_EXTENSIONS, true)
+            && in_array($type, self::OLE_CONTAINER_TYPES, true)
+            && str_starts_with($head(strlen(self::OLE_SIGNATURE)), self::OLE_SIGNATURE)
         ) {
             return MimeTypes::getDefault()->getMimeTypes($extension)[0] ?? $type;
         }
 
         return $type;
+    }
+
+    /**
+     * Read the first bytes of a stream, closing it.
+     *
+     * @param  resource|null  $stream
+     */
+    public static function readHead(mixed $stream, int $length): string
+    {
+        if (! is_resource($stream)) {
+            return '';
+        }
+
+        $head = stream_get_contents($stream, $length);
+        fclose($stream);
+
+        return is_string($head) ? $head : '';
     }
 
     /**
@@ -300,7 +343,9 @@ class MimeType
 
     /**
      * Whether a type matches one of a list of accepted types, which may use
-     * wildcards such as `image/*`.
+     * wildcards such as `image/*`. Types that render as a document or run as
+     * script only match when they are listed exactly, never through a
+     * wildcard such as `text/*` or `application/*`.
      *
      * @param  array<int, string>  $acceptedTypes
      */
@@ -315,7 +360,7 @@ class MimeType
                 return true;
             }
 
-            if (str_ends_with($accepted, '/*') && str_starts_with($type, substr($accepted, 0, -1))) {
+            if (str_ends_with($accepted, '/*') && ! self::isRestricted($type) && str_starts_with($type, substr($accepted, 0, -1))) {
                 return true;
             }
         }

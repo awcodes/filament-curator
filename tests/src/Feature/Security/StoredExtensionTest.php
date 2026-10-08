@@ -143,3 +143,57 @@ test('the stored extension follows the detected type', function (?string $type, 
     ['application/octet-stream', 'html', 'bin'],
     [null, 'png', 'bin'],
 ]);
+
+test('an svg upload that cannot be sanitized is rejected and leaves no file', function () {
+    $markup = '<?xml version="1.0"?><html xmlns="http://www.w3.org/1999/xhtml"><body><svg/><b>hello</b></body></html>';
+
+    uploadThroughPanel(fakeUpload('x.svg', $markup, 'image/svg+xml'), ['image/svg+xml'])
+        ->assertHasErrors();
+
+    expect(Media::count())->toBe(0)
+        ->and(Storage::disk('public')->allFiles())->toBe([]);
+});
+
+test('xml is not accepted through a wildcard', function () {
+    $markup = '<?xml version="1.0"?><html xmlns="http://www.w3.org/1999/xhtml"><body>hello</body></html>';
+
+    uploadThroughPanel(fakeUpload('x.xhtml', $markup, 'text/xml'), ['text/*'])
+        ->assertHasErrors();
+
+    expect(Media::count())->toBe(0)
+        ->and(Storage::disk('public')->allFiles())->toBe([]);
+});
+
+test('document and script types only match an accepted type listed exactly', function (string $type, array $accepted, bool $expected) {
+    expect(MimeType::isAccepted($type, $accepted))->toBe($expected);
+})->with([
+    ['text/xml', ['text/*'], false],
+    ['text/html', ['text/*'], false],
+    ['application/xml', ['application/*'], false],
+    ['application/xhtml+xml', ['application/*'], false],
+    ['application/javascript', ['application/*'], false],
+    ['text/html', ['text/html'], true],
+    ['image/svg+xml', ['image/*'], true],
+    ['text/plain', ['text/*'], true],
+]);
+
+test('a legacy office file larger than the sniffed sample keeps its extension', function () {
+    // An OLE compound file whose identifying entry lies past the first 64KB.
+    $contents = "\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1" . str_repeat("\0", 70000);
+
+    uploadThroughPanel(fakeUpload('report.doc', $contents, 'application/msword'), ['application/msword']);
+
+    $media = Media::sole();
+
+    expect($media->ext)->toBe('doc')
+        ->and($media->type)->toBe('application/msword');
+});
+
+test('an ole container under a non-office name is not retyped', function () {
+    expect(MimeType::refineDetectedType(
+        'application/x-ole-storage',
+        'html',
+        fn (): string => '',
+        fn (int $length): string => substr("\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1", 0, $length),
+    ))->toBe('application/x-ole-storage');
+});
