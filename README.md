@@ -146,6 +146,26 @@ CuratorPicker::make(string $fieldName)
     ->orderColumn('order') // only necessary to rename the order column if using a relationship with multiple media
 ```
 
+#### Opening the panel from your own code
+
+The picker field and the rich editor media action open the media panel for you. If you open it from your own action instead, encrypt the settings with `CuratorPanel::encryptSettings()`. The panel ignores settings sent any other way, so they can't be changed in the browser, and its configuration can't be changed after it opens.
+
+```php
+use Awcodes\Curator\Components\Modals\CuratorPanel;
+
+$livewire->dispatch('open-modal', id: 'curator-panel', settings: CuratorPanel::encryptSettings([
+    'acceptedFileTypes' => ['image/jpeg', 'image/png'],
+    'directory' => 'media',
+    'diskName' => 'public',
+    'statePath' => $component->getStatePath(),
+    'types' => ['image/jpeg', 'image/png'],
+    'visibility' => 'public',
+    // ...the same keys the picker field sends
+]));
+```
+
+An encrypted payload can be used for ten minutes, so create it when the panel is opened. The panel loads the selected media again by id, within the current tenant when tenancy is enabled.
+
 ### Relationships
 
 #### Single
@@ -540,6 +560,8 @@ class CustomServerFactory implements Contracts\ServerFactory
     }
 }
 ```
+
+Curator passes Glide the path relative to the disk, so it clears the server's base URL before serving an image. A `base_url` set in your factory is not used.
 
 Then register your server in the config.
 
