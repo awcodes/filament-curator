@@ -121,7 +121,7 @@
                                 @else
                                     <button
                                         type="button"
-                                        wire:click.prevent="handleDirectoryChange('{{ $breadcrumb['path'] }}')"
+                                        wire:click.prevent="handleDirectoryChange(@js($breadcrumb['path']))"
                                         class="hover:text-primary-500 focus:text-primary-500"
                                     >
                                         {{ $breadcrumb['label'] }}
@@ -141,7 +141,7 @@
                         >
                             <button
                                 type="button"
-                                wire:click="handleDirectoryChange('{{ $dir['path'] }}')"
+                                wire:click="handleDirectoryChange(@js($dir['path']))"
                                 class="block w-full h-full overflow-hidden bg-gray-200 rounded-md dark:bg-gray-900 hover:text-primary-600 hover:bg-primary-500/20 hover:ring-2 hover:ring-primary-500 dark:hover:text-white dark:hover:bg-primary-500/20 focus:text-primary-600 focus:bg-primary-500/20 focus:ring-2 focus:ring-primary-500"
                             >
                                 <div class="grid place-content-center place-items-center w-full h-full text-xs relative">
@@ -181,8 +181,8 @@
 
                         <button
                             type="button"
-                            x-on:click="removeFromSelection({{ $file['id']}})"
-                            x-show="isSelected('{{ $file['id'] }}')"
+                            x-on:click="removeFromSelection(@js($file['id']))"
+                            x-show="isSelected(@js((string) $file['id']))"
                             x-cloak
                             class="absolute inset-0 flex items-center justify-center w-full h-full rounded-md shadow text-primary-600 bg-primary-500/20 ring-2 ring-primary-500"
                         >

@@ -220,6 +220,8 @@ CuratorPicker::make(string $fieldName)
     ->orderColumn('order') // only necessary to rename the order column if using a relationship with multiple media
 ```
 
+The media panel takes these settings from the picker when it opens, and they can't be changed from the browser while it's open. Uploads go to the picker's `directory()`, or to an existing folder the user has browsed into. If you render the `curator-panel` Livewire component yourself, pass its configuration through the `settings` array when you mount it; setting its properties from the browser afterwards is rejected. When media is inserted, the panel sends the picker the stored records for the selected ids.
+
 ### Relationships
 
 #### Single
@@ -534,6 +536,8 @@ public function register(): void
 > - **`source_path_prefix`** must match where your objects actually live on the disk. Because a cloud disk's Flysystem is already rooted at the bucket (and your media `path` is stored relative to it), this is usually an empty string `''`. The `'public'` prefix in the default exists only because the local source is rooted at `storage_path('app')` while files live under `storage/app/public/`. A mismatched prefix is the most common cause of "images don't render" on cloud disks.
 > - **Keep `cache` on a fast local disk.** Transformed images are cached there, so only the first request per variant reads the source from the cloud. A cold cache on a remote source is slow; a warm local cache is fast.
 > - **Stray media on a different disk** (e.g. old records still on `public` while your source is S3) will fail source lookups and can slow things down — make sure existing records' `disk` matches your Glide source.
+>
+> - **Don't rely on `base_url`.** Curator always passes Glide the media's own path, so a `base_url` in your config is ignored.
 
 ### Curation Blade Component
 
