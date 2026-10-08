@@ -108,6 +108,42 @@ enum MimeType: string
         'potx', 'ppsx', 'pptm', 'pptx', 'vsdx', 'xlsm', 'xlsx', 'xltm', 'xltx',
     ];
 
+    /**
+     * Legacy Office formats stored in an OLE compound file. Sniffing only the
+     * start of a large one reports the container, not the format.
+     */
+    private const OLE_BASED_EXTENSIONS = [
+        'doc' => 'application/msword',
+        'dot' => 'application/msword',
+        'msg' => 'application/vnd.ms-outlook',
+        'pot' => 'application/vnd.ms-powerpoint',
+        'pps' => 'application/vnd.ms-powerpoint',
+        'ppt' => 'application/vnd.ms-powerpoint',
+        'xls' => 'application/vnd.ms-excel',
+        'xlt' => 'application/vnd.ms-excel',
+    ];
+
+    private const OLE_CONTAINER_TYPES = ['application/cdfv2', 'application/x-ole-storage'];
+
+    private const OLE_SIGNATURE = "\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1";
+
+    /**
+     * Types that render as a document or run as script when served inline.
+     * They are accepted only when listed exactly, never through a wildcard
+     * such as `text/*` or `application/*`. SVG is not among them because every
+     * SVG is sanitized.
+     */
+    private const SCRIPTABLE_TYPES = [
+        'application/ecmascript',
+        'application/javascript',
+        'application/x-javascript',
+        'application/xml',
+        'text/ecmascript',
+        'text/html',
+        'text/javascript',
+        'text/xml',
+    ];
+
     private const PLAIN_TEXT_TYPES = [
         'application/ics',
         'application/json',
@@ -217,17 +253,9 @@ enum MimeType: string
      */
     public static function detectFromStream(mixed $stream): string
     {
-        if (! is_resource($stream)) {
-            return self::ApplicationOctetStream->value;
-        }
+        $sample = self::readStream($stream, 64 * 1024);
 
-        try {
-            $sample = stream_get_contents($stream, 64 * 1024);
-        } finally {
-            fclose($stream);
-        }
-
-        if (! is_string($sample) || $sample === '') {
+        if ($sample === '') {
             return self::ApplicationOctetStream->value;
         }
 
@@ -236,15 +264,58 @@ enum MimeType: string
     }
 
     /**
+     * Read a stream, or its first $length bytes, and close it.
+     *
+     * @param  resource|null  $stream
+     */
+    public static function readStream(mixed $stream, ?int $length = null): string
+    {
+        if (! is_resource($stream)) {
+            return '';
+        }
+
+        try {
+            $contents = stream_get_contents($stream, $length);
+        } finally {
+            fclose($stream);
+        }
+
+        return is_string($contents) ? $contents : '';
+    }
+
+    /**
      * Whether a type is in a list of accepted types, which may hold wildcards
      * such as `image/*`, matched the way Laravel's `mimetypes` rule matches.
+     * Types that can run script, and the restricted types, match only when
+     * listed exactly.
      *
      * @param  array<int, string>  $acceptedTypes
      */
     public static function isAccepted(string $type, array $acceptedTypes): bool
     {
-        return in_array($type, $acceptedTypes, true)
-            || in_array(explode('/', $type)[0] . '/*', $acceptedTypes, true);
+        $type = self::normalizeType($type);
+
+        if (in_array($type, $acceptedTypes, true)) {
+            return true;
+        }
+
+        if (self::isScriptable($type) || in_array($type, self::restricted(), true)) {
+            return false;
+        }
+
+        return in_array(explode('/', $type)[0] . '/*', $acceptedTypes, true);
+    }
+
+    /**
+     * Whether content of this type renders as a document or runs as script
+     * when served inline: HTML, JavaScript, and XML of any kind but SVG.
+     */
+    public static function isScriptable(?string $type): bool
+    {
+        $type = self::normalizeType($type);
+
+        return in_array($type, self::SCRIPTABLE_TYPES, true)
+            || ($type !== self::ImageSvgXml->value && str_ends_with($type, '+xml'));
     }
 
     /**
@@ -257,8 +328,12 @@ enum MimeType: string
      *   sanitizing every SVG goes through.
      * - Office and OpenDocument files are zip archives, and are reported as
      *   application/zip unless the archive's first entry identifies them.
+     * - Legacy Office files are OLE compound files, and are reported as the
+     *   container when only the start of a large file is sniffed.
      *
-     * @param  Closure(): string  $contents  read only when a correction applies
+     * @param  Closure(?int=): string  $contents  returns the content, or its first
+     *                                            given number of bytes; called only
+     *                                            when a correction applies
      */
     public static function refineDetectedType(?string $type, ?string $clientExtension, Closure $contents): string
     {
@@ -276,9 +351,17 @@ enum MimeType: string
         if (
             in_array($extension, self::ZIP_BASED_EXTENSIONS, true)
             && in_array($type, [self::ApplicationZip->value, self::ApplicationOctetStream->value], true)
-            && str_starts_with($contents(), "PK\x03\x04")
+            && $contents(4) === "PK\x03\x04"
         ) {
             return MimeTypes::getDefault()->getMimeTypes($extension)[0] ?? $type;
+        }
+
+        if (
+            array_key_exists($extension, self::OLE_BASED_EXTENSIONS)
+            && in_array($type, self::OLE_CONTAINER_TYPES, true)
+            && $contents(8) === self::OLE_SIGNATURE
+        ) {
+            return self::OLE_BASED_EXTENSIONS[$extension];
         }
 
         return $type;

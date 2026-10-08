@@ -88,4 +88,85 @@ test('isAccepted matches exact types and wildcards', function (string $type, arr
     ['image/png', ['image/*'], true],
     ['text/html', ['image/*'], false],
     ['text/html', ['image/png', 'application/pdf'], false],
+    ['text/html', ['text/html'], true],
+    ['text/html', ['text/*'], false],
+    ['text/xml', ['text/*'], false],
+    ['text/javascript', ['text/*'], false],
+    ['application/xml', ['application/*'], false],
+    ['application/xhtml+xml', ['application/*'], false],
+    ['application/octet-stream', ['application/*'], false],
+    ['image/svg+xml', ['image/*'], true],
+    ['application/pdf', ['application/*'], true],
+    ['text/plain', ['text/*'], true],
+]);
+
+test('a wildcard does not accept xhtml', function (string $wildcard, string $declared) {
+    Curator::acceptedFileTypes([$wildcard]);
+
+    Livewire::test(CreateMedia::class)
+        ->set('data.file', UploadedFile::fake()->createWithContent('page.xml', '<?xml version="1.0"?><html xmlns="http://www.w3.org/1999/xhtml"><body><p>page</p></body></html>')->mimeType($declared))
+        ->call('create')
+        ->assertHasFormErrors(['file']);
+
+    expect(Media::query()->count())->toBe(0)
+        ->and(Storage::disk('public')->allFiles())->toBe([]);
+})->with([
+    'text/*' => ['text/*', 'text/xml'],
+    'application/*' => ['application/*', 'application/xml'],
+]);
+
+test('xml is still accepted when listed exactly', function () {
+    Curator::acceptedFileTypes(['text/xml']);
+
+    Livewire::test(CreateMedia::class)
+        ->set('data.file', UploadedFile::fake()->createWithContent('note.xml', '<?xml version="1.0"?><note><to>x</to></note>')->mimeType('text/xml'))
+        ->call('create')
+        ->assertHasNoFormErrors();
+
+    expect(Media::query()->sole()->type)->toBe('text/xml');
+});
+
+function detectedUploadTypeOle(): string
+{
+    // An OLE compound file header followed by more than 64 KiB, so sniffing the
+    // first 64 KiB reports only the container.
+    return "\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1" . str_repeat("\0", 70 * 1024);
+}
+
+test('legacy office files larger than the sniffed sample are accepted', function (string $name, string $type, string $ext) {
+    Livewire::test(CreateMedia::class)
+        ->set('data.file', UploadedFile::fake()->createWithContent($name, detectedUploadTypeOle())->mimeType($type))
+        ->call('create')
+        ->assertHasNoFormErrors();
+
+    $media = Media::query()->sole();
+
+    expect($media->type)->toBe($type)
+        ->and($media->ext)->toBe($ext);
+})->with([
+    'doc' => ['report.doc', 'application/msword', 'doc'],
+    'xls' => ['sheet.xls', 'application/vnd.ms-excel', 'xls'],
+    'ppt' => ['slides.ppt', 'application/vnd.ms-powerpoint', 'ppt'],
+]);
+
+test('an ole container is not treated as an office file without its signature or extension', function () {
+    expect(MimeType::refineDetectedType('application/x-ole-storage', 'doc', fn (?int $length = null): string => str_repeat('A', $length ?? 100)))
+        ->toBe('application/x-ole-storage')
+        ->and(MimeType::refineDetectedType('application/x-ole-storage', 'bin', fn (?int $length = null): string => substr(detectedUploadTypeOle(), 0, $length)))
+        ->toBe('application/x-ole-storage');
+});
+
+test('signature checks read only the first bytes', function (string $type, string $extension, string $contents, int $length) {
+    $requested = [];
+
+    MimeType::refineDetectedType($type, $extension, function (?int $length = null) use (&$requested, $contents): string {
+        $requested[] = $length;
+
+        return $length === null ? $contents : substr($contents, 0, $length);
+    });
+
+    expect($requested)->toBe([$length]);
+})->with([
+    'zip' => ['application/zip', 'docx', "PK\x03\x04rest", 4],
+    'ole' => ['application/x-ole-storage', 'doc', "\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1rest", 8],
 ]);

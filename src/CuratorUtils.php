@@ -57,7 +57,7 @@ class CuratorUtils
         $detectedType = MimeType::refineDetectedType(
             (new FinfoMimeTypeDetector)->detectMimeTypeFromBuffer($fileContents) ?: MimeType::ApplicationOctetStream->value,
             $sourceExtension,
-            fn (): string => $fileContents,
+            fn (?int $length = null): string => $length === null ? $fileContents : substr($fileContents, 0, $length),
         );
         $ext = MimeType::resolveExtension($detectedType, $sourceExtension);
 
@@ -71,17 +71,27 @@ class CuratorUtils
             $filepath = (string) Str::of($directory . '/' . $filename . '-' . time() . '.' . $ext)->trim('/');
         }
 
-        if (! $storage->exists($filepath)) {
-            $storage->put($filepath, $fileContents, $visibility);
-            $fileContents = $storage->get($filepath);
-        }
-
         $type = $detectedType;
 
         // Imported files never pass through the uploader, so they get the same
-        // treatment here: sanitize on the detected type as well as the extension.
+        // treatment here: SVG markup is sanitized before it is written, and
+        // markup the sanitizer can't handle is never stored.
         if (Curator::isSvg($ext) || Curator::isSvgMimeType($type)) {
-            $storage->put($filepath, Curator::sanitizeSvg($storage->get($filepath)), $visibility);
+            $clean = Curator::sanitizeSvg($fileContents);
+
+            if ($clean === '' && $fileContents !== '') {
+                throw new Exception("Could not sanitize the SVG from {$path}");
+            }
+
+            $fileContents = $clean;
+        }
+
+        if (! $storage->exists($filepath)) {
+            if (! $storage->put($filepath, $fileContents, $visibility)) {
+                throw new Exception("Could not store the file from {$path}");
+            }
+
+            $fileContents = $storage->get($filepath);
         }
 
         if (Curator::isResizable($ext)) {

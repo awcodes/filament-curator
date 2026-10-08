@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Awcodes\Curator\Enums\MimeType;
 use Awcodes\Curator\Facades\Curator;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Storage;
 
 function repairExtensionsJpeg(): string
@@ -238,4 +239,29 @@ test('leaves healthy svg and office files alone', function () {
 
     expect($svg->refresh()->path)->toBe('icon.svg')
         ->and($docx->refresh()->path)->toBe('report.docx');
+});
+
+test('keeps the original when the sanitized svg cannot be written', function () {
+    Storage::fake('public');
+    Storage::disk('public')->put('logo.html', '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script><rect width="1" height="1"/></svg>');
+
+    $fake = Storage::disk('public');
+
+    Storage::set('public', new class($fake->getDriver(), $fake->getAdapter(), ['throw' => false]) extends FilesystemAdapter
+    {
+        public function put($path, $contents, $options = [])
+        {
+            return str_ends_with((string) $path, '.svg') ? false : parent::put($path, $contents, $options);
+        }
+    });
+
+    $media = makeMedia(['name' => 'logo', 'path' => 'logo.html', 'ext' => 'html']);
+
+    $this->artisan('curator:repair-extensions')
+        ->expectsOutputToContain('could not write logo.svg')
+        ->assertSuccessful();
+
+    expect($media->refresh()->path)->toBe('logo.html')
+        ->and(Storage::disk('public')->exists('logo.html'))->toBeTrue()
+        ->and(Storage::disk('public')->exists('logo.svg'))->toBeFalse();
 });

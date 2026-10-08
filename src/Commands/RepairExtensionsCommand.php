@@ -91,7 +91,7 @@ class RepairExtensionsCommand extends Command
         $detectedType = MimeType::refineDetectedType(
             $this->detectType($disk, $path),
             $storedExtension,
-            fn (): string => (string) $disk->get($path),
+            fn (?int $length = null): string => $length === null ? (string) $disk->get($path) : MimeType::readStream($disk->readStream($path), $length),
         );
 
         if ($this->isUnsafeContent($detectedType)) {
@@ -177,7 +177,14 @@ class RepairExtensionsCommand extends Command
 
         if (! $dryRun) {
             if ($content !== null) {
-                $disk->put($newPath, $content, $media->visibility ?? 'public');
+                // The original is the only copy, so it is removed only once the
+                // sanitized file has been written.
+                if (! $disk->put($newPath, $content, $media->visibility ?? 'public')) {
+                    $this->error("  error: [{$media->id}] could not write {$newPath}");
+
+                    return 'skipped';
+                }
+
                 $disk->delete($oldPath);
             } elseif (! $disk->move($oldPath, $newPath)) {
                 $this->error("  error: [{$media->id}] could not move {$oldPath} to {$newPath}");

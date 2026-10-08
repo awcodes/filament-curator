@@ -52,6 +52,19 @@ class Uploader extends FileUpload
 
             $storeMethod = $component->getVisibility() === 'public' ? 'storePubliclyAs' : 'storeAs';
 
+            // SVGs are served as raw markup (they are not routed through Glide),
+            // so they are sanitized before anything is written to the disk, and
+            // markup the sanitizer can't handle is never stored.
+            $svg = null;
+
+            if (Curator::isSvg($extension) || Curator::isSvgMimeType($type)) {
+                $svg = $this->sanitizeSvgUpload($file);
+
+                if ($svg === null) {
+                    return null;
+                }
+            }
+
             if (Curator::isResizable($extension)) {
                 if (Curator::isUsingCloudDisk()) {
                     $content = Storage::disk($component->getDiskName())->get($file->path());
@@ -70,20 +83,22 @@ class Uploader extends FileUpload
                 $filename = $filename . '-' . time();
             }
 
-            $size = $file->getSize();
+            if ($svg !== null) {
+                $path = trim($component->getDirectory() . '/' . $filename . '.' . $extension, '/');
 
-            $path = $file->{$storeMethod}(
-                $component->getDirectory(),
-                $filename . '.' . $extension,
-                $component->getDiskName()
-            );
+                if (! Storage::disk($component->getDiskName())->put($path, $svg, $component->getVisibility())) {
+                    return null;
+                }
 
-            // SVGs are served as raw markup (they are not routed through Glide),
-            // so strip any embedded scripts before they can execute inline.
-            if (Curator::isSvg($extension) || Curator::isSvgMimeType($type)) {
-                $disk = Storage::disk($component->getDiskName());
-                $disk->put($path, Curator::sanitizeSvg($disk->get($path)), $component->getVisibility());
-                $size = $disk->size($path);
+                $size = strlen($svg);
+            } else {
+                $size = $file->getSize();
+
+                $path = $file->{$storeMethod}(
+                    $component->getDirectory(),
+                    $filename . '.' . $extension,
+                    $component->getDiskName()
+                );
             }
 
             return [
@@ -159,7 +174,32 @@ class Uploader extends FileUpload
                     }
                 }
             },
+            function (string $attribute, mixed $value, Closure $fail): void {
+                foreach (Arr::wrap($value) as $file) {
+                    if (
+                        $file instanceof TemporaryUploadedFile
+                        && Curator::isSvgMimeType($this->detectFileType($file))
+                        && $this->sanitizeSvgUpload($file) === null
+                    ) {
+                        $fail(__('validation.uploaded', ['attribute' => $this->getValidationAttribute()]));
+
+                        return;
+                    }
+                }
+            },
         ];
+    }
+
+    /**
+     * The sanitized markup of an SVG upload, or null when the sanitizer can't
+     * produce any from markup that isn't empty.
+     */
+    public function sanitizeSvgUpload(TemporaryUploadedFile $file): ?string
+    {
+        $original = (string) $file->get();
+        $clean = Curator::sanitizeSvg($original);
+
+        return $clean === '' && $original !== '' ? null : $clean;
     }
 
     /**
@@ -173,7 +213,7 @@ class Uploader extends FileUpload
         return MimeType::refineDetectedType(
             MimeType::detectFromStream($file->readStream()),
             $file->getClientOriginalExtension(),
-            fn (): string => (string) $file->get(),
+            fn (?int $length = null): string => $length === null ? (string) $file->get() : MimeType::readStream($file->readStream(), $length),
         );
     }
 

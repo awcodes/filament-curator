@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Awcodes\Curator\Config\Concerns;
 
 use enshrined\svgSanitize\Sanitizer;
+use Throwable;
 
 trait HasSanitizers
 {
@@ -28,10 +29,16 @@ trait HasSanitizers
         $sanitizer = new Sanitizer;
         $sanitizer->removeRemoteReferences(true);
 
-        $clean = $sanitizer->sanitize($svg);
+        // The sanitizer returns false when the markup cannot be parsed, and
+        // throws for some documents it can parse, such as one whose root isn't
+        // <svg>. Fail closed with an empty string rather than the untrusted
+        // original in both cases.
+        try {
+            $clean = $sanitizer->sanitize($svg);
+        } catch (Throwable) {
+            return '';
+        }
 
-        // The sanitizer returns false when the markup cannot be parsed. Fail
-        // closed by storing an empty file rather than the untrusted original.
         return $clean === false ? '' : $clean;
     }
 }
