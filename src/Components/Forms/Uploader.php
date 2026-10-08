@@ -47,7 +47,7 @@ class Uploader extends FileUpload
             // Validation accepts the file on its detected type, and web servers
             // serve it by its extension, so the extension has to follow the
             // detected type rather than the name the client sent.
-            $type = MimeType::refineDetectedType($file->getMimeType(), $file->getClientOriginalExtension(), fn (): string => (string) $file->get());
+            $type = $this->detectFileType($file);
             $extension = MimeType::resolveExtension($type, $file->getClientOriginalExtension());
 
             $storeMethod = $component->getVisibility() === 'public' ? 'storePubliclyAs' : 'storeAs';
@@ -141,7 +141,40 @@ class Uploader extends FileUpload
                 }
             },
             ...parent::getValidationRules(),
+            function (string $attribute, mixed $value, Closure $fail): void {
+                $acceptedTypes = $this->getAcceptedFileTypes();
+
+                if (blank($acceptedTypes)) {
+                    return;
+                }
+
+                foreach (Arr::wrap($value) as $file) {
+                    if ($file instanceof TemporaryUploadedFile && ! MimeType::isAccepted($this->detectFileType($file), $acceptedTypes)) {
+                        $fail(__('validation.mimetypes', [
+                            'attribute' => $this->getValidationAttribute(),
+                            'values' => implode(', ', $acceptedTypes),
+                        ]));
+
+                        return;
+                    }
+                }
+            },
         ];
+    }
+
+    /**
+     * The type of an upload, detected from its own bytes. Filament's
+     * `mimetypes` rule uses the upload's getMimeType(), which some Livewire 3
+     * and 4 releases take from client-declared storage metadata, so the type
+     * that is accepted and stored is checked again here.
+     */
+    public function detectFileType(TemporaryUploadedFile $file): string
+    {
+        return MimeType::refineDetectedType(
+            MimeType::detectFromStream($file->readStream()),
+            $file->getClientOriginalExtension(),
+            fn (): string => (string) $file->get(),
+        );
     }
 
     public function saveUploadedFiles(): void

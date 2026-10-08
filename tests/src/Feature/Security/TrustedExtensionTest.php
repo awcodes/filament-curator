@@ -15,9 +15,10 @@ use Illuminate\Support\Js;
 use Livewire\Livewire;
 
 /**
- * Livewire detects an upload's type from its bytes in production, but fakes
- * report the type declared on them, so each upload declares what the bytes
- * would be detected as.
+ * Curator detects an upload's type from its bytes. Livewire's test fakes
+ * report the type declared on them, the way some Livewire releases report the
+ * browser's declared type, so each upload declares what its bytes are
+ * detected as unless a test is about a mismatch.
  */
 beforeEach(function () {
     config(['curator.default_disk' => 'public']);
@@ -80,14 +81,14 @@ test('a filename with script in its extension is stored with a safe extension', 
     Storage::fake('public');
 
     Livewire::test(CreateMedia::class)
-        ->set('data.file', trustedExtensionUpload("photo.png');alert(1);('", trustedExtensionJpeg(), 'image/png'))
+        ->set('data.file', trustedExtensionUpload("photo.jpg');alert(1);('", trustedExtensionJpeg(), 'image/jpeg'))
         ->call('create')
         ->assertHasNoFormErrors();
 
     $media = Media::query()->sole();
 
-    expect($media->ext)->toBe('png')
-        ->and($media->path)->toMatch('/^[a-z0-9\/-]+\.png$/');
+    expect($media->ext)->toBe('jpg')
+        ->and($media->path)->toMatch('/^[a-z0-9\/-]+\.jpg$/');
 });
 
 test('the extension is replaced even when filenames are preserved', function () {
@@ -120,7 +121,7 @@ test('ordinary uploads keep their extension', function (string $name, string $co
     'jpeg alias' => fn (): array => ['photo.jpeg', trustedExtensionJpeg(), 'image/jpeg', 'jpeg'],
     'uppercase' => fn (): array => ['PHOTO.JPG', trustedExtensionJpeg(), 'image/jpeg', 'jpg'],
     'pdf' => ['report.pdf', "%PDF-1.4\n", 'application/pdf', 'pdf'],
-    'csv detected as plain text' => ['data.csv', "a,b\n1,2\n", 'text/plain', 'csv'],
+    'csv' => ['data.csv', "a,b\n1,2\n", 'text/csv', 'csv'],
 ]);
 
 test('a png upload keeps working', function () {
@@ -224,10 +225,10 @@ test('svg that does not start with its root element is stored as a sanitized svg
 
     expect($media->ext)->toBe('svg')
         ->and($media->type)->toBe('image/svg+xml')
-        ->and(Storage::disk('public')->get($media->path))->not->toContain('<script')->toContain('rect');
+        ->and(Storage::disk('public')->get($media->path))->not->toContain('onload')->toContain('rect');
 })->with([
-    'leading whitespace' => "\n  <svg xmlns=\"http://www.w3.org/2000/svg\"><script>alert(1)</script><rect width=\"1\" height=\"1\"/></svg>",
-    'leading comment' => "<!-- icon -->\n<svg xmlns=\"http://www.w3.org/2000/svg\"><script>alert(1)</script><rect width=\"1\" height=\"1\"/></svg>",
+    'leading whitespace' => "\n  <svg xmlns=\"http://www.w3.org/2000/svg\"><rect width=\"1\" height=\"1\" onload=\"alert(1)\"/></svg>",
+    'leading comment' => "<!-- icon -->\n<svg xmlns=\"http://www.w3.org/2000/svg\"><rect width=\"1\" height=\"1\" onload=\"alert(1)\"/></svg>",
 ]);
 
 test('text that only mentions svg is not treated as svg', function () {

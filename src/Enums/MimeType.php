@@ -7,6 +7,7 @@ namespace Awcodes\Curator\Enums;
 use Closure;
 use DOMDocument;
 use Illuminate\Support\Str;
+use League\MimeTypeDetection\FinfoMimeTypeDetector;
 use Symfony\Component\Mime\MimeTypes;
 
 enum MimeType: string
@@ -202,6 +203,48 @@ enum MimeType: string
         }
 
         return null;
+    }
+
+    /**
+     * Detect a type from the first 64 KiB of a stream's bytes, and close it.
+     *
+     * Livewire 3.8.6 and 4.4.2 detect an upload's type this way. Earlier
+     * releases return the temporary file's storage metadata instead, which on
+     * an S3 temporary disk is the Content-Type the browser declared, so
+     * uploads are detected here rather than through getMimeType().
+     *
+     * @param  resource|null  $stream
+     */
+    public static function detectFromStream(mixed $stream): string
+    {
+        if (! is_resource($stream)) {
+            return self::ApplicationOctetStream->value;
+        }
+
+        try {
+            $sample = stream_get_contents($stream, 64 * 1024);
+        } finally {
+            fclose($stream);
+        }
+
+        if (! is_string($sample) || $sample === '') {
+            return self::ApplicationOctetStream->value;
+        }
+
+        return (new FinfoMimeTypeDetector)->detectMimeTypeFromBuffer($sample)
+            ?: self::ApplicationOctetStream->value;
+    }
+
+    /**
+     * Whether a type is in a list of accepted types, which may hold wildcards
+     * such as `image/*`, matched the way Laravel's `mimetypes` rule matches.
+     *
+     * @param  array<int, string>  $acceptedTypes
+     */
+    public static function isAccepted(string $type, array $acceptedTypes): bool
+    {
+        return in_array($type, $acceptedTypes, true)
+            || in_array(explode('/', $type)[0] . '/*', $acceptedTypes, true);
     }
 
     /**
