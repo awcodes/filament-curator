@@ -67,7 +67,10 @@ class MediaController extends Controller
         }
 
         $server = app(config('curator.glide.server'))->getFactory();
-        $server->setBaseUrl($routeBasePath);
+        // The route already passes the path relative to the disk. Glide strips a
+        // leading base URL from it, so with one set, media stored in a directory
+        // named after the route prefix would resolve to a different file.
+        $server->setBaseUrl('');
 
         return $server->getImageResponse($path, request()->all());
     }

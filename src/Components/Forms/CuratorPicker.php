@@ -2,6 +2,7 @@
 
 namespace Awcodes\Curator\Components\Forms;
 
+use Awcodes\Curator\Components\Modals\CuratorPanel;
 use Awcodes\Curator\Concerns\CanGeneratePaths;
 use Awcodes\Curator\Concerns\CanUploadFiles;
 use Awcodes\Curator\CuratorPlugin;
@@ -291,7 +292,7 @@ class CuratorPicker extends Field
             ->outlined($this->isOutlined())
             ->size($this->getSize())
             ->action(function (CuratorPicker $component, \Livewire\Component $livewire) {
-                $livewire->dispatch('open-modal', id: 'curator-panel', settings: [
+                $livewire->dispatch('open-modal', id: 'curator-panel', settings: CuratorPanel::encryptSettings([
                     'acceptedFileTypes' => $component->getAcceptedFileTypes(),
                     'defaultSort' => $component->getDefaultPanelSort(),
                     'directory' => $component->getDirectory(),
@@ -315,7 +316,7 @@ class CuratorPicker extends Field
                     'statePath' => $component->getStatePath(),
                     'types' => $component->getAcceptedFileTypes(),
                     'visibility' => $component->getVisibility(),
-                ]);
+                ]));
             });
     }
 

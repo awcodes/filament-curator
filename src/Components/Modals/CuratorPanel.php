@@ -18,11 +18,16 @@ use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
+use JsonException;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -34,74 +39,106 @@ class CuratorPanel extends Component implements HasActions, HasForms
     use InteractsWithForms;
     use WithPagination;
 
+    #[Locked]
     public array $acceptedFileTypes = [];
 
+    #[Locked]
     public string $context = 'create';
 
     public ?array $data = [];
 
+    #[Locked]
     public string $directory = 'media';
 
+    #[Locked]
     public string $diskName = 'public';
 
+    #[Locked]
     public ?array $files = [];
 
+    #[Locked]
     public ?string $imageCropAspectRatio = null;
 
+    #[Locked]
     public ?string $imageResizeMode = null;
 
+    #[Locked]
     public ?string $imageResizeTargetWidth = null;
 
+    #[Locked]
     public ?string $imageResizeTargetHeight = null;
 
+    #[Locked]
     public bool $isLimitedToDirectory = false;
 
+    #[Locked]
     public bool | Closure $isTenantAware = true;
 
+    #[Locked]
     public ?string $tenantOwnershipRelationshipName = null;
 
+    #[Locked]
     public bool $isMultiple = false;
 
+    #[Locked]
     public ?int $maxItems = null;
 
+    #[Locked]
     public ?int $maxSize = null;
 
+    #[Locked]
     public ?int $maxWidth = null;
 
+    #[Locked]
     public ?int $minSize = null;
 
+    #[Locked]
     public ?int $mediaId = null;
 
+    #[Locked]
     public PathGenerator | string | null $pathGenerator = null;
 
     public string $search = '';
 
     public array $selected = [];
 
+    #[Locked]
     public int $defaultLimit = 25;
 
+    #[Locked]
     public ?string $modalId = null;
 
+    #[Locked]
     public ?string $statePath;
 
+    #[Locked]
     public bool $shouldPreserveFilenames = false;
 
+    #[Locked]
     public array $types = [];
 
+    #[Locked]
     public array $validationRules = [];
 
+    #[Locked]
     public string $visibility = 'public';
 
+    #[Locked]
     public array $originalFilenames = [];
 
+    #[Locked]
     public int $currentPage = 0;
 
+    #[Locked]
     public int $mediaCount = 0;
 
+    #[Locked]
     public int $lastPage = 0;
 
+    #[Locked]
     public string $defaultSort = 'desc';
 
+    #[Locked]
     public ?Media $mediaClass = null;
 
     public function mount(): void
@@ -110,38 +147,147 @@ class CuratorPanel extends Component implements HasActions, HasForms
         $this->mediaClass = App::make(Media::class);
     }
 
-    #[On('open-modal')]
-    public function openModal(string $id, array $settings = []): void
+    /**
+     * How long an encrypted settings payload can be used to open the panel.
+     */
+    protected const SETTINGS_TTL_SECONDS = 3600;
+
+    protected const SETTINGS_PURPOSE = 'curator-panel-settings';
+
+    /**
+     * Encrypt the settings an opener sends with the `open-modal` event.
+     *
+     * The event travels through the browser, which could otherwise change the
+     * disk, directory, accepted types or limits the panel uploads with, so the
+     * panel only accepts settings encrypted with the application key.
+     */
+    public static function encryptSettings(array $settings): string
     {
-        if ($id === 'curator-panel') {
-            $this->acceptedFileTypes = $settings['acceptedFileTypes'];
-            $this->defaultSort = $settings['defaultSort'];
-            $this->directory = $settings['directory'];
-            $this->diskName = $settings['diskName'];
-            $this->imageCropAspectRatio = $settings['imageCropAspectRatio'];
-            $this->imageResizeMode = $settings['imageResizeMode'];
-            $this->imageResizeTargetWidth = $settings['imageResizeTargetWidth'];
-            $this->imageResizeTargetHeight = $settings['imageResizeTargetHeight'];
-            $this->isLimitedToDirectory = $settings['isLimitedToDirectory'];
-            $this->isMultiple = $settings['isMultiple'];
-            $this->isTenantAware = $settings['isTenantAware'];
-            $this->tenantOwnershipRelationshipName = $settings['tenantOwnershipRelationshipName'];
-            $this->maxItems = $settings['maxItems'];
-            $this->maxSize = $settings['maxSize'];
-            $this->maxWidth = $settings['maxWidth'] ?? 0;
-            $this->minSize = $settings['minSize'];
-            $this->pathGenerator = $settings['pathGenerator'];
-            $this->validationRules = $settings['rules'];
-            $this->selected = (array) $settings['selected'];
-            $this->shouldPreserveFilenames = $settings['shouldPreserveFilenames'];
-            $this->statePath = $settings['statePath'];
-            $this->types = $settings['types'];
-            $this->visibility = $settings['visibility'];
+        return Crypt::encryptString(json_encode([
+            'purpose' => self::SETTINGS_PURPOSE,
+            'expires' => now()->addSeconds(self::SETTINGS_TTL_SECONDS)->getTimestamp(),
+            'settings' => $settings,
+        ], JSON_THROW_ON_ERROR));
+    }
 
-            $this->files = $this->getFiles();
-
-            $this->form->fill();
+    #[On('open-modal')]
+    public function openModal(string $id, mixed $settings = null): void
+    {
+        if ($id !== 'curator-panel') {
+            return;
         }
+
+        $settings = $this->decryptSettings($settings);
+
+        if ($settings === null) {
+            return;
+        }
+
+        $this->acceptedFileTypes = $settings['acceptedFileTypes'] ?? [];
+        $this->defaultSort = ($settings['defaultSort'] ?? 'desc') === 'asc' ? 'asc' : 'desc';
+        $this->directory = $settings['directory'] ?? 'media';
+        $this->diskName = $settings['diskName'] ?? 'public';
+        $this->imageCropAspectRatio = $settings['imageCropAspectRatio'] ?? null;
+        $this->imageResizeMode = $settings['imageResizeMode'] ?? null;
+        $this->imageResizeTargetWidth = $settings['imageResizeTargetWidth'] ?? null;
+        $this->imageResizeTargetHeight = $settings['imageResizeTargetHeight'] ?? null;
+        $this->isLimitedToDirectory = (bool) ($settings['isLimitedToDirectory'] ?? false);
+        $this->isMultiple = (bool) ($settings['isMultiple'] ?? false);
+        $this->isTenantAware = (bool) ($settings['isTenantAware'] ?? true);
+        $this->tenantOwnershipRelationshipName = $settings['tenantOwnershipRelationshipName'] ?? null;
+        $this->maxItems = $settings['maxItems'] ?? null;
+        $this->maxSize = $settings['maxSize'] ?? null;
+        $this->maxWidth = $settings['maxWidth'] ?? 0;
+        $this->minSize = $settings['minSize'] ?? null;
+        $this->pathGenerator = $settings['pathGenerator'] ?? null;
+        $this->validationRules = $settings['rules'] ?? [];
+        $this->shouldPreserveFilenames = (bool) ($settings['shouldPreserveFilenames'] ?? false);
+        $this->statePath = $settings['statePath'] ?? null;
+        $this->types = $settings['types'] ?? [];
+        $this->visibility = $settings['visibility'] ?? 'public';
+
+        // The opener's selection comes from the field's state, which the browser
+        // can change, so only its ids are used and the records are loaded again.
+        $this->selected = $this->resolveSelection((array) ($settings['selected'] ?? []));
+
+        $this->files = $this->getFiles();
+
+        $this->form->fill();
+    }
+
+    /**
+     * Returns null, so the panel keeps its current settings, for anything that
+     * is not an unexpired payload from encryptSettings().
+     */
+    protected function decryptSettings(mixed $payload): ?array
+    {
+        if (! is_string($payload) || $payload === '') {
+            return null;
+        }
+
+        try {
+            $decoded = json_decode(Crypt::decryptString($payload), true, 512, JSON_THROW_ON_ERROR);
+        } catch (DecryptException | JsonException) {
+            return null;
+        }
+
+        if (
+            ! is_array($decoded)
+            || ($decoded['purpose'] ?? null) !== self::SETTINGS_PURPOSE
+            || ! is_int($decoded['expires'] ?? null)
+            || $decoded['expires'] < now()->getTimestamp()
+            || ! is_array($decoded['settings'] ?? null)
+        ) {
+            return null;
+        }
+
+        return $decoded['settings'];
+    }
+
+    /**
+     * Load media by the ids in a selection, in the selection's order, within the
+     * panel's tenant scope. Anything else the selection carries is ignored.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    protected function resolveSelection(array $selection): array
+    {
+        $ids = collect($selection)
+            ->map(function (mixed $item): mixed {
+                if ($item instanceof Media) {
+                    return $item->getKey();
+                }
+
+                return is_array($item) ? ($item['id'] ?? null) : $item;
+            })
+            ->filter(fn (mixed $id): bool => is_int($id) || (is_string($id) && $id !== ''))
+            ->map(fn (int | string $id): string => (string) $id)
+            ->unique()
+            ->values();
+
+        if ($ids->isEmpty()) {
+            return [];
+        }
+
+        $records = $this->scopedMediaQuery()
+            ->whereKey($ids->all())
+            ->get()
+            ->keyBy(fn (Media $media): string => (string) $media->getKey());
+
+        return $ids
+            ->map(fn (string $id): ?Media => $records->get($id))
+            ->filter()
+            ->map(fn (Media $media): array => $media->toArray())
+            ->values()
+            ->all();
+    }
+
+    protected function scopedMediaQuery(): Builder
+    {
+        return $this->mediaClass->query()
+            ->when(filament()->hasTenancy() && $this->isTenantAware, function ($query) {
+                return $query->where($this->tenantOwnershipRelationshipName . '_id', filament()->getTenant()->id);
+            });
     }
 
     public function form(Form $form): Form
@@ -240,8 +386,7 @@ class CuratorPanel extends Component implements HasActions, HasForms
         if (! $excludeSelected && $this->selected) {
             $selected = collect($this->selected)->pluck('id')->toArray();
 
-            $selectedItems = $this->mediaClass
-                ->query()
+            $selectedItems = $this->scopedMediaQuery()
                 ->whereIn('id', $selected)
                 ->get()
                 ->sortBy(function ($model) use ($selected) {
@@ -274,6 +419,10 @@ class CuratorPanel extends Component implements HasActions, HasForms
     public function addToSelection(int | string $id): void
     {
         $item = collect($this->files)->firstWhere('id', $id);
+
+        if (! $item) {
+            return;
+        }
 
         if ($this->isMultiple) {
             $this->selected[] = $item;
@@ -325,10 +474,10 @@ class CuratorPanel extends Component implements HasActions, HasForms
             ->toArray();
     }
 
-    public function setMediaForm(): void
+    protected function setMediaForm(): void
     {
         if (count($this->selected) === 1) {
-            $item = $this->mediaClass->find(Arr::first($this->selected)['id']);
+            $item = $this->scopedMediaQuery()->find(Arr::first($this->selected)['id'] ?? null);
             if ($item) {
                 $this->form->fill($item->toArray());
             }
@@ -516,11 +665,21 @@ class CuratorPanel extends Component implements HasActions, HasForms
             ->color('success')
             ->label(trans('curator::views.panel.use_selected_image'))
             ->action(function (): void {
+                // The selection can be changed from the browser, so the media
+                // sent to the field is loaded again by id within the tenant scope.
+                $media = $this->resolveSelection($this->selected);
+
+                if (! $this->isMultiple) {
+                    $media = array_slice($media, 0, 1);
+                }
+
+                $this->selected = $media;
+
                 $this->dispatch(
                     'insert-content',
                     type: 'media',
                     statePath: $this->statePath,
-                    media: $this->selected
+                    media: $media
                 );
 
                 $this->dispatch('close-modal', id: $this->modalId ?? 'curator-panel');

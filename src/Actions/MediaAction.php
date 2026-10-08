@@ -2,6 +2,7 @@
 
 namespace Awcodes\Curator\Actions;
 
+use Awcodes\Curator\Components\Modals\CuratorPanel;
 use Awcodes\Curator\Models\Media;
 use Filament\Forms\Components\Actions\Action;
 use FilamentTiptapEditor\TiptapEditor;
@@ -31,7 +32,7 @@ class MediaAction extends Action
                     ? [App::get(Media::class)->firstWhere('name', Str::of($arguments['src'])->afterLast('/')->beforeLast('.'))]
                     : [];
 
-                $livewire->dispatch('open-modal', id: 'curator-panel', settings: [
+                $livewire->dispatch('open-modal', id: 'curator-panel', settings: CuratorPanel::encryptSettings([
                     'acceptedFileTypes' => $component->getAcceptedFileTypes(),
                     'defaultSort' => 'desc',
                     'directory' => $component->getDirectory(),
@@ -55,7 +56,7 @@ class MediaAction extends Action
                     'statePath' => $component->getStatePath(),
                     'types' => $component->getAcceptedFileTypes(),
                     'visibility' => $component->getVisibility(),
-                ]);
+                ]));
             });
     }
 }
