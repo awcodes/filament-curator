@@ -6,6 +6,7 @@ namespace Awcodes\Curator\Components\Forms;
 
 use Awcodes\Curator\Concerns\CanGeneratePaths;
 use Awcodes\Curator\Concerns\CanNormalizePaths;
+use Awcodes\Curator\Enums\MimeType;
 use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Facades\Glide;
 use Awcodes\Curator\PathGenerators\Contracts\PathGenerator;
@@ -45,7 +46,11 @@ class Uploader extends FileUpload
                 ? Str::of(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME))->slug()
                 : (string) Str::uuid();
 
-            $extension = mb_strtolower($file->getClientOriginalExtension());
+            // Validation accepts the file on its detected type, and web servers
+            // serve it by its extension, so the extension has to follow the
+            // detected type rather than the name the client sent.
+            $type = $file->getMimeType();
+            $extension = MimeType::resolveExtension($type, $file->getClientOriginalExtension());
 
             $storeMethod = $component->getVisibility() === 'public' ? 'storePubliclyAs' : 'storeAs';
 
@@ -68,7 +73,6 @@ class Uploader extends FileUpload
             }
 
             $size = $file->getSize();
-            $type = $file->getMimeType();
 
             $path = $file->{$storeMethod}(
                 $component->getDirectory(),
@@ -78,10 +82,6 @@ class Uploader extends FileUpload
 
             // SVGs are served as raw markup (they are not routed through Glide),
             // so strip any embedded scripts before they can execute inline.
-            //
-            // The extension comes from the client and acceptance is decided on
-            // the detected type, so markup uploaded as `payload.txt` would skip
-            // sanitizing entirely if this only looked at the filename.
             if (Curator::isSvg($extension) || Curator::isSvgMimeType($type)) {
                 $disk = Storage::disk($component->getDiskName());
                 $disk->put($path, Curator::sanitizeSvg($disk->get($path)), $component->getVisibility());
@@ -98,7 +98,7 @@ class Uploader extends FileUpload
                 'width' => $width ?? null,
                 'height' => $height ?? null,
                 'size' => $size ?? null,
-                'type' => $type ?? null,
+                'type' => $type,
                 'ext' => $extension,
             ];
 

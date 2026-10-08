@@ -6,6 +6,7 @@ namespace Awcodes\Curator;
 
 use Awcodes\Curator\Commands\GenerateGlideTokenCommand;
 use Awcodes\Curator\Commands\InstallCommand;
+use Awcodes\Curator\Commands\RepairExtensionsCommand;
 use Awcodes\Curator\Commands\SanitizeSvgsCommand;
 use Awcodes\Curator\Components\Modals\CuratorCuration;
 use Awcodes\Curator\Components\Modals\CuratorPanel;
@@ -60,6 +61,7 @@ class CuratorServiceProvider extends PackageServiceProvider
                 InstallCommand::class,
                 GenerateGlideTokenCommand::class,
                 SanitizeSvgsCommand::class,
+                RepairExtensionsCommand::class,
             ]);
     }
 
