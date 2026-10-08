@@ -130,7 +130,7 @@ test('appends timestamp when file already exists', function () {
     Storage::fake('public');
 
     $tmpPath = sys_get_temp_dir() . '/collision-test-file.pdf';
-    file_put_contents($tmpPath, 'content');
+    file_put_contents($tmpPath, "%PDF-1.4\n");
 
     app(CuratorManager::class)->preserveFilenames(true);
 
