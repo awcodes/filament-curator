@@ -586,7 +586,15 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
         $formData = $this->form->getState();
 
         foreach ($formData['files_to_add'] as $item) {
-            if (! is_array($item) || ($item['disk'] ?? null) !== $this->diskName || ($item['visibility'] ?? null) !== $this->visibility) {
+            if (! is_array($item)) {
+                continue;
+            }
+
+            if (($item['disk'] ?? null) !== $this->diskName) {
+                continue;
+            }
+
+            if (($item['visibility'] ?? null) !== $this->visibility) {
                 continue;
             }
 
