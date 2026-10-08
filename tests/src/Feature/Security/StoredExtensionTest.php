@@ -82,8 +82,30 @@ test('a known alias of the detected type is kept', function () {
 test('a csv detected as plain text keeps its extension', function () {
     uploadThroughPanel(fakeUpload('data.csv', "a,b\n1,2\n", 'text/csv'), ['text/csv']);
 
-    expect(Media::sole()->ext)->toBe('csv');
+    $media = Media::sole();
+
+    expect($media->ext)->toBe('csv')
+        ->and($media->type)->toBe('text/csv');
 });
+
+test('plain-data text detected as text/plain takes the type of its extension', function (string $extension, string $expected) {
+    expect(MimeType::refineDetectedType('text/plain', $extension, fn (): string => '', fn (int $length): string => ''))
+        ->toBe($expected)
+        ->and(MimeType::resolveExtension($expected, $extension))->toBe(strtolower($extension));
+})->with([
+    ['csv', 'text/csv'],
+    ['CSV', 'text/csv'],
+    ['tsv', 'text/tab-separated-values'],
+    ['md', 'text/markdown'],
+    ['markdown', 'text/markdown'],
+    ['ics', 'text/calendar'],
+    ['vtt', 'text/vtt'],
+]);
+
+test('other extensions on text/plain content are not retyped', function (string $extension) {
+    expect(MimeType::refineDetectedType('text/plain', $extension, fn (): string => '', fn (int $length): string => ''))
+        ->toBe('text/plain');
+})->with(['html', 'js', 'xml', 'svg', 'php', 'txt']);
 
 test('an svg that starts with a comment keeps its extension and is sanitized', function () {
     $svg = "<!-- logo -->\n<svg xmlns=\"http://www.w3.org/2000/svg\" onload=\"void(0)\"><rect width=\"1\" height=\"1\"/></svg>";
@@ -196,4 +218,18 @@ test('an ole container under a non-office name is not retyped', function () {
         fn (): string => '',
         fn (int $length): string => substr("\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1", 0, $length),
     ))->toBe('application/x-ole-storage');
+});
+
+test('an svg named .svg is kept as svg whatever text type libmagic reports', function (string $detected) {
+    $svg = "<!-- logo -->\n<svg xmlns=\"http://www.w3.org/2000/svg\"><rect width=\"1\" height=\"1\"/></svg>";
+
+    expect(MimeType::refineDetectedType($detected, 'svg', fn (): string => $svg, fn (int $length): string => substr($svg, 0, $length)))
+        ->toBe('image/svg+xml');
+})->with(['text/plain', 'text/xml', 'application/xml', 'text/html']);
+
+test('html named .svg is not retyped as svg', function () {
+    $html = '<!DOCTYPE html><html><body><svg></svg></body></html>';
+
+    expect(MimeType::refineDetectedType('text/html', 'svg', fn (): string => $html, fn (int $length): string => substr($html, 0, $length)))
+        ->toBe('text/html');
 });

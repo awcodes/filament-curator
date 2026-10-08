@@ -131,6 +131,19 @@ class MimeType
 
     private const OLE_SIGNATURE = "\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1";
 
+    /**
+     * Plain-data formats libmagic may report only as text/plain, depending on
+     * its version and platform, mapped to the type their extension declares.
+     */
+    private const PLAIN_DATA_EXTENSION_TYPES = [
+        'csv' => 'text/csv',
+        'ics' => 'text/calendar',
+        'markdown' => 'text/markdown',
+        'md' => 'text/markdown',
+        'tsv' => 'text/tab-separated-values',
+        'vtt' => 'text/vtt',
+    ];
+
     private const PLAIN_TEXT_TYPES = [
         'application/ics',
         'application/json',
@@ -185,10 +198,14 @@ class MimeType
      * is that format:
      *
      * - SVG that starts with whitespace or a comment is reported as text/plain
-     *   (or as XML), so it would otherwise lose its extension, and with it the
-     *   sanitizing every SVG goes through.
+     *   (or as XML or HTML, depending on the libmagic version), so it would
+     *   otherwise lose its extension, and with it the sanitizing every SVG
+     *   goes through.
      * - Office and OpenDocument files are zip archives, and are reported as
      *   application/zip unless the archive's first entry identifies them.
+     * - CSV, TSV, Markdown, calendar and WebVTT text is reported as text/plain
+     *   by some libmagic versions, so it takes the type its extension declares.
+     *   These are plain data that never render as a document.
      * - Legacy Office files are OLE containers, reported as such when the entry
      *   that identifies them lies beyond the bytes that were sampled.
      *
@@ -200,9 +217,13 @@ class MimeType
         $type = self::normalizeType($type);
         $extension = mb_strtolower(trim((string) $clientExtension));
 
+        if ($type === self::TEXT_PLAIN && isset(self::PLAIN_DATA_EXTENSION_TYPES[$extension])) {
+            return self::PLAIN_DATA_EXTENSION_TYPES[$extension];
+        }
+
         if (
             $extension === 'svg'
-            && in_array($type, [self::TEXT_PLAIN, 'text/xml', 'application/xml'], true)
+            && in_array($type, [self::TEXT_PLAIN, 'text/xml', 'application/xml', 'text/html'], true)
             && self::isSvgDocument($contents())
         ) {
             return self::SVG;
