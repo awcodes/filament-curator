@@ -1,6 +1,7 @@
 <?php
 
 use Awcodes\Curator\Models\Media;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Storage;
 
 function repairJpeg(): string
@@ -113,7 +114,7 @@ test('the original is kept when the sanitized copy cannot be written', function 
 
     $fake = Storage::disk('public');
 
-    Storage::set('public', new class($fake->getDriver(), $fake->getAdapter(), $fake->getConfig()) extends Illuminate\Filesystem\FilesystemAdapter
+    Storage::set('public', new class($fake->getDriver(), $fake->getAdapter(), $fake->getConfig()) extends FilesystemAdapter
     {
         public function put($path, $contents, $options = [])
         {

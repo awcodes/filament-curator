@@ -4,6 +4,7 @@ use Awcodes\Curator\Components\Modals\CuratorPanel;
 use Awcodes\Curator\Models\Media;
 use Awcodes\Curator\Tests\Fixtures\Livewire\MediaForm;
 use FilamentTiptapEditor\FilamentTiptapEditorServiceProvider;
+use Illuminate\Encryption\Encrypter;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
@@ -101,7 +102,7 @@ test('settings that are not a valid payload change nothing', function (Closure $
 
         return base64_encode(json_encode($payload));
     },
-    'encrypted with another key' => fn () => fn () => (new Illuminate\Encryption\Encrypter(random_bytes(32), 'aes-256-cbc'))
+    'encrypted with another key' => fn () => fn () => (new Encrypter(random_bytes(32), 'aes-256-cbc'))
         ->encryptString(json_encode(['purpose' => 'curator-panel-settings', 'expires' => now()->addHour()->getTimestamp(), 'settings' => forgedSettings()])),
     'other encrypted value' => fn () => fn () => Crypt::encryptString(json_encode(['settings' => forgedSettings()])),
 ]);
