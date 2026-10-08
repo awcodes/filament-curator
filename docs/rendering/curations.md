@@ -37,6 +37,14 @@ The name you pass to `make()` is the label. Its **key** is that label slugged wi
 
 Choosing a preset in the modal locks the crop to the preset's shape, and the curation is saved at the preset's width and height. A custom curation, with a key of your own, is saved at the size of the crop in the original image.
 
+### Size limits
+
+Saving a curation needs the `update` ability on the media, the same as editing it. With no policy registered for the media model, anyone who can reach the edit page can save one.
+
+The crop box is trimmed to the image, after any flip and rotation, so the part of a crop that hangs over the image's edge is dropped rather than padded. A crop that misses the image entirely is rejected. Because of that, a custom curation is never larger than its source image.
+
+A custom curation is also capped by the `curation_max_dimension` config key, `8192` pixels by default. A crop whose longer side is bigger than that is scaled down to fit, keeping its shape. Set the key to `null` or `0` to turn the cap off. It doesn't apply to presets, which are always saved at the width and height they're registered with.
+
 ## Rendering a curation
 
 ```blade
