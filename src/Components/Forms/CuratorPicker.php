@@ -38,6 +38,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use ReflectionMethod;
 use ReflectionProperty;
+use Stringable;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class CuratorPicker extends Field
@@ -356,7 +357,7 @@ class CuratorPicker extends Field
                     'maxSize' => $component->getMaxSize(),
                     'minSize' => $component->getMinSize(),
                     'pathGenerator' => $component->getPathGenerator(),
-                    'rules' => $component->getValidationRules(),
+                    'rules' => $component->getPanelValidationRules(),
                     'selected' => (array) $component->getState(),
                     'shouldPreserveFilenames' => $component->shouldPreserveFilenames(),
                     'statePath' => $component->getStatePath(),
@@ -638,6 +639,22 @@ class CuratorPicker extends Field
     public function getTypeValue(): ?string
     {
         return $this->evaluate($this->typeValue) ?? null;
+    }
+
+    /**
+     * The panel is a Livewire component and its settings have to serialize, so it only gets the rules that are
+     * strings. Rule objects that cast to one, such as `Rule::dimensions()`, are passed as that string; closures and
+     * other rule objects only ever validate the selection, which the panel doesn't do.
+     *
+     * @return array<int, string>
+     */
+    protected function getPanelValidationRules(): array
+    {
+        return collect($this->getValidationRules())
+            ->map(fn (mixed $rule): mixed => $rule instanceof Stringable ? (string) $rule : $rule)
+            ->filter(fn (mixed $rule): bool => is_string($rule))
+            ->values()
+            ->all();
     }
 
     /**
