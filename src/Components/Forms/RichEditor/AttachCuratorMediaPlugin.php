@@ -5,21 +5,62 @@ declare(strict_types=1);
 namespace Awcodes\Curator\Components\Forms\RichEditor;
 
 use Awcodes\Curator\Facades\Curator;
+use Closure;
 use Filament\Actions\Action;
 use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\RichEditor\FileAttachmentProviders\Contracts\FileAttachmentProvider;
+use Filament\Forms\Components\RichEditor\Plugins\Contracts\HasFileAttachmentProvider;
 use Filament\Forms\Components\RichEditor\Plugins\Contracts\RichContentPlugin;
 use Filament\Forms\Components\RichEditor\RichEditorTool;
+use Filament\Support\Concerns\EvaluatesClosures;
 use Filament\Support\Enums\Width;
 use Filament\Support\Facades\FilamentAsset;
 use Illuminate\Support\Facades\Config;
 use Illuminate\View\View;
 use Tiptap\Core\Extension;
 
-class AttachCuratorMediaPlugin implements RichContentPlugin
+class AttachCuratorMediaPlugin implements HasFileAttachmentProvider, RichContentPlugin
 {
+    use EvaluatesClosures;
+
+    protected bool | Closure $shouldStoreMediaIds = false;
+
+    protected ?FileAttachmentProvider $fileAttachmentProvider = null;
+
     public static function make(): static
     {
         return app(static::class);
+    }
+
+    /**
+     * Insert media with its key in the image's `data-id`, as Filament stores its own attachments, so the image's URL
+     * is looked up from the library whenever the content is edited or rendered.
+     *
+     * Filament reads `data-id` through the editor's file attachment provider and, without one, as a path on its disk,
+     * which loses the image's src. The plugin supplies CuratorFileAttachmentProvider, or the one given, wherever
+     * Filament takes a provider from its plugins: a model's rich content attribute and RichContentRenderer. An editor
+     * outside both, such as one in a nested form, needs the provider set on the field itself.
+     */
+    public function storeMediaIds(bool | Closure $condition = true, ?FileAttachmentProvider $provider = null): static
+    {
+        $this->shouldStoreMediaIds = $condition;
+        $this->fileAttachmentProvider = $provider;
+
+        return $this;
+    }
+
+    public function shouldStoreMediaIds(): bool
+    {
+        return (bool) $this->evaluate($this->shouldStoreMediaIds);
+    }
+
+    public function getFileAttachmentProvider(): ?FileAttachmentProvider
+    {
+        if (! $this->shouldStoreMediaIds()) {
+            return null;
+        }
+
+        return $this->fileAttachmentProvider ??= CuratorFileAttachmentProvider::make();
     }
 
     /**
@@ -88,6 +129,7 @@ class AttachCuratorMediaPlugin implements RichContentPlugin
                         'shouldPreserveFilenames' => Curator::shouldPreserveFilenames(),
                         'statePath' => $component->getStatePath(),
                         'context' => 'richEditor',
+                        'storeMediaIds' => $this->shouldStoreMediaIds(),
                         'visibility' => $this->getExplicitAttachmentSetting($component, 'fileAttachmentsVisibility', 'getDefaultFileAttachmentsVisibility') ?? Curator::getVisibility(),
                     ],
                 ]))

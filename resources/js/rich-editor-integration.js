@@ -150,12 +150,14 @@
             { name: 'focus' },
             {
               name: 'setImage',
-              // No id: Filament treats an image's id as a file attachment path, and its renderer replaces the
-              // src of any image that has one, which left Curator images without a src when rendered.
+              // The media key goes in the image's id (data-id) only when the plugin stores media ids. Filament
+              // reads an id through the editor's file attachment provider, or else as a path on its disk, which
+              // left Curator images without a src when rendered.
               arguments: [{
                 src: item.url,
                 alt: item.alt || item.title || '',
                 title: item.title || '',
+                ...(data.storeMediaIds && item.id ? { id: item.id } : {}),
               }]
             }
           ],
