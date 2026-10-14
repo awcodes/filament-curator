@@ -128,6 +128,9 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
     public ?string $context = null;
 
     #[Locked]
+    public bool $storeMediaIds = false;
+
+    #[Locked]
     public bool $shouldPreserveFilenames = false;
 
     #[Locked]
@@ -530,7 +533,7 @@ class CuratorPanel extends Component implements HasActions, HasSchemas
 
         $this->selected = array_values(array_filter($media, fn (array $item): bool => count($item) > 1));
 
-        $this->dispatch('insert-media', ['statePath' => $this->statePath, 'media' => $media, 'context' => $this->context]);
+        $this->dispatch('insert-media', ['statePath' => $this->statePath, 'media' => $media, 'context' => $this->context, 'storeMediaIds' => $this->storeMediaIds]);
     }
 
     /**

@@ -11,7 +11,6 @@ use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Facades\Glide;
 use Awcodes\Curator\PathGenerators\Contracts\PathGenerator;
 use Closure;
-use Filament\Forms\Components\BaseFileUpload;
 use Filament\Forms\Components\FileUpload;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\Support\Arrayable;
@@ -47,91 +46,102 @@ class Uploader extends FileUpload
     {
         parent::setUp();
 
-        $this->saveUploadedFileUsing(function (BaseFileUpload $component, TemporaryUploadedFile $file): ?array {
-            try {
-                if (! $file->exists()) {
-                    return null;
-                }
-            } catch (UnableToCheckFileExistence) {
+        $this->saveUploadedFileUsing(static fn (Uploader $component, TemporaryUploadedFile $file): ?array => $component->storeUploadedFile($file));
+
+        $this->dehydrateStateUsing(fn ($component) => $component->getState());
+    }
+
+    /**
+     * Store an upload on the uploader's disk, in its directory and with its visibility, and return the attributes of
+     * the media record to create for it, or null when there is nothing to store.
+     *
+     * @return array<string, mixed>|null
+     *
+     * @throws ValidationException when the upload is an SVG that cannot be sanitized
+     */
+    public function storeUploadedFile(TemporaryUploadedFile $file): ?array
+    {
+        try {
+            if (! $file->exists()) {
+                return null;
+            }
+        } catch (UnableToCheckFileExistence) {
+            return null;
+        }
+
+        $filename = $this->shouldPreserveFilenames()
+            ? Str::of(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME))->slug()
+            : (string) Str::uuid();
+
+        // Validation accepts the file on its detected type, and web servers
+        // serve it by its extension, so the extension has to follow the
+        // detected type rather than the name the client sent.
+        $type = $this->detectFileType($file);
+        $extension = MimeType::resolveExtension($type, $file->getClientOriginalExtension());
+
+        // SVGs are served as raw markup (they are not routed through Glide),
+        // so they are sanitized before anything reaches the disk, and an SVG
+        // that cannot be sanitized is never stored.
+        $svg = Curator::isSvg($extension) || Curator::isSvgMimeType($type)
+            ? $this->sanitizedSvg($file)
+            : null;
+
+        if ($svg === '') {
+            throw ValidationException::withMessages([
+                $this->getStatePath() => $this->getUnsanitizableMessage(),
+            ]);
+        }
+
+        if (Curator::isResizable($extension)) {
+            if (Curator::isUsingCloudDisk()) {
+                $content = Storage::disk($this->getDiskName())->get($file->path());
+            } else {
+                $content = $file->getRealPath();
+            }
+
+            $manager = Glide::getServer()->getApi()->getImageManager();
+            $image = $manager->read($content);
+            $width = $image->width();
+            $height = $image->height();
+            $exif = $image->exif()->toArray();
+        }
+
+        if (Storage::disk($this->getDiskName())->exists(ltrim($this->getDirectory() . '/' . $filename . '.' . $extension, '/'))) {
+            $filename = $filename . '-' . time();
+        }
+
+        if ($svg !== null) {
+            $path = trim($this->getDirectory() . '/' . $filename . '.' . $extension, '/');
+
+            if (! Storage::disk($this->getDiskName())->put($path, $svg, $this->getVisibility())) {
                 return null;
             }
 
-            $filename = $component->shouldPreserveFilenames()
-                ? Str::of(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME))->slug()
-                : (string) Str::uuid();
+            $size = strlen($svg);
+        } else {
+            $storeMethod = $this->getVisibility() === 'public' ? 'storePubliclyAs' : 'storeAs';
+            $size = $file->getSize();
 
-            // Validation accepts the file on its detected type, and web servers
-            // serve it by its extension, so the extension has to follow the
-            // detected type rather than the name the client sent.
-            $type = $this->detectFileType($file);
-            $extension = MimeType::resolveExtension($type, $file->getClientOriginalExtension());
+            $path = $file->{$storeMethod}(
+                $this->getDirectory(),
+                $filename . '.' . $extension,
+                $this->getDiskName()
+            );
+        }
 
-            // SVGs are served as raw markup (they are not routed through Glide),
-            // so they are sanitized before anything reaches the disk, and an SVG
-            // that cannot be sanitized is never stored.
-            $svg = Curator::isSvg($extension) || Curator::isSvgMimeType($type)
-                ? $this->sanitizedSvg($file)
-                : null;
-
-            if ($svg === '') {
-                throw ValidationException::withMessages([
-                    $component->getStatePath() => $this->getUnsanitizableMessage(),
-                ]);
-            }
-
-            if (Curator::isResizable($extension)) {
-                if (Curator::isUsingCloudDisk()) {
-                    $content = Storage::disk($component->getDiskName())->get($file->path());
-                } else {
-                    $content = $file->getRealPath();
-                }
-
-                $manager = Glide::getServer()->getApi()->getImageManager();
-                $image = $manager->read($content);
-                $width = $image->width();
-                $height = $image->height();
-                $exif = $image->exif()->toArray();
-            }
-
-            if (Storage::disk($component->getDiskName())->exists(ltrim($component->getDirectory() . '/' . $filename . '.' . $extension, '/'))) {
-                $filename = $filename . '-' . time();
-            }
-
-            if ($svg !== null) {
-                $path = trim($component->getDirectory() . '/' . $filename . '.' . $extension, '/');
-
-                if (! Storage::disk($component->getDiskName())->put($path, $svg, $component->getVisibility())) {
-                    return null;
-                }
-
-                $size = strlen($svg);
-            } else {
-                $storeMethod = $component->getVisibility() === 'public' ? 'storePubliclyAs' : 'storeAs';
-                $size = $file->getSize();
-
-                $path = $file->{$storeMethod}(
-                    $component->getDirectory(),
-                    $filename . '.' . $extension,
-                    $component->getDiskName()
-                );
-            }
-
-            return [
-                'disk' => $component->getDiskName(),
-                'directory' => $component->getDirectory(),
-                'visibility' => $component->getVisibility(),
-                'name' => $filename,
-                'path' => $path,
-                'exif' => $exif ?? null,
-                'width' => $width ?? null,
-                'height' => $height ?? null,
-                'size' => $size ?? null,
-                'type' => $type,
-                'ext' => $extension,
-            ];
-        });
-
-        $this->dehydrateStateUsing(fn ($component) => $component->getState());
+        return [
+            'disk' => $this->getDiskName(),
+            'directory' => $this->getDirectory(),
+            'visibility' => $this->getVisibility(),
+            'name' => $filename,
+            'path' => $path,
+            'exif' => $exif ?? null,
+            'width' => $width ?? null,
+            'height' => $height ?? null,
+            'size' => $size ?? null,
+            'type' => $type,
+            'ext' => $extension,
+        ];
     }
 
     /**
@@ -288,7 +298,7 @@ class Uploader extends FileUpload
      *
      * @param  array<int, string>  $acceptedTypes
      */
-    protected function isAcceptedFile(TemporaryUploadedFile $file, array $acceptedTypes): bool
+    public function isAcceptedFile(TemporaryUploadedFile $file, array $acceptedTypes): bool
     {
         $phpExtensions = ['php', 'php3', 'php4', 'php5', 'php7', 'php8', 'phtml', 'phar'];
 
