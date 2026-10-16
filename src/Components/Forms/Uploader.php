@@ -67,7 +67,7 @@ class Uploader extends FileUpload
 
             if (Curator::isResizable($extension)) {
                 if (Curator::isUsingCloudDisk()) {
-                    $content = Storage::disk($component->getDiskName())->get($file->path());
+                    $content = $file->get();
                 } else {
                     $content = $file->getRealPath();
                 }
