@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Awcodes\Focus\Card;
 use Awcodes\Focus\Enums\Size;
+use Awcodes\Focus\Enums\Theme;
 use Awcodes\Focus\Screenshot;
 use Awcodes\Focus\ScreenshotSuite;
 
@@ -17,8 +18,7 @@ use Awcodes\Focus\ScreenshotSuite;
 $panel = '.curator-panel:visible';
 $launchPicker = '[data-focus="featured-image-picker"] button:has-text("Add media")';
 
-// The awcodes card templates frame each screenshot at 1400x816. The media library grid needs that full width to keep
-// four columns.
+// The awcodes card templates frame each screenshot at 1400x816.
 $card = [1400, 816];
 
 // composer.json's full description wraps onto the screenshots in the card templates, so the cards use its first clause.
@@ -72,11 +72,21 @@ return ScreenshotSuite::make()
             ->visit('/admin/posts')
             ->focus('[data-focus="posts-table"]'),
 
-        // The share-image source, shaped to the card templates' screenshot slots. The two-up templates show it
-        // dark in slot 1 and light in slot 2, so it is captured in both themes.
-        Screenshot::make('card-library')
+        // The share-image sources, shaped to the card templates' screenshot slots. The two-up templates show slot 1
+        // dark and slot 2 light: the picker modal fills slot 1 and the picker field on a post fills slot 2. Every slot's
+        // source must exist in the card's dark theme, so only the modal can be captured dark only.
+        Screenshot::make('card-picker')
             ->viewportSize(...$card)
-            ->visit('/admin/media')
+            ->themes([Theme::Dark])
+            ->visit('/admin/posts/create')
+            ->click($launchPicker)
+            ->waitFor($panel)
+            ->click('.curator-panel button:has(img[alt="Violet mountain ridges against an orange dusk sky"])')
+            ->viewport(),
+
+        Screenshot::make('card-field')
+            ->viewportSize(...$card)
+            ->visit('/admin/posts/1/edit')
             ->viewport(),
     ])
     ->cardTemplates('https://github.com/awcodes/focus-templates/tree/v2.1.0/dist')
@@ -86,7 +96,7 @@ return ScreenshotSuite::make()
             ->template('two-up-wide')
             ->title('Curator')
             ->description($description)
-            ->screenshots(['card-library', 'card-library'])
+            ->screenshots(['card-picker', 'card-field'])
             ->sizes([Size::OpenGraph, Size::GitHubSocial]),
 
         // The Filament plugin directory's 2560x1440 thumbnail.
@@ -94,13 +104,13 @@ return ScreenshotSuite::make()
             ->template('two-up')
             ->title('Curator')
             ->description($description)
-            ->screenshots(['card-library', 'card-library'])
+            ->screenshots(['card-picker', 'card-field'])
             ->sizes([Size::Filament]),
 
         // Unbranded 16:9 image for aw.codes, which adds its own heading: the same screenshots, no text or logo.
         Card::make('plain')
             ->template('two-up-plain')
-            ->screenshots(['card-library', 'card-library'])
+            ->screenshots(['card-picker', 'card-field'])
             ->sizes([[2560, 1440]])
             ->scale(1),
     ]);
