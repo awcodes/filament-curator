@@ -3,9 +3,13 @@
 declare(strict_types=1);
 
 return [
+    'resource' => [
+        'label' => 'Médium',
+        'plural_label' => 'Média',
+    ],
     'details' => [
         'uploaded_on' => 'Nahráno',
-        'file_type' => 'Typ souboru',
+        'mime_type' => 'Typ MIME',
         'file_size' => 'Velikost souboru',
         'dimensions' => 'Rozměry',
         'disk' => 'Disk',
@@ -18,11 +22,13 @@ return [
     ],
     'picker' => [
         'button' => 'Přidat média',
-        'reorder' => 'Přeobjednat',
+        'reorder' => 'Změnit pořadí',
         'view' => 'Zobrazit',
         'edit' => 'Upravit',
         'download' => 'Stáhnout',
         'remove' => 'Odstranit',
+        'clear' => 'Odstranit vše',
+        'unavailable' => 'Vybrané médium není pro toto pole k dispozici.',
     ],
     'panel' => [
         'button' => 'Přidat média',
@@ -44,10 +50,13 @@ return [
         'edit' => 'Upravit',
         'download' => 'Stáhnout',
         'remove' => 'Odstranit',
+        'deselect_all' => 'Zrušit celý výběr',
+        'add_multiple_file' => 'Více souborů vyberete pomocí Cmd + kliknutí.',
     ],
     'curation' => [
         'heading' => 'Ořez',
         'adjustments' => 'Úpravy',
+        'cancel' => 'Zrušit',
         'custom' => 'Vlastní',
         'key' => 'Klíč',
         'key_helper' => 'Klíč použitý pro získání ořezu pro zobrazení.',
@@ -57,7 +66,7 @@ return [
         'flip_vertically' => 'Překlopit vertikálně',
         'drag_mode' => 'Režim přetahování',
         'crop_mode' => 'Režim ořezu',
-        'reset' => 'Reset',
+        'reset' => 'Resetovat',
         'save_curation' => 'Uložit ořez',
         'height' => 'Výška',
         'width' => 'Šířka',
@@ -65,5 +74,13 @@ return [
         'quality' => 'Kvalita',
         'rotate' => 'Otočit',
         'rotate_deg' => 'stupně',
+        'preset' => 'Předvolba',
+        'crop_out_of_bounds' => 'Ořez musí alespoň částečně zasahovat do obrázku.',
+    ],
+    'attach_curator_media' => [
+        'modal' => [
+            'heading' => 'Vybrat média z knihovny',
+            'selected_files' => 'Vybrané soubory',
+        ],
     ],
 ];

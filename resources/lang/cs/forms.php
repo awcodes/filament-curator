@@ -9,8 +9,8 @@ return [
         'file' => 'Soubor',
         'meta' => 'Meta',
         'preview' => 'Náhled',
-        'upload_new' => 'Nahrát nový',
-        'upload_new_helper' => 'Pokuď máte vytvořené nějaké ořezy pro toto médium, budete je možná muset znovu vytvořit, nebude se to dít automaticky.',
+        'replace' => 'Nahradit',
+        'upload_new_helper' => 'Pokud máte vytvořené nějaké ořezy pro toto médium, budete je možná muset znovu vytvořit, nebude se to dít automaticky.',
         'curation' => 'Ořez',
     ],
     'fields' => [
@@ -27,5 +27,10 @@ return [
     ],
     'curations' => [
         'button_label' => 'Vytvořit ořez',
+    ],
+    'multi_upload' => [
+        'action_label' => 'Nahrát více',
+        'modal_heading' => 'Nahrát více souborů',
+        'modal_file_label' => 'Soubory',
     ],
 ];
