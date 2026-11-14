@@ -14,10 +14,10 @@ return [
         'width' => 'Genişlik',
         'height' => 'Yükseklik',
         'dimensions' => 'Boyutlar',
-        'created_at' => 'Oluşturulma tarihi',
+        'created_at' => 'Oluşturulma Tarihi',
     ],
     'actions' => [
-        'toggle_table_grid' => 'Izgara görünümü',
-        'toggle_table_list' => 'Liste görünümü',
+        'toggle_table_grid' => 'Izgara Görünümü',
+        'toggle_table_list' => 'Liste Görünümü',
     ],
 ];

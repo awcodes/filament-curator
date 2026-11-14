@@ -5,16 +5,16 @@ declare(strict_types=1);
 return [
     'sections' => [
         'details' => 'Ayrıntılar',
-        'exif' => 'Exif verileri',
+        'exif' => 'Exif Verileri',
         'file' => 'Dosya',
-        'meta' => 'Meta veriler',
+        'meta' => 'Meta Veriler',
         'preview' => 'Önizleme',
         'replace' => 'Değiştir',
         'upload_new_helper' => 'Bu medyanın varyantları varsa büyük olasılıkla onları yeniden oluşturmanız gerekir; bu kendiliğinden yapılmaz.',
         'curation' => 'Varyantlar',
     ],
     'fields' => [
-        'alt' => 'Alternatif metin',
+        'alt' => 'Alternatif Metin',
         'alt_hint' => 'Alt metin nasıl yazılır?',
         'caption' => 'Altyazı',
         'description' => 'Açıklama',
@@ -26,11 +26,11 @@ return [
         'success' => 'Kayıt güncellendi.',
     ],
     'curations' => [
-        'button_label' => 'Varyant oluştur',
+        'button_label' => 'Varyant Oluştur',
     ],
     'multi_upload' => [
-        'action_label' => 'Toplu yükle',
-        'modal_heading' => 'Birden çok dosya yükle',
+        'action_label' => 'Toplu Yükle',
+        'modal_heading' => 'Birden Çok Dosya Yükle',
         'modal_file_label' => 'Dosyalar',
     ],
 ];
