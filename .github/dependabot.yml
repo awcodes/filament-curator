@@ -40,6 +40,24 @@ updates:
       production-dependencies:
         dependency-type: production
 
+  # npm — the asset tooling in package.json (Tailwind, esbuild, Prettier) and any JS the
+  # package bundles into resources/dist. Only for packages with a package.json:
+  # bin/bootstrap-package.sh drops this entry when there isn't one, since Dependabot
+  # reports an error for a missing manifest. Minor and patch updates are grouped into one
+  # weekly PR; majors come one per PR. A bump to bundled JS changes the build output, so
+  # in packages with an `assets` CI job, rebuild and commit resources/dist before merging.
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    cooldown:
+      default-days: 7
+      semver-major-days: 14
+    groups:
+      npm:
+        update-types: ["minor", "patch"]
+
   # GitHub Actions — covers the awcodes/.github shared workflow and any actions the
   # package repo adds (release, changelog, etc.).
   #
