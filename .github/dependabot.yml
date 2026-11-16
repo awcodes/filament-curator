@@ -57,9 +57,19 @@ updates:
     # prettier-plugin-blade 3 is a deliberate migration, not a bump: it reformats most of
     # the Blade views (directive spacing, attribute wrapping, Alpine expressions), and its
     # ESM entry can't be loaded by a directory path. Revisit with a one-time reformat.
+    #
+    # cropperjs 2 is a rewrite, not a bump: the Cropper class keeps only
+    # getCropperCanvas/Image/Selection(s) and destroy(), and options are reduced to
+    # container and template. resources/js/curation.js calls getData, getCropBoxData,
+    # setCropBoxData, getContainerData, setAspectRatio and reset, which v2 removes. The
+    # bundle still builds and the PHP suite never runs it, so CI stays green while the
+    # crop editor breaks. Adopting it means migrating curation.js to the new element API
+    # (see #692), a deliberate major, not a Dependabot PR.
     ignore:
       - dependency-name: "prettier-plugin-blade"
         versions: [">=3.0.0"]
+      - dependency-name: "cropperjs"
+        versions: [">=2.0.0"]
     groups:
       npm:
         update-types: ["minor", "patch"]
