@@ -6,6 +6,9 @@ updates:
   # The runtime `require` block is constrained loosely on purpose; review those bumps.
   - package-ecosystem: composer
     directory: "/"
+    # Widen constraints on a major bump (^4.0 -> ^4.0|^5.0) instead of replacing them,
+    # so a new major that raises the PHP floor doesn't drop supported PHP versions.
+    versioning-strategy: widen
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
