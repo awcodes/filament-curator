@@ -27,6 +27,9 @@ on:
       # bundle without touching resources/.
       - "bin/**"
       - ".github/workflows/**"
+      # The ruleset requires `All Checks`, so a change that runs no CI cannot
+      # merge without an admin override. A Dependabot config change is one.
+      - ".github/dependabot.yml"
   pull_request:
     branches:
       - 5.x
@@ -53,6 +56,9 @@ on:
       # bundle without touching resources/.
       - "bin/**"
       - ".github/workflows/**"
+      # The ruleset requires `All Checks`, so a change that runs no CI cannot
+      # merge without an admin override. A Dependabot config change is one.
+      - ".github/dependabot.yml"
 
 # 5.x serves both Filament majors from one branch, so one caller covers both: the
 # matrix pins filament/filament per row and the shared workflow installs it before
