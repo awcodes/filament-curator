@@ -54,6 +54,12 @@ updates:
     cooldown:
       default-days: 7
       semver-major-days: 14
+    # prettier-plugin-blade 3 is a deliberate migration, not a bump: it reformats most of
+    # the Blade views (directive spacing, attribute wrapping, Alpine expressions), and its
+    # ESM entry can't be loaded by a directory path. Revisit with a one-time reformat.
+    ignore:
+      - dependency-name: "prettier-plugin-blade"
+        versions: [">=3.0.0"]
     groups:
       npm:
         update-types: ["minor", "patch"]
