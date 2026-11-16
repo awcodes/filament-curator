@@ -27,9 +27,13 @@ updates:
     # PHP floor, declaring intervention/image directly and migrating the image pipeline
     # — a deliberate major, not a Dependabot PR. Minor and patch updates within 3.x
     # still come through. See #725.
+    #
+    # The rule is a version range, not `update-types: [version-update:semver-major]`.
+    # Under `versioning-strategy: widen`, Dependabot offers a major as a widened
+    # constraint (^3.0 -> ^3.0 || ^4.0), which the update-type rule did not catch (#788).
     ignore:
       - dependency-name: "league/glide"
-        update-types: ["version-update:semver-major"]
+        versions: [">=4.0"]
     groups:
       dev-dependencies:
         dependency-type: development
