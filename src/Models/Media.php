@@ -302,6 +302,22 @@ class Media extends Model
     }
 
     /**
+     * Unscoped and regardless of case, like isAnotherMediaFile(), so a folder holding any other item's file is found.
+     */
+    public function hasAnotherMediaFileIn(string $folder): bool
+    {
+        $prefix = str_replace(['!', '%', '_'], ['!!', '!%', '!_'], mb_strtolower(trim($folder, '/'))) . '/%';
+
+        return $this->newQueryWithoutScopes()
+            ->where('disk', $this->disk)
+            ->where(fn (Builder $query): Builder => $query
+                ->whereRaw("LOWER(path) LIKE ? ESCAPE '!'", [$prefix])
+                ->orWhereRaw("LOWER(path) LIKE ? ESCAPE '!'", ['/' . $prefix]))
+            ->when($this->getKey() !== null, fn (Builder $query): Builder => $query->whereKeyNot($this->getKey()))
+            ->exists();
+    }
+
+    /**
      * Unscoped, so a tenant or soft-delete scope never hides another item's file. Steps that write also match
      * regardless of case, for disks that ignore it; building a URL matches the exact path, which uses the index.
      */

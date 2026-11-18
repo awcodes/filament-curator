@@ -313,3 +313,36 @@ it('cannot reach another item\'s curations by sharing its name', function () {
 
     expect(Storage::disk('public')->get('media/mine/hero.jpg'))->toBe('hero');
 });
+
+it('deletes the item\'s own curation folder when the item is deleted', function () {
+    $this->media->delete();
+
+    expect(Storage::disk('public')->exists('media/mine/hero.jpg'))->toBeFalse()
+        ->and(Storage::disk('public')->exists('media/other/hero.jpg'))->toBeTrue();
+});
+
+it('does not delete a folder holding another item\'s file when an item of that name is deleted', function () {
+    Storage::disk('public')->put('avatars.jpg', 'root');
+    Storage::disk('public')->put('avatars/victim.jpg', 'victim');
+    Storage::disk('public')->put('avatars/victim/hero.jpg', 'victim hero');
+    $clash = curationPathMedia(['directory' => '', 'name' => 'avatars', 'path' => 'avatars.jpg']);
+    curationPathMedia(['directory' => 'avatars', 'name' => 'victim', 'path' => 'avatars/victim.jpg']);
+
+    $clash->delete();
+
+    expect(Storage::disk('public')->exists('avatars.jpg'))->toBeFalse()
+        ->and(Storage::disk('public')->get('avatars/victim.jpg'))->toBe('victim')
+        ->and(Storage::disk('public')->get('avatars/victim/hero.jpg'))->toBe('victim hero');
+});
+
+it('treats like wildcards in an item\'s name literally when checking its curation folder', function () {
+    Storage::disk('public')->put('media/a_c.jpg', 'a_c');
+    Storage::disk('public')->put('media/a_c/hero.jpg', 'own');
+    Storage::disk('public')->put('media/abc.jpg', 'abc');
+    $wild = curationPathMedia(['directory' => 'media', 'name' => 'a_c', 'path' => 'media/a_c.jpg']);
+    curationPathMedia(['directory' => 'media', 'name' => 'abc', 'path' => 'media/abc/x.jpg']);
+
+    $wild->delete();
+
+    expect(Storage::disk('public')->exists('media/a_c/hero.jpg'))->toBeFalse();
+});

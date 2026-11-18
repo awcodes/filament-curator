@@ -78,8 +78,11 @@ class MediaObserver
     {
         Storage::disk($media->disk)->delete($media->path);
 
-        if (Storage::disk($media->disk)->allFiles($media->directory . '/' . $media->name)) {
-            Storage::disk($media->disk)->deleteDirectory($media->directory . '/' . $media->name);
+        // The curation folder is named after the item, so another item's files can live in a folder of that name.
+        $curationFolder = Media::curationFolder($media->directory, $media->name);
+
+        if (Storage::disk($media->disk)->allFiles($curationFolder) && ! $media->hasAnotherMediaFileIn($curationFolder)) {
+            Storage::disk($media->disk)->deleteDirectory($curationFolder);
         }
 
         if (count(Storage::disk($media->disk)->allFiles($media->directory)) == 0) {
