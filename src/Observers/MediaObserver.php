@@ -4,6 +4,7 @@ namespace Awcodes\Curator\Observers;
 
 use Awcodes\Curator\Models\Media;
 use Illuminate\Support\Facades\Storage;
+use RuntimeException;
 use stdClass;
 
 class MediaObserver
@@ -39,15 +40,14 @@ class MediaObserver
     {
         $this->keepOwnCurations($media);
 
+        $swapped = false;
+
         // Replace image
         if ($this->hasMediaUpload($media)) {
+            $swapped = true;
             $originalDisk = $media->getOriginal('disk');
             $originalPath = $media->getOriginal('path');
             $originalName = $media->getOriginal('name');
-
-            if (Storage::disk($originalDisk)->exists($originalPath)) {
-                Storage::disk($originalDisk)->delete($originalPath);
-            }
 
             foreach ($media->file as $k => $v) {
                 $media->{$k} = $v;
@@ -61,18 +61,27 @@ class MediaObserver
                 $originalName = $media::uniqueName($media->disk, $media->directory, $originalName, $media->ext, $media->getKey());
             }
 
-            Storage::disk($media->disk)->move($media->path, $media->directory . '/' . $originalName . '.' . $media->ext);
+            $replacedPath = $media->directory . '/' . $originalName . '.' . $media->ext;
+
+            // The original is removed only once the replacement is in place, so a failed move never loses it.
+            if (! $this->isSamePath($media->path, $replacedPath) && ! Storage::disk($media->disk)->move($media->path, $replacedPath)) {
+                throw new RuntimeException("Unable to move the replacement file [{$media->path}] into place.");
+            }
+
+            if ($originalDisk !== $media->disk || ! $this->isSamePath($originalPath, $replacedPath)) {
+                Storage::disk($originalDisk)->delete($originalPath);
+            }
 
             $media->name = $originalName;
-            $media->path = $media->directory . '/' . $originalName . '.' . $media->ext;
+            $media->path = $replacedPath;
 
             // Delete glide-cache for replaced image
             $server = app(config('curator.glide.server'))->getFactory();
             $server->deleteCache($media->path);
         }
 
-        // Rename file name
-        if ($media->isDirty(['name']) && ! blank($media->name)) {
+        // Rename file name. A swap has already placed the file under its final name.
+        if (! $swapped && $media->isDirty(['name']) && ! blank($media->name)) {
             $media->name = $media::uniqueName($media->disk, $media->directory, $media->name, $media->ext, $media->getKey());
 
             Storage::disk($media->disk)->move($media->path, $media->directory . '/' . $media->name . '.' . $media->ext);
@@ -99,7 +108,7 @@ class MediaObserver
             && ! $media->hasAnotherMediaFileIn($curationFolder)
             && ! $media::isNameUsedByAnotherMedia($media->disk, $media->directory, $media->name, $media->getKey())
         ) {
-            Storage::disk($media->disk)->deleteDirectory($curationFolder);
+            $this->deleteCurationFiles($media->disk, $curationFolder);
         }
 
         if (count(Storage::disk($media->disk)->allFiles($media->directory)) == 0) {
@@ -109,6 +118,25 @@ class MediaObserver
         // Delete glide-cache for delete image
         $server = app(config('curator.glide.server'))->getFactory();
         $server->deleteCache($media->path);
+    }
+
+    /**
+     * Only curation images directly in the folder are removed, since an app may keep its own files in a folder that
+     * shares an item's name. The folder goes only when that leaves it empty.
+     */
+    protected function deleteCurationFiles(string $disk, string $folder): void
+    {
+        $storage = Storage::disk($disk);
+
+        foreach ($storage->files($folder) as $file) {
+            if (Media::isCurationExtension(pathinfo($file, PATHINFO_EXTENSION))) {
+                $storage->delete($file);
+            }
+        }
+
+        if (count($storage->allFiles($folder)) === 0) {
+            $storage->deleteDirectory($folder);
+        }
     }
 
     /**
@@ -174,6 +202,11 @@ class MediaObserver
         }
 
         return $stored;
+    }
+
+    private function isSamePath(?string $first, ?string $second): bool
+    {
+        return ltrim((string) $first, '/') === ltrim((string) $second, '/');
     }
 
     private function hasMediaUpload($media): bool

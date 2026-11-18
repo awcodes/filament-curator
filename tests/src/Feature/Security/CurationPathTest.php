@@ -455,3 +455,61 @@ it('keeps the curation folder of an older row that shares the item\'s name with 
     expect(Storage::disk('public')->exists('media/twin.png'))->toBeFalse()
         ->and(Storage::disk('public')->get('media/twin/thumb.webp'))->toBe('crop');
 });
+
+it('gives a file swapped onto another disk a single suffix when its name is taken there', function () {
+    Storage::disk('local')->put('uploads/mine.png', 'someone else');
+    Storage::disk('local')->put('uploads/upload.png', 'replacement');
+
+    $media = $this->media;
+    $media->file = ['disk' => 'local', 'directory' => 'uploads', 'name' => 'upload', 'path' => 'uploads/upload.png', 'ext' => 'png'];
+    $media->save();
+    $media->refresh();
+
+    expect($media->disk)->toBe('local')
+        ->and($media->name)->toMatch('/^mine-\d+$/')
+        ->and(Storage::disk('local')->get($media->path))->toBe('replacement')
+        ->and(Storage::disk('local')->get('uploads/mine.png'))->toBe('someone else')
+        ->and(Storage::disk('public')->exists('media/mine.jpg'))->toBeFalse();
+});
+
+it('leaves the original file and row alone when the replacement cannot be moved into place', function () {
+    $media = $this->media;
+    $media->file = ['disk' => 'public', 'directory' => 'media/2026/11', 'name' => 'missing', 'path' => 'media/2026/11/missing.png', 'ext' => 'png'];
+
+    expect(fn () => $media->save())->toThrow(RuntimeException::class, 'Unable to move the replacement file');
+
+    $stored = Media::find($media->getKey());
+
+    expect(Storage::disk('public')->get('media/mine.jpg'))->toBe('mine')
+        ->and($stored->path)->toBe('media/mine.jpg')
+        ->and($stored->ext)->toBe('jpg')
+        ->and($stored->directory)->toBe('media');
+});
+
+it('removes only curation images from the item\'s folder when the item is deleted', function () {
+    Storage::disk('public')->put('avatars.jpg', 'root');
+    Storage::disk('public')->put('avatars/thumb.webp', 'crop');
+    Storage::disk('public')->put('avatars/user-1.pdf', 'app file');
+    $avatars = curationPathMedia(['directory' => '', 'name' => 'avatars', 'path' => 'avatars.jpg']);
+
+    $avatars->delete();
+
+    expect(Storage::disk('public')->exists('avatars/thumb.webp'))->toBeFalse()
+        ->and(Storage::disk('public')->get('avatars/user-1.pdf'))->toBe('app file');
+});
+
+it('removes the item\'s curation folder when it held only curations', function () {
+    $this->media->delete();
+
+    expect(Storage::disk('public')->directoryExists('media/mine'))->toBeFalse()
+        ->and(Storage::disk('public')->exists('media/other/hero.jpg'))->toBeTrue();
+});
+
+it('keeps a curation saved in a format the app configured', function () {
+    config(['curator.curation_formats' => [...config('curator.curation_formats'), 'TIF']]);
+    Storage::disk('public')->put('media/mine/hero.tif', 'tif');
+
+    $media = saveCurationsThroughEditPage($this->media, [curationPathItem('public', 'media/mine/hero.tif')]);
+
+    expect($media->getCuration('hero')['path'])->toBe('media/mine/hero.tif');
+});

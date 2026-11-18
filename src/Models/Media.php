@@ -220,7 +220,20 @@ class Media extends Model
         return $file !== ''
             && ! str_contains($file, '/')
             && static::isPlainRelativePath($file)
-            && in_array(strtolower(pathinfo($file, PATHINFO_EXTENSION)), static::CURATION_EXTENSIONS, true);
+            && static::isCurationExtension(pathinfo($file, PATHINFO_EXTENSION));
+    }
+
+    /**
+     * The formats a curation can be saved in are set by the app, so they count alongside the built-in ones.
+     */
+    public static function isCurationExtension(string $extension): bool
+    {
+        $extensions = array_map(
+            fn (mixed $format): string => strtolower((string) $format),
+            array_merge(static::CURATION_EXTENSIONS, (array) config('curator.curation_formats', [])),
+        );
+
+        return in_array(strtolower($extension), $extensions, true);
     }
 
     public static function curationFolder(?string $directory, string $name): string
@@ -316,7 +329,7 @@ class Media extends Model
             $path = substr($path, strlen($directory) + 1);
         }
 
-        if (substr_count($path, '/') !== 1 || ! in_array(strtolower(pathinfo($path, PATHINFO_EXTENSION)), static::CURATION_EXTENSIONS, true)) {
+        if (substr_count($path, '/') !== 1 || ! static::isCurationExtension(pathinfo($path, PATHINFO_EXTENSION))) {
             return false;
         }
 
