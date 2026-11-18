@@ -58,7 +58,7 @@ class Media extends Model
     /**
      * Extensions a curation can be saved as, current and past, which bounds what a stored curation can point at.
      */
-    protected const CURATION_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'avif', 'gif', 'bmp'];
+    public const CURATION_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'avif', 'gif', 'bmp'];
 
     protected $table = 'curator';
 

@@ -444,3 +444,44 @@ it('keeps a curation folder shared by items saved with the same name when one of
     expect(Storage::disk('public')->exists('media/twin.png'))->toBeFalse()
         ->and(Storage::disk('public')->get('media/twin/crop.webp'))->toBe('crop');
 });
+
+it('leaves a single name and a stored file behind when the file is swapped onto another disk', function () {
+    Storage::disk('public')->put('photo.jpg', 'original');
+    $photo = makeMedia(['directory' => null, 'name' => 'photo', 'path' => 'photo.jpg']);
+    Storage::disk('local')->put('photo.jpg', 'taken');
+    makeMedia(['disk' => 'local', 'directory' => null, 'name' => 'photo', 'path' => 'photo.jpg']);
+    config(['curator.default_disk' => 'local', 'curator.default_directory' => null]);
+
+    Livewire::test(EditMedia::class, ['record' => $photo->getKey()])
+        ->set('data.file', UploadedFile::fake()->image('anything.png', 30, 10))
+        ->call('save')
+        ->assertHasNoFormErrors();
+
+    $photo->refresh();
+
+    expect($photo->disk)->toBe('local')
+        ->and($photo->name)->toMatch('/^photo-\d+$/')
+        ->and(Storage::disk('local')->exists($photo->path))->toBeTrue()
+        ->and(Storage::disk('local')->get('photo.jpg'))->toBe('taken');
+});
+
+it('deletes only the item\'s own curation images from a folder the app also keeps files in', function () {
+    Storage::disk('public')->put('avatars.jpg', 'root');
+    Storage::disk('public')->put('avatars/thumb.webp', 'crop');
+    Storage::disk('public')->put('avatars/user-1.pdf', 'pdf');
+    $avatars = makeMedia(['directory' => null, 'name' => 'avatars', 'path' => 'avatars.jpg']);
+
+    $avatars->delete();
+
+    expect(Storage::disk('public')->exists('avatars/thumb.webp'))->toBeFalse()
+        ->and(Storage::disk('public')->get('avatars/user-1.pdf'))->toBe('pdf');
+});
+
+it('removes the curation folder when only the item\'s curation images were in it', function () {
+    Storage::disk('public')->put('media/mine/thumb.png', 'crop');
+
+    $this->media->delete();
+
+    expect(Storage::disk('public')->directoryExists('media/mine'))->toBeFalse()
+        ->and(Storage::disk('public')->exists('media/other/hero.jpg'))->toBeTrue();
+});

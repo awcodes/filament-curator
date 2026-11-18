@@ -45,9 +45,12 @@ class MediaObserver
         $this->keepOwnCurations($media);
 
         $storage = Storage::disk($media->disk);
+        $swapped = false;
 
         // Replace image
         if ($this->hasMediaUpload($media)) {
+            $swapped = true;
+
             if ($storage->exists($media->directory . '/' . $media->getOriginal()['name'] . '.' . $media->getOriginal()['ext'])) {
                 $storage->delete($media->directory . '/' . $media->getOriginal()['name'] . '.' . $media->getOriginal()['ext']);
             }
@@ -76,11 +79,11 @@ class MediaObserver
             $server->deleteCache($media->path);
         }
 
-        // Rename file name
-        if ($media->isDirty(['name']) && ! blank($media->name)) {
+        // Rename file name. A swap has already placed the file under the name it settled on.
+        if (! $swapped && $media->isDirty(['name']) && ! blank($media->name)) {
             $media->name = Media::uniqueName($media->disk, $media->directory, $media->name, $media->ext, $media->getKey());
 
-            $storage->move($media->path, $media->directory . '/' . $media->name . '.' . $media->ext);
+            Storage::disk($media->disk)->move($media->path, $media->directory . '/' . $media->name . '.' . $media->ext);
             $media->path = $media->directory . '/' . $media->name . '.' . $media->ext;
         }
 
@@ -97,13 +100,7 @@ class MediaObserver
 
         $storage->delete($media->path);
 
-        // The curation folder is named after the item, so another item's files can live in a folder of that name, and
-        // rows saved before names were checked may share it.
-        $curationFolder = Media::curationFolder($media->directory, $media->name);
-
-        if ($storage->allFiles($curationFolder) && ! $media->hasAnotherMediaFileIn($curationFolder) && ! $media->sharesNameWithAnotherMedia()) {
-            $storage->deleteDirectory($curationFolder);
-        }
+        $this->deleteCurationFolder($media);
 
         if (count($storage->allFiles($media->directory)) === 0) {
             $storage->deleteDirectory($media->directory);
@@ -112,6 +109,37 @@ class MediaObserver
         // Delete glide-cache for delete image
         $server = Glide::getServer();
         $server->deleteCache($media->path);
+    }
+
+    /**
+     * The curation folder is named after the item, so the app or another item can keep files in a folder of that name,
+     * and rows saved before names were checked may share it. Only the curation images directly inside it are deleted,
+     * then the folder if that leaves it empty, and a folder holding another item's file or shared by another item of
+     * the same name is left alone.
+     */
+    protected function deleteCurationFolder(Media $media): void
+    {
+        if (blank($media->name)) {
+            return;
+        }
+
+        $curationFolder = Media::curationFolder($media->directory, $media->name);
+
+        if ($media->hasAnotherMediaFileIn($curationFolder) || $media->sharesNameWithAnotherMedia()) {
+            return;
+        }
+
+        $storage = Storage::disk($media->disk);
+
+        foreach ($storage->files($curationFolder) as $file) {
+            if (in_array(strtolower(pathinfo($file, PATHINFO_EXTENSION)), Media::CURATION_EXTENSIONS, true)) {
+                $storage->delete($file);
+            }
+        }
+
+        if ($storage->directoryExists($curationFolder) && $storage->files($curationFolder) === [] && $storage->directories($curationFolder) === []) {
+            $storage->deleteDirectory($curationFolder);
+        }
     }
 
     /**
