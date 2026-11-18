@@ -41,18 +41,30 @@ class MediaObserver
 
         // Replace image
         if ($this->hasMediaUpload($media)) {
-            if (Storage::disk($media->disk)->exists($media->directory . '/' . $media->getOriginal()['name'] . '.' . $media->getOriginal()['ext'])) {
-                Storage::disk($media->disk)->delete($media->directory . '/' . $media->getOriginal()['name'] . '.' . $media->getOriginal()['ext']);
+            $originalDisk = $media->getOriginal('disk');
+            $originalPath = $media->getOriginal('path');
+            $originalName = $media->getOriginal('name');
+
+            if (Storage::disk($originalDisk)->exists($originalPath)) {
+                Storage::disk($originalDisk)->delete($originalPath);
             }
 
             foreach ($media->file as $k => $v) {
                 $media->{$k} = $v;
             }
 
-            Storage::disk($media->disk)->move($media->path, $media->directory . '/' . $media->getOriginal()['name'] . '.' . $media->ext);
+            // The replacement takes the original's place, so the item never moves into a folder where its name may
+            // belong to another item. On another disk it lands in the upload's folder, under a name free there.
+            if ($media->disk === $originalDisk) {
+                $media->directory = $media->getOriginal('directory');
+            } else {
+                $originalName = $media::uniqueName($media->disk, $media->directory, $originalName, $media->ext, $media->getKey());
+            }
 
-            $media->name = $media->getOriginal()['name'];
-            $media->path = $media->directory . '/' . $media->getOriginal()['name'] . '.' . $media->ext;
+            Storage::disk($media->disk)->move($media->path, $media->directory . '/' . $originalName . '.' . $media->ext);
+
+            $media->name = $originalName;
+            $media->path = $media->directory . '/' . $originalName . '.' . $media->ext;
 
             // Delete glide-cache for replaced image
             $server = app(config('curator.glide.server'))->getFactory();
@@ -78,10 +90,15 @@ class MediaObserver
     {
         Storage::disk($media->disk)->delete($media->path);
 
-        // The curation folder is named after the item, so another item's files can live in a folder of that name.
+        // The curation folder is named after the item, so another item's files can live in a folder of that name, and
+        // older rows can share the item's name, and so its folder, with another extension.
         $curationFolder = Media::curationFolder($media->directory, $media->name);
 
-        if (Storage::disk($media->disk)->allFiles($curationFolder) && ! $media->hasAnotherMediaFileIn($curationFolder)) {
+        if (
+            Storage::disk($media->disk)->allFiles($curationFolder)
+            && ! $media->hasAnotherMediaFileIn($curationFolder)
+            && ! $media::isNameUsedByAnotherMedia($media->disk, $media->directory, $media->name, $media->getKey())
+        ) {
             Storage::disk($media->disk)->deleteDirectory($curationFolder);
         }
 

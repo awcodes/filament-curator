@@ -2,7 +2,10 @@
 
 use Awcodes\Curator\Components\Modals\CuratorCuration;
 use Awcodes\Curator\Models\Media;
+use Awcodes\Curator\PathGenerators\DatePathGenerator;
 use Awcodes\Curator\Resources\MediaResource\EditMedia;
+use Awcodes\Curator\Resources\MediaResource\ListMedia;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -133,6 +136,7 @@ it('drops curations that point anywhere else when the edit page is saved', funct
     'a traversal out of the folder' => ['public', 'media/mine/../other.jpg'],
     'a nested path' => ['public', 'media/mine/deeper/hero.jpg'],
     'the folder itself' => ['public', 'media/mine/'],
+    'a file in the item\'s own folder that isn\'t an image' => ['public', 'media/mine/notes.pdf'],
 ]);
 
 it('keeps an entry already stored on the item when the edit page is saved', function () {
@@ -146,7 +150,11 @@ it('keeps an entry already stored on the item when the edit page is saved', func
 });
 
 it('does not build a url for a stored curation on another disk or outside the item\'s directory', function (string $disk, string $path) {
-    $media = storeCurationsDirectly($this->media, [curationPathItem($disk, $path, 'planted')]);
+    Storage::disk('public')->put('elsewhere/hero.jpg', 'elsewhere');
+    Storage::disk('public')->put('elsewhere.jpg', 'elsewhere');
+    $planted = curationPathItem($disk, $path, 'planted');
+    $planted['curation']['url'] = 'stored-url-left-alone';
+    $media = storeCurationsDirectly($this->media, [$planted]);
 
     expect(renderCuration($media, 'planted'))->toBe('');
 })->with([
@@ -345,4 +353,105 @@ it('treats like wildcards in an item\'s name literally when checking its curatio
     $wild->delete();
 
     expect(Storage::disk('public')->exists('media/a_c/hero.jpg'))->toBeFalse();
+});
+
+it('keeps a swapped file in the item\'s own folder, so the item never moves in beside another item of its name', function () {
+    config(['curator.path_generator' => DatePathGenerator::class]);
+    $today = 'media/' . now()->format('Y/m/d');
+    Storage::disk('public')->put($today . '/photo.png', 'victim');
+    Storage::disk('public')->put($today . '/photo/thumb.webp', 'victim thumb');
+    curationPathMedia(['directory' => $today, 'name' => 'photo', 'path' => $today . '/photo.png', 'ext' => 'png']);
+    Storage::disk('public')->put('media/2020/01/01/old.jpg', 'old');
+    $old = curationPathMedia(['directory' => 'media/2020/01/01', 'name' => 'old', 'path' => 'media/2020/01/01/old.jpg']);
+
+    Livewire::test(EditMedia::class, ['record' => $old->getKey()])->set('data.name', 'photo')->call('save')->assertHasNoFormErrors();
+
+    expect($old->refresh()->name)->toBe('photo');
+
+    Livewire::test(EditMedia::class, ['record' => $old->getKey()])
+        ->set('data.file', UploadedFile::fake()->image('anything.png', 30, 10))
+        ->call('save')
+        ->assertHasNoFormErrors();
+
+    $old->refresh();
+
+    expect($old->directory)->toBe('media/2020/01/01')
+        ->and($old->path)->toBe('media/2020/01/01/photo.png')
+        ->and(Storage::disk('public')->exists('media/2020/01/01/photo.png'))->toBeTrue()
+        ->and(Storage::disk('public')->exists('media/2020/01/01/old.jpg'))->toBeFalse()
+        ->and(Storage::disk('public')->get($today . '/photo.png'))->toBe('victim');
+
+    $saved = saveCurationsThroughEditPage($old, [curationPathItem('public', $today . '/photo/thumb.webp', 'planted')]);
+
+    expect($saved->hasCuration('planted'))->toBeFalse();
+
+    $saved->delete();
+
+    expect(Storage::disk('public')->get($today . '/photo/thumb.webp'))->toBe('victim thumb');
+});
+
+it('keeps curations resolving after the file is swapped for one with another extension', function () {
+    $media = storeCurationsDirectly($this->media, [curationPathItem('public', 'media/mine/hero.jpg')]);
+    Storage::disk('public')->put('media/2026/11/upload.png', 'replacement');
+
+    $media->file = ['disk' => 'public', 'directory' => 'media/2026/11', 'name' => 'upload', 'path' => 'media/2026/11/upload.png', 'ext' => 'png'];
+    $media->save();
+    $media->refresh();
+
+    expect($media->directory)->toBe('media')
+        ->and($media->path)->toBe('media/mine.png')
+        ->and(Storage::disk('public')->get('media/mine.png'))->toBe('replacement')
+        ->and(Storage::disk('public')->exists('media/mine.jpg'))->toBeFalse()
+        ->and(renderCuration($media, 'hero'))->toContain('src="/storage/media/mine/hero.jpg"');
+});
+
+it('does not hand out the same name twice in one request, as a multi-file upload names every file before saving any', function () {
+    $first = Media::uniqueName('public', 'media', 'batch', 'jpg');
+    $second = Media::uniqueName('public', 'media', 'batch', 'png');
+    $third = Media::uniqueName('public', 'media', 'BATCH', 'webp');
+
+    expect($first)->toBe('batch')
+        ->and($second)->toStartWith('batch-')
+        ->and($third)->toStartWith('BATCH-')
+        ->and($third)->not->toBe($second);
+});
+
+it('gives every file of a multi-file upload its own name', function () {
+    config(['curator.should_preserve_filenames' => true, 'curator.path_generator' => null]);
+
+    Livewire::test(ListMedia::class)
+        ->mountAction('curator_multi_upload')
+        ->setActionData(['files' => [
+            UploadedFile::fake()->image('batch.jpg', 10, 10),
+            UploadedFile::fake()->image('batch.png', 10, 10),
+        ]])
+        ->callMountedAction()
+        ->assertHasNoActionErrors();
+
+    $names = Media::query()->where('name', 'like', 'batch%')->pluck('name');
+
+    expect($names)->toHaveCount(2)
+        ->and($names->unique())->toHaveCount(2);
+});
+
+it('keeps the curation folder of an older row that shares the item\'s name with another extension', function () {
+    Storage::disk('public')->put('media/twin.png', 'png');
+    Storage::disk('public')->put('media/twin.jpg', 'jpg');
+    Storage::disk('public')->put('media/twin/thumb.webp', 'crop');
+
+    $now = now();
+    $rows = [];
+
+    foreach (['png', 'jpg'] as $ext) {
+        $rows[$ext] = DB::table(app(Media::class)->getTable())->insertGetId([
+            'disk' => 'public', 'directory' => 'media', 'visibility' => 'public', 'name' => 'twin',
+            'path' => 'media/twin.' . $ext, 'type' => 'image/' . ($ext === 'jpg' ? 'jpeg' : 'png'), 'ext' => $ext,
+            'created_at' => $now, 'updated_at' => $now,
+        ]);
+    }
+
+    Media::find($rows['png'])->delete();
+
+    expect(Storage::disk('public')->exists('media/twin.png'))->toBeFalse()
+        ->and(Storage::disk('public')->get('media/twin/thumb.webp'))->toBe('crop');
 });
