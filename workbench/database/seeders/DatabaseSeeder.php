@@ -9,6 +9,7 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
+use Intervention\Image\ImageManager;
 use Workbench\App\Models\Mediable;
 use Workbench\App\Models\Post;
 use Workbench\Database\Factories\UserFactory;
@@ -137,5 +138,45 @@ class DatabaseSeeder extends Seeder
 
             $date = $date->copy()->addDay();
         }
+
+        $this->seedCuration($media['forest-hills']);
+    }
+
+    /**
+     * A "Post thumbnail" curation of one image for the front-end posts page, stored as the media edit page stores one:
+     * the file at {directory}/{name}/{key}.{ext} and the twelve-key descriptor in the curations column. It is cut from
+     * the centre with GD, the fixtures' own driver, rather than through the curation modal, so it stays the same on
+     * every build.
+     */
+    private function seedCuration(Media $media): void
+    {
+        $storage = Storage::disk($media->disk);
+        $path = "/{$media->name}/post_thumbnail.webp";
+
+        $encoded = ImageManager::gd()
+            ->read($storage->get($media->path))
+            ->cover(320, 180)
+            ->toWebp(80);
+
+        $storage->put($path, (string) $encoded, 'public');
+
+        $media->forceFill([
+            'curations' => [[
+                'curation' => [
+                    'key' => 'post_thumbnail',
+                    'disk' => $media->disk,
+                    'directory' => $media->name,
+                    'visibility' => $media->visibility,
+                    'name' => 'post_thumbnail.webp',
+                    'path' => $path,
+                    'width' => 320,
+                    'height' => 180,
+                    'size' => $storage->size($path),
+                    'type' => 'image/webp',
+                    'ext' => 'webp',
+                    'url' => Media::resolveUrl($media->disk, $path, $media->visibility),
+                ],
+            ]],
+        ])->save();
     }
 }

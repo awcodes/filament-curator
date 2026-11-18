@@ -68,6 +68,10 @@ The Filament panel is available at <http://127.0.0.1:8000/admin>. Sign in with
 uses Curator's documented plugin, installer, and public-disk configuration;
 Node.js is required to compile the consumer-owned Filament theme.
 
+A public front end at <http://127.0.0.1:8000/posts> renders each post the way an
+app would, outside Filament: `<x-curator-glider>`, `<x-curator-curation>`, the
+media size URLs, and rich content in each shape Curator has saved it.
+
 `composer serve` runs the full build itself before starting the server, so
 `composer build` on its own is only needed to rebuild the Workbench without
 serving it.
