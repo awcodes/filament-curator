@@ -384,6 +384,20 @@ class Media extends Model
     }
 
     /**
+     * Rows saved before names were checked may share this item's name, and with it its curation folder.
+     */
+    public function sharesNameWithAnotherMedia(): bool
+    {
+        if (blank($this->disk) || blank($this->name)) {
+            return false;
+        }
+
+        return static::sameNameQuery($this->disk, $this->directory, $this->name)
+            ->when($this->getKey() !== null, fn (Builder $query): Builder => $query->whereKeyNot($this->getKey()))
+            ->exists();
+    }
+
+    /**
      * Unscoped, so a tenant or soft-delete scope never hides another item, and matching any spelling of the directory.
      *
      * @return Builder<static>

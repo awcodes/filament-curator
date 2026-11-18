@@ -431,3 +431,16 @@ it('does not hand out the same name twice in one request, as a multi-file upload
         ->and($third)->toStartWith('BATCH-')
         ->and($third)->not->toBe($second);
 });
+
+it('keeps a curation folder shared by items saved with the same name when one of them is deleted', function () {
+    Storage::disk('public')->put('media/twin.png', 'png');
+    Storage::disk('public')->put('media/twin.jpg', 'jpg');
+    Storage::disk('public')->put('media/twin/crop.webp', 'crop');
+    $png = makeMedia(['directory' => 'media', 'name' => 'twin', 'path' => 'media/twin.png', 'ext' => 'png']);
+    makeMedia(['directory' => 'media/', 'name' => 'Twin', 'path' => 'media/twin.jpg']);
+
+    $png->delete();
+
+    expect(Storage::disk('public')->exists('media/twin.png'))->toBeFalse()
+        ->and(Storage::disk('public')->get('media/twin/crop.webp'))->toBe('crop');
+});

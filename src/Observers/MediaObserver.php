@@ -97,10 +97,11 @@ class MediaObserver
 
         $storage->delete($media->path);
 
-        // The curation folder is named after the item, so another item's files can live in a folder of that name.
+        // The curation folder is named after the item, so another item's files can live in a folder of that name, and
+        // rows saved before names were checked may share it.
         $curationFolder = Media::curationFolder($media->directory, $media->name);
 
-        if ($storage->allFiles($curationFolder) && ! $media->hasAnotherMediaFileIn($curationFolder)) {
+        if ($storage->allFiles($curationFolder) && ! $media->hasAnotherMediaFileIn($curationFolder) && ! $media->sharesNameWithAnotherMedia()) {
             $storage->deleteDirectory($curationFolder);
         }
 
