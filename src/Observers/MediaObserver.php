@@ -27,6 +27,8 @@ class MediaObserver
             }
         }
 
+        $this->keepOwnCurations($media);
+
         $media->__unset('file');
     }
 
@@ -35,6 +37,8 @@ class MediaObserver
      */
     public function updating(Media $media): void
     {
+        $this->keepOwnCurations($media);
+
         // Replace image
         if ($this->hasMediaUpload($media)) {
             if (Storage::disk($media->disk)->exists($media->directory . '/' . $media->getOriginal()['name'] . '.' . $media->getOriginal()['ext'])) {
@@ -57,9 +61,8 @@ class MediaObserver
 
         // Rename file name
         if ($media->isDirty(['name']) && ! blank($media->name)) {
-            if (Storage::disk($media->disk)->exists($media->directory . '/' . $media->name . '.' . $media->ext)) {
-                $media->name = $media->name . '-' . time();
-            }
+            $media->name = $media::uniqueName($media->disk, $media->directory, $media->name, $media->ext, $media->getKey());
+
             Storage::disk($media->disk)->move($media->path, $media->directory . '/' . $media->name . '.' . $media->ext);
             $media->path = $media->directory . '/' . $media->name . '.' . $media->ext;
         }
@@ -86,6 +89,71 @@ class MediaObserver
         // Delete glide-cache for delete image
         $server = app(config('curator.glide.server'))->getFactory();
         $server->deleteCache($media->path);
+    }
+
+    /**
+     * Curations arrive from form state. An entry naming a file inside the item's own curation folder that isn't
+     * another item's is kept, with its disk, visibility and URL set here. Any other entry is kept only when it is
+     * already stored on the item, and then exactly as stored, so a URL is never built for any other file.
+     */
+    protected function keepOwnCurations(Media $media): void
+    {
+        $curations = $media->curations;
+
+        if (! is_array($curations) || ($media->exists && ! $media->isDirty('curations'))) {
+            return;
+        }
+
+        $disk = $media->exists ? $media->getOriginal('disk') : $media->disk;
+        $directory = $media->exists ? $media->getOriginal('directory') : $media->directory;
+        $name = $media->exists ? $media->getOriginal('name') : $media->name;
+        $visibility = $media->exists ? $media->getOriginal('visibility') : $media->visibility;
+        $stored = $media->exists ? $this->storedCurations($media->getOriginal('curations'), $disk) : [];
+
+        $kept = [];
+
+        foreach ($curations as $index => $item) {
+            $curation = is_array($item) ? ($item['curation'] ?? null) : null;
+
+            if (! is_array($curation) || ! is_string($curation['path'] ?? null)) {
+                continue;
+            }
+
+            if ($media::isCurationFileIn($curation['disk'] ?? null, $curation['path'], $disk, $directory, $name) && ! $media->isAnotherMediaFile($curation['path'])) {
+                $curation['disk'] = $disk;
+                $curation['visibility'] = $visibility;
+                $curation['url'] = Storage::disk($disk)->url($curation['path']);
+                $kept[$index] = array_merge($item, ['curation' => $curation]);
+
+                continue;
+            }
+
+            $location = ($curation['disk'] ?? $disk) . "\0" . ltrim($curation['path'], '/');
+
+            if (array_key_exists($location, $stored)) {
+                $kept[$index] = $stored[$location];
+            }
+        }
+
+        $media->curations = array_is_list($curations) ? array_values($kept) : $kept;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function storedCurations(mixed $curations, ?string $disk): array
+    {
+        $stored = [];
+
+        foreach (is_array($curations) ? $curations : [] as $item) {
+            $curation = is_array($item) ? ($item['curation'] ?? null) : null;
+
+            if (is_array($curation) && is_string($curation['path'] ?? null)) {
+                $stored[($curation['disk'] ?? $disk) . "\0" . ltrim($curation['path'], '/')] = $item;
+            }
+        }
+
+        return $stored;
     }
 
     private function hasMediaUpload($media): bool

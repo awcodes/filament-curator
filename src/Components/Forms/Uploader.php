@@ -4,6 +4,7 @@ namespace Awcodes\Curator\Components\Forms;
 
 use Awcodes\Curator\Concerns\CanGeneratePaths;
 use Awcodes\Curator\Concerns\CanNormalizePaths;
+use Awcodes\Curator\Models\Media;
 use Awcodes\Curator\PathGenerators\Contracts\PathGenerator;
 use Awcodes\Curator\Support\MimeType;
 use Closure;
@@ -212,9 +213,7 @@ class Uploader extends FileUpload
                 $exif = $image->exif();
             }
 
-            if (Storage::disk($component->getDiskName())->exists(ltrim($component->getDirectory() . '/' . $filename . '.' . $extension, '/'))) {
-                $filename = $filename . '-' . time();
-            }
+            $filename = App::make(Media::class)::uniqueName($component->getDiskName(), $component->getDirectory(), (string) $filename, $extension);
 
             // SVGs are served as raw markup (they are not routed through Glide),
             // so scripts are stripped before the file reaches the disk. Markup

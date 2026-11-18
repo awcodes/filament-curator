@@ -4,9 +4,12 @@ namespace Awcodes\Curator\Models;
 
 use Awcodes\Curator\Concerns\HasPackageFactory;
 use Awcodes\Curator\Support\Helpers;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use League\Glide\Urls\UrlBuilderFactory;
@@ -66,6 +69,11 @@ class Media extends Model
      * A prefix to identify base64 encoded strings in exif data
      */
     protected const BASE64_PREFIX = 'encoded@base64:';
+
+    /**
+     * Extensions a curation can be saved as, current and past, which bounds what a stored curation can point at.
+     */
+    protected const CURATION_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'avif', 'gif', 'bmp'];
 
     protected function url(): Attribute
     {
@@ -189,6 +197,148 @@ class Media extends Model
     public function hasCuration(string $key): bool
     {
         return filled($this->getCuration($key));
+    }
+
+    public static function isCurationFileIn(mixed $disk, mixed $path, ?string $mediaDisk, ?string $directory, ?string $name): bool
+    {
+        $disk ??= $mediaDisk;
+
+        if (! is_string($disk) || ! is_string($path) || blank($mediaDisk) || blank($name) || $disk !== $mediaDisk) {
+            return false;
+        }
+
+        $folder = static::curationFolder($directory, $name);
+        $path = ltrim($path, '/');
+
+        if (! static::isPlainRelativePath($folder) || ! str_starts_with($path, $folder . '/')) {
+            return false;
+        }
+
+        $file = substr($path, strlen($folder) + 1);
+
+        return $file !== '' && ! str_contains($file, '/') && static::isPlainRelativePath($file);
+    }
+
+    public static function curationFolder(?string $directory, string $name): string
+    {
+        return trim((string) preg_replace('#/+#', '/', filled($directory) ? $directory . '/' . $name : $name), '/');
+    }
+
+    /**
+     * A name is taken when its file or a folder of that name already exists, or another item on the same disk and in
+     * the same directory has it, since an item's curations live in a folder named after it.
+     */
+    public static function isNameTaken(string $disk, ?string $directory, string $name, ?string $ext = null, mixed $exceptKey = null): bool
+    {
+        $storage = Storage::disk($disk);
+        $base = static::curationFolder($directory, $name);
+
+        if ((filled($ext) && $storage->exists($base . '.' . $ext)) || $storage->directoryExists($base)) {
+            return true;
+        }
+
+        $directory = static::curationFolder(null, (string) $directory);
+
+        return App::make(static::class)->newQueryWithoutScopes()
+            ->where('disk', $disk)
+            ->where(fn (Builder $query): Builder => $directory === ''
+                ? $query->whereNull('directory')->orWhereIn('directory', ['', '/', '//'])
+                : $query->whereIn('directory', [$directory, $directory . '/', '/' . $directory, '/' . $directory . '/']))
+            ->where(DB::raw('LOWER(name)'), mb_strtolower($name))
+            ->when($exceptKey !== null, fn (Builder $query): Builder => $query->whereKeyNot($exceptKey))
+            ->exists();
+    }
+
+    public static function uniqueName(string $disk, ?string $directory, string $name, ?string $ext = null, mixed $exceptKey = null): string
+    {
+        if (! static::isNameTaken($disk, $directory, $name, $ext, $exceptKey)) {
+            return $name;
+        }
+
+        $suffix = (string) time();
+        $candidate = $name . '-' . $suffix;
+
+        for ($attempt = 2; static::isNameTaken($disk, $directory, $candidate, $ext, $exceptKey); $attempt++) {
+            $candidate = $name . '-' . $suffix . '-' . $attempt;
+        }
+
+        return $candidate;
+    }
+
+    /**
+     * Rows written before entries were checked on save may still point at an older curation folder, such as one
+     * left behind by a rename, so URLs are built for an image one folder below this item's directory on its disk, as
+     * long as it isn't another media item's file.
+     */
+    public function canResolveCurationFile(mixed $disk, mixed $path): bool
+    {
+        $disk ??= $this->disk;
+
+        if (! is_string($disk) || ! is_string($path) || $disk !== $this->disk) {
+            return false;
+        }
+
+        $path = ltrim($path, '/');
+
+        if (! static::isPlainRelativePath($path)) {
+            return false;
+        }
+
+        $directory = static::curationFolder(null, (string) $this->directory);
+
+        if ($directory !== '') {
+            if (! str_starts_with($path, $directory . '/')) {
+                return false;
+            }
+
+            $path = substr($path, strlen($directory) + 1);
+        }
+
+        if (substr_count($path, '/') !== 1 || ! in_array(strtolower(pathinfo($path, PATHINFO_EXTENSION)), static::CURATION_EXTENSIONS, true)) {
+            return false;
+        }
+
+        return ! $this->isAnotherMediaFile(ltrim($directory . '/' . $path, '/'), ignoringCase: false);
+    }
+
+    /**
+     * Unscoped, so a tenant or soft-delete scope never hides another item's file. Steps that write also match
+     * regardless of case, for disks that ignore it; building a URL matches the exact path, which uses the index.
+     */
+    public function isAnotherMediaFile(mixed $path, bool $ignoringCase = true): bool
+    {
+        if (! is_string($path) || blank($path)) {
+            return false;
+        }
+
+        $path = ltrim($path, '/');
+
+        return $this->newQueryWithoutScopes()
+            ->where('disk', $this->disk)
+            ->where(function (Builder $query) use ($path, $ignoringCase): void {
+                $query->whereIn('path', [$path, '/' . $path]);
+
+                if ($ignoringCase) {
+                    $query->orWhereIn(DB::raw('LOWER(path)'), [mb_strtolower($path), '/' . mb_strtolower($path)]);
+                }
+            })
+            ->when($this->exists, fn (Builder $query): Builder => $query->whereKeyNot($this->getKey()))
+            ->exists();
+    }
+
+    protected static function isPlainRelativePath(string $path): bool
+    {
+        if ($path === '' || str_contains($path, '\\') || str_contains($path, "\0")) {
+            return false;
+        }
+
+        foreach (explode('/', $path) as $segment) {
+            if (in_array($segment, ['', '.', '..'], true)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
