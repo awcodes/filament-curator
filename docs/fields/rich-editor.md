@@ -86,3 +86,6 @@ $content = preg_replace(
 ```
 
 Run it once over each stored value, for example in a migration or a command. Content stored as JSON keeps the key in each image node's `attrs.id`. Clear that value on the same kinds of key.
+
+> [!WARNING]
+> Only run this on content that has never been saved with `storeMediaIds()` turned on. Images inserted with `storeMediaIds()` store their key in `data-id` exactly as older content does, so the expression can't tell them apart: it removes their keys too, and they go back to the `src` they were inserted with, which no longer follows the media item.
