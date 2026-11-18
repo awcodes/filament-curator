@@ -7,7 +7,9 @@ namespace Awcodes\Curator;
 use Awcodes\Curator\Enums\MimeType;
 use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Facades\Glide;
+use Awcodes\Curator\Models\Media;
 use Exception;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -64,11 +66,8 @@ class CuratorUtils
             ? (string) Str::of(pathinfo($sourcePath, PATHINFO_FILENAME))->slug()
             : (string) Str::uuid();
 
+        $filename = App::make(Media::class)::uniqueName($disk, $directory, $filename, $ext);
         $filepath = (string) Str::of($directory . '/' . $filename . '.' . $ext)->trim('/');
-
-        if ($storage->exists($filepath)) {
-            $filepath = (string) Str::of($directory . '/' . $filename . '-' . time() . '.' . $ext)->trim('/');
-        }
 
         $type = $detectedType;
 
