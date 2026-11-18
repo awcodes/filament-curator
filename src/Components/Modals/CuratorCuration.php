@@ -63,9 +63,15 @@ class CuratorCuration extends Component
                 default => 0
             };
 
-            $image->rotate($rotateCorrection - $data['rotate']);
+            $angle = $rotateCorrection - $data['rotate'];
         } else {
-            $image->rotate($data['rotate']);
+            $angle = $data['rotate'];
+        }
+
+        // GD 2.3.3, as shipped by Ubuntu and Debian, crashes PHP when an image that was already rotated, such as an
+        // EXIF-oriented photo, is rotated by 0°, so a rotation that leaves the image unchanged is skipped.
+        if (fmod((float) $angle, 360.0) !== 0.0) {
+            $image->rotate($angle);
         }
 
         if ($data['scaleX'] === -1) {
