@@ -85,7 +85,13 @@ class CuratorCuration extends Component
         $encodedImage = $image->encodeByExtension(extension: $extension, quality: $data['quality'] ?? 60);
 
         // save image to directory base on media
-        $curationPath = $this->media->directory . '/' . $this->media->name . '/' . $data['key'] . '.' . $extension;
+        $curationPath = (string) preg_replace('#/{2,}#', '/', $this->media->directory . '/' . $this->media->name . '/' . $data['key'] . '.' . $extension);
+
+        if ($this->media->isAnotherMediaFile($curationPath)) {
+            throw ValidationException::withMessages([
+                'key' => trans('validation.unique', ['attribute' => 'key']),
+            ]);
+        }
 
         $storage->put($curationPath, $encodedImage);
 

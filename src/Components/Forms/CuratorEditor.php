@@ -46,6 +46,12 @@ class CuratorEditor extends Field
                     return;
                 }
 
+                $media = $component->getRecord();
+
+                if (! $media instanceof Media || ! $media->canResolveCurationFile($state['disk'], $state['path'])) {
+                    return;
+                }
+
                 $state['url'] = Media::resolveUrl($state['disk'], $state['path'], $state['visibility'] ?? null);
 
                 $component->state($state);

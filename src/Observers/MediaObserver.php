@@ -32,6 +32,7 @@ class MediaObserver
         }
 
         $this->assignTenant($media);
+        $this->keepOwnCurations($media);
 
         $media->__unset('file');
     }
@@ -41,6 +42,8 @@ class MediaObserver
      */
     public function updating(Media $media): void
     {
+        $this->keepOwnCurations($media);
+
         $storage = Storage::disk($media->disk);
 
         // Replace image
@@ -65,9 +68,8 @@ class MediaObserver
 
         // Rename file name
         if ($media->isDirty(['name']) && ! blank($media->name)) {
-            if ($storage->exists($media->directory . '/' . $media->name . '.' . $media->ext)) {
-                $media->name = $media->name . '-' . time();
-            }
+            $media->name = Media::uniqueName($media->disk, $media->directory, $media->name, $media->ext, $media->getKey());
+
             $storage->move($media->path, $media->directory . '/' . $media->name . '.' . $media->ext);
             $media->path = $media->directory . '/' . $media->name . '.' . $media->ext;
         }
@@ -85,8 +87,11 @@ class MediaObserver
 
         $storage->delete($media->path);
 
-        if ($storage->allFiles($media->directory . '/' . $media->name)) {
-            $storage->deleteDirectory($media->directory . '/' . $media->name);
+        // The curation folder is named after the item, so another item's files can live in a folder of that name.
+        $curationFolder = Media::curationFolder($media->directory, $media->name);
+
+        if ($storage->allFiles($curationFolder) && ! $media->hasAnotherMediaFileIn($curationFolder)) {
+            $storage->deleteDirectory($curationFolder);
         }
 
         if (count($storage->allFiles($media->directory)) === 0) {
@@ -116,6 +121,71 @@ class MediaObserver
         if (blank($media->getAttribute($foreignKey))) {
             $media->setAttribute($foreignKey, $tenant->getKey());
         }
+    }
+
+    /**
+     * Curations arrive from form state. An entry naming a file inside the item's own curation folder that isn't
+     * another item's is kept, with its disk, visibility and URL set here. Any other entry is kept only when it is
+     * already stored on the item, and then exactly as stored, so the URL steps never act on any other file.
+     */
+    protected function keepOwnCurations(Media $media): void
+    {
+        $curations = $media->curations;
+
+        if (! is_array($curations) || ($media->exists && ! $media->isDirty('curations'))) {
+            return;
+        }
+
+        $disk = $media->exists ? $media->getOriginal('disk') : $media->disk;
+        $directory = $media->exists ? $media->getOriginal('directory') : $media->directory;
+        $name = $media->exists ? $media->getOriginal('name') : $media->name;
+        $visibility = $media->exists ? $media->getOriginal('visibility') : $media->visibility;
+        $stored = $media->exists ? $this->storedCurations($media->getOriginal('curations'), $disk) : [];
+
+        $kept = [];
+
+        foreach ($curations as $index => $item) {
+            $curation = is_array($item) ? ($item['curation'] ?? null) : null;
+
+            if (! is_array($curation) || ! is_string($curation['path'] ?? null)) {
+                continue;
+            }
+
+            if (Media::isCurationFileIn($curation['disk'] ?? null, $curation['path'], $disk, $directory, $name) && ! $media->isAnotherMediaFile($curation['path'])) {
+                $curation['disk'] = $disk;
+                $curation['visibility'] = $visibility;
+                $curation['url'] = Media::resolveUrl($disk, $curation['path'], $visibility);
+                $kept[$index] = [...$item, 'curation' => $curation];
+
+                continue;
+            }
+
+            $location = ($curation['disk'] ?? $disk) . "\0" . ltrim($curation['path'], '/');
+
+            if (array_key_exists($location, $stored)) {
+                $kept[$index] = $stored[$location];
+            }
+        }
+
+        $media->curations = array_is_list($curations) ? array_values($kept) : $kept;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function storedCurations(mixed $curations, ?string $disk): array
+    {
+        $stored = [];
+
+        foreach (is_array($curations) ? $curations : [] as $item) {
+            $curation = is_array($item) ? ($item['curation'] ?? null) : null;
+
+            if (is_array($curation) && is_string($curation['path'] ?? null)) {
+                $stored[($curation['disk'] ?? $disk) . "\0" . ltrim($curation['path'], '/')] = $item;
+            }
+        }
+
+        return $stored;
     }
 
     private function hasMediaUpload(Media $media): bool
