@@ -15,6 +15,8 @@ class WorkbenchServiceProvider extends ServiceProvider
         // Focus serves the Workbench on a random port, so a root-relative URL keeps file URLs the same on every run.
         config(['filesystems.disks.public.url' => '/storage']);
 
+        $this->loadViewsFrom(dirname(__DIR__, 2) . '/resources/views', 'workbench');
+
         Curation::presets([
             CurationPreset::make('Post thumbnail')
                 ->width(320)
