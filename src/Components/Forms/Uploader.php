@@ -9,6 +9,7 @@ use Awcodes\Curator\Concerns\CanNormalizePaths;
 use Awcodes\Curator\Enums\MimeType;
 use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Facades\Glide;
+use Awcodes\Curator\Models\Media;
 use Awcodes\Curator\PathGenerators\Contracts\PathGenerator;
 use Closure;
 use Filament\Forms\Components\FileUpload;
@@ -106,9 +107,7 @@ class Uploader extends FileUpload
             $exif = $image->exif()->toArray();
         }
 
-        if (Storage::disk($this->getDiskName())->exists(ltrim($this->getDirectory() . '/' . $filename . '.' . $extension, '/'))) {
-            $filename = $filename . '-' . time();
-        }
+        $filename = App::make(Media::class)::uniqueName($this->getDiskName(), $this->getDirectory(), (string) $filename, $extension);
 
         if ($svg !== null) {
             $path = trim($this->getDirectory() . '/' . $filename . '.' . $extension, '/');

@@ -33,6 +33,7 @@ class MediaObserver
         }
 
         $this->assignTenant($media);
+        $this->keepOwnCurations($media);
 
         $media->__unset('file');
     }
@@ -42,6 +43,8 @@ class MediaObserver
      */
     public function updating(Media $media): void
     {
+        $this->keepOwnCurations($media);
+
         // Replace image
         if ($this->hasMediaUpload($media)) {
             $this->swapFile($media);
@@ -53,13 +56,7 @@ class MediaObserver
             $originalName = $media->getOriginal('name');
             $originalPath = $media->path;
 
-            // A folder with the new name holds another item's curations, so it counts as taken too.
-            if (
-                $storage->exists($this->pathIn($media->directory, $media->name . '.' . $media->ext))
-                || $storage->directoryExists($this->pathIn($media->directory, $media->name))
-            ) {
-                $media->name = $media->name . '-' . time();
-            }
+            $media->name = Media::uniqueName($media->disk, $media->directory, $media->name, $media->ext, $media->getKey());
 
             $renamedPath = $this->pathIn($media->directory, $media->name . '.' . $media->ext);
 
@@ -153,7 +150,7 @@ class MediaObserver
         foreach ($media->curations as $item) {
             $path = $item['curation']['path'] ?? null;
 
-            if (! is_string($path) || ! str_starts_with(ltrim($path, '/'), $fromFolder . '/')) {
+            if (! Media::isCurationFileIn($item['curation']['disk'] ?? null, $path, $media->disk, $media->directory, $fromName) || $media->isAnotherMediaFile($path)) {
                 $curations[] = $item;
 
                 continue;
@@ -178,6 +175,54 @@ class MediaObserver
     }
 
     /**
+     * Curations arrive from form state. An entry naming a file inside the item's own curation folder that isn't
+     * another item's is kept, with its disk, visibility and URL set here. Any other entry is kept only when it is
+     * already stored on the item, and then exactly as stored, so the delete, move and URL steps never act on any other
+     * file.
+     */
+    protected function keepOwnCurations(Media $media): void
+    {
+        $curations = $media->curations;
+
+        if (! is_array($curations) || ($media->exists && ! $media->isDirty('curations'))) {
+            return;
+        }
+
+        $disk = $media->exists ? $media->getOriginal('disk') : $media->disk;
+        $directory = $media->exists ? $media->getOriginal('directory') : $media->directory;
+        $name = $media->exists ? $media->getOriginal('name') : $media->name;
+        $visibility = $media->exists ? $media->getOriginal('visibility') : $media->visibility;
+        $stored = $media->exists ? $this->storedCurations($media->getOriginal('curations'), $disk) : [];
+
+        $kept = [];
+
+        foreach ($curations as $index => $item) {
+            $curation = is_array($item) ? ($item['curation'] ?? null) : null;
+
+            if (! is_array($curation) || ! is_string($curation['path'] ?? null)) {
+                continue;
+            }
+
+            if (Media::isCurationFileIn($curation['disk'] ?? null, $curation['path'], $disk, $directory, $name) && ! $media->isAnotherMediaFile($curation['path'])) {
+                $curation['disk'] = $disk;
+                $curation['visibility'] = $visibility;
+                $curation['url'] = Media::resolveUrl($disk, $curation['path'], $visibility);
+                $kept[$index] = [...$item, 'curation' => $curation];
+
+                continue;
+            }
+
+            $location = ($curation['disk'] ?? $disk) . "\0" . ltrim($curation['path'], '/');
+
+            if (array_key_exists($location, $stored)) {
+                $kept[$index] = $stored[$location];
+            }
+        }
+
+        $media->curations = array_is_list($curations) ? array_values($kept) : $kept;
+    }
+
+    /**
      * Deletes only the files the media's curations point to, then their folder if that leaves it empty. A folder that
      * merely shares the item's name, such as `uploads/` beside `uploads.jpg`, is never touched.
      */
@@ -193,7 +238,7 @@ class MediaObserver
         foreach ($media->curations as $item) {
             $path = $item['curation']['path'] ?? null;
 
-            if (! is_string($path) || blank($path)) {
+            if (! $media->ownsCurationFile($item['curation']['disk'] ?? null, $path)) {
                 continue;
             }
 
@@ -235,6 +280,24 @@ class MediaObserver
         if ($storage->directoryExists($folder) && $storage->allFiles($folder) === [] && $storage->allDirectories($folder) === []) {
             $storage->deleteDirectory($folder);
         }
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function storedCurations(mixed $curations, ?string $disk): array
+    {
+        $stored = [];
+
+        foreach (is_array($curations) ? $curations : [] as $item) {
+            $curation = is_array($item) ? ($item['curation'] ?? null) : null;
+
+            if (is_array($curation) && is_string($curation['path'] ?? null)) {
+                $stored[($curation['disk'] ?? $disk) . "\0" . ltrim($curation['path'], '/')] = $item;
+            }
+        }
+
+        return $stored;
     }
 
     /**

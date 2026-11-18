@@ -148,9 +148,9 @@ test('appends timestamp when file already exists', function () {
 
     @unlink($tmpPath);
 
-    // The name stays the same but the path gets the timestamp appended
-    expect($result['path'])->toContain('collision-test-file-')
-        ->and($result['name'])->toBe('collision-test-file');
+    // The name gets the timestamp too, so it keeps matching the stored file
+    expect($result['name'])->toStartWith('collision-test-file-')
+        ->and($result['path'])->toBe('test/' . $result['name'] . '.pdf');
 });
 
 test('passes through optional alt title caption description', function () {
