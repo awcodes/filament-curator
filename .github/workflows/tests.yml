@@ -59,10 +59,11 @@ jobs:
           echo "::add-matcher::${{ runner.tool_cache }}/php.json"
           echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
 
-      # Pest 2 on PHP 8.1 resolves only to PHPUnit 10.5.36, which Composer's
-      # insecure-package blocking refuses. PHPUnit only runs here, in CI.
-      - name: Allow PHPUnit 10.5.36 on PHP 8.1
-        if: matrix.php == '8.1'
+      # Laravel 10 and 11 have advisories with no patched release in those
+      # lines, and Pest 2 on PHP 8.1 resolves only to PHPUnit 10.5.36, so
+      # Composer's insecure-package blocking refuses every job's dependencies.
+      # These are only installed here, in CI, to run the test suite.
+      - name: Allow flagged test dependencies
         run: composer config audit.block-insecure false
 
       - name: Install Dependencies

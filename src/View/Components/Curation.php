@@ -21,7 +21,11 @@ class Curation extends Component
         }
 
         if ($this->media) {
-            $this->curatedMedia = $this->media->getCuration($curation);
+            $curatedMedia = $this->media->getCuration($curation);
+
+            $this->curatedMedia = $this->media->canResolveCurationFile($curatedMedia['disk'] ?? null, $curatedMedia['path'] ?? null)
+                ? $curatedMedia
+                : null;
         }
     }
 
@@ -31,7 +35,7 @@ class Curation extends Component
     public function render(): View | string | Closure
     {
         if ($this->curatedMedia) {
-            $this->curatedMedia['url'] = Helpers::getUrl(disk: $this->curatedMedia['disk'], path: $this->curatedMedia['path']);
+            $this->curatedMedia['url'] = Helpers::getUrl(disk: $this->curatedMedia['disk'] ?? $this->media->disk, path: $this->curatedMedia['path']);
         }
 
         return function (array $data) {
