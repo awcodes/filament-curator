@@ -56,10 +56,20 @@ class MediaObserver
                 $media->{$k} = $v;
             }
 
-            $storage->move($media->path, $media->directory . '/' . $media->getOriginal()['name'] . '.' . $media->ext);
+            $originalName = $media->getOriginal('name');
 
-            $media->name = $media->getOriginal()['name'];
-            $media->path = $media->directory . '/' . $media->getOriginal()['name'] . '.' . $media->ext;
+            // The replacement takes the original's place, so the item never moves into a folder where its name may
+            // belong to another item. On another disk it lands in the upload's folder, under a name free there.
+            if ($media->disk === $media->getOriginal('disk')) {
+                $media->directory = $media->getOriginal('directory');
+            } else {
+                $originalName = Media::uniqueName($media->disk, $media->directory, $originalName, $media->ext, $media->getKey());
+            }
+
+            Storage::disk($media->disk)->move($media->path, $media->directory . '/' . $originalName . '.' . $media->ext);
+
+            $media->name = $originalName;
+            $media->path = $media->directory . '/' . $originalName . '.' . $media->ext;
 
             // Delete glide-cache for replaced image
             $server = Glide::getServer();

@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 use Awcodes\Curator\Models\Media;
+use Awcodes\Curator\PathGenerators\DatePathGenerator;
 use Awcodes\Curator\Resources\Media\Pages\EditMedia;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -95,6 +97,7 @@ it('drops curations that point anywhere else when the edit page is saved', funct
     'a traversal out of the folder' => ['public', 'media/mine/../other.jpg'],
     'a nested path' => ['public', 'media/mine/deeper/hero.jpg'],
     'the folder itself' => ['public', 'media/mine/'],
+    'a file in the item\'s own folder that isn\'t an image' => ['public', 'media/mine/notes.pdf'],
 ]);
 
 it('keeps an entry already stored on the item when the edit page is saved', function () {
@@ -164,13 +167,15 @@ it('treats like wildcards in an item\'s name literally when checking its curatio
 });
 
 it('does not build a url for a stored curation on another disk or outside the item\'s directory', function (string $disk, string $path) {
-    $media = storeCurationsDirectly($this->media, [curationPathItem($disk, $path, 'planted')]);
+    $planted = curationPathItem($disk, $path, 'planted');
+    $planted['curation']['url'] = 'stored-url-left-alone';
+    $media = storeCurationsDirectly($this->media, [$planted]);
 
     expect(Blade::render('<x-curator-curation :media="$media" curation="planted" />', ['media' => $media]))->toBe('');
 
     $items = Livewire::test(EditMedia::class, ['record' => $media->getKey()])->get('data.curations');
 
-    expect(array_values($items)[0]['curation']['url'])->toBe('/storage/' . $path);
+    expect(array_values($items)[0]['curation']['url'])->toBe('stored-url-left-alone');
 })->with([
     'another disk' => ['local', 'secrets/x.txt'],
     'outside the directory' => ['public', 'elsewhere/hero.jpg'],
@@ -369,4 +374,60 @@ it('cannot reach another item\'s curations by sharing its name', function () {
     $saved->delete();
 
     expect(Storage::disk('public')->get('media/mine/hero.jpg'))->toBe('hero');
+});
+
+it('keeps a swapped file in the item\'s own folder, so the item never moves in beside another item of its name', function () {
+    config(['curator.path_generator' => DatePathGenerator::class]);
+    $today = now()->format('Y/m/d');
+    Storage::disk('public')->put($today . '/photo.png', 'victim');
+    Storage::disk('public')->put($today . '/photo/thumb.webp', 'victim thumb');
+    makeMedia(['directory' => $today, 'name' => 'photo', 'path' => $today . '/photo.png', 'ext' => 'png']);
+    Storage::disk('public')->put('media/2020/01/01/old.jpg', 'old');
+    $old = makeMedia(['directory' => 'media/2020/01/01', 'name' => 'old', 'path' => 'media/2020/01/01/old.jpg']);
+
+    Livewire::test(EditMedia::class, ['record' => $old->getKey()])->set('data.name', 'photo')->call('save')->assertHasNoFormErrors();
+    Livewire::test(EditMedia::class, ['record' => $old->getKey()])
+        ->set('data.file', UploadedFile::fake()->image('anything.png', 30, 10))
+        ->call('save')
+        ->assertHasNoFormErrors();
+
+    $old->refresh();
+
+    expect($old->directory)->toBe('media/2020/01/01')
+        ->and($old->path)->toBe('media/2020/01/01/photo.png')
+        ->and(Storage::disk('public')->get($today . '/photo.png'))->toBe('victim');
+
+    $saved = saveCurationsThroughEditPage($old, [curationPathItem('public', $today . '/photo/thumb.webp', 'planted')]);
+
+    expect($saved->hasCuration('planted'))->toBeFalse();
+
+    $saved->delete();
+
+    expect(Storage::disk('public')->get($today . '/photo/thumb.webp'))->toBe('victim thumb');
+});
+
+it('keeps curations resolving after the file is swapped for one with another extension', function () {
+    $media = storeCurationsDirectly($this->media, [curationPathItem('public', 'media/mine/hero.jpg')]);
+    Storage::disk('public')->put('media/2026/11/upload.png', 'replacement');
+
+    $media->file = ['disk' => 'public', 'directory' => 'media/2026/11', 'name' => 'upload', 'path' => 'media/2026/11/upload.png', 'ext' => 'png'];
+    $media->save();
+    $media->refresh();
+
+    expect($media->directory)->toBe('media')
+        ->and($media->path)->toBe('media/mine.png')
+        ->and(Storage::disk('public')->get('media/mine.png'))->toBe('replacement')
+        ->and(Blade::render('<x-curator-curation :media="$media" curation="hero" />', ['media' => $media]))
+        ->toContain('src="/storage/media/mine/hero.jpg"');
+});
+
+it('does not hand out the same name twice in one request, as a multi-file upload names every file before saving any', function () {
+    $first = Media::uniqueName('public', 'media', 'batch', 'jpg');
+    $second = Media::uniqueName('public', 'media', 'batch', 'png');
+    $third = Media::uniqueName('public', 'media', 'BATCH', 'webp');
+
+    expect($first)->toBe('batch')
+        ->and($second)->toStartWith('batch-')
+        ->and($third)->toStartWith('BATCH-')
+        ->and($third)->not->toBe($second);
 });

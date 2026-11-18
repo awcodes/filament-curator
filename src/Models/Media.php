@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Awcodes\Curator\Models;
 
+use ArrayObject;
 use Awcodes\Curator\Concerns\HasPackageFactory;
 use Awcodes\Curator\Facades\Curator;
 use Awcodes\Curator\Facades\Glide;
@@ -155,7 +156,10 @@ class Media extends Model
 
         $file = substr($path, strlen($folder) + 1);
 
-        return $file !== '' && ! str_contains($file, '/') && static::isPlainRelativePath($file);
+        return $file !== ''
+            && ! str_contains($file, '/')
+            && static::isPlainRelativePath($file)
+            && in_array(strtolower(pathinfo($file, PATHINFO_EXTENSION)), static::CURATION_EXTENSIONS, true);
     }
 
     public static function curationFolder(?string $directory, string $name): string
@@ -176,30 +180,33 @@ class Media extends Model
             return true;
         }
 
-        $directory = static::curationFolder(null, (string) $directory);
+        if (isset(static::reservedNames()[static::reservedNameKey($disk, $directory, $name)])) {
+            return true;
+        }
 
-        return App::make(static::class)->newQueryWithoutScopes()
-            ->where('disk', $disk)
-            ->where(fn (Builder $query): Builder => $directory === ''
-                ? $query->whereNull('directory')->orWhereIn('directory', ['', '/', '//'])
-                : $query->whereIn('directory', [$directory, $directory . '/', '/' . $directory, '/' . $directory . '/']))
-            ->where(DB::raw('LOWER(name)'), mb_strtolower($name))
+        return static::sameNameQuery($disk, $directory, $name)
             ->when($exceptKey !== null, fn (Builder $query): Builder => $query->whereKeyNot($exceptKey))
             ->exists();
     }
 
+    /**
+     * The name handed out is reserved for the rest of the request, because a multi-file upload names every file before
+     * any of their records exist.
+     */
     public static function uniqueName(string $disk, ?string $directory, string $name, ?string $ext = null, mixed $exceptKey = null): string
     {
-        if (! static::isNameTaken($disk, $directory, $name, $ext, $exceptKey)) {
-            return $name;
+        $candidate = $name;
+
+        if (static::isNameTaken($disk, $directory, $name, $ext, $exceptKey)) {
+            $suffix = (string) time();
+            $candidate = $name . '-' . $suffix;
+
+            for ($attempt = 2; static::isNameTaken($disk, $directory, $candidate, $ext, $exceptKey); $attempt++) {
+                $candidate = $name . '-' . $suffix . '-' . $attempt;
+            }
         }
 
-        $suffix = (string) time();
-        $candidate = $name . '-' . $suffix;
-
-        for ($attempt = 2; static::isNameTaken($disk, $directory, $candidate, $ext, $exceptKey); $attempt++) {
-            $candidate = $name . '-' . $suffix . '-' . $attempt;
-        }
+        static::reservedNames()[static::reservedNameKey($disk, $directory, $candidate)] = true;
 
         return $candidate;
     }
@@ -374,6 +381,42 @@ class Media extends Model
                 ->orWhereRaw("LOWER(path) LIKE ? ESCAPE '!'", ['/' . $prefix]))
             ->when($this->getKey() !== null, fn (Builder $query): Builder => $query->whereKeyNot($this->getKey()))
             ->exists();
+    }
+
+    /**
+     * Unscoped, so a tenant or soft-delete scope never hides another item, and matching any spelling of the directory.
+     *
+     * @return Builder<static>
+     */
+    protected static function sameNameQuery(string $disk, ?string $directory, string $name): Builder
+    {
+        $directory = static::curationFolder(null, (string) $directory);
+
+        return App::make(static::class)->newQueryWithoutScopes()
+            ->where('disk', $disk)
+            ->where(fn (Builder $query): Builder => $directory === ''
+                ? $query->whereNull('directory')->orWhereIn('directory', ['', '/', '//'])
+                : $query->whereIn('directory', [$directory, $directory . '/', '/' . $directory, '/' . $directory . '/']))
+            ->where(DB::raw('LOWER(name)'), mb_strtolower($name));
+    }
+
+    /**
+     * @return ArrayObject<string, true>
+     */
+    protected static function reservedNames(): ArrayObject
+    {
+        $app = App::getFacadeRoot();
+
+        if (! $app->bound('curator.reserved-names')) {
+            $app->scoped('curator.reserved-names', fn (): ArrayObject => new ArrayObject);
+        }
+
+        return $app->make('curator.reserved-names');
+    }
+
+    protected static function reservedNameKey(string $disk, ?string $directory, string $name): string
+    {
+        return $disk . "\0" . static::curationFolder(null, (string) $directory) . "\0" . mb_strtolower($name);
     }
 
     protected static function isPlainRelativePath(string $path): bool
