@@ -22,7 +22,11 @@ class Curation extends Component
         }
 
         if ($this->media) {
-            $this->curatedMedia = $this->media->getCuration($curation);
+            $curatedMedia = $this->media->getCuration($curation);
+
+            $this->curatedMedia = $this->media->canResolveCurationFile($curatedMedia['disk'] ?? null, $curatedMedia['path'] ?? null)
+                ? $curatedMedia
+                : null;
         }
     }
 
@@ -32,7 +36,7 @@ class Curation extends Component
     public function render(): View | string | Closure
     {
         if ($this->curatedMedia !== null && $this->curatedMedia !== []) {
-            $this->curatedMedia['url'] = Media::resolveUrl($this->curatedMedia['disk'], $this->curatedMedia['path'], $this->curatedMedia['visibility'] ?? null);
+            $this->curatedMedia['url'] = Media::resolveUrl($this->curatedMedia['disk'] ?? $this->media->disk, $this->curatedMedia['path'], $this->curatedMedia['visibility'] ?? null);
         }
 
         return fn (array $data): string => 'curator::components.curation';

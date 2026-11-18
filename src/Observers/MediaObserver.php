@@ -32,6 +32,7 @@ class MediaObserver
         }
 
         $this->assignTenant($media);
+        $this->keepOwnCurations($media);
 
         $media->__unset('file');
     }
@@ -41,10 +42,15 @@ class MediaObserver
      */
     public function updating(Media $media): void
     {
+        $this->keepOwnCurations($media);
+
         $storage = Storage::disk($media->disk);
+        $swapped = false;
 
         // Replace image
         if ($this->hasMediaUpload($media)) {
+            $swapped = true;
+
             if ($storage->exists($media->directory . '/' . $media->getOriginal()['name'] . '.' . $media->getOriginal()['ext'])) {
                 $storage->delete($media->directory . '/' . $media->getOriginal()['name'] . '.' . $media->getOriginal()['ext']);
             }
@@ -53,22 +59,31 @@ class MediaObserver
                 $media->{$k} = $v;
             }
 
-            $storage->move($media->path, $media->directory . '/' . $media->getOriginal()['name'] . '.' . $media->ext);
+            $originalName = $media->getOriginal('name');
 
-            $media->name = $media->getOriginal()['name'];
-            $media->path = $media->directory . '/' . $media->getOriginal()['name'] . '.' . $media->ext;
+            // The replacement takes the original's place, so the item never moves into a folder where its name may
+            // belong to another item. On another disk it lands in the upload's folder, under a name free there.
+            if ($media->disk === $media->getOriginal('disk')) {
+                $media->directory = $media->getOriginal('directory');
+            } else {
+                $originalName = Media::uniqueName($media->disk, $media->directory, $originalName, $media->ext, $media->getKey());
+            }
+
+            Storage::disk($media->disk)->move($media->path, $media->directory . '/' . $originalName . '.' . $media->ext);
+
+            $media->name = $originalName;
+            $media->path = $media->directory . '/' . $originalName . '.' . $media->ext;
 
             // Delete glide-cache for replaced image
             $server = Glide::getServer();
             $server->deleteCache($media->path);
         }
 
-        // Rename file name
-        if ($media->isDirty(['name']) && ! blank($media->name)) {
-            if ($storage->exists($media->directory . '/' . $media->name . '.' . $media->ext)) {
-                $media->name = $media->name . '-' . time();
-            }
-            $storage->move($media->path, $media->directory . '/' . $media->name . '.' . $media->ext);
+        // Rename file name. A swap has already placed the file under the name it settled on.
+        if (! $swapped && $media->isDirty(['name']) && ! blank($media->name)) {
+            $media->name = Media::uniqueName($media->disk, $media->directory, $media->name, $media->ext, $media->getKey());
+
+            Storage::disk($media->disk)->move($media->path, $media->directory . '/' . $media->name . '.' . $media->ext);
             $media->path = $media->directory . '/' . $media->name . '.' . $media->ext;
         }
 
@@ -85,9 +100,7 @@ class MediaObserver
 
         $storage->delete($media->path);
 
-        if ($storage->allFiles($media->directory . '/' . $media->name)) {
-            $storage->deleteDirectory($media->directory . '/' . $media->name);
-        }
+        $this->deleteCurationFolder($media);
 
         if (count($storage->allFiles($media->directory)) === 0) {
             $storage->deleteDirectory($media->directory);
@@ -96,6 +109,37 @@ class MediaObserver
         // Delete glide-cache for delete image
         $server = Glide::getServer();
         $server->deleteCache($media->path);
+    }
+
+    /**
+     * The curation folder is named after the item, so the app or another item can keep files in a folder of that name,
+     * and rows saved before names were checked may share it. Only the curation images directly inside it are deleted,
+     * then the folder if that leaves it empty, and a folder holding another item's file or shared by another item of
+     * the same name is left alone.
+     */
+    protected function deleteCurationFolder(Media $media): void
+    {
+        if (blank($media->name)) {
+            return;
+        }
+
+        $curationFolder = Media::curationFolder($media->directory, $media->name);
+
+        if ($media->hasAnotherMediaFileIn($curationFolder) || $media->sharesNameWithAnotherMedia()) {
+            return;
+        }
+
+        $storage = Storage::disk($media->disk);
+
+        foreach ($storage->files($curationFolder) as $file) {
+            if (in_array(strtolower(pathinfo($file, PATHINFO_EXTENSION)), Media::CURATION_EXTENSIONS, true)) {
+                $storage->delete($file);
+            }
+        }
+
+        if ($storage->directoryExists($curationFolder) && $storage->files($curationFolder) === [] && $storage->directories($curationFolder) === []) {
+            $storage->deleteDirectory($curationFolder);
+        }
     }
 
     /**
@@ -116,6 +160,71 @@ class MediaObserver
         if (blank($media->getAttribute($foreignKey))) {
             $media->setAttribute($foreignKey, $tenant->getKey());
         }
+    }
+
+    /**
+     * Curations arrive from form state. An entry naming a file inside the item's own curation folder that isn't
+     * another item's is kept, with its disk, visibility and URL set here. Any other entry is kept only when it is
+     * already stored on the item, and then exactly as stored, so the URL steps never act on any other file.
+     */
+    protected function keepOwnCurations(Media $media): void
+    {
+        $curations = $media->curations;
+
+        if (! is_array($curations) || ($media->exists && ! $media->isDirty('curations'))) {
+            return;
+        }
+
+        $disk = $media->exists ? $media->getOriginal('disk') : $media->disk;
+        $directory = $media->exists ? $media->getOriginal('directory') : $media->directory;
+        $name = $media->exists ? $media->getOriginal('name') : $media->name;
+        $visibility = $media->exists ? $media->getOriginal('visibility') : $media->visibility;
+        $stored = $media->exists ? $this->storedCurations($media->getOriginal('curations'), $disk) : [];
+
+        $kept = [];
+
+        foreach ($curations as $index => $item) {
+            $curation = is_array($item) ? ($item['curation'] ?? null) : null;
+
+            if (! is_array($curation) || ! is_string($curation['path'] ?? null)) {
+                continue;
+            }
+
+            if (Media::isCurationFileIn($curation['disk'] ?? null, $curation['path'], $disk, $directory, $name) && ! $media->isAnotherMediaFile($curation['path'])) {
+                $curation['disk'] = $disk;
+                $curation['visibility'] = $visibility;
+                $curation['url'] = Media::resolveUrl($disk, $curation['path'], $visibility);
+                $kept[$index] = [...$item, 'curation' => $curation];
+
+                continue;
+            }
+
+            $location = ($curation['disk'] ?? $disk) . "\0" . ltrim($curation['path'], '/');
+
+            if (array_key_exists($location, $stored)) {
+                $kept[$index] = $stored[$location];
+            }
+        }
+
+        $media->curations = array_is_list($curations) ? array_values($kept) : $kept;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function storedCurations(mixed $curations, ?string $disk): array
+    {
+        $stored = [];
+
+        foreach (is_array($curations) ? $curations : [] as $item) {
+            $curation = is_array($item) ? ($item['curation'] ?? null) : null;
+
+            if (is_array($curation) && is_string($curation['path'] ?? null)) {
+                $stored[($curation['disk'] ?? $disk) . "\0" . ltrim($curation['path'], '/')] = $item;
+            }
+        }
+
+        return $stored;
     }
 
     private function hasMediaUpload(Media $media): bool
