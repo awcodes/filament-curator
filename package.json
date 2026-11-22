@@ -11,7 +11,7 @@
     "@tailwindcss/cli": "^4.3.5",
     "alpinejs": "^3.17.5",
     "esbuild": "^0.28.2",
-    "prettier": "^3.9.10",
+    "prettier": "^3.10.1",
     "prettier-plugin-blade": "^2.1.21",
     "prettier-plugin-tailwindcss": "^0.8.1",
     "tailwindcss": "^4.1.0"
